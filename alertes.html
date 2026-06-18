@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PeptideScanner — Alertes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root { --bg:#0A0F1E; --surface:#111827; --surface2:#1A2235; --border:#1E2D45; --accent:#00C9A7; --accent2:#6366F1; --accent3:#F59E0B; --text:#E8F0FE; --muted:#6B7A99; --danger:#EF4444; --nav-h:64px; }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:rgba(10,15,30,.95); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; backdrop-filter:blur(12px); }
+  .topbar h1 { font-size:1.1rem; font-weight:700; }
+  .topbar-logo { font-family:'Space Mono',monospace; font-size:.85rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
+  .logo-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
+  .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
+  .section-title { font-size:.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:12px; }
+  .alert-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:10px; }
+  .alert-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid rgba(30,45,69,.5); transition:background .15s; }
+  .alert-row:last-child { border-bottom:none; }
+  .alert-row:hover { background:rgba(255,255,255,.02); }
+  .alert-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+  .ai-green { background:rgba(0,201,167,.12); }
+  .ai-amber { background:rgba(245,158,11,.12); }
+  .ai-red { background:rgba(239,68,68,.12); }
+  .ai-purple { background:rgba(99,102,241,.12); }
+  .ai-blue { background:rgba(59,130,246,.12); }
+  .alert-body { flex:1; }
+  .alert-title { font-size:.86rem; font-weight:600; margin-bottom:2px; }
+  .alert-sub { font-size:.72rem; color:var(--muted); line-height:1.4; }
+  .alert-right { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+  .alert-time { font-family:'Space Mono',monospace; font-size:.65rem; color:var(--muted); }
+  .alert-del { background:transparent; border:none; color:var(--border); cursor:pointer; font-size:.85rem; padding:2px; transition:color .2s; }
+  .alert-del:hover { color:var(--danger); }
+  .priority-dot { width:7px; height:7px; border-radius:50%; }
+  .dot-green { background:var(--accent); }
+  .dot-amber { background:var(--accent3); }
+  .dot-red { background:var(--danger); }
+
+  /* ADD ALERT */
+  .add-alert-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; }
+  .add-alert-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
+  .form-group { margin-bottom:12px; }
+  .form-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; display:block; }
+  .form-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:inherit; font-size:.86rem; outline:none; transition:border-color .2s; }
+  .form-input:focus { border-color:var(--accent); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .submit-btn { width:100%; padding:12px; border-radius:10px; border:none; background:var(--accent); color:#000; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; margin-top:4px; }
+
+  /* SCHEDULE PREVIEW */
+  .schedule-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; }
+  .schedule-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
+  .sched-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(30,45,69,.4); }
+  .sched-item:last-child { border-bottom:none; }
+  .sched-time { font-family:'Space Mono',monospace; font-size:.8rem; font-weight:700; color:var(--accent); width:44px; flex-shrink:0; }
+  .sched-info { flex:1; }
+  .sched-name { font-size:.84rem; font-weight:600; }
+  .sched-detail { font-size:.7rem; color:var(--muted); }
+  .sched-status { font-size:.72rem; padding:2px 8px; border-radius:100px; font-weight:600; }
+  .ss-done { background:rgba(0,201,167,.1); color:var(--accent); }
+  .ss-due { background:rgba(245,158,11,.1); color:var(--accent3); }
+  .ss-upcoming { background:var(--surface2); color:var(--muted); }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(17,24,39,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 8px; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 14px; border-radius:12px; cursor:pointer; text-decoration:none; color:var(--muted); transition:all .2s; min-width:56px; }
+  .nav-item.active { color:var(--accent); }
+  .nav-icon { font-size:1.3rem; line-height:1; }
+  .nav-label { font-size:.6rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
+  .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
+  .toast { position:fixed; bottom:calc(var(--nav-h)+16px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#000; padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .empty-state { text-align:center; padding:32px 20px; color:var(--muted); font-size:.85rem; }
+  .empty-state span { font-size:2rem; display:block; margin-bottom:8px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
+  <h1>Alertes</h1>
+  <div style="width:36px"></div>
+</div>
+<div class="content">
+
+  <!-- SCHEDULE DU JOUR -->
+  <div class="section-title">Planning du jour</div>
+  <div class="schedule-card">
+    <h3 id="todayDate">Aujourd'hui</h3>
+    <div id="scheduleList"></div>
+  </div>
+
+  <!-- ALERTES AUTO -->
+  <div class="section-title">Alertes actives</div>
+  <div id="autoAlertsList"></div>
+
+  <!-- ALERTES PERSO -->
+  <div class="section-title" style="margin-top:8px">Mes rappels</div>
+  <div id="customAlertsList"></div>
+
+  <!-- AJOUTER ALERTE -->
+  <div class="add-alert-card">
+    <h3>+ Nouveau rappel</h3>
+    <div class="form-group">
+      <label class="form-label">Message</label>
+      <input class="form-input" id="alertMsg" placeholder="ex: Prise de sang IGF-1">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-input" id="alertDate" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Heure</label>
+        <input class="form-input" id="alertTime" type="time">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Priorité</label>
+      <select class="form-input" id="alertPriority">
+        <option value="green">Normale</option>
+        <option value="amber">Importante</option>
+        <option value="red">Urgente</option>
+      </select>
+    </div>
+    <button class="submit-btn" onclick="addAlert()">Enregistrer le rappel</button>
+  </div>
+
+</div>
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
+  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label">Biblio</span></a>
+  <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span></a>
+  <a class="nav-item" href="poids.html"><span class="nav-icon">⚖️</span><span class="nav-label">Poids</span></a>
+  <a class="nav-item active" href="alertes.html"><span class="nav-icon">🔔</span><span class="nav-label">Alertes</span><div class="nav-dot"></div></a>
+  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
+</nav>
+<div class="toast" id="toast"></div>
+<script>
+function getLS(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
+function setLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+const TODAY=new Date(); TODAY.setHours(0,0,0,0);
+const todayStr=TODAY.toISOString().split('T')[0];
+const now=new Date();
+
+document.getElementById('alertDate').value=todayStr;
+document.getElementById('alertTime').value=`${String(now.getHours()).padStart(2,'0')}:00`;
+document.getElementById('todayDate').textContent='Aujourd\'hui — '+TODAY.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+
+function renderSchedule(){
+  const cures=getLS('pt_cures',[]);
+  const list=document.getElementById('scheduleList');
+  const active=cures.filter(c=>{
+    const s=new Date(c.startDate);s.setHours(0,0,0,0);
+    const e=new Date(c.startDate);e.setDate(e.getDate()+parseInt(c.duration));e.setHours(0,0,0,0);
+    return s<=TODAY && e>=TODAY && parseFloat(c.freq)>=1;
+  });
+  if(active.length===0){list.innerHTML='<div class="empty-state"><span>✅</span>Aucune injection aujourd\'hui</div>';return;}
+  let items=[];
+  active.forEach(c=>{
+    const freq=parseFloat(c.freq);
+    const cnt=Math.ceil(freq);
+    const times=cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+    const logs=getLS('pt_logs_'+c.id,[]);
+    times.forEach((t,i)=>{
+      const done=logs.some(l=>l.date===todayStr&&l.slot===i);
+      const [h,m]=t.split(':').map(Number);
+      const isDue=!done&&(now.getHours()>h||(now.getHours()===h&&now.getMinutes()>=m));
+      items.push({time:t,h,name:c.peptide,detail:c.dosage+' · '+c.admin,done,isDue});
+    });
+  });
+  items.sort((a,b)=>a.h-b.h);
+  list.innerHTML=items.map(it=>`
+    <div class="sched-item">
+      <div class="sched-time">${it.time}</div>
+      <div class="sched-info"><div class="sched-name">${it.name}</div><div class="sched-detail">${it.detail}</div></div>
+      <div class="sched-status ${it.done?'ss-done':it.isDue?'ss-due':'ss-upcoming'}">${it.done?'✓ Fait':it.isDue?'⏰ À faire':'À venir'}</div>
+    </div>`).join('');
+}
+
+function renderAutoAlerts(){
+  const cures=getLS('pt_cures',[]);
+  const alerts=[];
+  cures.forEach(c=>{
+    const s=new Date(c.startDate);s.setHours(0,0,0,0);
+    const e=new Date(c.startDate);e.setDate(e.getDate()+parseInt(c.duration));e.setHours(0,0,0,0);
+    if(s<=TODAY && e>=TODAY){
+      const daysLeft=Math.ceil((e-TODAY)/86400000);
+      const dayNum=Math.floor((TODAY-s)/86400000)+1;
+      if(daysLeft<=7) alerts.push({icon:'⚠️',type:'amber',title:`Fin de cure dans ${daysLeft} jour${daysLeft>1?'s':''}`,sub:`${c.peptide} — Prévoir le prochain stock`,time:'Auto'});
+      if([14,21,30,60].includes(dayNum)) alerts.push({icon:'🩸',type:'purple',title:'Bilan sanguin recommandé',sub:`Jour ${dayNum} de votre cure ${c.peptide} — IGF-1, hormones`,time:'Aujourd\'hui'});
+      if(dayNum===1) alerts.push({icon:'🎯',type:'green',title:'Cure démarrée aujourd\'hui',sub:`${c.peptide} · ${c.dosage} · Bonne chance !`,time:'Aujourd\'hui'});
+    }
+    if(e.getTime()===TODAY.getTime()) alerts.push({icon:'🏁',type:'green',title:'Cure terminée !',sub:`${c.peptide} — Félicitations pour avoir complété votre cure`,time:'Aujourd\'hui'});
+  });
+  const c=document.getElementById('autoAlertsList');
+  if(alerts.length===0){c.innerHTML='<div class="alert-card"><div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">Aucune alerte automatique</div></div></div></div>';return;}
+  const iconMap={green:'ai-green',amber:'ai-amber',red:'ai-red',purple:'ai-purple'};
+  const dotMap={green:'dot-green',amber:'dot-amber',red:'dot-red',purple:'dot-amber'};
+  c.innerHTML='<div class="alert-card">'+alerts.map(a=>`
+    <div class="alert-row">
+      <div class="alert-icon ${iconMap[a.type]}">${a.icon}</div>
+      <div class="alert-body"><div class="alert-title">${a.title}</div><div class="alert-sub">${a.sub}</div></div>
+      <div class="alert-right"><div class="alert-time">${a.time}</div><div class="priority-dot ${dotMap[a.type]}"></div></div>
+    </div>`).join('')+'</div>';
+}
+
+function renderCustomAlerts(){
+  const alerts=getLS('pt_alertes',[]);
+  const c=document.getElementById('customAlertsList');
+  if(alerts.length===0){c.innerHTML='<div class="alert-card"><div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">Aucun rappel — Ajoutez-en un ci-dessous</div></div></div></div>';return;}
+  const iconMap={green:'🟢',amber:'🟡',red:'🔴'};
+  const clsMap={green:'ai-green',amber:'ai-amber',red:'ai-red'};
+  const dotMap={green:'dot-green',amber:'dot-amber',red:'dot-red'};
+  const sorted=[...alerts].sort((a,b)=>new Date(a.date+' '+a.time)-new Date(b.date+' '+b.time));
+  c.innerHTML='<div class="alert-card">'+sorted.map(a=>`
+    <div class="alert-row">
+      <div class="alert-icon ${clsMap[a.priority]}">${iconMap[a.priority]}</div>
+      <div class="alert-body"><div class="alert-title">${a.msg}</div><div class="alert-sub">${new Date(a.date).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})} à ${a.time}</div></div>
+      <div class="alert-right"><div class="alert-time">${a.date===todayStr?'Aujourd\'hui':''}</div><button class="alert-del" onclick="deleteAlert(${a.id})">🗑</button><div class="priority-dot ${dotMap[a.priority]}"></div></div>
+    </div>`).join('')+'</div>';
+}
+
+function addAlert(){
+  const msg=document.getElementById('alertMsg').value.trim();
+  const date=document.getElementById('alertDate').value;
+  const time=document.getElementById('alertTime').value;
+  const priority=document.getElementById('alertPriority').value;
+  if(!msg||!date||!time){showToast('⚠️ Remplir tous les champs');return;}
+  const alerts=getLS('pt_alertes',[]);
+  alerts.push({id:Date.now(),msg,date,time,priority});
+  setLS('pt_alertes',alerts);
+  document.getElementById('alertMsg').value='';
+  showToast('✓ Rappel ajouté !');
+  renderCustomAlerts();
+}
+
+function deleteAlert(id){
+  let alerts=getLS('pt_alertes',[]);
+  alerts=alerts.filter(a=>a.id!==id);
+  setLS('pt_alertes',alerts);
+  showToast('Rappel supprimé');
+  renderCustomAlerts();
+}
+
+renderSchedule();
+renderAutoAlerts();
+renderCustomAlerts();
+</script>
+</body>
+</html>

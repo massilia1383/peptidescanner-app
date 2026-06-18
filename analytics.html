@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PeptideScanner — Analyse</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg:#0A0F1E; --surface:#111827; --surface2:#1A2235; --border:#1E2D45;
+    --accent:#00C9A7; --accent2:#6366F1; --accent3:#F59E0B;
+    --text:#E8F0FE; --muted:#6B7A99; --danger:#EF4444;
+    --green:#22C55E; --nav-h:64px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
+
+  /* TOPBAR */
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; background:rgba(10,15,30,.97);
+    border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100;
+    backdrop-filter:blur(12px);
+  }
+  .topbar-logo { font-family:'Space Mono',monospace; font-size:.85rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
+  .logo-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
+  .topbar h1 { font-size:1.05rem; font-weight:700; }
+  .period-select {
+    background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:6px 10px; font-family:inherit; font-size:.75rem;
+    outline:none; cursor:pointer;
+  }
+
+  .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
+
+  /* SCAN SCORE — signature element */
+  .scan-score-card {
+    background:linear-gradient(135deg, #0D1F3C 0%, #1A2235 100%);
+    border:1px solid rgba(0,201,167,.2); border-radius:22px;
+    padding:24px 20px; margin-bottom:16px; position:relative; overflow:hidden;
+  }
+  .scan-score-card::before {
+    content:''; position:absolute; top:-60px; right:-60px;
+    width:200px; height:200px; border-radius:50%;
+    background:radial-gradient(circle, rgba(0,201,167,.08) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .score-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
+  .score-label { font-size:.68rem; color:var(--accent); text-transform:uppercase; letter-spacing:2px; font-family:'Space Mono',monospace; margin-bottom:4px; }
+  .score-title { font-size:1rem; font-weight:700; }
+  .score-ring-wrap { position:relative; width:80px; height:80px; flex-shrink:0; }
+  .score-ring-wrap svg { transform:rotate(-90deg); }
+  .score-ring-bg { fill:none; stroke:var(--border); stroke-width:6; }
+  .score-ring-fill { fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset .8s ease; }
+  .score-number {
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace;
+  }
+  .score-num { font-size:1.4rem; font-weight:700; line-height:1; }
+  .score-max { font-size:.6rem; color:var(--muted); }
+
+  /* SCORE BREAKDOWN */
+  .score-breakdown { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px; }
+  .score-item { background:rgba(0,0,0,.2); border-radius:10px; padding:10px 8px; text-align:center; }
+  .score-item-val { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; margin-bottom:3px; }
+  .score-item-label { font-size:.62rem; color:var(--muted); }
+
+  /* INSIGHTS */
+  .insights-wrap { margin-bottom:16px; }
+  .insight-card {
+    background:var(--surface); border-radius:16px; padding:14px 16px;
+    margin-bottom:10px; display:flex; align-items:flex-start; gap:12px;
+    border-left:3px solid transparent; animation:slideIn .3s ease both;
+    border:1px solid var(--border);
+  }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+  .insight-card:nth-child(1){animation-delay:.05s}
+  .insight-card:nth-child(2){animation-delay:.1s}
+  .insight-card:nth-child(3){animation-delay:.15s}
+  .insight-card:nth-child(4){animation-delay:.2s}
+  .insight-card:nth-child(5){animation-delay:.25s}
+  .insight-card.positive { border-left-color:var(--accent); border-left-width:3px; }
+  .insight-card.warning { border-left-color:var(--accent3); border-left-width:3px; }
+  .insight-card.negative { border-left-color:var(--danger); border-left-width:3px; }
+  .insight-card.info { border-left-color:var(--accent2); border-left-width:3px; }
+  .insight-icon { font-size:1.3rem; flex-shrink:0; margin-top:1px; }
+  .insight-body { flex:1; }
+  .insight-title { font-size:.86rem; font-weight:700; margin-bottom:3px; }
+  .insight-text { font-size:.76rem; color:var(--muted); line-height:1.5; }
+  .insight-badge {
+    display:inline-block; margin-top:6px; padding:2px 8px; border-radius:100px;
+    font-size:.65rem; font-weight:700; font-family:'Space Mono',monospace;
+  }
+  .badge-green { background:rgba(34,197,94,.1); color:var(--green); }
+  .badge-amber { background:rgba(245,158,11,.1); color:var(--accent3); }
+  .badge-red { background:rgba(239,68,68,.1); color:var(--danger); }
+  .badge-blue { background:rgba(99,102,241,.1); color:var(--accent2); }
+
+  /* CORRELATION CHART */
+  .chart-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; padding:18px; margin-bottom:16px;
+  }
+  .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .chart-header h3 { font-size:.9rem; font-weight:600; }
+  .chart-legend { display:flex; gap:12px; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:.68rem; color:var(--muted); }
+  .legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .chart-wrap { position:relative; height:160px; }
+  .chart-wrap svg { width:100%; height:100%; overflow:visible; }
+  .chart-labels { display:flex; justify-content:space-between; margin-top:6px; }
+  .chart-labels span { font-size:.62rem; color:var(--muted); font-family:'Space Mono',monospace; }
+
+  /* COMPLIANCE HEATMAP */
+  .heatmap-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; padding:18px; margin-bottom:16px;
+  }
+  .heatmap-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
+  .heatmap-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+  .heatmap-cell {
+    aspect-ratio:1; border-radius:4px; transition:transform .15s;
+    cursor:default;
+  }
+  .heatmap-cell:hover { transform:scale(1.2); }
+  .hm-0 { background:var(--surface2); }
+  .hm-1 { background:rgba(0,201,167,.2); }
+  .hm-2 { background:rgba(0,201,167,.5); }
+  .hm-3 { background:var(--accent); }
+  .hm-rest { background:rgba(107,122,153,.08); }
+  .heatmap-labels { display:flex; justify-content:space-between; margin-bottom:6px; }
+  .heatmap-labels span { font-size:.62rem; color:var(--muted); font-weight:600; }
+  .heatmap-legend { display:flex; align-items:center; gap:6px; margin-top:10px; font-size:.65rem; color:var(--muted); }
+  .heatmap-legend-dots { display:flex; gap:3px; }
+  .heatmap-legend-dot { width:10px; height:10px; border-radius:2px; }
+
+  /* PROJECTION */
+  .projection-card {
+    background:linear-gradient(135deg, rgba(99,102,241,.08), rgba(0,201,167,.06));
+    border:1px solid rgba(99,102,241,.2); border-radius:18px;
+    padding:18px; margin-bottom:16px;
+  }
+  .projection-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .proj-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(30,45,69,.5); }
+  .proj-row:last-child { border-bottom:none; }
+  .proj-label { font-size:.82rem; color:var(--muted); }
+  .proj-val { font-family:'Space Mono',monospace; font-size:.88rem; font-weight:700; }
+  .proj-val.green { color:var(--accent); }
+  .proj-val.amber { color:var(--accent3); }
+  .proj-val.blue { color:var(--accent2); }
+
+  /* COMPLIANCE WEEKLY */
+  .weekly-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; padding:18px; margin-bottom:16px;
+  }
+  .weekly-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
+  .weekly-bars { display:flex; gap:8px; align-items:flex-end; height:80px; }
+  .weekly-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; }
+  .weekly-bar-bg { flex:1; width:100%; background:var(--surface2); border-radius:4px; position:relative; overflow:hidden; }
+  .weekly-bar-fill { position:absolute; bottom:0; left:0; right:0; border-radius:4px; transition:height .5s ease; }
+  .weekly-bar-label { font-size:.6rem; color:var(--muted); font-family:'Space Mono',monospace; }
+  .weekly-bar-pct { font-size:.6rem; color:var(--muted); }
+
+  /* STATS GRID */
+  .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+  .stat-box {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:14px;
+  }
+  .stat-box-label { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; }
+  .stat-box-val { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; line-height:1; margin-bottom:4px; }
+  .stat-box-sub { font-size:.7rem; color:var(--muted); }
+  .stat-box-trend { font-size:.72rem; margin-top:4px; font-weight:600; }
+  .trend-up { color:var(--green); }
+  .trend-down { color:var(--danger); }
+  .trend-neutral { color:var(--muted); }
+
+  /* EMPTY STATE */
+  .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
+  .empty-state span { font-size:2.5rem; display:block; margin-bottom:12px; }
+  .empty-state p { font-size:.88rem; line-height:1.6; margin-bottom:20px; }
+  .empty-btn {
+    background:var(--accent); color:#000; border:none; padding:12px 24px;
+    border-radius:10px; font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer;
+  }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(17,24,39,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 8px; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 10px; border-radius:12px; cursor:pointer; text-decoration:none; color:var(--muted); transition:all .2s; min-width:48px; }
+  .nav-item.active { color:var(--accent); }
+  .nav-icon { font-size:1.2rem; line-height:1; }
+  .nav-label { font-size:.55rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
+  .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
+
+  /* TOOLTIP */
+  .tooltip {
+    position:absolute; background:var(--surface2); border:1px solid var(--border);
+    border-radius:8px; padding:6px 10px; font-size:.72rem; pointer-events:none;
+    opacity:0; transition:opacity .15s; white-space:nowrap; z-index:10;
+  }
+  .tooltip.show { opacity:1; }
+  .tt-val { font-family:'Space Mono',monospace; font-weight:700; color:var(--accent); }
+  .tt-date { color:var(--muted); font-size:.65rem; }
+
+  /* SECTION LABEL */
+  .section-label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:10px; margin-top:4px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
+  <h1>Analyse</h1>
+  <select class="period-select" id="periodSelect" onchange="render()">
+    <option value="30">30 jours</option>
+    <option value="60">60 jours</option>
+    <option value="90">90 jours</option>
+    <option value="0">Tout</option>
+  </select>
+</div>
+
+<div class="content" id="mainContent"></div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
+  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label">Biblio</span></a>
+  <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span></a>
+  <a class="nav-item active" href="analytics.html"><span class="nav-icon">📊</span><span class="nav-label">Analyse</span><div class="nav-dot"></div></a>
+  <a class="nav-item" href="ia.html"><span class="nav-icon">🤖</span><span class="nav-label">IA</span></a>
+  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
+</nav>
+
+<script>
+// ── UTILS ─────────────────────────────────────────────────────
+function getLS(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
+function setLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
+
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const todayStr = TODAY.toISOString().split('T')[0];
+
+// ── DATA ──────────────────────────────────────────────────────
+function getData() {
+  const cures = getLS('pt_cures', []);
+  const weights = getLS('pt_weights', []).sort((a,b) => new Date(a.date)-new Date(b.date));
+  const period = parseInt(document.getElementById('periodSelect').value) || 0;
+
+  // Cure active
+  const activeCure = cures.find(c => {
+    const s=new Date(c.startDate);s.setHours(0,0,0,0);
+    const e=new Date(c.startDate);e.setDate(e.getDate()+parseInt(c.duration));e.setHours(0,0,0,0);
+    return s<=TODAY&&e>=TODAY;
+  });
+
+  // Logs de la cure active
+  const logs = activeCure ? getLS('pt_logs_'+activeCure.id, []) : [];
+
+  // Filtrer poids selon période
+  const filteredWeights = period > 0
+    ? weights.filter(w => {
+        const d = new Date(w.date);
+        const cutoff = new Date(TODAY); cutoff.setDate(cutoff.getDate()-period);
+        return d >= cutoff;
+      })
+    : weights;
+
+  return { cures, weights: filteredWeights, allWeights: weights, activeCure, logs };
+}
+
+// ── MOTEUR DE CORRÉLATION ──────────────────────────────────────
+function computeCorrelations(data) {
+  const { activeCure, logs, weights, allWeights } = data;
+  const insights = [];
+
+  if (!activeCure && weights.length < 2) {
+    return { insights: [], score: 0, scoreBreakdown: { compliance: 0, progression: 0, regularity: 0 } };
+  }
+
+  // ── 1. COMPLIANCE ─────────────────────────────────────────
+  let complianceScore = 0;
+  let compliancePct = 0;
+  if (activeCure) {
+    const freq = parseFloat(activeCure.freq);
+    const startD = new Date(activeCure.startDate); startD.setHours(0,0,0,0);
+    const dayNum = Math.max(1, Math.floor((TODAY - startD) / 86400000) + 1);
+    const totalExpected = Math.round(Math.min(dayNum, parseInt(activeCure.duration)) * freq);
+    const done = logs.length;
+    compliancePct = totalExpected > 0 ? Math.min(100, Math.round(done / totalExpected * 100)) : 0;
+    complianceScore = compliancePct;
+
+    if (compliancePct >= 90) {
+      insights.push({
+        type: 'positive', icon: '🎯',
+        title: `Compliance excellente — ${compliancePct}%`,
+        text: `Tu as fait ${done} injections sur ${totalExpected} prévues. Une régularité pareille maximise l'efficacité du protocole.`,
+        badge: { text: `+${compliancePct}%`, cls: 'badge-green' }
+      });
+    } else if (compliancePct >= 70) {
+      insights.push({
+        type: 'warning', icon: '⚠️',
+        title: `Compliance correcte — ${compliancePct}%`,
+        text: `${totalExpected - done} injection${totalExpected-done>1?'s':''} manquée${totalExpected-done>1?'s':''}. Configure des rappels pour améliorer ta régularité.`,
+        badge: { text: compliancePct+'%', cls: 'badge-amber' }
+      });
+    } else {
+      insights.push({
+        type: 'negative', icon: '❌',
+        title: `Compliance faible — ${compliancePct}%`,
+        text: `${totalExpected - done} injections manquées. Un taux aussi bas réduit significativement l'efficacité du protocole. Active les alertes !`,
+        badge: { text: compliancePct+'%', cls: 'badge-red' }
+      });
+    }
+
+    // Analyse du weekend
+    const weekendLogs = logs.filter(l => {
+      const d = new Date(l.date); return d.getDay() === 0 || d.getDay() === 6;
+    });
+    const weekdayLogs = logs.filter(l => {
+      const d = new Date(l.date); return d.getDay() !== 0 && d.getDay() !== 6;
+    });
+    const totalDays = Math.min(dayNum, parseInt(activeCure.duration));
+    const weekendDays = Math.round(totalDays * 2/7);
+    const weekdayDays = totalDays - weekendDays;
+    const weekendRate = weekendDays > 0 ? weekendLogs.length / (weekendDays * freq) : 1;
+    const weekdayRate = weekdayDays > 0 ? weekdayLogs.length / (weekdayDays * freq) : 1;
+
+    if (weekendRate < weekdayRate * 0.7 && weekendDays >= 2) {
+      insights.push({
+        type: 'warning', icon: '📅',
+        title: 'Compliance chute le weekend',
+        text: `Tu es ${Math.round((1-weekendRate/weekdayRate)*100)}% moins régulier le weekend. Configure un rappel spécial samedi et dimanche.`,
+        badge: { text: 'Weekend -'+Math.round((1-weekendRate/weekdayRate)*100)+'%', cls: 'badge-amber' }
+      });
+    }
+  }
+
+  // ── 2. ÉVOLUTION DU POIDS ─────────────────────────────────
+  let progressionScore = 50;
+  if (weights.length >= 2) {
+    const first = weights[0];
+    const last = weights[weights.length - 1];
+    const diff = last.weight_kg !== undefined ? last.weight_kg - first.weight_kg : parseFloat(last.kg) - parseFloat(first.kg);
+    const firstKg = first.weight_kg || parseFloat(first.kg);
+    const lastKg = last.weight_kg || parseFloat(last.kg);
+    const diffKg = lastKg - firstKg;
+    const diffPct = Math.abs(diffKg / firstKg * 100).toFixed(1);
+    const days = Math.ceil((new Date(last.date) - new Date(first.date)) / 86400000);
+    const ratePerWeek = days > 0 ? (diffKg / days * 7).toFixed(2) : 0;
+
+    // Corrélation poids / début de cure
+    if (activeCure && days >= 5) {
+      const cureStart = new Date(activeCure.startDate);
+      const weightsSinceCure = weights.filter(w => new Date(w.date) >= cureStart);
+
+      if (weightsSinceCure.length >= 2) {
+        const firstCureW = parseFloat(weightsSinceCure[0].kg || weightsSinceCure[0].weight_kg);
+        const lastCureW = parseFloat(weightsSinceCure[weightsSinceCure.length-1].kg || weightsSinceCure[weightsSinceCure.length-1].weight_kg);
+        const cureDiff = lastCureW - firstCureW;
+        const cureDays = Math.ceil((new Date(weightsSinceCure[weightsSinceCure.length-1].date) - cureStart) / 86400000);
+
+        insights.push({
+          type: cureDiff < 0 ? 'positive' : 'info', icon: '⚖️',
+          title: `Depuis ${activeCure.peptide} — ${cureDiff > 0 ? '+' : ''}${cureDiff.toFixed(1)} kg`,
+          text: `En ${cureDays} jours de cure, ton poids a ${cureDiff < 0 ? 'diminué' : 'augmenté'} de ${Math.abs(cureDiff).toFixed(1)} kg. Rythme : ${Math.abs(ratePerWeek)} kg/semaine.`,
+          badge: { text: (cureDiff > 0 ? '+' : '') + cureDiff.toFixed(1)+' kg', cls: cureDiff < 0 ? 'badge-green' : 'badge-blue' }
+        });
+        progressionScore = cureDiff <= 0 ? 80 : 50;
+      }
+    } else if (weights.length >= 2) {
+      insights.push({
+        type: diffKg < 0 ? 'positive' : 'info', icon: '📉',
+        title: `Évolution poids — ${diffKg > 0 ? '+' : ''}${diffKg.toFixed(1)} kg`,
+        text: `Sur ${days} jours, tu as ${diffKg < 0 ? 'perdu' : 'pris'} ${Math.abs(diffKg).toFixed(1)} kg (${diffPct}%). Rythme : ${Math.abs(ratePerWeek)} kg/semaine.`,
+        badge: { text: (diffKg > 0 ? '+' : '') + diffKg.toFixed(1)+' kg', cls: diffKg < 0 ? 'badge-green' : 'badge-amber' }
+      });
+    }
+  }
+
+  // ── 3. RÉGULARITÉ DES PESÉES ─────────────────────────────
+  let regularityScore = 0;
+  if (weights.length >= 3) {
+    const gaps = [];
+    for (let i = 1; i < weights.length; i++) {
+      gaps.push((new Date(weights[i].date) - new Date(weights[i-1].date)) / 86400000);
+    }
+    const avgGap = gaps.reduce((a,b) => a+b, 0) / gaps.length;
+    const maxGap = Math.max(...gaps);
+    regularityScore = Math.max(0, 100 - avgGap * 5);
+
+    if (maxGap > 14) {
+      insights.push({
+        type: 'warning', icon: '⏳',
+        title: `Gap de ${Math.round(maxGap)} jours sans pesée`,
+        text: `Tu as été absent ${Math.round(maxGap)} jours. Pour une corrélation précise, pèse-toi au minimum 2 fois par semaine.`,
+        badge: { text: Math.round(maxGap)+' jours', cls: 'badge-amber' }
+      });
+    } else {
+      regularityScore = 90;
+      insights.push({
+        type: 'positive', icon: '✅',
+        title: 'Pesées régulières',
+        text: `Moyenne de ${avgGap.toFixed(1)} jours entre chaque pesée. Continue ainsi — tes données permettent une corrélation fiable.`,
+        badge: { text: 'Régulier', cls: 'badge-green' }
+      });
+    }
+  } else if (weights.length > 0) {
+    regularityScore = 30;
+    insights.push({
+      type: 'info', icon: '💡',
+      title: 'Ajoute plus de pesées',
+      text: `Tu as seulement ${weights.length} mesure${weights.length > 1 ? 's' : ''}. Plus tu enregistres, plus les corrélations sont précises. Objectif : 2 pesées par semaine.`,
+      badge: { text: weights.length+' mesure'+(weights.length>1?'s':''), cls: 'badge-blue' }
+    });
+  }
+
+  // ── 4. PROJECTION ────────────────────────────────────────
+  if (activeCure && weights.length >= 3) {
+    const startD = new Date(activeCure.startDate);
+    const weightsSinceCure = weights.filter(w => new Date(w.date) >= startD);
+
+    if (weightsSinceCure.length >= 2) {
+      const firstW = parseFloat(weightsSinceCure[0].kg || weightsSinceCure[0].weight_kg);
+      const lastW = parseFloat(weightsSinceCure[weightsSinceCure.length-1].kg || weightsSinceCure[weightsSinceCure.length-1].weight_kg);
+      const daysSinceCure = Math.ceil((new Date(weightsSinceCure[weightsSinceCure.length-1].date) - startD) / 86400000);
+      const ratePerDay = daysSinceCure > 0 ? (lastW - firstW) / daysSinceCure : 0;
+      const daysLeft = parseInt(activeCure.duration) - Math.floor((TODAY - startD) / 86400000);
+      const projectedWeight = (lastW + ratePerDay * daysLeft).toFixed(1);
+      const projectedDiff = (projectedWeight - firstW).toFixed(1);
+
+      if (Math.abs(ratePerDay) > 0.01) {
+        insights.push({
+          type: 'info', icon: '🔮',
+          title: `Projection fin de cure — ${projectedWeight} kg`,
+          text: `Au rythme actuel (${ratePerDay > 0 ? '+' : ''}${(ratePerDay*7).toFixed(2)} kg/sem), tu termineras à ${projectedWeight} kg dans ${daysLeft} jours. Soit ${projectedDiff > 0 ? '+' : ''}${projectedDiff} kg vs début de cure.`,
+          badge: { text: 'J+'+daysLeft+' → '+projectedWeight+' kg', cls: 'badge-blue' }
+        });
+      }
+    }
+  }
+
+  // ── SCORE GLOBAL ─────────────────────────────────────────
+  const scoreBreakdown = {
+    compliance: Math.round(complianceScore),
+    progression: Math.round(progressionScore),
+    regularity: Math.round(regularityScore)
+  };
+  const globalScore = Math.round((complianceScore * 0.4 + progressionScore * 0.35 + regularityScore * 0.25));
+
+  return { insights, score: globalScore, scoreBreakdown };
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function render() {
+  const data = getData();
+  const { insights, score, scoreBreakdown } = computeCorrelations(data);
+  const c = document.getElementById('mainContent');
+
+  if (data.weights.length === 0 && !data.activeCure) {
+    c.innerHTML = `<div class="empty-state">
+      <span>📊</span>
+      <p>Pas encore assez de données pour analyser.<br>Commence une cure et enregistre ton poids régulièrement.</p>
+      <button class="empty-btn" onclick="window.location.href='cure.html'">Démarrer une cure →</button>
+    </div>`;
+    return;
+  }
+
+  // Score color
+  const scoreColor = score >= 80 ? 'var(--accent)' : score >= 60 ? 'var(--accent3)' : 'var(--danger)';
+  const scoreLabel = score >= 80 ? 'Excellent' : score >= 60 ? 'Bon' : score >= 40 ? 'À améliorer' : 'Faible';
+  const circumference = 2 * Math.PI * 30;
+  const offset = circumference * (1 - score / 100);
+
+  c.innerHTML = `
+    <!-- SCAN SCORE -->
+    <div class="scan-score-card">
+      <div class="score-header">
+        <div>
+          <div class="score-label">Scan Score</div>
+          <div class="score-title">Analyse de votre protocole</div>
+        </div>
+        <div class="score-ring-wrap">
+          <svg viewBox="0 0 68 68" width="68" height="68">
+            <circle class="score-ring-bg" cx="34" cy="34" r="30"/>
+            <circle class="score-ring-fill" cx="34" cy="34" r="30"
+              stroke="${scoreColor}"
+              stroke-dasharray="${circumference}"
+              stroke-dashoffset="${offset}"/>
+          </svg>
+          <div class="score-number">
+            <span class="score-num" style="color:${scoreColor}">${score}</span>
+            <span class="score-max">/100</span>
+          </div>
+        </div>
+      </div>
+      <div class="score-breakdown">
+        <div class="score-item">
+          <div class="score-item-val" style="color:${scoreBreakdown.compliance >= 70 ? 'var(--accent)' : 'var(--accent3)'}">${scoreBreakdown.compliance}%</div>
+          <div class="score-item-label">Compliance</div>
+        </div>
+        <div class="score-item">
+          <div class="score-item-val" style="color:${scoreBreakdown.progression >= 60 ? 'var(--accent)' : 'var(--accent3)'}">${scoreBreakdown.progression}%</div>
+          <div class="score-item-label">Progression</div>
+        </div>
+        <div class="score-item">
+          <div class="score-item-val" style="color:${scoreBreakdown.regularity >= 60 ? 'var(--accent)' : 'var(--accent3)'}">${scoreBreakdown.regularity}%</div>
+          <div class="score-item-label">Régularité</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS RAPIDES -->
+    <div class="stats-grid">
+      ${renderStatBox(data)}
+    </div>
+
+    <!-- INSIGHTS -->
+    <div class="section-label">Insights automatiques</div>
+    <div class="insights-wrap" id="insightsWrap">
+      ${insights.length > 0
+        ? insights.map(ins => `
+          <div class="insight-card ${ins.type}">
+            <div class="insight-icon">${ins.icon}</div>
+            <div class="insight-body">
+              <div class="insight-title">${ins.title}</div>
+              <div class="insight-text">${ins.text}</div>
+              ${ins.badge ? `<span class="insight-badge ${ins.badge.cls}">${ins.badge.text}</span>` : ''}
+            </div>
+          </div>`).join('')
+        : '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">Pas encore assez de données pour générer des insights.</div>'
+      }
+    </div>
+
+    <!-- GRAPHIQUE CORRÉLATION -->
+    ${data.weights.length >= 2 ? renderCorrelationChart(data) : ''}
+
+    <!-- HEATMAP COMPLIANCE -->
+    ${data.activeCure ? renderHeatmap(data) : ''}
+
+    <!-- COMPLIANCE PAR SEMAINE -->
+    ${data.activeCure && data.logs.length > 0 ? renderWeeklyBars(data) : ''}
+
+    <!-- PROJECTION -->
+    ${renderProjection(data)}
+  `;
+}
+
+function renderStatBox(data) {
+  const { activeCure, logs, weights } = data;
+  const stats = [];
+
+  if (activeCure) {
+    const freq = parseFloat(activeCure.freq);
+    const startD = new Date(activeCure.startDate); startD.setHours(0,0,0,0);
+    const dayNum = Math.max(1, Math.floor((TODAY - startD) / 86400000) + 1);
+    const expected = Math.round(Math.min(dayNum, parseInt(activeCure.duration)) * freq);
+    const pct = expected > 0 ? Math.min(100, Math.round(logs.length / expected * 100)) : 0;
+    stats.push(`<div class="stat-box"><div class="stat-box-label">Injections</div><div class="stat-box-val" style="color:var(--accent)">${logs.length}</div><div class="stat-box-sub">/ ${expected} prévues</div><div class="stat-box-trend ${pct>=80?'trend-up':pct>=60?'trend-neutral':'trend-down'}">${pct}% compliance</div></div>`);
+    stats.push(`<div class="stat-box"><div class="stat-box-label">Jour de cure</div><div class="stat-box-val" style="color:var(--accent2)">J${Math.min(dayNum, parseInt(activeCure.duration))}</div><div class="stat-box-sub">/ ${activeCure.duration} jours</div><div class="stat-box-trend trend-neutral">${Math.max(0,parseInt(activeCure.duration)-dayNum)} restants</div></div>`);
+  }
+
+  if (weights.length >= 2) {
+    const first = parseFloat(weights[0].kg || weights[0].weight_kg);
+    const last = parseFloat(weights[weights.length-1].kg || weights[weights.length-1].weight_kg);
+    const diff = (last - first).toFixed(1);
+    stats.push(`<div class="stat-box"><div class="stat-box-label">Poids actuel</div><div class="stat-box-val" style="color:var(--accent)">${last} kg</div><div class="stat-box-sub">${weights.length} mesures</div><div class="stat-box-trend ${diff<=0?'trend-up':'trend-down'}">${diff>0?'+':''}${diff} kg total</div></div>`);
+    const days = Math.ceil((new Date(weights[weights.length-1].date) - new Date(weights[0].date)) / 86400000);
+    const rate = days > 0 ? Math.abs((last-first)/days*7).toFixed(2) : 0;
+    stats.push(`<div class="stat-box"><div class="stat-box-label">Rythme</div><div class="stat-box-val" style="color:var(--accent3)">${rate}</div><div class="stat-box-sub">kg / semaine</div><div class="stat-box-trend trend-neutral">sur ${days} jours</div></div>`);
+  }
+
+  return stats.join('');
+}
+
+function renderCorrelationChart(data) {
+  const { weights, activeCure } = data;
+  if (weights.length < 2) return '';
+
+  const W = 400, H = 120, PL = 28, PR = 8, PT = 8, PB = 16;
+  const vals = weights.map(w => parseFloat(w.kg || w.weight_kg));
+  const mn = Math.min(...vals) - 0.5;
+  const mx = Math.max(...vals) + 0.5;
+
+  const pts = vals.map((v, i) => ({
+    x: PL + (i / (vals.length-1)) * (W-PL-PR),
+    y: PT + (1 - (v-mn)/(mx-mn)) * (H-PT-PB),
+    kg: v, date: weights[i].date
+  }));
+
+  const line = pts.map((p,i) => i===0 ? `M${p.x},${p.y}` : `L${p.x},${p.y}`).join(' ');
+  const area = line + ` L${pts[pts.length-1].x},${H-PB} L${PL},${H-PB} Z`;
+
+  // Ligne de début de cure
+  let cureStartLine = '';
+  if (activeCure) {
+    const cureStart = new Date(activeCure.startDate);
+    const cureIdx = weights.findIndex(w => new Date(w.date) >= cureStart);
+    if (cureIdx > 0 && cureIdx < weights.length) {
+      const cx = pts[cureIdx].x;
+      cureStartLine = `<line x1="${cx}" y1="${PT}" x2="${cx}" y2="${H-PB}" stroke="rgba(99,102,241,.4)" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <text x="${cx+3}" y="${PT+8}" fill="rgba(99,102,241,.7)" font-size="8" font-family="Space Mono">Début cure</text>`;
+    }
+  }
+
+  // Labels X
+  const step = Math.max(1, Math.floor(weights.length / 4));
+  const xLabels = pts.filter((_,i) => i%step===0 || i===pts.length-1)
+    .map(p => `<span>${new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</span>`).join('');
+
+  // Trend line (régression linéaire simple)
+  const n = pts.length;
+  const sumX = pts.reduce((s,_,i) => s+i, 0);
+  const sumY = pts.reduce((s,p) => s+p.y, 0);
+  const sumXY = pts.reduce((s,p,i) => s+i*p.y, 0);
+  const sumX2 = pts.reduce((s,_,i) => s+i*i, 0);
+  const slope = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
+  const intercept = (sumY - slope*sumX) / n;
+  const trendY0 = intercept;
+  const trendY1 = slope*(n-1) + intercept;
+  const trendColor = slope < 0 ? 'var(--accent)' : 'var(--danger)';
+
+  return `
+    <div class="section-label">Corrélation poids × temps</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Évolution du poids</h3>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Poids</div>
+          <div class="legend-item"><div class="legend-dot" style="background:${trendColor};opacity:.7"></div>Tendance</div>
+          ${activeCure ? '<div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>Début cure</div>' : ''}
+        </div>
+      </div>
+      <div class="chart-wrap" style="position:relative">
+        <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;overflow:visible">
+          <defs>
+            <linearGradient id="cGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00C9A7" stop-opacity=".2"/>
+              <stop offset="100%" stop-color="#00C9A7" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Grid -->
+          <line x1="${PL}" y1="${PT}" x2="${W-PR}" y2="${PT}" stroke="var(--border)" stroke-width="1"/>
+          <line x1="${PL}" y1="${(H-PB+PT)/2}" x2="${W-PR}" y2="${(H-PB+PT)/2}" stroke="var(--border)" stroke-width="1"/>
+          <line x1="${PL}" y1="${H-PB}" x2="${W-PR}" y2="${H-PB}" stroke="var(--border)" stroke-width="1"/>
+          <!-- Y labels -->
+          <text x="${PL-3}" y="${PT+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Space Mono">${mx.toFixed(1)}</text>
+          <text x="${PL-3}" y="${(H-PB+PT)/2+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Space Mono">${((mx+mn)/2).toFixed(1)}</text>
+          <text x="${PL-3}" y="${H-PB+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Space Mono">${mn.toFixed(1)}</text>
+          <!-- Area -->
+          <path d="${area}" fill="url(#cGrad)"/>
+          <!-- Trend line -->
+          <line x1="${pts[0].x}" y1="${trendY0}" x2="${pts[n-1].x}" y2="${trendY1}"
+            stroke="${trendColor}" stroke-width="1.5" stroke-dasharray="4,3" opacity=".6"/>
+          <!-- Cure start -->
+          ${cureStartLine}
+          <!-- Line -->
+          <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Dots -->
+          ${pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--accent)"/>`).join('')}
+          <!-- Last dot highlighted -->
+          <circle cx="${pts[pts.length-1].x}" cy="${pts[pts.length-1].y}" r="5" fill="var(--accent)" stroke="var(--bg)" stroke-width="2"/>
+          <text x="${pts[pts.length-1].x+6}" y="${pts[pts.length-1].y+4}" fill="var(--accent)" font-size="9" font-family="Space Mono" font-weight="bold">${vals[vals.length-1].toFixed(1)}</text>
+        </svg>
+      </div>
+      <div class="chart-labels">${xLabels}</div>
+    </div>`;
+}
+
+function renderHeatmap(data) {
+  const { activeCure, logs } = data;
+  if (!activeCure) return '';
+
+  const startD = new Date(activeCure.startDate); startD.setHours(0,0,0,0);
+  const freq = parseFloat(activeCure.freq);
+  const inj_per_day = freq >= 1 ? Math.ceil(freq) : 1;
+  const dayNum = Math.floor((TODAY - startD) / 86400000) + 1;
+  const displayDays = Math.min(dayNum, parseInt(activeCure.duration), 28);
+
+  let cells = '';
+  for (let i = 0; i < displayDays; i++) {
+    const d = new Date(startD); d.setDate(d.getDate()+i);
+    const ds = d.toISOString().split('T')[0];
+    const dayLogs = logs.filter(l => l.date === ds);
+    const done = dayLogs.length;
+
+    let cls = 'hm-0';
+    if (freq < 1) {
+      const interval = Math.round(1/freq);
+      cls = i%interval===0 ? (done>0?'hm-3':'hm-0') : 'hm-rest';
+    } else {
+      if (done >= inj_per_day) cls = 'hm-3';
+      else if (done > 0) cls = 'hm-2';
+      else if (d < TODAY) cls = 'hm-0';
+      else cls = 'hm-rest';
+    }
+
+    const isToday = ds === todayStr;
+    cells += `<div class="heatmap-cell ${cls}" title="${ds}${isToday?' (aujourd\'hui)':''}" style="${isToday?'outline:2px solid var(--accent);outline-offset:1px':''}"></div>`;
+  }
+
+  return `
+    <div class="section-label">Heatmap des injections</div>
+    <div class="heatmap-card">
+      <h3>${activeCure.peptide} — ${displayDays} derniers jours</h3>
+      <div class="heatmap-grid">${cells}</div>
+      <div class="heatmap-legend">
+        <span>Moins</span>
+        <div class="heatmap-legend-dots">
+          <div class="heatmap-legend-dot hm-0"></div>
+          <div class="heatmap-legend-dot hm-1"></div>
+          <div class="heatmap-legend-dot hm-2"></div>
+          <div class="heatmap-legend-dot hm-3"></div>
+        </div>
+        <span>Plus</span>
+      </div>
+    </div>`;
+}
+
+function renderWeeklyBars(data) {
+  const { activeCure, logs } = data;
+  if (!activeCure || logs.length === 0) return '';
+
+  const startD = new Date(activeCure.startDate); startD.setHours(0,0,0,0);
+  const freq = parseFloat(activeCure.freq);
+  const weeks = [];
+
+  for (let w = 0; w < 6; w++) {
+    const weekStart = new Date(startD); weekStart.setDate(weekStart.getDate() + w*7);
+    const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+6);
+    if (weekStart > TODAY) break;
+
+    const daysInWeek = Math.min(7, Math.ceil((TODAY - weekStart) / 86400000));
+    const expectedInj = Math.round(daysInWeek * freq);
+    const doneInj = logs.filter(l => {
+      const d = new Date(l.date);
+      return d >= weekStart && d <= weekEnd;
+    }).length;
+
+    const pct = expectedInj > 0 ? Math.min(100, Math.round(doneInj / expectedInj * 100)) : 0;
+    weeks.push({ label: `S${w+1}`, pct, done: doneInj, expected: expectedInj });
+  }
+
+  if (weeks.length === 0) return '';
+
+  const barsHtml = weeks.map(w => {
+    const color = w.pct >= 90 ? 'var(--accent)' : w.pct >= 70 ? 'var(--accent3)' : 'var(--danger)';
+    return `<div class="weekly-bar-wrap">
+      <div class="weekly-bar-pct">${w.pct}%</div>
+      <div class="weekly-bar-bg">
+        <div class="weekly-bar-fill" style="height:${w.pct}%;background:${color}"></div>
+      </div>
+      <div class="weekly-bar-label">${w.label}</div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="section-label">Compliance par semaine</div>
+    <div class="weekly-card">
+      <h3>Régularité — ${activeCure.peptide}</h3>
+      <div class="weekly-bars">${barsHtml}</div>
+    </div>`;
+}
+
+function renderProjection(data) {
+  const { activeCure, logs, weights } = data;
+  if (!activeCure) return '';
+
+  const startD = new Date(activeCure.startDate); startD.setHours(0,0,0,0);
+  const dayNum = Math.floor((TODAY - startD) / 86400000) + 1;
+  const daysLeft = Math.max(0, parseInt(activeCure.duration) - dayNum);
+  const endDate = new Date(startD); endDate.setDate(endDate.getDate() + parseInt(activeCure.duration));
+  const freq = parseFloat(activeCure.freq);
+  const totalExpected = Math.round(parseInt(activeCure.duration) * freq);
+  const done = logs.length;
+  const remaining = Math.max(0, totalExpected - done);
+
+  // Projection poids
+  let weightProjection = '—';
+  let weightDiff = '—';
+  if (weights.length >= 2) {
+    const cureWeights = weights.filter(w => new Date(w.date) >= startD);
+    if (cureWeights.length >= 2) {
+      const firstW = parseFloat(cureWeights[0].kg || cureWeights[0].weight_kg);
+      const lastW = parseFloat(cureWeights[cureWeights.length-1].kg || cureWeights[cureWeights.length-1].weight_kg);
+      const days = Math.ceil((new Date(cureWeights[cureWeights.length-1].date) - startD) / 86400000);
+      const ratePerDay = days > 0 ? (lastW - firstW) / days : 0;
+      const proj = (lastW + ratePerDay * daysLeft).toFixed(1);
+      weightProjection = proj + ' kg';
+      weightDiff = ((parseFloat(proj) - firstW) > 0 ? '+' : '') + (parseFloat(proj) - firstW).toFixed(1) + ' kg vs début';
+    }
+  }
+
+  // Score compliance projeté
+  const projCompliance = totalExpected > 0
+    ? Math.min(100, Math.round((done + remaining * 0.85) / totalExpected * 100))
+    : 0;
+
+  return `
+    <div class="section-label">Projections fin de cure</div>
+    <div class="projection-card">
+      <h3>🔮 Fin de cure — ${endDate.toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</h3>
+      <div class="proj-row">
+        <span class="proj-label">Jours restants</span>
+        <span class="proj-val ${daysLeft<=7?'amber':'green'}">${daysLeft} jours</span>
+      </div>
+      <div class="proj-row">
+        <span class="proj-label">Injections restantes</span>
+        <span class="proj-val blue">${remaining}</span>
+      </div>
+      <div class="proj-row">
+        <span class="proj-label">Poids projeté</span>
+        <span class="proj-val green">${weightProjection}</span>
+      </div>
+      <div class="proj-row">
+        <span class="proj-label">Variation projetée</span>
+        <span class="proj-val ${weightDiff.includes('-')?'green':'amber'}">${weightDiff}</span>
+      </div>
+      <div class="proj-row">
+        <span class="proj-label">Compliance projetée</span>
+        <span class="proj-val ${projCompliance>=80?'green':'amber'}">${projCompliance}%</span>
+      </div>
+    </div>`;
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+// Démo data si vide
+function initDemo() {
+  if (getLS('pt_cures',[]).length === 0) {
+    const s = new Date(TODAY); s.setDate(s.getDate()-17);
+    setLS('pt_cures',[{id:'demo1',peptide:'BPC-157',dosage:'250 mcg',admin:'SC',startDate:s.toISOString().split('T')[0],duration:'30',freq:'2',notes:'Cure récupération'}]);
+    const logs = [];
+    for(let i=0;i<17;i++){
+      const d=new Date(s);d.setDate(d.getDate()+i);
+      const ds=d.toISOString().split('T')[0];
+      const isWeekend = d.getDay()===0||d.getDay()===6;
+      if(Math.random()>(isWeekend?.3:.1)) logs.push({date:ds,slot:0,ts:Date.now()});
+      if(Math.random()>(isWeekend?.4:.15)) logs.push({date:ds,slot:1,ts:Date.now()});
+    }
+    setLS('pt_logs_demo1',logs);
+  }
+  if (getLS('pt_weights',[]).length === 0) {
+    const weights=[];
+    for(let i=20;i>=0;i--){
+      const d=new Date(TODAY);d.setDate(d.getDate()-i);
+      if(i%3===0||i===0) weights.push({id:Date.now()+i,date:d.toISOString().split('T')[0],kg:parseFloat((83-(20-i)*0.14+(Math.random()-.4)*.25).toFixed(1)),note:''});
+    }
+    setLS('pt_weights',weights);
+  }
+}
+
+initDemo();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PeptideScanner — Bienvenue</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg:#0A0F1E; --surface:#111827; --surface2:#1A2235; --border:#1E2D45;
+    --accent:#00C9A7; --accent2:#6366F1; --accent3:#F59E0B;
+    --text:#E8F0FE; --muted:#6B7A99; --danger:#EF4444;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow:hidden; }
+
+  /* BG */
+  .bg-glow { position:fixed; inset:0; pointer-events:none; z-0;
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,201,167,.06) 0%, transparent 70%); }
+
+  /* PROGRESS BAR */
+  .progress-track {
+    position:fixed; top:0; left:0; right:0; height:3px;
+    background:var(--border); z-index:100;
+  }
+  .progress-fill {
+    height:100%; background:linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius:0 2px 2px 0; transition:width .5s ease;
+  }
+
+  /* SKIP */
+  .skip-btn {
+    position:fixed; top:16px; right:20px; z-index:100;
+    background:transparent; border:none; color:var(--muted);
+    font-family:inherit; font-size:.82rem; cursor:pointer; padding:8px 12px;
+    border-radius:8px; transition:color .2s;
+  }
+  .skip-btn:hover { color:var(--text); }
+
+  /* SLIDES CONTAINER */
+  .slides { position:relative; width:100%; height:100vh; }
+  .slide {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:60px 28px 100px;
+    opacity:0; pointer-events:none; transform:translateX(40px);
+    transition:all .4s cubic-bezier(.4,0,.2,1);
+  }
+  .slide.active { opacity:1; pointer-events:all; transform:translateX(0); }
+  .slide.exit { opacity:0; transform:translateX(-40px); }
+
+  /* SLIDE CONTENT */
+  .slide-icon {
+    font-size:4rem; margin-bottom:24px;
+    animation:iconFloat 3s ease-in-out infinite;
+  }
+  @keyframes iconFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .slide-eyebrow {
+    font-family:'Space Mono',monospace; font-size:.7rem;
+    color:var(--accent); letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .slide-title {
+    font-size:clamp(1.6rem,5vw,2.2rem); font-weight:700;
+    text-align:center; line-height:1.2; margin-bottom:14px;
+  }
+  .slide-title span { color:var(--accent); }
+  .slide-sub {
+    font-size:.92rem; color:var(--muted); text-align:center;
+    line-height:1.7; max-width:340px; margin-bottom:32px;
+  }
+
+  /* FEATURE LIST */
+  .feat-list { width:100%; max-width:360px; display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+  .feat-item {
+    display:flex; align-items:center; gap:14px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:14px 16px;
+    animation:slideIn .4s ease both;
+  }
+  .feat-item:nth-child(1){animation-delay:.1s}
+  .feat-item:nth-child(2){animation-delay:.2s}
+  .feat-item:nth-child(3){animation-delay:.3s}
+  .feat-item:nth-child(4){animation-delay:.4s}
+  @keyframes slideIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  .feat-icon { font-size:1.4rem; flex-shrink:0; }
+  .feat-text strong { display:block; font-size:.88rem; font-weight:600; margin-bottom:2px; }
+  .feat-text span { font-size:.75rem; color:var(--muted); }
+
+  /* FIRST CURE SETUP */
+  .setup-card {
+    width:100%; max-width:360px; background:var(--surface);
+    border:1px solid var(--border); border-radius:20px; padding:20px;
+    margin-bottom:24px;
+  }
+  .setup-card h3 { font-size:.88rem; font-weight:600; margin-bottom:16px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-family:'Space Mono',monospace; }
+  .form-group { margin-bottom:12px; }
+  .form-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; display:block; }
+  .form-input {
+    width:100%; background:var(--surface2); border:1.5px solid var(--border);
+    border-radius:10px; padding:11px 14px; color:var(--text);
+    font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s;
+  }
+  .form-input:focus { border-color:var(--accent); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  /* PEPTIDE SUGGESTIONS */
+  .pep-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .pep-chip {
+    padding:6px 12px; border-radius:100px; font-size:.75rem; font-weight:600;
+    border:1.5px solid var(--border); background:var(--surface2); color:var(--muted);
+    cursor:pointer; transition:all .2s;
+  }
+  .pep-chip:hover { border-color:rgba(0,201,167,.4); color:var(--text); }
+  .pep-chip.selected { border-color:var(--accent); background:rgba(0,201,167,.1); color:var(--accent); }
+
+  /* NOTIF SETUP */
+  .notif-options { width:100%; max-width:360px; display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
+  .notif-opt {
+    display:flex; align-items:center; gap:14px; padding:14px 16px;
+    background:var(--surface); border:1.5px solid var(--border);
+    border-radius:14px; cursor:pointer; transition:all .2s;
+  }
+  .notif-opt.selected { border-color:var(--accent); background:rgba(0,201,167,.06); }
+  .notif-opt-icon { font-size:1.3rem; flex-shrink:0; }
+  .notif-opt-info { flex:1; }
+  .notif-opt-info strong { display:block; font-size:.88rem; margin-bottom:2px; }
+  .notif-opt-info span { font-size:.75rem; color:var(--muted); }
+  .notif-check {
+    width:22px; height:22px; border-radius:6px; flex-shrink:0;
+    border:2px solid var(--border); display:flex; align-items:center; justify-content:center;
+    font-size:.75rem; transition:all .2s;
+  }
+  .notif-opt.selected .notif-check { background:var(--accent); border-color:var(--accent); color:#000; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position:fixed; bottom:0; left:0; right:0; z-index:50;
+    padding:16px 24px 32px;
+    background:linear-gradient(to top, var(--bg) 60%, transparent);
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+  }
+  .next-btn {
+    width:100%; max-width:400px; padding:15px; border-radius:14px;
+    border:none; background:var(--accent); color:#000;
+    font-family:inherit; font-size:1rem; font-weight:700; cursor:pointer;
+    transition:all .2s; box-shadow:0 4px 20px rgba(0,201,167,.25);
+  }
+  .next-btn:hover { opacity:.9; transform:translateY(-1px); }
+  .next-btn:active { transform:translateY(0); }
+  .next-btn.secondary {
+    background:transparent; color:var(--muted); border:1px solid var(--border);
+    box-shadow:none; font-size:.88rem; padding:12px;
+  }
+
+  /* DOTS */
+  .dots { display:flex; gap:6px; }
+  .dot { width:6px; height:6px; border-radius:50%; background:var(--border); transition:all .3s; }
+  .dot.active { background:var(--accent); width:18px; border-radius:3px; }
+  .dot.done { background:rgba(0,201,167,.4); }
+
+  /* FINAL SCREEN */
+  .final-wrap { text-align:center; }
+  .final-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(0,201,167,.1); border:1px solid rgba(0,201,167,.3);
+    padding:8px 18px; border-radius:100px; font-size:.78rem; font-weight:600;
+    color:var(--accent); margin-bottom:20px;
+    font-family:'Space Mono',monospace;
+  }
+  .confetti { font-size:3rem; animation:confettiPop .6s ease both; }
+  @keyframes confettiPop { 0%{transform:scale(0) rotate(-10deg)} 80%{transform:scale(1.15) rotate(3deg)} 100%{transform:scale(1) rotate(0)} }
+
+  /* SUMMARY CARDS */
+  .summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:360px; margin:20px 0; }
+  .sum-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:14px; text-align:center;
+  }
+  .sum-val { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; color:var(--accent); margin-bottom:4px; }
+  .sum-label { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+
+<!-- PROGRESS -->
+<div class="progress-track">
+  <div class="progress-fill" id="progressFill" style="width:20%"></div>
+</div>
+<button class="skip-btn" onclick="skipOnboarding()">Passer →</button>
+
+<!-- SLIDES -->
+<div class="slides" id="slides">
+
+  <!-- ═══ SLIDE 1 : Bienvenue ═══ -->
+  <div class="slide active" id="slide1">
+    <div class="slide-icon">🧬</div>
+    <div class="slide-eyebrow">Bienvenue</div>
+    <div class="slide-title">Bonjour <span id="welcomeName">!</span></div>
+    <div class="slide-sub">PeptideScanner va révolutionner la façon dont vous suivez vos protocoles peptidiques.</div>
+    <div class="feat-list">
+      <div class="feat-item">
+        <div class="feat-icon">📚</div>
+        <div class="feat-text"><strong>52 peptides référencés</strong><span>Dosages, protocoles, effets, stacks</span></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">📅</div>
+        <div class="feat-text"><strong>Calendrier de cure</strong><span>Suivez chaque injection au quotidien</span></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">⚖️</div>
+        <div class="feat-text"><strong>Suivi du poids</strong><span>Graphiques et corrélation avec vos cures</span></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🔔</div>
+        <div class="feat-text"><strong>Alertes intelligentes</strong><span>Rappels d'injection, bilans sanguins</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 2 : Première cure ═══ -->
+  <div class="slide" id="slide2">
+    <div class="slide-icon">💉</div>
+    <div class="slide-eyebrow">Étape 1 / 3</div>
+    <div class="slide-title">Votre <span>première cure</span></div>
+    <div class="slide-sub">Configurez votre protocole en cours ou à venir. Vous pourrez modifier ça plus tard.</div>
+
+    <div class="setup-card">
+      <h3>Peptide principal</h3>
+      <div class="form-group">
+        <label class="form-label">Choisir un peptide</label>
+        <select class="form-input" id="onbPeptide">
+          <option value="">Sélectionner…</option>
+          <option>BPC-157</option><option>TB-500</option><option>CJC-1295</option>
+          <option>Ipamorelin</option><option>Semaglutide</option><option>Epithalon</option>
+          <option>Semax</option><option>PT-141</option><option>GHK-Cu</option><option>Autre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Suggestions populaires</label>
+        <div class="pep-chips">
+          <div class="pep-chip" onclick="selectChip(this,'BPC-157')">BPC-157</div>
+          <div class="pep-chip" onclick="selectChip(this,'TB-500')">TB-500</div>
+          <div class="pep-chip" onclick="selectChip(this,'Ipamorelin')">Ipamorelin</div>
+          <div class="pep-chip" onclick="selectChip(this,'Semaglutide')">Semaglutide</div>
+          <div class="pep-chip" onclick="selectChip(this,'CJC-1295')">CJC-1295</div>
+          <div class="pep-chip" onclick="selectChip(this,'Epithalon')">Epithalon</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Dosage</label>
+          <input class="form-input" id="onbDosage" placeholder="250 mcg">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Admin.</label>
+          <select class="form-input" id="onbAdmin">
+            <option>SC</option><option>IM</option><option>Oral</option><option>Nasal</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Début</label>
+          <input class="form-input" id="onbStart" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Durée (j)</label>
+          <input class="form-input" id="onbDuration" type="number" placeholder="30" min="1" max="365">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 3 : Notifications ═══ -->
+  <div class="slide" id="slide3">
+    <div class="slide-icon">🔔</div>
+    <div class="slide-eyebrow">Étape 2 / 3</div>
+    <div class="slide-title">Alertes <span>intelligentes</span></div>
+    <div class="slide-sub">Choisissez les rappels que vous souhaitez recevoir.</div>
+
+    <div class="notif-options">
+      <div class="notif-opt selected" id="notif1" onclick="toggleNotif(this)">
+        <div class="notif-opt-icon">💉</div>
+        <div class="notif-opt-info">
+          <strong>Rappels d'injection</strong>
+          <span>Notification à chaque heure d'injection prévue</span>
+        </div>
+        <div class="notif-check">✓</div>
+      </div>
+      <div class="notif-opt selected" id="notif2" onclick="toggleNotif(this)">
+        <div class="notif-opt-icon">🩸</div>
+        <div class="notif-opt-info">
+          <strong>Bilans sanguins</strong>
+          <span>Rappel aux jours clés (J14, J21, J30)</span>
+        </div>
+        <div class="notif-check">✓</div>
+      </div>
+      <div class="notif-opt selected" id="notif3" onclick="toggleNotif(this)">
+        <div class="notif-opt-icon">📦</div>
+        <div class="notif-opt-info">
+          <strong>Stock faible</strong>
+          <span>Alerte quand votre flacon est presque vide</span>
+        </div>
+        <div class="notif-check">✓</div>
+      </div>
+      <div class="notif-opt" id="notif4" onclick="toggleNotif(this)">
+        <div class="notif-opt-icon">⚖️</div>
+        <div class="notif-opt-info">
+          <strong>Rappel pesée hebdomadaire</strong>
+          <span>Chaque lundi matin pour suivre votre poids</span>
+        </div>
+        <div class="notif-check"></div>
+      </div>
+      <div class="notif-opt" id="notif5" onclick="toggleNotif(this)">
+        <div class="notif-opt-icon">📊</div>
+        <div class="notif-opt-info">
+          <strong>Résumé hebdomadaire</strong>
+          <span>Bilan de compliance chaque dimanche</span>
+        </div>
+        <div class="notif-check"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 4 : Découverte biblio ═══ -->
+  <div class="slide" id="slide4">
+    <div class="slide-icon">🔬</div>
+    <div class="slide-eyebrow">Étape 3 / 3</div>
+    <div class="slide-title">La <span>bibliothèque</span> complète</div>
+    <div class="slide-sub">52 peptides référencés avec protocoles détaillés, dosages et boutiques partenaires.</div>
+
+    <div class="feat-list">
+      <div class="feat-item">
+        <div class="feat-icon">🧬</div>
+        <div class="feat-text"><strong>Fiches complètes</strong><span>Dosage · Admin · Effets · Contre-indications</span></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">💊</div>
+        <div class="feat-text"><strong>Stacks recommandés</strong><span>Associations synergiques validées</span></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🛒</div>
+        <div class="feat-text"><strong>Boutiques partenaires</strong><span>Liens affiliés vers les meilleurs fournisseurs</span></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🔍</div>
+        <div class="feat-text"><strong>Recherche avancée</strong><span>Par nom, effet, catégorie ou stack</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 5 : Prêt ! ═══ -->
+  <div class="slide" id="slide5">
+    <div class="final-wrap">
+      <div class="confetti">🎉</div>
+      <div class="final-badge">✓ Configuration terminée</div>
+      <div class="slide-title" style="margin-top:8px">Vous êtes <span>prêt !</span></div>
+      <div class="slide-sub">Votre espace PeptideScanner est configuré.<br>Bonne cure !</div>
+      <div class="summary-grid" id="summaryGrid"></div>
+      <div style="font-size:.75rem;color:var(--muted);text-align:center;line-height:1.6;max-width:300px">
+        ⚠️ PeptideScanner est un outil de suivi éducatif.<br>Consultez toujours un professionnel de santé.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="dots" id="dots">
+    <div class="dot active" id="dot1"></div>
+    <div class="dot" id="dot2"></div>
+    <div class="dot" id="dot3"></div>
+    <div class="dot" id="dot4"></div>
+    <div class="dot" id="dot5"></div>
+  </div>
+  <button class="next-btn" id="nextBtn" onclick="nextSlide()">Commencer →</button>
+  <button class="next-btn secondary" id="skipStepBtn" onclick="skipStep()" style="display:none">Passer cette étape</button>
+</div>
+
+<script>
+function getLS(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
+function setLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
+
+const TODAY=new Date(); TODAY.setHours(0,0,0,0);
+const todayStr=TODAY.toISOString().split('T')[0];
+let currentSlide=1;
+const TOTAL=5;
+
+// Init
+document.getElementById('onbStart').value=todayStr;
+const profil=getLS('pt_profil',{});
+const prenom=profil.prenom||'';
+document.getElementById('welcomeName').textContent=prenom ? prenom+' 👋' : '! 👋';
+
+const btnLabels=['Commencer →','Configurer ma cure →','Configurer les alertes →','Découvrir la bibliothèque →','Accéder à mon dashboard 🚀'];
+
+function updateUI(){
+  // Progress
+  document.getElementById('progressFill').style.width=(currentSlide/TOTAL*100)+'%';
+  // Dots
+  for(let i=1;i<=TOTAL;i++){
+    const d=document.getElementById('dot'+i);
+    d.className='dot'+(i===currentSlide?' active':i<currentSlide?' done':'');
+  }
+  // Button label
+  document.getElementById('nextBtn').querySelector?document.getElementById('nextBtn').textContent=btnLabels[currentSlide-1]:null;
+  document.getElementById('nextBtn').textContent=btnLabels[currentSlide-1];
+  // Skip step btn
+  const skipVisible=[2,3].includes(currentSlide);
+  document.getElementById('skipStepBtn').style.display=skipVisible?'block':'none';
+  // Last slide
+  if(currentSlide===TOTAL) document.getElementById('skipStepBtn').style.display='none';
+}
+
+function nextSlide(){
+  if(currentSlide===TOTAL){ goToDashboard(); return; }
+  // Save data per step
+  if(currentSlide===2) saveCureStep();
+  if(currentSlide===3) saveNotifStep();
+  if(currentSlide===4) buildSummary();
+  goToSlide(currentSlide+1);
+}
+
+function skipStep(){
+  if(currentSlide===4) buildSummary();
+  goToSlide(currentSlide+1);
+}
+
+function goToSlide(n){
+  const prev=document.getElementById('slide'+currentSlide);
+  prev.classList.remove('active');
+  prev.classList.add('exit');
+  setTimeout(()=>prev.classList.remove('exit'),400);
+  currentSlide=n;
+  const next=document.getElementById('slide'+n);
+  next.classList.add('active');
+  updateUI();
+}
+
+function skipOnboarding(){ goToDashboard(); }
+
+function goToDashboard(){
+  setLS('pt_onboarded',true);
+  window.location='dashboard.html';
+}
+
+// ── STEP 2 : CURE ─────────────────────────────────────────────────────
+function selectChip(el, val){
+  document.querySelectorAll('.pep-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('onbPeptide').value=val;
+  // Auto-fill dosage
+  const defaults={
+    'BPC-157':'250 mcg','TB-500':'2.5 mg','CJC-1295':'1 mg',
+    'Ipamorelin':'200 mcg','Semaglutide':'0.25 mg',
+    'Epithalon':'5 mg','Semax':'500 mcg','PT-141':'0.5 mg','GHK-Cu':'1 mg'
+  };
+  if(defaults[val]) document.getElementById('onbDosage').value=defaults[val];
+  const adminDefs={'Semax':'Nasal','Epithalon':'SC','Semaglutide':'SC'};
+  if(adminDefs[val]) document.getElementById('onbAdmin').value=adminDefs[val];
+}
+
+function saveCureStep(){
+  const peptide=document.getElementById('onbPeptide').value;
+  const dosage=document.getElementById('onbDosage').value;
+  const admin=document.getElementById('onbAdmin').value;
+  const start=document.getElementById('onbStart').value;
+  const duration=document.getElementById('onbDuration').value;
+  if(!peptide||!dosage||!start||!duration) return;
+  const cures=getLS('pt_cures',[]);
+  cures.push({id:Date.now().toString(),peptide,dosage,admin,startDate:start,duration,freq:'2',notes:'Configuré lors de l\'onboarding'});
+  setLS('pt_cures',cures);
+}
+
+// ── STEP 3 : NOTIFS ───────────────────────────────────────────────────
+function toggleNotif(el){
+  el.classList.toggle('selected');
+  const check=el.querySelector('.notif-check');
+  check.textContent=el.classList.contains('selected')?'✓':'';
+}
+
+function saveNotifStep(){
+  const notifPrefs={
+    injections:document.getElementById('notif1').classList.contains('selected'),
+    bilans:document.getElementById('notif2').classList.contains('selected'),
+    stock:document.getElementById('notif3').classList.contains('selected'),
+    pesee:document.getElementById('notif4').classList.contains('selected'),
+    resume:document.getElementById('notif5').classList.contains('selected'),
+  };
+  const p=getLS('pt_profil',{});
+  setLS('pt_profil',{...p,notifPrefs});
+
+  // Créer alertes initiales
+  const alerts=getLS('pt_alertes',[]);
+  if(notifPrefs.pesee){
+    alerts.push({id:Date.now()+1,msg:'Pesée hebdomadaire',date:getNextMonday(),time:'08:00',priority:'green',recurrent:true});
+  }
+  setLS('pt_alertes',alerts);
+}
+
+function getNextMonday(){
+  const d=new Date(TODAY);
+  const day=d.getDay();
+  const diff=day===1?7:(8-day)%7;
+  d.setDate(d.getDate()+diff);
+  return d.toISOString().split('T')[0];
+}
+
+// ── STEP 5 : SUMMARY ──────────────────────────────────────────────────
+function buildSummary(){
+  const cures=getLS('pt_cures',[]);
+  const weights=getLS('pt_weights',[]);
+  const alertes=getLS('pt_alertes',[]);
+  const profil=getLS('pt_profil',{});
+  const grid=document.getElementById('summaryGrid');
+  grid.innerHTML=`
+    <div class="sum-card"><div class="sum-val">${cures.length}</div><div class="sum-label">Cure(s) active(s)</div></div>
+    <div class="sum-card"><div class="sum-val">${weights.length}</div><div class="sum-label">Mesure(s) poids</div></div>
+    <div class="sum-card"><div class="sum-val">${alertes.length}</div><div class="sum-label">Alerte(s) config.</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${profil.premium?'var(--accent3)':'var(--accent)'}">${profil.premium?'⭐':'🆓'}</div><div class="sum-label">${profil.premium?'Plan Premium':'Plan Gratuit'}</div></div>
+  `;
+}
+
+updateUI();
+</script>
+</body>
+</html>

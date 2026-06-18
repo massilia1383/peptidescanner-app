@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PeptideScanner — Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg: #0A0F1E; --surface: #111827; --surface2: #1A2235; --border: #1E2D45;
+    --accent: #00C9A7; --accent2: #6366F1; --accent3: #F59E0B;
+    --text: #E8F0FE; --muted: #6B7A99; --danger: #EF4444; --purple: #A855F7;
+    --nav-h: 64px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h) + 16px); }
+
+  /* TOP BAR */
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 20px 12px;
+    position:sticky; top:0; z-index:100;
+    background:rgba(10,15,30,.95); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-left { display:flex; flex-direction:column; }
+  .topbar-greeting { font-size:.75rem; color:var(--muted); }
+  .topbar-name { font-size:1.1rem; font-weight:700; margin-top:1px; }
+  .topbar-logo { font-family:'Space Mono',monospace; font-size:.85rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
+  .logo-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
+  .notif-btn { width:36px; height:36px; border-radius:10px; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; font-size:1rem; }
+  .notif-badge { position:absolute; top:6px; right:6px; width:8px; height:8px; background:var(--danger); border-radius:50%; border:2px solid var(--bg); }
+
+  /* SCROLL CONTENT */
+  .content { padding:20px 20px 0; max-width:480px; margin:0 auto; }
+
+  /* CURE ACTIVE CARD */
+  .cure-card {
+    background:linear-gradient(135deg, #0D1F3C 0%, #1A2235 100%);
+    border:1px solid rgba(0,201,167,.25); border-radius:20px;
+    padding:20px; margin-bottom:16px; position:relative; overflow:hidden;
+  }
+  .cure-card::before {
+    content:''; position:absolute; top:-40px; right:-40px;
+    width:160px; height:160px; border-radius:50%;
+    background:radial-gradient(circle, rgba(0,201,167,.12) 0%, transparent 70%);
+  }
+  .cure-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
+  .cure-label { font-size:.68rem; color:var(--accent); text-transform:uppercase; letter-spacing:1.5px; font-family:'Space Mono',monospace; margin-bottom:4px; }
+  .cure-name { font-size:1.3rem; font-weight:700; }
+  .cure-sub { font-size:.78rem; color:var(--muted); margin-top:2px; }
+  .cure-day-badge {
+    background:rgba(0,201,167,.15); border:1px solid rgba(0,201,167,.3);
+    border-radius:10px; padding:6px 12px; text-align:center;
+    flex-shrink:0;
+  }
+  .cure-day-num { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--accent); line-height:1; }
+  .cure-day-label { font-size:.62rem; color:var(--muted); margin-top:2px; }
+
+  /* Progress ring */
+  .progress-section { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+  .ring-wrap { position:relative; width:64px; height:64px; flex-shrink:0; }
+  .ring-wrap svg { transform:rotate(-90deg); }
+  .ring-bg { fill:none; stroke:var(--border); stroke-width:5; }
+  .ring-fill { fill:none; stroke:var(--accent); stroke-width:5; stroke-linecap:round; transition:stroke-dashoffset .5s ease; }
+  .ring-pct { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:.75rem; font-weight:700; color:var(--accent); }
+  .progress-info { flex:1; }
+  .prog-row { display:flex; justify-content:space-between; margin-bottom:6px; }
+  .prog-key { font-size:.72rem; color:var(--muted); }
+  .prog-val { font-size:.72rem; font-weight:600; font-family:'Space Mono',monospace; }
+  .prog-bar { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .prog-fill { height:100%; background:linear-gradient(90deg, var(--accent), var(--accent2)); border-radius:2px; transition:width .5s ease; }
+
+  .cure-actions { display:flex; gap:10px; }
+  .cure-btn {
+    flex:1; padding:10px; border-radius:10px; border:none;
+    font-family:inherit; font-size:.82rem; font-weight:700; cursor:pointer; transition:all .2s;
+  }
+  .cure-btn.primary { background:var(--accent); color:#000; }
+  .cure-btn.primary:hover { opacity:.85; }
+  .cure-btn.secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  .cure-btn.secondary:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* STATS ROW */
+  .stats-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+  .stat-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:16px;
+  }
+  .stat-card-label { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .stat-card-val { font-family:'Space Mono',monospace; font-size:1.5rem; font-weight:700; line-height:1; }
+  .stat-card-val.green { color:var(--accent); }
+  .stat-card-val.amber { color:var(--accent3); }
+  .stat-card-val.purple { color:var(--purple); }
+  .stat-card-sub { font-size:.7rem; color:var(--muted); margin-top:4px; display:flex; align-items:center; gap:4px; }
+  .trend-up { color:#22C55E; }
+  .trend-down { color:var(--danger); }
+
+  /* MINI WEIGHT CHART */
+  .weight-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:16px; margin-bottom:16px;
+  }
+  .card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .card-head h3 { font-size:.9rem; font-weight:600; }
+  .card-head a { font-size:.75rem; color:var(--accent); text-decoration:none; font-weight:600; }
+  .mini-chart { position:relative; height:80px; }
+  .mini-chart svg { width:100%; height:100%; }
+
+  /* ALERTES */
+  .alerts-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:16px; margin-bottom:16px;
+  }
+  .alert-item {
+    display:flex; align-items:center; gap:12px;
+    padding:10px 0; border-bottom:1px solid var(--border);
+  }
+  .alert-item:last-child { border-bottom:none; padding-bottom:0; }
+  .alert-item:first-child { padding-top:0; }
+  .alert-icon {
+    width:36px; height:36px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.9rem; flex-shrink:0;
+  }
+  .alert-icon.green { background:rgba(0,201,167,.12); }
+  .alert-icon.amber { background:rgba(245,158,11,.12); }
+  .alert-icon.red { background:rgba(239,68,68,.12); }
+  .alert-icon.purple { background:rgba(99,102,241,.12); }
+  .alert-text { flex:1; }
+  .alert-title { font-size:.84rem; font-weight:600; margin-bottom:2px; }
+  .alert-sub { font-size:.72rem; color:var(--muted); }
+  .alert-time { font-family:'Space Mono',monospace; font-size:.68rem; color:var(--muted); flex-shrink:0; }
+
+  /* TODAY INJECTIONS */
+  .today-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:16px; margin-bottom:16px;
+  }
+  .injection-item {
+    display:flex; align-items:center; gap:12px; padding:10px 0;
+    border-bottom:1px solid rgba(30,45,69,.5);
+  }
+  .injection-item:last-child { border-bottom:none; padding-bottom:0; }
+  .injection-item:first-child { padding-top:0; }
+  .inj-check {
+    width:28px; height:28px; border-radius:8px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:all .2s; font-size:.85rem;
+    border:2px solid var(--border); background:transparent;
+  }
+  .inj-check.done { background:rgba(0,201,167,.15); border-color:var(--accent); }
+  .inj-check.pending { border-color:var(--muted); }
+  .inj-info { flex:1; }
+  .inj-name { font-size:.86rem; font-weight:600; }
+  .inj-detail { font-size:.72rem; color:var(--muted); margin-top:2px; }
+  .inj-time { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); flex-shrink:0; }
+  .inj-time.due { color:var(--accent3); font-weight:700; }
+
+  /* SECTION TITLE */
+  .section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .section-head h2 { font-size:.82rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; }
+  .section-head a { font-size:.75rem; color:var(--accent); text-decoration:none; font-weight:600; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position:fixed; bottom:0; left:0; right:0; z-index:200;
+    background:rgba(17,24,39,.97); backdrop-filter:blur(16px);
+    border-top:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-around;
+    height:var(--nav-h); padding:0 8px;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .nav-item {
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    padding:8px 14px; border-radius:12px; cursor:pointer;
+    text-decoration:none; color:var(--muted); transition:all .2s;
+    min-width:56px;
+  }
+  .nav-item.active { color:var(--accent); }
+  .nav-item:hover { color:var(--text); }
+  .nav-icon { font-size:1.3rem; line-height:1; }
+  .nav-label { font-size:.6rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
+  .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
+
+  /* TOAST */
+  .toast {
+    position:fixed; bottom:calc(var(--nav-h) + 16px); left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--accent); color:#000; padding:10px 20px; border-radius:100px;
+    font-size:.82rem; font-weight:700; opacity:0; pointer-events:none;
+    transition:all .3s; z-index:300; white-space:nowrap;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ADD CURE MODAL */
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:400;
+    display:flex; align-items:flex-end; opacity:0; pointer-events:none;
+    transition:opacity .25s; backdrop-filter:blur(4px);
+  }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal-sheet {
+    width:100%; background:var(--surface); border-radius:24px 24px 0 0;
+    padding:24px 20px 40px; transform:translateY(100%); transition:transform .3s;
+    max-width:480px; margin:0 auto;
+  }
+  .modal-overlay.open .modal-sheet { transform:translateY(0); }
+  .sheet-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+  .sheet-title { font-size:1.1rem; font-weight:700; margin-bottom:20px; }
+  .form-group { margin-bottom:16px; }
+  .form-label { font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:block; }
+  .form-input {
+    width:100%; background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:12px 14px; color:var(--text);
+    font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s;
+  }
+  .form-input:focus { border-color:var(--accent); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .submit-btn {
+    width:100%; padding:14px; border-radius:12px; border:none;
+    background:var(--accent); color:#000; font-family:inherit;
+    font-size:.95rem; font-weight:700; cursor:pointer; margin-top:8px; transition:opacity .2s;
+  }
+  .submit-btn:hover { opacity:.85; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-greeting">Bonjour 👋</span>
+    <span class="topbar-name" id="userName">Chargement…</span>
+  </div>
+  <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
+  <div class="notif-btn" onclick="window.location='alertes.html'">
+    🔔<div class="notif-badge" id="notifBadge"></div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- CURE ACTIVE -->
+  <div style="margin-bottom:8px">
+    <div class="section-head">
+      <h2>Cure active</h2>
+      <a href="cure.html">Voir tout →</a>
+    </div>
+  </div>
+
+  <div class="cure-card" id="cureCard">
+    <div class="cure-header">
+      <div>
+        <div class="cure-label">Protocole en cours</div>
+        <div class="cure-name" id="cureName">—</div>
+        <div class="cure-sub" id="cureSub">—</div>
+      </div>
+      <div class="cure-day-badge">
+        <div class="cure-day-num" id="cureDay">—</div>
+        <div class="cure-day-label">/ <span id="cureDuration">—</span> jours</div>
+      </div>
+    </div>
+    <div class="progress-section">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 64 64" width="64" height="64">
+          <circle class="ring-bg" cx="32" cy="32" r="27"/>
+          <circle class="ring-fill" cx="32" cy="32" r="27" id="ringFill"
+            stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
+        </svg>
+        <div class="ring-pct" id="ringPct">0%</div>
+      </div>
+      <div class="progress-info">
+        <div class="prog-row">
+          <span class="prog-key">Injections faites</span>
+          <span class="prog-val" id="injDone">0 / 0</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="injBar" style="width:0%"></div></div>
+        <div class="prog-row" style="margin-top:8px">
+          <span class="prog-key">Jours restants</span>
+          <span class="prog-val" id="daysLeft">—</span>
+        </div>
+        <div class="prog-row">
+          <span class="prog-key">Fin estimée</span>
+          <span class="prog-val" id="endDate">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="cure-actions">
+      <button class="cure-btn primary" onclick="window.location='cure.html'">📅 Calendrier</button>
+      <button class="cure-btn secondary" onclick="openAddCure()">＋ Nouvelle cure</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="section-head">
+    <h2>Résumé</h2>
+    <a href="poids.html">Poids →</a>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-card-label">Poids actuel</div>
+      <div class="stat-card-val green" id="currentWeight">—</div>
+      <div class="stat-card-sub" id="weightDiff">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Cures complétées</div>
+      <div class="stat-card-val amber" id="curesCount">0</div>
+      <div class="stat-card-sub">depuis le début</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Injections totales</div>
+      <div class="stat-card-val purple" id="totalInj">0</div>
+      <div class="stat-card-sub">toutes cures</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Compliance</div>
+      <div class="stat-card-val green" id="compliance">—</div>
+      <div class="stat-card-sub">injections faites</div>
+    </div>
+  </div>
+
+  <!-- MINI WEIGHT CHART -->
+  <div class="weight-card">
+    <div class="card-head">
+      <h3>Évolution du poids</h3>
+      <a href="poids.html">Détail →</a>
+    </div>
+    <div class="mini-chart">
+      <svg id="miniChart" viewBox="0 0 400 80" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="wGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00C9A7" stop-opacity=".25"/>
+            <stop offset="100%" stop-color="#00C9A7" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <text x="200" y="44" fill="#6B7A99" font-size="12" font-family="Space Grotesk" text-anchor="middle" id="chartEmpty">Aucune donnée — Ajouter votre poids</text>
+        <path id="chartArea" d="" fill="url(#wGrad)"/>
+        <path id="chartLine" d="" fill="none" stroke="#00C9A7" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- AUJOURD'HUI -->
+  <div class="section-head">
+    <h2>Injections du jour</h2>
+    <a href="cure.html">Gérer →</a>
+  </div>
+  <div class="today-card" id="todayCard">
+    <div style="text-align:center;padding:20px 0;color:var(--muted);font-size:.85rem" id="noInjToday">
+      Aucune injection prévue aujourd'hui 🎉
+    </div>
+  </div>
+
+  <!-- ALERTES -->
+  <div class="section-head" style="margin-top:4px">
+    <h2>Alertes récentes</h2>
+    <a href="alertes.html">Toutes →</a>
+  </div>
+  <div class="alerts-card" id="alertsCard">
+    <div style="text-align:center;padding:16px 0;color:var(--muted);font-size:.85rem">
+      Aucune alerte active
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a class="nav-item active" href="dashboard.html">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Accueil</span>
+    <div class="nav-dot"></div>
+  </a>
+  <a class="nav-item" href="peptide-database.html">
+    <span class="nav-icon">🧬</span>
+    <span class="nav-label">Biblio</span>
+  </a>
+  <a class="nav-item" href="cure.html">
+    <span class="nav-icon">📅</span>
+    <span class="nav-label">Cure</span>
+  </a>
+  <a class="nav-item" href="poids.html">
+    <span class="nav-icon">⚖️</span>
+    <span class="nav-label">Poids</span>
+  </a>
+  <a class="nav-item" href="alertes.html">
+    <span class="nav-icon">🔔</span>
+    <span class="nav-label">Alertes</span>
+  </a>
+  <a class="nav-item" href="profil.html">
+    <span class="nav-icon">👤</span>
+    <span class="nav-label">Profil</span>
+  </a>
+</nav>
+
+<!-- ADD CURE MODAL -->
+<div class="modal-overlay" id="addCureModal" onclick="closeIfOverlay(event)">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Nouvelle cure</div>
+    <div class="form-group">
+      <label class="form-label">Peptide</label>
+      <select class="form-input" id="newCurePeptide">
+        <option value="">Choisir un peptide…</option>
+        <option>BPC-157</option><option>TB-500</option><option>CJC-1295</option>
+        <option>Ipamorelin</option><option>GHRP-6</option><option>Semaglutide</option>
+        <option>Epithalon</option><option>Semax</option><option>PT-141</option>
+        <option>AOD-9604</option><option>Thymosin Alpha-1</option><option>GHK-Cu</option>
+        <option>Autre</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Dosage</label>
+        <input class="form-input" id="newCureDosage" placeholder="ex: 250 mcg">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Administration</label>
+        <select class="form-input" id="newCureAdmin">
+          <option>SC</option><option>IM</option><option>Oral</option><option>Nasal</option><option>IV</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Date de début</label>
+        <input class="form-input" id="newCureStart" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Durée (jours)</label>
+        <input class="form-input" id="newCureDuration" type="number" placeholder="30" min="1" max="365">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fréquence d'injection</label>
+      <select class="form-input" id="newCureFreq">
+        <option value="1">1× par jour</option>
+        <option value="2">2× par jour</option>
+        <option value="3">3× par jour</option>
+        <option value="0.5">1× tous les 2 jours</option>
+        <option value="0.28">2× par semaine</option>
+        <option value="0.14">1× par semaine</option>
+      </select>
+    </div>
+    <button class="submit-btn" onclick="saveCure()">Démarrer la cure</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── UTILS ──────────────────────────────────────────────────────────────
+function getLS(key, def) { try { return JSON.parse(localStorage.getItem(key)) ?? def; } catch { return def; } }
+function setLS(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
+}
+
+// ── INIT DATE ─────────────────────────────────────────────────────────
+const TODAY = new Date();
+TODAY.setHours(0,0,0,0);
+const todayStr = TODAY.toISOString().split('T')[0];
+
+// ── PROFIL ────────────────────────────────────────────────────────────
+const profil = getLS('pt_profil', { prenom: 'Utilisateur' });
+document.getElementById('userName').textContent = profil.prenom;
+
+// ── CURE ACTIVE ───────────────────────────────────────────────────────
+function loadCureActive() {
+  const cures = getLS('pt_cures', []);
+  const active = cures.find(c => {
+    const start = new Date(c.startDate); start.setHours(0,0,0,0);
+    const end = new Date(c.startDate);
+    end.setDate(end.getDate() + parseInt(c.duration)); end.setHours(0,0,0,0);
+    return start <= TODAY && end >= TODAY;
+  });
+
+  if (!active) {
+    document.getElementById('cureName').textContent = 'Aucune cure active';
+    document.getElementById('cureSub').textContent = 'Appuyez sur "+ Nouvelle cure" pour commencer';
+    document.getElementById('cureDay').textContent = '—';
+    document.getElementById('cureDuration').textContent = '—';
+    document.getElementById('ringPct').textContent = '0%';
+    document.getElementById('daysLeft').textContent = '—';
+    document.getElementById('endDate').textContent = '—';
+    document.getElementById('injDone').textContent = '0 / 0';
+    return;
+  }
+
+  const start = new Date(active.startDate); start.setHours(0,0,0,0);
+  const dayNum = Math.floor((TODAY - start) / 86400000) + 1;
+  const dur = parseInt(active.duration);
+  const pct = Math.min(100, Math.round((dayNum / dur) * 100));
+  const daysLeft = Math.max(0, dur - dayNum);
+  const endDate = new Date(start); endDate.setDate(endDate.getDate() + dur);
+
+  // Injections
+  const logs = getLS('pt_logs_' + active.id, []);
+  const totalExpected = Math.round(dayNum * parseFloat(active.freq));
+  const done = logs.length;
+  const injPct = totalExpected > 0 ? Math.min(100, Math.round((done / totalExpected) * 100)) : 0;
+
+  document.getElementById('cureName').textContent = active.peptide;
+  document.getElementById('cureSub').textContent = `${active.dosage} · ${active.admin} · ${active.freq >= 1 ? active.freq + '×/jour' : '1×/' + Math.round(1/active.freq) + 'j'}`;
+  document.getElementById('cureDay').textContent = dayNum;
+  document.getElementById('cureDuration').textContent = dur;
+  document.getElementById('ringPct').textContent = pct + '%';
+  document.getElementById('daysLeft').textContent = daysLeft + ' j';
+  document.getElementById('endDate').textContent = formatDate(endDate);
+  document.getElementById('injDone').textContent = done + ' / ' + totalExpected;
+  document.getElementById('injBar').style.width = injPct + '%';
+
+  // Ring
+  const circ = 2 * Math.PI * 27;
+  const offset = circ * (1 - pct / 100);
+  document.getElementById('ringFill').style.strokeDasharray = circ;
+  document.getElementById('ringFill').style.strokeDashoffset = offset;
+
+  // Compliance
+  document.getElementById('compliance').textContent = injPct + '%';
+
+  // Today injections
+  renderTodayInjections(active);
+
+  return active;
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────
+function loadStats() {
+  const cures = getLS('pt_cures', []);
+  const weights = getLS('pt_weights', []);
+
+  // Poids
+  if (weights.length > 0) {
+    const sorted = [...weights].sort((a,b) => new Date(a.date) - new Date(b.date));
+    const latest = sorted[sorted.length - 1];
+    document.getElementById('currentWeight').textContent = latest.kg + ' kg';
+    if (sorted.length > 1) {
+      const first = sorted[0];
+      const diff = (latest.kg - first.kg).toFixed(1);
+      const sign = diff > 0 ? '+' : '';
+      const cls = diff > 0 ? 'trend-up' : 'trend-down';
+      document.getElementById('weightDiff').innerHTML = `<span class="${cls}">${sign}${diff} kg</span> depuis J1`;
+    } else {
+      document.getElementById('weightDiff').textContent = 'Première mesure';
+    }
+    renderMiniChart(sorted);
+  } else {
+    document.getElementById('currentWeight').textContent = '— kg';
+    document.getElementById('weightDiff').textContent = 'Aucune donnée';
+  }
+
+  // Cures complétées
+  const completed = cures.filter(c => {
+    const end = new Date(c.startDate);
+    end.setDate(end.getDate() + parseInt(c.duration));
+    return end < TODAY;
+  });
+  document.getElementById('curesCount').textContent = completed.length;
+
+  // Injections totales
+  let total = 0;
+  cures.forEach(c => { total += getLS('pt_logs_' + c.id, []).length; });
+  document.getElementById('totalInj').textContent = total;
+}
+
+// ── MINI CHART ────────────────────────────────────────────────────────
+function renderMiniChart(weights) {
+  if (weights.length < 2) return;
+  document.getElementById('chartEmpty').style.display = 'none';
+  const vals = weights.map(w => parseFloat(w.kg));
+  const mn = Math.min(...vals) - 1;
+  const mx = Math.max(...vals) + 1;
+  const W = 400, H = 80;
+  const pts = vals.map((v, i) => {
+    const x = (i / (vals.length - 1)) * W;
+    const y = H - ((v - mn) / (mx - mn)) * (H - 10) - 5;
+    return [x, y];
+  });
+  const line = pts.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
+  const area = line + ` L${pts[pts.length-1][0]},${H} L0,${H} Z`;
+  document.getElementById('chartLine').setAttribute('d', line);
+  document.getElementById('chartArea').setAttribute('d', area);
+}
+
+// ── TODAY INJECTIONS ─────────────────────────────────────────────────
+function renderTodayInjections(active) {
+  const freq = parseFloat(active.freq);
+  if (freq < 1) return; // moins d'une fois par jour — pas forcément aujourd'hui
+  const container = document.getElementById('todayCard');
+  document.getElementById('noInjToday').style.display = 'none';
+
+  const logs = getLS('pt_logs_' + active.id, []);
+  const todayLogs = logs.filter(l => l.date === todayStr);
+  const injPerDay = Math.ceil(freq);
+
+  // Horaires suggérés
+  const times = injPerDay === 1 ? ['08:00'] : injPerDay === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
+
+  let html = '';
+  times.forEach((time, i) => {
+    const key = `${todayStr}_${i}`;
+    const done = todayLogs.some(l => l.slot === i);
+    const now = new Date();
+    const [h, m] = time.split(':').map(Number);
+    const isDue = !done && (now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m));
+    html += `
+      <div class="injection-item">
+        <div class="inj-check ${done ? 'done' : 'pending'}" onclick="toggleInjection('${active.id}', ${i}, '${time}')">
+          ${done ? '✓' : ''}
+        </div>
+        <div class="inj-info">
+          <div class="inj-name">${active.peptide} · Injection ${i+1}</div>
+          <div class="inj-detail">${active.dosage} · ${active.admin}</div>
+        </div>
+        <div class="inj-time ${isDue && !done ? 'due' : ''}">${done ? '✓ Fait' : isDue ? '⏰ À faire' : time}</div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function toggleInjection(cureId, slot, time) {
+  const logs = getLS('pt_logs_' + cureId, []);
+  const idx = logs.findIndex(l => l.date === todayStr && l.slot === slot);
+  if (idx >= 0) {
+    logs.splice(idx, 1);
+    showToast('Injection annulée');
+  } else {
+    logs.push({ date: todayStr, slot, time, ts: Date.now() });
+    showToast('✓ Injection enregistrée !');
+  }
+  setLS('pt_logs_' + cureId, logs);
+  loadAll();
+}
+
+// ── ALERTES ────────────────────────────────────────────────────────────
+function loadAlertes() {
+  const alertes = getLS('pt_alertes', []);
+  const container = document.getElementById('alertsCard');
+  let badge = 0;
+
+  // Auto-générer alertes depuis les cures
+  const cures = getLS('pt_cures', []);
+  const autoAlerts = [];
+
+  cures.forEach(c => {
+    const start = new Date(c.startDate); start.setHours(0,0,0,0);
+    const end = new Date(c.startDate);
+    end.setDate(end.getDate() + parseInt(c.duration)); end.setHours(0,0,0,0);
+    if (start <= TODAY && end >= TODAY) {
+      const daysLeft = Math.ceil((end - TODAY) / 86400000);
+      if (daysLeft <= 5) {
+        autoAlerts.push({ icon:'⚠️', type:'amber', title:`Fin de cure dans ${daysLeft} jours`, sub:`${c.peptide} — Préparer le prochain stock`, time:'Auto' });
+        badge++;
+      }
+      const dayNum = Math.floor((TODAY - start) / 86400000) + 1;
+      if (dayNum === 14 || dayNum === 21 || dayNum === 30) {
+        autoAlerts.push({ icon:'🩸', type:'purple', title:'Bilan sanguin recommandé', sub:`J${dayNum} de cure ${c.peptide}`, time:'Aujourd\'hui' });
+        badge++;
+      }
+    }
+  });
+
+  const allAlerts = [...autoAlerts, ...alertes.slice(0,3)];
+  if (badge > 0) { document.getElementById('notifBadge').style.display = 'block'; }
+  else { document.getElementById('notifBadge').style.display = 'none'; }
+
+  if (allAlerts.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:16px 0;color:var(--muted);font-size:.85rem">Aucune alerte active 🎉</div>';
+    return;
+  }
+
+  const typeIcons = { green:'alert-icon green', amber:'alert-icon amber', red:'alert-icon red', purple:'alert-icon purple' };
+  container.innerHTML = allAlerts.slice(0,4).map(a => `
+    <div class="alert-item">
+      <div class="${typeIcons[a.type] || 'alert-icon amber'}">${a.icon}</div>
+      <div class="alert-text">
+        <div class="alert-title">${a.title}</div>
+        <div class="alert-sub">${a.sub}</div>
+      </div>
+      <div class="alert-time">${a.time}</div>
+    </div>`).join('');
+}
+
+// ── ADD CURE ──────────────────────────────────────────────────────────
+function openAddCure() {
+  document.getElementById('newCureStart').value = todayStr;
+  document.getElementById('addCureModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeIfOverlay(e) {
+  if (e.target === document.getElementById('addCureModal')) {
+    document.getElementById('addCureModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+function saveCure() {
+  const peptide = document.getElementById('newCurePeptide').value;
+  const dosage = document.getElementById('newCureDosage').value;
+  const admin = document.getElementById('newCureAdmin').value;
+  const startDate = document.getElementById('newCureStart').value;
+  const duration = document.getElementById('newCureDuration').value;
+  const freq = document.getElementById('newCureFreq').value;
+
+  if (!peptide || !dosage || !startDate || !duration) {
+    showToast('⚠️ Remplir tous les champs');
+    return;
+  }
+
+  const cures = getLS('pt_cures', []);
+  cures.push({ id: Date.now().toString(), peptide, dosage, admin, startDate, duration, freq });
+  setLS('pt_cures', cures);
+
+  document.getElementById('addCureModal').classList.remove('open');
+  document.body.style.overflow = '';
+  showToast('✓ Cure démarrée !');
+  loadAll();
+}
+
+// ── LOAD ALL ──────────────────────────────────────────────────────────
+function loadAll() {
+  loadCureActive();
+  loadStats();
+  loadAlertes();
+}
+
+// Démo data si vide
+function initDemoData() {
+  if (getLS('pt_cures', []).length === 0) {
+    const start = new Date(TODAY);
+    start.setDate(start.getDate() - 17);
+    const cures = [{
+      id: 'demo1', peptide: 'BPC-157', dosage: '250 mcg',
+      admin: 'SC', startDate: start.toISOString().split('T')[0],
+      duration: '30', freq: '2'
+    }];
+    setLS('pt_cures', cures);
+    // logs des 17 derniers jours
+    const logs = [];
+    for (let i = 0; i < 17; i++) {
+      const d = new Date(start); d.setDate(d.getDate() + i);
+      const ds = d.toISOString().split('T')[0];
+      if (Math.random() > 0.1) { logs.push({ date: ds, slot: 0, time: '08:00', ts: Date.now() }); }
+      if (Math.random() > 0.15) { logs.push({ date: ds, slot: 1, time: '20:00', ts: Date.now() }); }
+    }
+    setLS('pt_logs_demo1', logs);
+  }
+  if (getLS('pt_weights', []).length === 0) {
+    const weights = [];
+    for (let i = 17; i >= 0; i--) {
+      const d = new Date(TODAY); d.setDate(d.getDate() - i);
+      weights.push({ date: d.toISOString().split('T')[0], kg: (83 - (17-i)*0.15 + (Math.random()-.4)*.3).toFixed(1) });
+    }
+    setLS('pt_weights', weights);
+  }
+  if (!getLS('pt_profil', null)) {
+    setLS('pt_profil', { prenom: 'Alexandre' });
+    document.getElementById('userName').textContent = 'Alexandre';
+  }
+}
+
+initDemoData();
+loadAll();
+</script>
+</body>
+</html>

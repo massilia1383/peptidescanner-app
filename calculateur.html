@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PeptideScanner — Calculateur de dosage</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0;
+    --accent:#0D9488; --accent2:#2B6CB0; --accent3:#F97316;
+    --text:#1F2937; --muted:#6B7280; --danger:#DC2626; --success:#10B981;
+    --nav-h:64px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
+
+  /* TOPBAR */
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; box-shadow:0 1px 8px rgba(0,0,0,.06); }
+  .topbar-logo { font-family:'Space Mono',monospace; font-size:.85rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
+  .logo-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
+  .topbar h1 { font-size:1rem; font-weight:700; }
+  .back-btn { background:transparent; border:1px solid var(--border); color:var(--muted); border-radius:8px; padding:6px 12px; font-family:inherit; font-size:.78rem; cursor:pointer; text-decoration:none; }
+
+  .content { padding:16px 20px 0; max-width:520px; margin:0 auto; }
+
+  /* WARNING BANNER */
+  .warning-banner {
+    background:rgba(220,38,38,.06); border:1.5px solid rgba(220,38,38,.2);
+    border-radius:14px; padding:14px 16px; margin-bottom:20px;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .warning-banner-icon { font-size:1.4rem; flex-shrink:0; }
+  .warning-banner-text { font-size:.78rem; line-height:1.6; color:var(--text); }
+  .warning-banner-text strong { color:var(--danger); display:block; margin-bottom:2px; }
+
+  /* TABS */
+  .module-tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:20px; scrollbar-width:none; }
+  .module-tabs::-webkit-scrollbar { display:none; }
+  .module-tab {
+    padding:8px 16px; border-radius:100px; border:1.5px solid var(--border);
+    background:var(--surface); color:var(--muted); font-size:.78rem; font-weight:600;
+    cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0;
+    font-family:inherit;
+  }
+  .module-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  /* MODULE PANELS */
+  .module-panel { display:none; }
+  .module-panel.active { display:block; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px;
+    color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:10px;
+  }
+
+  /* INPUT CARD */
+  .calc-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; padding:20px; margin-bottom:16px;
+    box-shadow:0 2px 12px rgba(0,0,0,.04);
+  }
+  .calc-card h3 { font-size:.95rem; font-weight:700; margin-bottom:4px; }
+  .calc-card p { font-size:.8rem; color:var(--muted); margin-bottom:16px; line-height:1.5; }
+
+  .form-group { margin-bottom:14px; }
+  .form-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; display:block; font-weight:600; }
+  .form-input {
+    width:100%; background:var(--surface2); border:1.5px solid var(--border);
+    border-radius:10px; padding:12px 14px; color:var(--text);
+    font-family:'Space Mono',monospace; font-size:1rem; font-weight:700;
+    outline:none; transition:border-color .2s;
+  }
+  .form-input:focus { border-color:var(--accent); background:#fff; }
+  .form-select {
+    width:100%; background:var(--surface2); border:1.5px solid var(--border);
+    border-radius:10px; padding:12px 14px; color:var(--text);
+    font-family:inherit; font-size:.9rem; outline:none; transition:border-color .2s;
+    cursor:pointer;
+  }
+  .form-select:focus { border-color:var(--accent); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* BAC WATER BUTTONS */
+  .bac-btns { display:flex; gap:8px; flex-wrap:wrap; }
+  .bac-btn {
+    padding:10px 16px; border-radius:10px; border:1.5px solid var(--border);
+    background:var(--surface2); color:var(--muted); font-family:'Space Mono',monospace;
+    font-size:.84rem; font-weight:700; cursor:pointer; transition:all .2s;
+  }
+  .bac-btn.selected { border-color:var(--accent2); background:rgba(43,108,176,.08); color:var(--accent2); }
+  .bac-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* RESULT CARD */
+  .result-card {
+    background:linear-gradient(135deg, rgba(13,148,136,.06), rgba(43,108,176,.04));
+    border:1.5px solid rgba(13,148,136,.25); border-radius:18px;
+    padding:20px; margin-bottom:16px; display:none;
+  }
+  .result-card.show { display:block; animation:fadeIn .3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .result-title { font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--accent); font-family:'Space Mono',monospace; margin-bottom:14px; }
+  .result-main {
+    display:flex; align-items:center; gap:16px; margin-bottom:16px;
+    padding:14px; background:var(--surface); border-radius:12px;
+    border:1px solid var(--border);
+  }
+  .result-val { font-family:'Space Mono',monospace; font-size:2rem; font-weight:700; color:var(--accent); line-height:1; }
+  .result-unit { font-size:.78rem; color:var(--muted); margin-top:3px; }
+  .result-formula { font-size:.8rem; color:var(--muted); font-family:'Space Mono',monospace; }
+  .result-formula strong { color:var(--accent2); }
+
+  /* SERINGUE ANIMÉE */
+  .syringe-section { margin-bottom:16px; }
+  .syringe-wrap {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; padding:20px;
+  }
+  .syringe-title { font-size:.88rem; font-weight:700; margin-bottom:4px; }
+  .syringe-sub { font-size:.75rem; color:var(--muted); margin-bottom:16px; line-height:1.5; }
+
+  .syringe-visual {
+    display:flex; align-items:center; gap:16px; margin-bottom:16px;
+  }
+  .syringe-svg-wrap { flex-shrink:0; }
+  .syringe-info { flex:1; }
+  .syringe-dose-display {
+    font-family:'Space Mono',monospace; font-size:1.6rem; font-weight:700;
+    color:var(--accent); margin-bottom:4px;
+  }
+  .syringe-dose-label { font-size:.72rem; color:var(--muted); margin-bottom:10px; }
+  .syringe-highlight {
+    background:rgba(43,108,176,.08); border:1px solid rgba(43,108,176,.2);
+    border-radius:10px; padding:10px 12px;
+  }
+  .syringe-highlight-val { font-family:'Space Mono',monospace; font-size:1.1rem; font-weight:700; color:var(--accent2); }
+  .syringe-highlight-label { font-size:.68rem; color:var(--muted); margin-top:2px; }
+
+  /* SVG SYRINGE */
+  .syringe-svg { width:60px; height:280px; }
+
+  /* DOSE TABLE */
+  .dose-table-wrap {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; overflow:hidden; margin-bottom:16px;
+  }
+  .dose-table-header { padding:14px 16px; border-bottom:1px solid var(--border); }
+  .dose-table-header h3 { font-size:.88rem; font-weight:700; }
+  .dose-table-header p { font-size:.75rem; color:var(--muted); margin-top:2px; }
+  table { width:100%; border-collapse:collapse; }
+  thead th {
+    padding:10px 14px; text-align:left; font-size:.68rem;
+    text-transform:uppercase; letter-spacing:.8px; color:var(--muted);
+    background:var(--surface2); border-bottom:1px solid var(--border);
+    font-family:'Space Mono',monospace;
+  }
+  tbody tr { border-bottom:1px solid rgba(226,232,240,.5); transition:background .15s; }
+  tbody tr:hover { background:rgba(13,148,136,.03); }
+  tbody tr.highlighted { background:rgba(13,148,136,.08); border-left:3px solid var(--accent); }
+  tbody td { padding:10px 14px; font-size:.84rem; }
+  tbody td:first-child { font-weight:600; }
+  tbody td.mono { font-family:'Space Mono',monospace; color:var(--accent2); }
+  tbody td.units { font-family:'Space Mono',monospace; font-weight:700; color:var(--accent); }
+
+  /* EXPLAINER */
+  .explainer-card {
+    background:rgba(43,108,176,.04); border:1px solid rgba(43,108,176,.15);
+    border-radius:14px; padding:16px; margin-bottom:12px;
+  }
+  .explainer-card h4 { font-size:.84rem; font-weight:700; color:var(--accent2); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .explainer-card p { font-size:.8rem; color:var(--muted); line-height:1.6; }
+  .explainer-card .formula {
+    font-family:'Space Mono',monospace; background:var(--surface2);
+    border-radius:8px; padding:10px 12px; margin-top:8px;
+    font-size:.82rem; color:var(--text); border:1px solid var(--border);
+  }
+  .explainer-card .formula strong { color:var(--accent); }
+
+  /* TITRATION TIMELINE */
+  .titration-wrap { margin-bottom:16px; }
+  .titration-step {
+    display:flex; gap:14px; margin-bottom:12px; position:relative;
+  }
+  .titration-step:not(:last-child)::after {
+    content:''; position:absolute; left:20px; top:44px; bottom:-12px;
+    width:2px; background:var(--border);
+  }
+  .step-num {
+    width:40px; height:40px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace; font-size:.88rem; font-weight:700;
+    z-index:1;
+  }
+  .step-content {
+    flex:1; background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:14px; margin-bottom:0;
+  }
+  .step-weeks { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; font-family:'Space Mono',monospace; }
+  .step-dose { font-family:'Space Mono',monospace; font-size:1.2rem; font-weight:700; margin-bottom:4px; }
+  .step-label { font-size:.78rem; font-weight:600; margin-bottom:4px; }
+  .step-expect { font-size:.75rem; color:var(--muted); line-height:1.5; }
+  .step-warning {
+    display:flex; align-items:center; gap:6px; margin-top:8px;
+    padding:6px 10px; background:rgba(249,115,22,.08);
+    border-radius:8px; border:1px solid rgba(249,115,22,.2);
+    font-size:.72rem; color:var(--accent3);
+  }
+
+  /* RECONSTITUTION STEPS */
+  .recon-step {
+    display:flex; gap:14px; margin-bottom:14px;
+  }
+  .recon-num {
+    width:32px; height:32px; border-radius:10px; flex-shrink:0;
+    background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.88rem; margin-top:2px;
+  }
+  .recon-content h4 { font-size:.88rem; font-weight:700; margin-bottom:4px; }
+  .recon-content p { font-size:.78rem; color:var(--muted); line-height:1.6; }
+  .recon-content .tip {
+    margin-top:6px; padding:6px 10px; border-radius:8px;
+    font-size:.72rem; display:flex; align-items:center; gap:5px;
+  }
+  .tip-green { background:rgba(16,185,129,.08); color:#059669; border:1px solid rgba(16,185,129,.2); }
+  .tip-red { background:rgba(220,38,38,.06); color:var(--danger); border:1px solid rgba(220,38,38,.15); }
+  .tip-blue { background:rgba(43,108,176,.06); color:var(--accent2); border:1px solid rgba(43,108,176,.15); }
+
+  /* MATERIEL GRID */
+  .materiel-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+  .materiel-item {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:12px; text-align:center;
+  }
+  .materiel-icon { font-size:1.6rem; margin-bottom:6px; }
+  .materiel-label { font-size:.72rem; font-weight:600; margin-bottom:2px; }
+  .materiel-desc { font-size:.65rem; color:var(--muted); line-height:1.3; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(255,255,255,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 8px; box-shadow:0 -2px 12px rgba(0,0,0,.06); }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 10px; border-radius:12px; cursor:pointer; text-decoration:none; color:var(--muted); transition:all .2s; min-width:48px; }
+  .nav-item.active { color:var(--accent); }
+  .nav-icon { font-size:1.2rem; line-height:1; }
+  .nav-label { font-size:.55rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
+  .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
+
+  /* CALC BTN */
+  .calc-btn {
+    width:100%; padding:13px; border-radius:12px; border:none;
+    background:var(--accent); color:#fff; font-family:inherit;
+    font-size:.95rem; font-weight:700; cursor:pointer; transition:all .2s;
+    margin-top:4px;
+  }
+  .calc-btn:hover { opacity:.9; transform:translateY(-1px); }
+
+  /* SAFETY CARD */
+  .safety-card {
+    background:rgba(220,38,38,.04); border:1.5px solid rgba(220,38,38,.15);
+    border-radius:14px; padding:16px; margin-bottom:12px;
+  }
+  .safety-card h4 { font-size:.86rem; font-weight:700; color:var(--danger); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .safety-item { display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; font-size:.78rem; color:var(--muted); line-height:1.5; }
+  .safety-item:last-child { margin-bottom:0; }
+  .safety-dot { width:6px; height:6px; border-radius:50%; background:var(--danger); flex-shrink:0; margin-top:5px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
+  <h1>Calculateur</h1>
+  <a href="dashboard.html" class="back-btn">← Retour</a>
+</div>
+
+<div class="content">
+
+  <!-- WARNING -->
+  <div class="warning-banner">
+    <div class="warning-banner-icon">⚠️</div>
+    <div class="warning-banner-text">
+      <strong>Usage éducatif uniquement</strong>
+      Ce calculateur est un outil d'information. Vérifiez toujours vos calculs avant toute injection. Consultez un professionnel de santé avant tout protocole. PeptideScanner décline toute responsabilité en cas d'erreur de dosage.
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="module-tabs">
+    <button class="module-tab active" onclick="switchModule('reconstitution',this)">🧪 Reconstitution</button>
+    <button class="module-tab" onclick="switchModule('dosage',this)">💉 Dosage</button>
+    <button class="module-tab" onclick="switchModule('titration',this)">📈 Titration</button>
+    <button class="module-tab" onclick="switchModule('guide',this)">📋 Guide injection</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MODULE 1 — RECONSTITUTION
+  ══════════════════════════════════════════ -->
+  <div class="module-panel active" id="panel-reconstitution">
+
+    <div class="section-title">Étape 1 — Calculer la concentration</div>
+
+    <div class="calc-card">
+      <h3>🧪 Reconstitution du flacon</h3>
+      <p>Entrez la quantité de peptide dans votre flacon et le volume d'eau bactériostatique que vous allez ajouter. Le calculateur fait le reste.</p>
+
+      <div class="form-group">
+        <label class="form-label">Quantité de peptide dans le flacon</label>
+        <div class="form-row">
+          <input class="form-input" id="peptideMg" type="number" placeholder="10" min="0.1" max="100" step="0.1" oninput="calculateReconstitution()">
+          <select class="form-select" id="peptideUnit" onchange="calculateReconstitution()">
+            <option value="mg">mg (milligrammes)</option>
+            <option value="mcg">mcg (microgrammes)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Volume d'eau bactériostatique à ajouter</label>
+        <div class="bac-btns" id="bacBtns">
+          <button class="bac-btn" onclick="selectBac(0.5,this)">0.5 mL</button>
+          <button class="bac-btn" onclick="selectBac(1,this)">1 mL</button>
+          <button class="bac-btn selected" onclick="selectBac(2,this)">2 mL</button>
+          <button class="bac-btn" onclick="selectBac(3,this)">3 mL</button>
+          <button class="bac-btn" onclick="selectBac(5,this)">5 mL</button>
+        </div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:.75rem;color:var(--muted)">Autre volume :</span>
+          <input class="form-input" id="bacCustom" type="number" placeholder="mL" min="0.1" max="10" step="0.1" style="width:100px;font-size:.84rem;padding:8px 10px" oninput="selectBacCustom(this.value)">
+          <span style="font-size:.75rem;color:var(--muted)">mL</span>
+        </div>
+      </div>
+
+      <!-- EXPLICATION POURQUOI LE VOLUME CHANGE TOUT -->
+      <div class="explainer-card">
+        <h4>💡 Pourquoi le volume d'eau est crucial</h4>
+        <p>Le même flacon de 10mg reconstitué avec <strong>1mL</strong> ou <strong>2mL</strong> donne une concentration différente — et donc un nombre d'unités différent pour la même dose !</p>
+        <div class="formula">
+          10mg + <strong>1mL</strong> = <strong>10 mg/mL</strong> → 1mg = 10 unités<br>
+          10mg + <strong>2mL</strong> = <strong>5 mg/mL</strong> → 1mg = 20 unités
+        </div>
+      </div>
+    </div>
+
+    <!-- RÉSULTAT RECONSTITUTION -->
+    <div class="result-card" id="recon-result">
+      <div class="result-title">✓ Résultat de la reconstitution</div>
+      <div class="result-main">
+        <div>
+          <div class="result-val" id="concentration-val">—</div>
+          <div class="result-unit">mg / mL</div>
+        </div>
+        <div class="result-formula" id="concentration-formula">—</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:var(--surface);border-radius:10px;padding:12px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Pour 1 mg</div>
+          <div style="font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--accent2)" id="units-per-mg">— unités</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:2px" id="ml-per-mg">— mL</div>
+        </div>
+        <div style="background:var(--surface);border-radius:10px;padding:12px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">1 unité =</div>
+          <div style="font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--accent3)" id="mcg-per-unit">— mcg</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:2px">par unité seringue</div>
+        </div>
+      </div>
+      <div style="background:rgba(13,148,136,.06);border-radius:10px;padding:10px 12px;font-size:.78rem;color:var(--text);border:1px solid rgba(13,148,136,.15)">
+        <strong style="color:var(--accent)">✓ Durée estimée du flacon :</strong> <span id="vial-duration">—</span>
+      </div>
+    </div>
+
+    <!-- TABLEAU DE RÉFÉRENCE -->
+    <div class="dose-table-wrap" id="recon-table" style="display:none">
+      <div class="dose-table-header">
+        <h3>📊 Tableau de référence rapide</h3>
+        <p id="table-subtitle">Seringue insuline U-100 (1mL = 100 unités)</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Dose</th>
+            <th>Volume (mL)</th>
+            <th>Unités seringue</th>
+            <th>Graduation</th>
+          </tr>
+        </thead>
+        <tbody id="dose-table-body"></tbody>
+      </table>
+    </div>
+
+    <!-- EXPLICATION SERINGUE -->
+    <div class="explainer-card">
+      <h4>💉 Comprendre la seringue insuline U-100</h4>
+      <p>Une seringue insuline U-100 contient <strong>1mL = 100 unités</strong>. Les graduations vont de 0 à 100. C'est le standard mondial pour les injections SC.</p>
+      <div class="formula">
+        Unités = Dose souhaitée (mg) ÷ Concentration (mg/mL) × <strong>100</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MODULE 2 — DOSAGE + SERINGUE ANIMÉE
+  ══════════════════════════════════════════ -->
+  <div class="module-panel" id="panel-dosage">
+
+    <div class="section-title">Calculer précisément votre dose</div>
+
+    <div class="calc-card">
+      <h3>💉 Calculateur de dose précise</h3>
+      <p>Entrez votre concentration (calculée dans l'onglet Reconstitution) et la dose souhaitée.</p>
+
+      <div class="form-group">
+        <label class="form-label">Concentration du flacon reconstitué</label>
+        <div class="form-row">
+          <input class="form-input" id="concInput" type="number" placeholder="5" min="0.01" max="100" step="0.01" oninput="calculateDosage()">
+          <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:'Space Mono',monospace;font-size:.88rem;color:var(--muted)">mg / mL</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Dose souhaitée</label>
+        <div class="form-row">
+          <input class="form-input" id="doseInput" type="number" placeholder="0.25" min="0.01" max="50" step="0.01" oninput="calculateDosage()">
+          <select class="form-select" id="doseUnit" onchange="calculateDosage()">
+            <option value="mg">mg</option>
+            <option value="mcg">mcg</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Type de seringue</label>
+        <select class="form-select" id="syringeType" onchange="calculateDosage()">
+          <option value="100">U-100 (1mL — 100 unités) — Standard</option>
+          <option value="50">U-50 (0.5mL — 50 unités)</option>
+          <option value="30">U-30 (0.3mL — 30 unités)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- RÉSULTAT + SERINGUE ANIMÉE -->
+    <div class="result-card" id="dosage-result">
+      <div class="result-title">✓ Résultat du dosage</div>
+
+      <div class="syringe-section">
+        <div class="syringe-wrap">
+          <div class="syringe-title">🩺 Seringue insuline — Position exacte</div>
+          <div class="syringe-sub">Le piston indique exactement où s'arrêter pour votre dose.</div>
+
+          <div class="syringe-visual">
+            <!-- SERINGUE SVG ANIMÉE -->
+            <div class="syringe-svg-wrap">
+              <svg class="syringe-svg" viewBox="0 0 60 280" id="syringeSVG">
+                <!-- Corps seringue -->
+                <rect x="20" y="20" width="20" height="220" rx="4" fill="#E8F4FD" stroke="#2B6CB0" stroke-width="1.5"/>
+
+                <!-- Graduations -->
+                <g id="graduations" fill="none" stroke="#6B7280" stroke-width="0.8">
+                  <!-- 10 unités -->
+                  <line x1="20" y1="42" x2="28" y2="42"/>
+                  <text x="17" y="45" font-size="6" fill="#6B7280" text-anchor="end" font-family="Space Mono">10</text>
+                  <!-- 20 -->
+                  <line x1="20" y1="64" x2="28" y2="64"/>
+                  <text x="17" y="67" font-size="6" fill="#6B7280" text-anchor="end" font-family="Space Mono">20</text>
+                  <!-- 30 -->
+                  <line x1="20" y1="86" x2="28" y2="86"/>
+                  <text x="17" y="89" font-size="6" fill="#6B7280" text-anchor="end" font-family="Space Mono">30</text>
+                  <!-- 40 -->
+                  <line x1="20" y1="108" x2="28" y2="108"/>
+                  <text x="17" y="111" font-size="6" fill="#6B7280" text-anchor="end" font-family="Space Mono">40</text>
+                  <!-- 50 -->
+                  <line x1="20" y1="130" x2="30" y2="130" stroke-width="1.2"/>
+                  <text x="17" y="133" font-size="7" fill="#1F2937" text-anchor="end" font-family="Space Mono" font-weight="bold">50</text>
+                  <!-- 60 -->
+                  <line x1="20" y1="152" x2="28" y2="152"/>
+                  <text x="17" y="155" font-size="6" fill="#6B7280" text-anchor="end" font-family="Space Mono">60</text>
+                  <!-- 70 -->
+                  <line x1="20" y1="174" x2="28" y2="174"/>
+                  <text x="17" y="177" font-size="6" fill="#6B7280" text-anchor="end" font-family="Space Mono">70</text>
+                  <!-- 80 -->
+                  <line x1="20" y1="196" x2="28" y2="196"/>
+                  <text x="17" y="199" font-size="6" fill="#6B7280" text-anchor="end" font-family="Space Mono">80</text>
+                  <!-- 90 -->
+                  <line x1="20" y1="218" x2="28" y2="218"/>
+                  <text x="17" y="221" font-size="6" fill="#6B7280" text-anchor="end" font-family="Space Mono">90</text>
+                  <!-- Sub-graduations (5 unités) -->
+                  <line x1="20" y1="31" x2="24" y2="31"/>
+                  <line x1="20" y1="53" x2="24" y2="53"/>
+                  <line x1="20" y1="75" x2="24" y2="75"/>
+                  <line x1="20" y1="97" x2="24" y2="97"/>
+                  <line x1="20" y1="119" x2="24" y2="119"/>
+                  <line x1="20" y1="141" x2="24" y2="141"/>
+                  <line x1="20" y1="163" x2="24" y2="163"/>
+                  <line x1="20" y1="185" x2="24" y2="185"/>
+                  <line x1="20" y1="207" x2="24" y2="207"/>
+                </g>
+
+                <!-- Zone liquide (animée) -->
+                <rect id="liquidFill" x="21" y="21" width="18" height="0" fill="rgba(13,148,136,.25)" rx="2"/>
+
+                <!-- Flèche indicatrice -->
+                <g id="doseArrow" transform="translate(0,0)" style="transition:transform .6s ease">
+                  <line x1="40" y1="21" x2="52" y2="21" stroke="#DC2626" stroke-width="2"/>
+                  <polygon points="40,18 40,24 35,21" fill="#DC2626"/>
+                  <text id="arrowLabel" x="54" y="25" font-size="7" fill="#DC2626" font-family="Space Mono" font-weight="bold">0U</text>
+                </g>
+
+                <!-- Piston -->
+                <rect id="piston" x="18" y="21" width="24" height="6" rx="2" fill="#2B6CB0" style="transition:transform .6s ease"/>
+                <rect x="26" y="10" width="8" height="15" rx="2" fill="#2B6CB0"/>
+                <rect x="22" y="8" width="16" height="5" rx="2" fill="#1E40AF"/>
+
+                <!-- Aiguille -->
+                <rect x="28" y="240" width="4" height="30" rx="2" fill="#94A3B8"/>
+                <polygon points="28,270 32,270 30,275" fill="#64748B"/>
+
+                <!-- Étiquette 0 et 100 -->
+                <text x="17" y="25" font-size="6" fill="#6B7280" text-anchor="end" font-family="Space Mono">0</text>
+                <text x="17" y="243" font-size="6" fill="#6B7280" text-anchor="end" font-family="Space Mono">100</text>
+                <line x1="20" y1="240" x2="30" y2="240" stroke="#6B7280" stroke-width="0.8"/>
+              </svg>
+            </div>
+
+            <div class="syringe-info">
+              <div class="syringe-dose-display" id="syringe-units-display">— U</div>
+              <div class="syringe-dose-label">unités sur la seringue</div>
+              <div class="syringe-highlight">
+                <div class="syringe-highlight-val" id="syringe-ml-display">— mL</div>
+                <div class="syringe-highlight-label">volume exact à prélever</div>
+              </div>
+              <div style="margin-top:10px;padding:8px;background:var(--surface2);border-radius:8px;font-size:.72rem;color:var(--muted);line-height:1.5" id="syringe-verify">
+                Entrez vos valeurs pour voir la seringue
+              </div>
+            </div>
+          </div>
+
+          <!-- INSTRUCTION CLAIRE -->
+          <div style="background:rgba(13,148,136,.06);border:1px solid rgba(13,148,136,.2);border-radius:10px;padding:12px;font-size:.8rem;line-height:1.6;color:var(--text)" id="syringe-instruction">
+            Remplissez les champs ci-dessus pour obtenir les instructions précises.
+          </div>
+        </div>
+      </div>
+
+      <!-- VÉRIFICATION -->
+      <div class="explainer-card" id="dosage-explainer" style="display:none">
+        <h4>🔢 Calcul détaillé</h4>
+        <div class="formula" id="dosage-formula-text">—</div>
+      </div>
+    </div>
+
+    <!-- SAFETY -->
+    <div class="safety-card">
+      <h4>🛑 Règles de sécurité absolues</h4>
+      <div class="safety-item"><div class="safety-dot"></div><span>Vérifiez TOUJOURS votre calcul deux fois avant d'injecter</span></div>
+      <div class="safety-item"><div class="safety-dot"></div><span>Si le résultat vous semble anormal, ne pas injecter — recalculez</span></div>
+      <div class="safety-item"><div class="safety-dot"></div><span>Commencez toujours avec la dose minimale recommandée</span></div>
+      <div class="safety-item"><div class="safety-dot"></div><span>Utilisez toujours une aiguille neuve à chaque injection</span></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MODULE 3 — TITRATION
+  ══════════════════════════════════════════ -->
+  <div class="module-panel" id="panel-titration">
+
+    <div class="section-title">Plan de titration progressive</div>
+
+    <div class="calc-card">
+      <h3>📈 Choisir votre peptide</h3>
+      <p>Sélectionnez votre peptide pour voir le plan de titration recommandé semaine par semaine.</p>
+      <select class="form-select" id="titrationPeptide" onchange="showTitration()">
+        <option value="">Choisir un peptide…</option>
+        <option value="semaglutide">Semaglutide (Ozempic/Wegovy)</option>
+        <option value="tirzepatide">Tirzepatide (Mounjaro)</option>
+        <option value="retatrutide">Retatrutide</option>
+        <option value="cjc_ipa">CJC-1295 + Ipamorelin</option>
+        <option value="bpc157">BPC-157</option>
+        <option value="tb500">TB-500</option>
+        <option value="epithalon">Epithalon</option>
+      </select>
+    </div>
+
+    <div id="titration-content" style="display:none">
+      <div class="titration-wrap" id="titration-steps"></div>
+      <div class="safety-card">
+        <h4>⚠️ Règles de titration</h4>
+        <div class="safety-item"><div class="safety-dot"></div><span>Ne jamais augmenter la dose si les effets secondaires sont importants</span></div>
+        <div class="safety-item"><div class="safety-dot"></div><span>Rester à la dose minimale efficace — plus haut n'est pas toujours mieux</span></div>
+        <div class="safety-item"><div class="safety-dot"></div><span>Consulter un médecin avant toute augmentation de dose</span></div>
+        <div class="safety-item"><div class="safety-dot"></div><span>En cas d'effets indésirables sévères — arrêter immédiatement</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MODULE 4 — GUIDE INJECTION
+  ══════════════════════════════════════════ -->
+  <div class="module-panel" id="panel-guide">
+
+    <div class="section-title">Guide d'injection pas à pas</div>
+
+    <!-- MATÉRIEL -->
+    <div class="calc-card">
+      <h3>🧰 Matériel nécessaire</h3>
+      <p>Préparez tout le matériel avant de commencer. Ne jamais improviser.</p>
+    </div>
+    <div class="materiel-grid">
+      <div class="materiel-item">
+        <div class="materiel-icon">💊</div>
+        <div class="materiel-label">Flacon peptide</div>
+        <div class="materiel-desc">Lyophilisé, poudre blanche</div>
+      </div>
+      <div class="materiel-item">
+        <div class="materiel-icon">💧</div>
+        <div class="materiel-label">Eau BAC</div>
+        <div class="materiel-desc">Bactériostatique stérile</div>
+      </div>
+      <div class="materiel-item">
+        <div class="materiel-icon">💉</div>
+        <div class="materiel-label">Seringue U-100</div>
+        <div class="materiel-desc">Insuline 1mL neuve</div>
+      </div>
+      <div class="materiel-item">
+        <div class="materiel-icon">🪡</div>
+        <div class="materiel-label">Aiguille stérile</div>
+        <div class="materiel-desc">29G-31G jetable</div>
+      </div>
+      <div class="materiel-item">
+        <div class="materiel-icon">🧴</div>
+        <div class="materiel-label">Alcool 70%</div>
+        <div class="materiel-desc">Tampons isopropylique</div>
+      </div>
+      <div class="materiel-item">
+        <div class="materiel-icon">🧤</div>
+        <div class="materiel-label">Gants nitrile</div>
+        <div class="materiel-desc">Ou lavage mains strict</div>
+      </div>
+    </div>
+
+    <!-- ÉTAPES -->
+    <div class="section-title">Étapes de reconstitution</div>
+
+    <div class="recon-step">
+      <div class="recon-num">1</div>
+      <div class="recon-content">
+        <h4>🧹 Désinfection des flacons</h4>
+        <p>Retirez les capuchons en aluminium des deux flacons (peptide et eau BAC). Désinfectez le bouchon en caoutchouc de chaque flacon avec un tampon alcoolisé. Laissez sécher 30 secondes.</p>
+        <div class="tip tip-red">🚫 Ne jamais toucher le bouchon après désinfection</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num">2</div>
+      <div class="recon-content">
+        <h4>💧 Prélever l'eau bactériostatique</h4>
+        <p>Insérez l'aiguille dans le flacon d'eau BAC. Aspirez lentement le volume calculé (0.5, 1, 2 ou 3 mL selon votre reconstitution). Vérifiez l'absence de bulles.</p>
+        <div class="tip tip-blue">💡 Calculez le volume exact dans l'onglet Reconstitution</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num">3</div>
+      <div class="recon-content">
+        <h4>🧪 Ajouter l'eau au peptide</h4>
+        <p>Insérez l'aiguille dans le flacon de peptide en inclinant légèrement. Injectez l'eau <strong>lentement contre la paroi du flacon</strong>. Ne jamais injecter directement sur la poudre.</p>
+        <div class="tip tip-red">🚫 Ne jamais injecter directement sur la poudre — projection contre la paroi obligatoire</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num">4</div>
+      <div class="recon-content">
+        <h4>🔄 Dissolution</h4>
+        <p>Retirez l'aiguille. Roulez doucement le flacon entre vos paumes pendant 30-60 secondes. Laissez reposer 5-15 minutes. La solution doit devenir parfaitement claire et transparente.</p>
+        <div class="tip tip-red">🚫 Ne jamais agiter vigoureusement — risque de dénaturation du peptide</div>
+        <div class="tip tip-green">✓ Solution claire = dissolution complète</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num">5</div>
+      <div class="recon-content">
+        <h4>📦 Stockage</h4>
+        <p>Réfrigérateur entre 2-8°C. Protéger de la lumière (envelopper dans du papier aluminium si nécessaire). Étiqueter avec la date de reconstitution.</p>
+        <div class="tip tip-blue">📅 Durée maximale après reconstitution : 30 jours au réfrigérateur</div>
+        <div class="tip tip-red">🚫 Ne jamais congeler après reconstitution</div>
+      </div>
+    </div>
+
+    <!-- GUIDE INJECTION SC -->
+    <div class="section-title" style="margin-top:8px">Guide d'injection sous-cutanée</div>
+
+    <div class="recon-step">
+      <div class="recon-num" style="background:var(--accent2)">6</div>
+      <div class="recon-content">
+        <h4>📍 Zone d'injection</h4>
+        <p>Zones recommandées : abdomen (2-5cm autour du nombril), cuisses externes, deltoïde. Alterner les zones à chaque injection pour éviter la lipodystrophie.</p>
+        <div class="tip tip-red">🚫 Éviter le nombril et les zones avec cicatrices</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num" style="background:var(--accent2)">7</div>
+      <div class="recon-content">
+        <h4>💉 Technique d'injection SC</h4>
+        <p>Pincez légèrement la peau entre pouce et index. Insérez l'aiguille à 45° (ou 90° si pli de peau suffisant). Injectez lentement et régulièrement. Retirez l'aiguille, relâchez la peau. Appuyez doucement avec un tampon propre.</p>
+        <div class="tip tip-green">✓ Injection lente = moins de douleur et meilleure absorption</div>
+        <div class="tip tip-red">🚫 Ne jamais injecter dans le muscle (injection IM différente)</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num" style="background:var(--accent2)">8</div>
+      <div class="recon-content">
+        <h4>🗑 Après l'injection</h4>
+        <p>Jetez l'aiguille immédiatement dans un conteneur pour objets tranchants (sharps container). Ne jamais recapuchonner l'aiguille. Ne jamais réutiliser une aiguille. Notez l'injection dans PeptideScanner.</p>
+        <div class="tip tip-blue">📱 Pensez à cocher votre injection dans l'app</div>
+      </div>
+    </div>
+
+    <!-- FINAL WARNING -->
+    <div class="warning-banner" style="margin-top:8px">
+      <div class="warning-banner-icon">⚕️</div>
+      <div class="warning-banner-text">
+        <strong>Information médicale importante</strong>
+        Ce guide est à titre éducatif uniquement. Toute injection doit être validée par un professionnel de santé. En cas de doute, ne pas procéder. PeptideScanner n'est pas responsable des erreurs de manipulation ou de dosage.
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /content -->
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
+  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label">Biblio</span></a>
+  <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span></a>
+  <a class="nav-item active" href="calculateur.html"><span class="nav-icon">🧮</span><span class="nav-label">Calcul</span><div class="nav-dot"></div></a>
+  <a class="nav-item" href="ia.html"><span class="nav-icon">🤖</span><span class="nav-label">IA</span></a>
+  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
+</nav>
+
+<script>
+// ── MODULE SWITCH ─────────────────────────────────────────────
+function switchModule(id, btn) {
+  document.querySelectorAll('.module-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.module-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── RECONSTITUTION ────────────────────────────────────────────
+let bacVolume = 2;
+
+function selectBac(vol, btn) {
+  bacVolume = vol;
+  document.querySelectorAll('.bac-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('bacCustom').value = '';
+  calculateReconstitution();
+}
+
+function selectBacCustom(val) {
+  bacVolume = parseFloat(val) || 2;
+  document.querySelectorAll('.bac-btn').forEach(b => b.classList.remove('selected'));
+  calculateReconstitution();
+}
+
+function calculateReconstitution() {
+  const mgInput = parseFloat(document.getElementById('peptideMg').value);
+  const unit = document.getElementById('peptideUnit').value;
+  if (!mgInput || mgInput <= 0) return;
+
+  const mgValue = unit === 'mcg' ? mgInput / 1000 : mgInput;
+  const concentration = mgValue / bacVolume; // mg/mL
+  const unitsPerMg = 100 / concentration; // unités U-100 pour 1mg
+  const mlPerMg = 1 / concentration;
+  const mcgPerUnit = (mgValue * 1000) / (concentration * 100);
+
+  // Afficher résultat
+  document.getElementById('concentration-val').textContent = concentration.toFixed(2);
+  document.getElementById('concentration-formula').innerHTML =
+    `<strong>${mgValue} mg</strong> ÷ <strong>${bacVolume} mL</strong> = ${concentration.toFixed(2)} mg/mL`;
+  document.getElementById('units-per-mg').textContent = unitsPerMg.toFixed(1) + ' unités';
+  document.getElementById('ml-per-mg').textContent = mlPerMg.toFixed(3) + ' mL';
+  document.getElementById('mcg-per-unit').textContent = mcgPerUnit.toFixed(1) + ' mcg';
+
+  // Durée estimée (dose moyenne 250mcg/j pour peptides SC)
+  const totalMcg = mgValue * 1000;
+  const avgDailyMcg = 500; // 2 injections de 250mcg
+  const days = Math.floor(totalMcg / avgDailyMcg);
+  document.getElementById('vial-duration').textContent = `environ ${days} jours à 500mcg/jour (2×250mcg)`;
+
+  document.getElementById('recon-result').classList.add('show');
+
+  // Générer tableau
+  generateDoseTable(concentration, mgValue);
+
+  // Pré-remplir l'onglet dosage
+  document.getElementById('concInput').value = concentration.toFixed(2);
+}
+
+function generateDoseTable(concentration, totalMg) {
+  const table = document.getElementById('dose-table-body');
+  const tableWrap = document.getElementById('recon-table');
+  document.getElementById('table-subtitle').textContent =
+    `Concentration : ${concentration.toFixed(2)} mg/mL — Seringue U-100`;
+
+  // Générer des doses pertinentes
+  const doses = [];
+  if (concentration >= 1) {
+    const steps = [0.1, 0.25, 0.5, 1, 2, 2.5, 5, 10];
+    steps.forEach(d => { if (d <= totalMg) doses.push(d); });
+  } else {
+    // Doses en mcg pour peptides faibles
+    const steps = [50, 100, 200, 250, 300, 500, 750, 1000];
+    steps.forEach(d => { if (d/1000 <= totalMg) doses.push(d/1000); });
+  }
+
+  table.innerHTML = doses.map(dose => {
+    const units = (dose / concentration * 100).toFixed(1);
+    const ml = (dose / concentration).toFixed(3);
+    const isStandard = parseFloat(units) >= 5 && parseFloat(units) <= 50;
+    const displayDose = dose < 1 ? (dose * 1000).toFixed(0) + ' mcg' : dose + ' mg';
+    return `<tr class="${isStandard ? 'highlighted' : ''}">
+      <td>${displayDose}</td>
+      <td class="mono">${ml} mL</td>
+      <td class="units">${units} U</td>
+      <td style="font-size:.75rem;color:var(--muted)">Graduation ${Math.round(parseFloat(units))}</td>
+    </tr>`;
+  }).join('');
+
+  tableWrap.style.display = 'block';
+}
+
+// ── DOSAGE + SERINGUE ANIMÉE ──────────────────────────────────
+function calculateDosage() {
+  const concRaw = parseFloat(document.getElementById('concInput').value);
+  const doseRaw = parseFloat(document.getElementById('doseInput').value);
+  const doseUnit = document.getElementById('doseUnit').value;
+  const syringeMax = parseInt(document.getElementById('syringeType').value);
+
+  if (!concRaw || !doseRaw || concRaw <= 0 || doseRaw <= 0) return;
+
+  const doseMg = doseUnit === 'mcg' ? doseRaw / 1000 : doseRaw;
+  const volumeMl = doseMg / concRaw;
+  const units = volumeMl * 100; // U-100
+
+  // Vérification
+  if (units > syringeMax) {
+    document.getElementById('syringe-instruction').innerHTML =
+      `<span style="color:var(--danger)">⚠️ Cette dose dépasse la capacité de la seringue (${syringeMax} unités). Utilisez une seringue plus grande ou divisez la dose.</span>`;
+    return;
+  }
+
+  // Mettre à jour les affichages
+  document.getElementById('syringe-units-display').textContent = units.toFixed(1) + ' U';
+  document.getElementById('syringe-ml-display').textContent = volumeMl.toFixed(3) + ' mL';
+  document.getElementById('syringe-verify').innerHTML =
+    `<strong style="color:var(--accent)">Vérification :</strong> ${doseMg < 1 ? (doseMg*1000).toFixed(0)+'mcg' : doseMg+'mg'} ÷ ${concRaw} mg/mL × 100 = <strong>${units.toFixed(1)} unités</strong>`;
+
+  // Instruction claire
+  document.getElementById('syringe-instruction').innerHTML =
+    `<strong style="color:var(--accent)">→ Remplissez jusqu'à la graduation ${Math.round(units)}</strong><br>
+    Volume exact : ${volumeMl.toFixed(3)} mL · ${units.toFixed(1)} unités sur seringue U-100`;
+
+  // Animer la seringue
+  animateSyringe(units, syringeMax);
+
+  // Afficher explainer
+  const explainer = document.getElementById('dosage-explainer');
+  const formula = document.getElementById('dosage-formula-text');
+  formula.innerHTML = `
+    Dose : <strong>${doseUnit === 'mcg' ? doseRaw + ' mcg' : doseRaw + ' mg'}</strong> (= ${doseMg.toFixed(4)} mg)<br>
+    Concentration : <strong>${concRaw} mg/mL</strong><br>
+    Volume = ${doseMg.toFixed(4)} ÷ ${concRaw} = <strong>${volumeMl.toFixed(4)} mL</strong><br>
+    Unités = ${volumeMl.toFixed(4)} × 100 = <strong>${units.toFixed(1)} unités U-100</strong>
+  `;
+  explainer.style.display = 'block';
+  document.getElementById('dosage-result').classList.add('show');
+}
+
+function animateSyringe(units, maxUnits) {
+  // La seringue va de 0 (haut=unité 0) à 100 (bas=unité 100)
+  // Hauteur totale du corps = 220px (y:20 à y:240)
+  const totalHeight = 220;
+  const pctFilled = units / 100;
+  const fillHeight = totalHeight * pctFilled;
+  const pistonY = 20 + fillHeight;
+
+  // Animer le liquide
+  const liquid = document.getElementById('liquidFill');
+  liquid.setAttribute('y', String(20));
+  liquid.setAttribute('height', String(fillHeight));
+  liquid.style.transition = 'height .6s ease';
+
+  // Déplacer le piston
+  const piston = document.getElementById('piston');
+  piston.style.transform = `translateY(${fillHeight}px)`;
+
+  // Déplacer la flèche
+  const arrow = document.getElementById('doseArrow');
+  arrow.style.transform = `translateY(${fillHeight}px)`;
+
+  // Mettre à jour le label de la flèche
+  document.getElementById('arrowLabel').textContent = Math.round(units) + 'U';
+}
+
+// ── TITRATION ─────────────────────────────────────────────────
+const TITRATIONS = {
+  semaglutide: {
+    name: 'Semaglutide',
+    steps: [
+      { weeks:'S1–4', dose:'0.25 mg', freq:'1×/semaine', label:'Phase d\'adaptation', expect:'Légères nausées possibles, ↓ appétit début', color:'#0D9488', warn:null },
+      { weeks:'S5–8', dose:'0.5 mg', freq:'1×/semaine', label:'Augmentation progressive', expect:'Réduction de l\'appétit marquée, premières pertes de poids', color:'#0D9488', warn:'Si nausées persistantes — rester à 0.25mg' },
+      { weeks:'S9–12', dose:'1 mg', freq:'1×/semaine', label:'Dose efficace', expect:'Perte de poids régulière, ↓ glycémie', color:'#2B6CB0', warn:null },
+      { weeks:'S13–16', dose:'1.7 mg', freq:'1×/semaine', label:'Dose avancée', expect:'Perte de poids accélérée, effets métaboliques marqués', color:'#2B6CB0', warn:'Uniquement si 1mg bien toléré' },
+      { weeks:'S17+', dose:'2.4 mg', freq:'1×/semaine', label:'Dose maximale', expect:'Effet maximal — dose approuvée FDA pour l\'obésité', color:'#F97316', warn:'⚠️ Dose max approuvée — Ne pas dépasser' },
+    ]
+  },
+  tirzepatide: {
+    name: 'Tirzepatide',
+    steps: [
+      { weeks:'S1–4', dose:'2.5 mg', freq:'1×/semaine', label:'Phase d\'adaptation', expect:'Nausées légères, prise en main du protocole', color:'#0D9488', warn:null },
+      { weeks:'S5–8', dose:'5 mg', freq:'1×/semaine', label:'Montée progressive', expect:'↓ Appétit significatif, perte de poids visible', color:'#0D9488', warn:null },
+      { weeks:'S9–12', dose:'7.5 mg', freq:'1×/semaine', label:'Dose efficace', expect:'Perte de poids rapide, amélioration glycémie', color:'#2B6CB0', warn:'Évaluer la tolérance avant d\'augmenter' },
+      { weeks:'S13–16', dose:'10 mg', freq:'1×/semaine', label:'Dose avancée', expect:'Effets maximaux sur la composition corporelle', color:'#2B6CB0', warn:null },
+      { weeks:'S17–20', dose:'12.5 mg', freq:'1×/semaine', label:'Dose haute', expect:'Résultats optimaux pour la plupart des patients', color:'#F97316', warn:'⚠️ Uniquement si doses précédentes bien tolérées' },
+      { weeks:'S21+', dose:'15 mg', freq:'1×/semaine', label:'Dose maximale', expect:'Dose maximale approuvée — maintenir si bien toléré', color:'#DC2626', warn:'⚠️ Dose maximale — Ne jamais dépasser' },
+    ]
+  },
+  retatrutide: {
+    name: 'Retatrutide',
+    steps: [
+      { weeks:'S1–4', dose:'1 mg', freq:'1×/semaine', label:'Adaptation', expect:'Nausées légères, habituation du corps', color:'#0D9488', warn:'Peptide expérimental — phase 3 clinique' },
+      { weeks:'S5–8', dose:'2 mg', freq:'1×/semaine', label:'↓ Appétit', expect:'Réduction de l\'appétit nette, perte de poids début', color:'#0D9488', warn:null },
+      { weeks:'S9–12', dose:'4 mg', freq:'1×/semaine', label:'Perte de graisse', expect:'Perte de graisse viscérale visible, énergie améliorée', color:'#2B6CB0', warn:null },
+      { weeks:'S13–16', dose:'8 mg', freq:'1×/semaine', label:'Perte majeure', expect:'Perte de poids significative, remodelage corporel', color:'#F97316', warn:'Surveiller fréquence cardiaque (max 100 bpm repos)' },
+      { weeks:'S17+', dose:'12 mg', freq:'1×/semaine', label:'Effet maximal', expect:'Résultats maximaux des études cliniques de phase 2', color:'#DC2626', warn:'⚠️ Non approuvé — Recherche uniquement. Suivi médical obligatoire' },
+    ]
+  },
+  cjc_ipa: {
+    name: 'CJC-1295 + Ipamorelin',
+    steps: [
+      { weeks:'S1–2', dose:'100mcg + 100mcg', freq:'2×/jour', label:'Introduction', expect:'Adaptation, flush léger possible, meilleur sommeil dès J3-5', color:'#0D9488', warn:null },
+      { weeks:'S3–8', dose:'100mcg + 200mcg', freq:'2-3×/jour', label:'Phase efficace', expect:'↑ GH nocturne, récupération améliorée, composition corporelle', color:'#0D9488', warn:'Respecter 2h de jeun avant injection' },
+      { weeks:'S9–12', dose:'100mcg + 300mcg', freq:'3×/jour', label:'Dose optimale', expect:'Effets maximaux GH, lipolyse, sommeil profond', color:'#2B6CB0', warn:'Vérifier IGF-1 à J30' },
+      { weeks:'S13+', dose:'Pause 4 semaines', freq:'OFF', label:'Cycle OFF obligatoire', expect:'Permettre la récupération de l\'axe GH naturel', color:'#F97316', warn:'⚠️ Ne pas utiliser en continu sans pause' },
+    ]
+  },
+  bpc157: {
+    name: 'BPC-157',
+    steps: [
+      { weeks:'S1–2', dose:'250 mcg', freq:'2×/jour', label:'Introduction', expect:'Premiers effets anti-inflammatoires, réduction douleur J5-10', color:'#0D9488', warn:null },
+      { weeks:'S3–8', dose:'250–500 mcg', freq:'2×/jour', label:'Phase thérapeutique', expect:'Régénération tissulaire, cicatrisation, protection gastrique', color:'#0D9488', warn:'Injecter près de la zone à traiter' },
+      { weeks:'S9–12', dose:'250 mcg', freq:'1×/jour', label:'Entretien', expect:'Maintien des effets, consolidation de la guérison', color:'#2B6CB0', warn:null },
+    ]
+  },
+  tb500: {
+    name: 'TB-500',
+    steps: [
+      { weeks:'S1–6', dose:'2–2.5 mg', freq:'2×/semaine', label:'Phase de charge', expect:'Régénération systémique, flexibilité améliorée, réduction fibrose', color:'#0D9488', warn:null },
+      { weeks:'S7–12', dose:'1–1.5 mg', freq:'1×/semaine', label:'Phase entretien', expect:'Maintien des effets, prévention blessures récurrentes', color:'#2B6CB0', warn:'Stack avec BPC-157 pour synergie optimale' },
+    ]
+  },
+  epithalon: {
+    name: 'Epithalon',
+    steps: [
+      { weeks:'J1–10', dose:'5–10 mg', freq:'1×/jour · 10 jours', label:'Cure intensive', expect:'Allongement des télomères, amélioration sommeil, énergie', color:'#0D9488', warn:null },
+      { weeks:'Pause 6 mois', dose:'—', freq:'OFF', label:'Pause obligatoire', expect:'Laisser le temps aux télomères de se consolider', color:'#F97316', warn:'Ne pas répéter avant 6 mois' },
+      { weeks:'2ème cure', dose:'5–10 mg', freq:'1×/jour · 10 jours', label:'2ème cure annuelle', expect:'Renforcement des effets anti-âge cumulatifs', color:'#2B6CB0', warn:'Maximum 2 cures par an' },
+    ]
+  }
+};
+
+function showTitration() {
+  const peptide = document.getElementById('titrationPeptide').value;
+  const content = document.getElementById('titration-content');
+  if (!peptide) { content.style.display = 'none'; return; }
+
+  const data = TITRATIONS[peptide];
+  if (!data) return;
+
+  const stepsHtml = data.steps.map((step, i) => `
+    <div class="titration-step">
+      <div class="step-num" style="background:${step.color};color:#fff">${i+1}</div>
+      <div class="step-content">
+        <div class="step-weeks">${step.weeks}</div>
+        <div class="step-dose" style="color:${step.color}">${step.dose}</div>
+        <div class="step-label">${step.label} · ${step.freq}</div>
+        <div class="step-expect">→ ${step.expect}</div>
+        ${step.warn ? `<div class="step-warning">⚠️ ${step.warn}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('titration-steps').innerHTML = stepsHtml;
+  content.style.display = 'block';
+  content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Init
+document.getElementById('peptideMg').value = '10';
+calculateReconstitution();
+</script>
+</body>
+</html>

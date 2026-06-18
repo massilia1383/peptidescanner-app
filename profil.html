@@ -145,6 +145,7 @@
 
   <!-- DANGER -->
   <div class="section-label">Zone de danger</div>
+  <button class="danger-btn" onclick="logout()" style="border-color:rgba(43,108,176,.3);background:rgba(43,108,176,.06);color:#2B6CB0">🚪 Se déconnecter</button>
   <button class="danger-btn" onclick="resetData()">🗑 Supprimer toutes mes données</button>
 
   <div style="text-align:center;padding:20px 0;color:var(--border);font-size:.72rem;font-family:'Space Mono',monospace">
@@ -266,6 +267,13 @@ function exportData(){
   a.download='peptidescanner-export-'+new Date().toISOString().split('T')[0]+'.json';
   a.click();
   showToast('✓ Données exportées');
+}
+
+function logout(){
+  if(!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) return;
+  localStorage.removeItem('pt_session');
+  localStorage.removeItem('pt_profil');
+  window.location.href='login.html';
 }
 
 function resetData(){

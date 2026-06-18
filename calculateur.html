@@ -302,6 +302,79 @@
   .nav-label { font-size:.55rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
   .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
 
+  /* ── MODALE AVERTISSEMENT DOSE HAUTE ── */
+  .modal-overlay {
+    position:fixed; inset:0; z-index:500;
+    background:rgba(0,0,0,.45); backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; opacity:0; pointer-events:none;
+    transition:opacity .25s;
+  }
+  .modal-overlay.show { opacity:1; pointer-events:all; }
+  .modal-box {
+    background:var(--surface); border-radius:22px;
+    padding:24px 22px; max-width:360px; width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,.18);
+    transform:scale(.95); transition:transform .25s;
+    border:1.5px solid rgba(220,38,38,.2);
+  }
+  .modal-overlay.show .modal-box { transform:scale(1); }
+  .modal-icon { font-size:2.4rem; text-align:center; margin-bottom:12px; }
+  .modal-title { font-size:1rem; font-weight:700; text-align:center; margin-bottom:6px; color:var(--danger); }
+  .modal-sub { font-size:.8rem; color:var(--muted); text-align:center; line-height:1.6; margin-bottom:18px; }
+  .modal-dose-badge {
+    background:rgba(220,38,38,.07); border:1px solid rgba(220,38,38,.2);
+    border-radius:12px; padding:12px 16px; margin-bottom:18px; text-align:center;
+  }
+  .modal-dose-val { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--danger); }
+  .modal-dose-label { font-size:.7rem; color:var(--muted); margin-top:3px; }
+  .modal-btns { display:flex; flex-direction:column; gap:10px; }
+  .modal-btn-confirm {
+    width:100%; padding:13px; border-radius:12px; border:none;
+    background:var(--danger); color:#fff; font-family:inherit;
+    font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s;
+  }
+  .modal-btn-confirm:hover { opacity:.88; }
+  .modal-btn-cancel {
+    width:100%; padding:12px; border-radius:12px;
+    border:1.5px solid var(--border); background:transparent;
+    color:var(--muted); font-family:inherit; font-size:.88rem;
+    font-weight:600; cursor:pointer; transition:all .2s;
+  }
+  .modal-btn-cancel:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── SPLIT DOSE ── */
+  .split-dose-card {
+    background:rgba(43,108,176,.05); border:1.5px solid rgba(43,108,176,.2);
+    border-radius:16px; padding:16px; margin-top:12px; display:none;
+  }
+  .split-dose-card.show { display:block; animation:fadeIn .3s ease; }
+  .split-dose-title { font-size:.8rem; font-weight:700; color:var(--accent2); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+  .split-draw {
+    display:flex; align-items:center; gap:12px;
+    background:var(--surface); border-radius:10px;
+    padding:10px 14px; margin-bottom:8px;
+    border:1px solid var(--border);
+  }
+  .split-draw:last-child { margin-bottom:0; }
+  .split-draw-num {
+    width:28px; height:28px; border-radius:8px; background:var(--accent2);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.82rem; flex-shrink:0;
+  }
+  .split-draw-info { flex:1; }
+  .split-draw-val { font-family:'Space Mono',monospace; font-size:.95rem; font-weight:700; color:var(--accent2); }
+  .split-draw-label { font-size:.68rem; color:var(--muted); margin-top:2px; }
+
+  /* ── SÉLECTION AUTO SERINGUE ── */
+  .syringe-auto-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    background:rgba(13,148,136,.1); border:1px solid rgba(13,148,136,.25);
+    border-radius:100px; padding:3px 10px; font-size:.68rem;
+    font-weight:700; color:var(--accent); margin-left:8px;
+    font-family:'Space Mono',monospace;
+  }
+
   /* CALC BTN */
   .calc-btn {
     width:100%; padding:13px; border-radius:12px; border:none;
@@ -606,11 +679,11 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Type de seringue</label>
+        <label class="form-label">Type de seringue <span class="syringe-auto-badge" id="autoSyringeBadge" style="display:none">✓ Auto-sélectionnée</span></label>
         <select class="form-select" id="syringeType" onchange="calculateDosage()">
-          <option value="100">U-100 (1mL — 100 unités) — Standard</option>
-          <option value="50">U-50 (0.5mL — 50 unités)</option>
           <option value="30">U-30 (0.3mL — 30 unités)</option>
+          <option value="50">U-50 (0.5mL — 50 unités)</option>
+          <option value="100" selected>U-100 (1mL — 100 unités) — Standard</option>
         </select>
       </div>
     </div>
@@ -795,6 +868,12 @@
           <!-- INSTRUCTION CLAIRE -->
           <div style="background:rgba(13,148,136,.06);border:1px solid rgba(13,148,136,.18);border-radius:12px;padding:12px 14px;font-size:.8rem;line-height:1.6;color:var(--text)" id="syringe-instruction">
             Remplissez les champs ci-dessus pour obtenir les instructions précises.
+          </div>
+
+          <!-- SPLIT DOSE -->
+          <div class="split-dose-card" id="splitDoseCard">
+            <div class="split-dose-title">✂️ Diviser la dose en plusieurs tirages</div>
+            <div id="splitDoseDraws"></div>
           </div>
         </div>
       </div>
@@ -1000,6 +1079,23 @@
   <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
 </nav>
 
+<!-- ── MODALE DOSE HAUTE ── -->
+<div class="modal-overlay" id="highDoseModal">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Dose élevée détectée</div>
+    <div class="modal-sub">Cette dose dépasse 0,5 mL — vérifiez votre calcul avant de continuer.</div>
+    <div class="modal-dose-badge">
+      <div class="modal-dose-val" id="modalDoseVal">— mL</div>
+      <div class="modal-dose-label">volume à prélever</div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-confirm" onclick="confirmHighDose()">J'ai vérifié — continuer quand même</button>
+      <button class="modal-btn-cancel" onclick="cancelHighDose()">← Recalculer ma dose</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── MODULE SWITCH ─────────────────────────────────────────────
 function switchModule(id, btn) {
@@ -1196,11 +1292,12 @@ function selectReconDose(units, ml, doseLabel) {
 })();
 
 // ── DOSAGE + SERINGUE ANIMÉE ──────────────────────────────────
+let _pendingDosageResult = null; // stocke le résultat en attente de confirmation modale
+
 function calculateDosage() {
   const concRaw = parseFloat(document.getElementById('concInput').value);
   const doseRaw = parseFloat(document.getElementById('doseInput').value);
   const doseUnit = document.getElementById('doseUnit').value;
-  const syringeMax = parseInt(document.getElementById('syringeType').value);
 
   if (!concRaw || !doseRaw || concRaw <= 0 || doseRaw <= 0) return;
 
@@ -1208,29 +1305,70 @@ function calculateDosage() {
   const volumeMl = doseMg / concRaw;
   const units = volumeMl * 100; // U-100
 
-  // Vérification
+  // ── 1. SÉLECTION AUTO DE LA PLUS PETITE SERINGUE ──
+  const syringeSelect = document.getElementById('syringeType');
+  const badge = document.getElementById('autoSyringeBadge');
+  let autoSelected = false;
+
+  // Seringues disponibles par ordre croissant
+  const syringes = [
+    { val: '30', maxMl: 0.3 },
+    { val: '50', maxMl: 0.5 },
+    { val: '100', maxMl: 1.0 }
+  ];
+  const bestSyringe = syringes.find(s => volumeMl <= s.maxMl);
+
+  if (bestSyringe && syringeSelect.value !== bestSyringe.val) {
+    syringeSelect.value = bestSyringe.val;
+    badge.style.display = 'inline-flex';
+    autoSelected = true;
+  } else {
+    badge.style.display = 'none';
+  }
+
+  const syringeMax = parseInt(syringeSelect.value);
+
+  // ── 2. SPLIT-DOSE si dépasse la seringue choisie ──
   if (units > syringeMax) {
+    const numDraws = Math.ceil(units / syringeMax);
+    const unitsPerDraw = units / numDraws;
+    const mlPerDraw = volumeMl / numDraws;
+    showSplitDose(numDraws, unitsPerDraw, mlPerDraw, units, volumeMl);
     document.getElementById('syringe-instruction').innerHTML =
-      `<span style="color:var(--danger)">⚠️ Cette dose dépasse la capacité de la seringue (${syringeMax} unités). Utilisez une seringue plus grande ou divisez la dose.</span>`;
+      `<span style="color:var(--accent2)">✂️ Dose divisée en <strong>${numDraws} tirages</strong> de ${unitsPerDraw.toFixed(1)}U chacun — voir ci-dessous</span>`;
+    document.getElementById('dosage-result').classList.add('show');
+    animateSyringe(unitsPerDraw, syringeMax);
+    document.getElementById('syringe-units-display').textContent = unitsPerDraw.toFixed(1) + ' U';
+    document.getElementById('syringe-ml-display').textContent = mlPerDraw.toFixed(3) + ' mL';
     return;
   }
 
-  // Mettre à jour les affichages
+  // Cacher split-dose si plus nécessaire
+  document.getElementById('splitDoseCard').classList.remove('show');
+
+  // ── 3. MODALE si volume > 0.5 mL ──
+  if (volumeMl > 0.5) {
+    _pendingDosageResult = { units, syringeMax, volumeMl, doseMg, doseRaw, doseUnit, concRaw };
+    document.getElementById('modalDoseVal').textContent = volumeMl.toFixed(3) + ' mL';
+    document.getElementById('highDoseModal').classList.add('show');
+    return;
+  }
+
+  // ── Affichage normal ──
+  applyDosageResult({ units, syringeMax, volumeMl, doseMg, doseRaw, doseUnit, concRaw });
+}
+
+function applyDosageResult({ units, syringeMax, volumeMl, doseMg, doseRaw, doseUnit, concRaw }) {
   document.getElementById('syringe-units-display').textContent = units.toFixed(1) + ' U';
   document.getElementById('syringe-ml-display').textContent = volumeMl.toFixed(3) + ' mL';
   document.getElementById('syringe-verify').innerHTML =
     `<strong style="color:var(--accent)">Vérification :</strong> ${doseMg < 1 ? (doseMg*1000).toFixed(0)+'mcg' : doseMg+'mg'} ÷ ${concRaw} mg/mL × 100 = <strong>${units.toFixed(1)} unités</strong>`;
-
-  // Instruction claire
   document.getElementById('syringe-instruction').innerHTML =
     `<strong style="color:var(--accent)">→ Remplissez jusqu'à la graduation ${Math.round(units)}</strong><br>
     Volume exact : ${volumeMl.toFixed(3)} mL · ${units.toFixed(1)} unités sur seringue U-100`;
-
-  // Animer la seringue
+  document.getElementById('splitDoseCard').classList.remove('show');
   animateSyringe(units, syringeMax);
 
-  // Afficher explainer
-  const explainer = document.getElementById('dosage-explainer');
   const formula = document.getElementById('dosage-formula-text');
   formula.innerHTML = `
     Dose : <strong>${doseUnit === 'mcg' ? doseRaw + ' mcg' : doseRaw + ' mg'}</strong> (= ${doseMg.toFixed(4)} mg)<br>
@@ -1238,8 +1376,42 @@ function calculateDosage() {
     Volume = ${doseMg.toFixed(4)} ÷ ${concRaw} = <strong>${volumeMl.toFixed(4)} mL</strong><br>
     Unités = ${volumeMl.toFixed(4)} × 100 = <strong>${units.toFixed(1)} unités U-100</strong>
   `;
-  explainer.style.display = 'block';
+  document.getElementById('dosage-explainer').style.display = 'block';
   document.getElementById('dosage-result').classList.add('show');
+}
+
+function showSplitDose(numDraws, unitsPerDraw, mlPerDraw, totalUnits, totalMl) {
+  const card = document.getElementById('splitDoseCard');
+  const draws = document.getElementById('splitDoseDraws');
+  let html = '';
+  for (let i = 1; i <= numDraws; i++) {
+    html += `<div class="split-draw">
+      <div class="split-draw-num">${i}</div>
+      <div class="split-draw-info">
+        <div class="split-draw-val">${unitsPerDraw.toFixed(1)} U · ${mlPerDraw.toFixed(3)} mL</div>
+        <div class="split-draw-label">Tirage ${i}/${numDraws} — graduation ${Math.round(unitsPerDraw)}</div>
+      </div>
+    </div>`;
+  }
+  html += `<div style="margin-top:10px;font-size:.72rem;color:var(--muted);text-align:center">
+    Total : ${totalUnits.toFixed(1)} unités · ${totalMl.toFixed(3)} mL en ${numDraws} tirages
+  </div>`;
+  draws.innerHTML = html;
+  card.classList.add('show');
+}
+
+function confirmHighDose() {
+  document.getElementById('highDoseModal').classList.remove('show');
+  if (_pendingDosageResult) {
+    applyDosageResult(_pendingDosageResult);
+    _pendingDosageResult = null;
+  }
+}
+
+function cancelHighDose() {
+  document.getElementById('highDoseModal').classList.remove('show');
+  _pendingDosageResult = null;
+  document.getElementById('doseInput').focus();
 }
 
 function animateSyringe(units, maxUnits) {

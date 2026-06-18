@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PeptideScanner — Mentions Légales</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg:#0A0F1E; --surface:#111827; --surface2:#1A2235; --border:#1E2D45;
+    --accent:#00C9A7; --accent2:#6366F1; --accent3:#F59E0B;
+    --text:#E8F0FE; --muted:#6B7A99;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:rgba(10,15,30,.97); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; backdrop-filter:blur(12px); }
+  .logo { font-family:'Space Mono',monospace; font-size:.95rem; font-weight:700; color:var(--accent); }
+  .back-link { font-size:.82rem; color:var(--muted); text-decoration:none; transition:color .2s; }
+  .back-link:hover { color:var(--accent); }
+
+  .container { max-width:720px; margin:0 auto; padding:40px 24px 80px; }
+
+  .doc-header { margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  .doc-badge { display:inline-block; padding:4px 12px; border-radius:100px; background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.2); font-size:.72rem; font-weight:700; color:var(--accent3); font-family:'Space Mono',monospace; margin-bottom:14px; }
+  .doc-title { font-size:2rem; font-weight:700; margin-bottom:8px; }
+  .doc-meta { font-size:.82rem; color:var(--muted); }
+
+  .section { margin-bottom:36px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; }
+  .section h2 { font-size:.9rem; font-weight:700; margin-bottom:16px; color:var(--accent); font-family:'Space Mono',monospace; text-transform:uppercase; letter-spacing:1px; }
+  .info-row { display:flex; gap:16px; padding:8px 0; border-bottom:1px solid rgba(30,45,69,.5); }
+  .info-row:last-child { border-bottom:none; padding-bottom:0; }
+  .info-key { font-size:.82rem; color:var(--muted); min-width:160px; flex-shrink:0; }
+  .info-val { font-size:.82rem; color:var(--text); font-weight:500; }
+  .info-val a { color:var(--accent); text-decoration:none; }
+
+  .disclaimer-box { background:rgba(245,158,11,.06); border:1px solid rgba(245,158,11,.2); border-radius:12px; padding:16px 18px; margin-bottom:24px; }
+  .disclaimer-box p { font-size:.84rem; color:var(--text); line-height:1.6; margin-bottom:8px; }
+  .disclaimer-box p:last-child { margin-bottom:0; color:var(--muted); font-size:.78rem; }
+
+  .footer-legal { border-top:1px solid var(--border); padding-top:24px; margin-top:40px; font-size:.78rem; color:var(--muted); text-align:center; }
+  .legal-nav { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
+  .legal-nav a { font-size:.8rem; color:var(--muted); text-decoration:none; transition:color .2s; }
+  .legal-nav a:hover { color:var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">PeptideScanner</div>
+  <a href="dashboard.html" class="back-link">← Retour à l'app</a>
+</div>
+
+<div class="container">
+
+  <div class="doc-header">
+    <div class="doc-badge">Légal</div>
+    <div class="doc-title">Mentions Légales</div>
+    <div class="doc-meta">Conformément à l'article 6 de la loi n° 2004-575 du 21 juin 2004 (LCEN)</div>
+  </div>
+
+  <div class="disclaimer-box">
+    <p>⚠️ <strong>Avertissement médical</strong> — PeptideScanner est une application à usage éducatif et informatif uniquement. Les informations présentées ne constituent pas un avis médical. Consultez un professionnel de santé avant tout usage de peptide.</p>
+    <p>Les peptides présentés sont des peptides de recherche. Leur usage est soumis aux réglementations en vigueur dans chaque pays. L'éditeur décline toute responsabilité quant à l'usage fait des informations disponibles sur l'application.</p>
+  </div>
+
+  <!-- ÉDITEUR -->
+  <div class="section">
+    <h2>Éditeur de l'application</h2>
+    <div class="info-row"><span class="info-key">Nom / Raison sociale</span><span class="info-val">[À compléter]</span></div>
+    <div class="info-row"><span class="info-key">Statut juridique</span><span class="info-val">[Micro-entreprise / SARL / etc.]</span></div>
+    <div class="info-row"><span class="info-key">SIRET</span><span class="info-val">[À compléter si applicable]</span></div>
+    <div class="info-row"><span class="info-key">Adresse</span><span class="info-val">[Votre adresse]</span></div>
+    <div class="info-row"><span class="info-key">Email</span><span class="info-val"><a href="mailto:contact@peptidescanner.app">contact@peptidescanner.app</a></span></div>
+    <div class="info-row"><span class="info-key">Site web</span><span class="info-val"><a href="https://peptidescanner.app">peptidescanner.app</a></span></div>
+  </div>
+
+  <!-- HÉBERGEMENT -->
+  <div class="section">
+    <h2>Hébergement</h2>
+    <div class="info-row"><span class="info-key">Hébergeur frontend</span><span class="info-val">Vercel Inc. — 340 Pine Street, San Francisco, CA 94104, USA</span></div>
+    <div class="info-row"><span class="info-key">Base de données</span><span class="info-val">Supabase Inc. — région EU (Frankfurt, Allemagne)</span></div>
+    <div class="info-row"><span class="info-key">Domaine</span><span class="info-val">peptidescanner.app</span></div>
+  </div>
+
+  <!-- PAIEMENTS -->
+  <div class="section">
+    <h2>Traitement des paiements</h2>
+    <div class="info-row"><span class="info-key">Prestataire</span><span class="info-val">Lemon Squeezy LLC</span></div>
+    <div class="info-row"><span class="info-key">Rôle</span><span class="info-val">Marchand de référence (Merchant of Record)</span></div>
+    <div class="info-row"><span class="info-key">Adresse</span><span class="info-val">2093 Philadelphia Pike, Claymont, DE 19703, USA</span></div>
+    <div class="info-row"><span class="info-key">Site</span><span class="info-val"><a href="https://lemonsqueezy.com">lemonsqueezy.com</a></span></div>
+    <div class="info-row"><span class="info-key">Note</span><span class="info-val">Lemon Squeezy est le vendeur légal et gère la facturation et la TVA</span></div>
+  </div>
+
+  <!-- IA -->
+  <div class="section">
+    <h2>Conseiller IA</h2>
+    <div class="info-row"><span class="info-key">Technologie</span><span class="info-val">Claude (Anthropic PBC)</span></div>
+    <div class="info-row"><span class="info-key">Adresse</span><span class="info-val">548 Market St PMB 90375, San Francisco, CA 94104, USA</span></div>
+    <div class="info-row"><span class="info-key">Usage</span><span class="info-val">Traitement des questions posées au conseiller peptides</span></div>
+    <div class="info-row"><span class="info-key">Données transmises</span><span class="info-val">Messages uniquement — aucune donnée d'identité</span></div>
+  </div>
+
+  <!-- PROPRIÉTÉ INTELLECTUELLE -->
+  <div class="section">
+    <h2>Propriété intellectuelle</h2>
+    <div class="info-row"><span class="info-key">Marque</span><span class="info-val">PeptideScanner™ — tous droits réservés</span></div>
+    <div class="info-row"><span class="info-key">Code source</span><span class="info-val">Propriété exclusive de l'éditeur</span></div>
+    <div class="info-row"><span class="info-key">Base de données</span><span class="info-val">Base peptidique — propriété de l'éditeur</span></div>
+    <div class="info-row"><span class="info-key">Reproduction</span><span class="info-val">Interdite sans autorisation écrite préalable</span></div>
+  </div>
+
+  <!-- LIENS AFFILIÉS -->
+  <div class="section">
+    <h2>Liens affiliés et partenariats</h2>
+    <div class="info-row"><span class="info-key">Transparence</span><span class="info-val">Les liens vers les boutiques sont des liens affiliés rémunérés</span></div>
+    <div class="info-row"><span class="info-key">Commission</span><span class="info-val">PeptideScanner perçoit une commission sur les ventes générées</span></div>
+    <div class="info-row"><span class="info-key">Impact prix</span><span class="info-val">Aucun surcoût pour l'utilisateur</span></div>
+    <div class="info-row"><span class="info-key">Indépendance</span><span class="info-val">Les recommandations sont indépendantes des relations commerciales</span></div>
+  </div>
+
+  <!-- DROIT APPLICABLE -->
+  <div class="section">
+    <h2>Droit applicable</h2>
+    <div class="info-row"><span class="info-key">Droit applicable</span><span class="info-val">Droit français</span></div>
+    <div class="info-row"><span class="info-key">Juridiction</span><span class="info-val">Tribunaux compétents de France</span></div>
+    <div class="info-row"><span class="info-key">Médiation</span><span class="info-val">En cas de litige, médiation possible avant saisine judiciaire</span></div>
+    <div class="info-row"><span class="info-key">RGPD</span><span class="info-val">Conformité au Règlement (UE) 2016/679</span></div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="section">
+    <h2>Contact</h2>
+    <div class="info-row"><span class="info-key">Support général</span><span class="info-val"><a href="mailto:contact@peptidescanner.app">contact@peptidescanner.app</a></span></div>
+    <div class="info-row"><span class="info-key">Données personnelles</span><span class="info-val"><a href="mailto:privacy@peptidescanner.app">privacy@peptidescanner.app</a></span></div>
+    <div class="info-row"><span class="info-key">Abus / Signalement</span><span class="info-val"><a href="mailto:abuse@peptidescanner.app">abuse@peptidescanner.app</a></span></div>
+    <div class="info-row"><span class="info-key">Délai de réponse</span><span class="info-val">48h ouvrées</span></div>
+  </div>
+
+  <div class="footer-legal">
+    <p>© 2026 PeptideScanner — Tous droits réservés</p>
+    <div class="legal-nav">
+      <a href="cgu.html">CGU</a>
+      <a href="privacy.html">Politique de confidentialité</a>
+      <a href="mentions-legales.html">Mentions légales</a>
+      <a href="dashboard.html">Retour à l'app</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

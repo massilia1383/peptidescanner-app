@@ -173,13 +173,13 @@ async function offlineFallback(request) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>PeptideScanner — Hors ligne</title>
         <style>
-          body { font-family: sans-serif; background: #0A0F1E; color: #E8F0FE;
+          body { font-family: sans-serif; background: #F8F9FA; color: #1F2937;
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; min-height: 100vh; text-align: center; padding: 24px; }
           .icon { font-size: 4rem; margin-bottom: 20px; }
-          h1 { font-size: 1.4rem; margin-bottom: 10px; color: #00C9A7; }
-          p { color: #6B7A99; line-height: 1.6; max-width: 300px; }
-          button { margin-top: 24px; padding: 12px 28px; background: #00C9A7; color: #000;
+          h1 { font-size: 1.4rem; margin-bottom: 10px; color: #0D9488; }
+          p { color: #6B7280; line-height: 1.6; max-width: 300px; }
+          button { margin-top: 24px; padding: 12px 28px; background: #0D9488; color: #fff;
             border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
         </style>
       </head>

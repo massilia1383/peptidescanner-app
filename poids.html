@@ -318,19 +318,19 @@ function renderChart(weights){
 
   // Dots for hover
   const dotsHtml=pts.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r="5" fill="transparent" stroke="transparent" stroke-width="12" class="chart-dot" data-kg="${p.kg}" data-date="${p.date}" data-x="${p.x}" data-y="${p.y}"/>`).join('');
-  const dotVisual=pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="#00C9A7"/>`).join('');
+  const dotVisual=pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="#0D9488"/>`).join('');
 
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
   svg.innerHTML=`
     <defs>
       <linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#00C9A7" stop-opacity=".2"/>
-        <stop offset="100%" stop-color="#00C9A7" stop-opacity="0"/>
+        <stop offset="0%" stop-color="#0D9488" stop-opacity=".2"/>
+        <stop offset="100%" stop-color="#0D9488" stop-opacity="0"/>
       </linearGradient>
     </defs>
     ${gridHtml}
     <path d="${area}" fill="url(#aG)"/>
-    <path d="${line}" fill="none" stroke="#00C9A7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="${line}" fill="none" stroke="#0D9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     ${dotVisual}
     ${dotsHtml}
   `;

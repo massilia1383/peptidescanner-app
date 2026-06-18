@@ -238,7 +238,7 @@
 
 <nav>
   <div class="logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <a href="#" class="nav-back">← Retour à l'app</a>
+  <a href="dashboard.html" class="nav-back">← Retour à l'app</a>
 </nav>
 
 <div class="page-header">
@@ -995,7 +995,7 @@ function renderCards() {
           <div class="stack-label">Stack avec</div>
           <div class="stack-val">${p.stacks.slice(0,2).join(' · ')}</div>
         </div>
-        <a class="shop-btn" href="#" onclick="event.stopPropagation()">Acheter →</a>
+        <a class="shop-btn" href="boutiques.html" onclick="event.stopPropagation()">Acheter →</a>
       </div>
     `;
     grid.appendChild(card);
@@ -1085,7 +1085,7 @@ function openModal(id) {
 
       <div class="modal-cta">
         <p>Trouver <strong>${p.name}</strong> chez un fournisseur vérifié</p>
-        <a href="#">Voir les boutiques →</a>
+        <a href="boutiques.html">Voir les boutiques →</a>
       </div>
 
       <div class="disclaimer">

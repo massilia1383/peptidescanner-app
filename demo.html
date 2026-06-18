@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PeptideScanner — Découvrir l'app</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0;
+    --accent:#0D9488; --accent2:#2B6CB0; --accent3:#F97316;
+    --text:#1F2937; --muted:#6B7280; --danger:#DC2626;
+    --shadow: 0 4px 24px rgba(0,0,0,.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+
+  /* TOPBAR */
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px; background:var(--surface);
+    border-bottom:1px solid var(--border); flex-shrink:0; z-index:100;
+    box-shadow:var(--shadow);
+  }
+  .logo { font-family:'Space Mono',monospace; font-size:.95rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
+  .logo-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
+  .topbar-right { display:flex; align-items:center; gap:10px; }
+  .back-link { font-size:.82rem; color:var(--muted); text-decoration:none; transition:color .2s; }
+  .back-link:hover { color:var(--accent); }
+  .signup-btn-top {
+    background:var(--accent); color:#fff; padding:8px 18px;
+    border-radius:8px; font-weight:700; font-size:.82rem;
+    text-decoration:none; transition:opacity .2s; white-space:nowrap;
+  }
+  .signup-btn-top:hover { opacity:.85; }
+
+  /* DEMO BADGE */
+  .demo-badge {
+    background:rgba(249,115,22,.1); border:1px solid rgba(249,115,22,.3);
+    border-radius:100px; padding:4px 12px; font-size:.7rem; font-weight:700;
+    color:var(--accent3); font-family:'Space Mono',monospace;
+  }
+
+  /* SLIDES CONTAINER */
+  .slides-wrap { flex:1; position:relative; overflow:hidden; }
+  .slide {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center;
+    padding:24px 20px 80px; overflow-y:auto;
+    opacity:0; pointer-events:none;
+    transform:translateX(60px);
+    transition:all .4s cubic-bezier(.4,0,.2,1);
+  }
+  .slide.active { opacity:1; pointer-events:all; transform:translateX(0); }
+  .slide.exit-left { opacity:0; transform:translateX(-60px); }
+
+  /* SLIDE CONTENT */
+  .slide-inner { width:100%; max-width:480px; }
+  .slide-eyebrow {
+    font-family:'Space Mono',monospace; font-size:.68rem;
+    color:var(--accent); letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:8px; text-align:center;
+  }
+  .slide-title { font-size:1.4rem; font-weight:700; text-align:center; margin-bottom:6px; line-height:1.2; }
+  .slide-sub { font-size:.85rem; color:var(--muted); text-align:center; line-height:1.6; margin-bottom:20px; }
+
+  /* MOCKUP PHONE */
+  .phone-wrap {
+    display:flex; justify-content:center; margin-bottom:20px;
+  }
+  .phone {
+    width:220px; background:var(--surface); border-radius:28px;
+    border:2px solid var(--border); padding:16px 14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.12);
+    position:relative; overflow:hidden;
+  }
+  .phone::before {
+    content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:60px; height:16px; background:var(--bg);
+    border-radius:0 0 10px 10px;
+  }
+  .phone-screen { margin-top:10px; }
+  .phone-topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:12px;
+  }
+  .phone-topbar-title { font-size:.65rem; font-weight:700; color:var(--text); }
+  .phone-topbar-logo { font-family:'Space Mono',monospace; font-size:.6rem; color:var(--accent); font-weight:700; }
+
+  /* MOCKUP CARDS */
+  .mock-card {
+    background:var(--surface2); border-radius:10px; padding:10px;
+    margin-bottom:8px; border:1px solid var(--border);
+  }
+  .mock-label { font-size:.55rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:4px; }
+  .mock-val { font-family:'Space Mono',monospace; font-size:.9rem; font-weight:700; color:var(--accent); }
+  .mock-sub { font-size:.55rem; color:var(--muted); margin-top:2px; }
+  .mock-bar { height:3px; background:var(--border); border-radius:2px; margin-top:6px; overflow:hidden; }
+  .mock-bar-fill { height:100%; border-radius:2px; }
+  .mock-pill {
+    display:inline-block; padding:2px 7px; border-radius:100px;
+    font-size:.55rem; font-weight:700; margin-top:4px;
+  }
+  .pill-green { background:rgba(13,148,136,.1); color:var(--accent); }
+  .pill-orange { background:rgba(249,115,22,.1); color:var(--accent3); }
+  .pill-blue { background:rgba(43,108,176,.1); color:var(--accent2); }
+
+  /* MOCK CALENDAR */
+  .mock-cal { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-top:8px; }
+  .mock-cal-day { aspect-ratio:1; border-radius:3px; font-size:.45rem; display:flex; align-items:center; justify-content:center; font-weight:600; }
+  .cal-done { background:rgba(13,148,136,.2); color:var(--accent); }
+  .cal-miss { background:rgba(220,38,38,.08); color:var(--danger); }
+  .cal-rest { background:var(--border); color:var(--muted); }
+  .cal-today { background:var(--accent); color:#fff; }
+
+  /* MOCK CHART */
+  .mock-chart { height:50px; position:relative; margin-top:8px; }
+  .mock-chart svg { width:100%; height:100%; }
+
+  /* MOCK LIST */
+  .mock-list-item {
+    display:flex; align-items:center; gap:6px; padding:5px 0;
+    border-bottom:1px solid var(--border); font-size:.6rem;
+  }
+  .mock-list-item:last-child { border-bottom:none; }
+  .mock-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+  .mock-list-name { font-weight:600; color:var(--text); flex:1; }
+  .mock-list-val { font-family:'Space Mono',monospace; color:var(--muted); font-size:.55rem; }
+  .mock-tag { padding:2px 5px; border-radius:3px; font-size:.5rem; font-weight:700; }
+
+  /* MOCK CHAT */
+  .mock-msg { border-radius:8px; padding:7px 9px; margin-bottom:6px; font-size:.58rem; line-height:1.4; }
+  .mock-msg.user { background:rgba(13,148,136,.1); color:var(--text); margin-left:20px; }
+  .mock-msg.ai { background:var(--surface2); color:var(--text); margin-right:20px; border:1px solid var(--border); }
+  .mock-msg strong { color:var(--accent); }
+
+  /* MOCK SCORE */
+  .mock-score-wrap { display:flex; align-items:center; gap:10px; margin-top:8px; }
+  .mock-ring { position:relative; width:48px; height:48px; flex-shrink:0; }
+  .mock-ring svg { transform:rotate(-90deg); }
+  .mock-ring-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:.7rem; font-weight:700; color:var(--accent); }
+  .mock-score-info { flex:1; }
+  .mock-score-label { font-size:.55rem; color:var(--muted); margin-bottom:3px; }
+  .mock-score-bar { height:3px; background:var(--border); border-radius:2px; margin-bottom:3px; overflow:hidden; }
+
+  /* FEATURES LIST */
+  .features-list { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+  .feat-item {
+    display:flex; align-items:flex-start; gap:10px; padding:12px 14px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; box-shadow:var(--shadow);
+  }
+  .feat-icon { font-size:1.2rem; flex-shrink:0; }
+  .feat-text strong { display:block; font-size:.84rem; font-weight:700; margin-bottom:2px; }
+  .feat-text span { font-size:.75rem; color:var(--muted); }
+
+  /* BOTTOM AREA */
+  .bottom-area {
+    position:fixed; bottom:0; left:0; right:0;
+    background:var(--surface); border-top:1px solid var(--border);
+    padding:12px 20px 20px; z-index:50;
+    box-shadow:0 -4px 20px rgba(0,0,0,.06);
+  }
+  .bottom-inner { max-width:480px; margin:0 auto; }
+
+  /* DOTS */
+  .dots { display:flex; justify-content:center; gap:6px; margin-bottom:12px; }
+  .dot { width:6px; height:6px; border-radius:50%; background:var(--border); transition:all .3s; cursor:pointer; }
+  .dot.active { background:var(--accent); width:20px; border-radius:3px; }
+  .dot.done { background:rgba(13,148,136,.4); }
+
+  /* NAV BUTTONS */
+  .nav-btns { display:flex; gap:10px; align-items:center; }
+  .nav-prev {
+    width:44px; height:44px; border-radius:12px; border:1.5px solid var(--border);
+    background:var(--surface2); color:var(--muted); font-size:1rem;
+    cursor:pointer; flex-shrink:0; transition:all .2s; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-prev:hover { border-color:var(--accent); color:var(--accent); }
+  .nav-next {
+    flex:1; height:44px; border-radius:12px; border:none;
+    background:var(--accent); color:#fff; font-family:inherit;
+    font-size:.9rem; font-weight:700; cursor:pointer; transition:all .2s;
+  }
+  .nav-next:hover { opacity:.9; }
+  .nav-next.last { background:linear-gradient(135deg, var(--accent), var(--accent2)); }
+  .signup-final {
+    display:block; width:100%; padding:14px; border-radius:12px;
+    background:var(--accent); color:#fff; font-family:inherit;
+    font-size:.95rem; font-weight:700; text-align:center;
+    text-decoration:none; transition:all .2s; border:none; cursor:pointer;
+    box-shadow:0 4px 16px rgba(13,148,136,.3);
+  }
+  .signup-final:hover { opacity:.9; transform:translateY(-1px); }
+  .signup-free {
+    display:block; width:100%; padding:11px; border-radius:12px;
+    border:1.5px solid var(--border); background:transparent;
+    color:var(--muted); font-family:inherit; font-size:.84rem;
+    font-weight:600; text-align:center; text-decoration:none;
+    margin-top:8px; transition:all .2s; cursor:pointer;
+  }
+  .signup-free:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* PROGRESS BAR */
+  .progress-bar { height:2px; background:var(--border); border-radius:1px; margin-bottom:12px; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--accent); border-radius:1px; transition:width .4s ease; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo"><div class="logo-dot"></div>PeptideScanner</div>
+  <div class="demo-badge">👁 Visite guidée</div>
+  <div class="topbar-right">
+    <a href="index.html" class="back-link">← Accueil</a>
+    <a href="login.html" class="signup-btn-top">S'inscrire</a>
+  </div>
+</div>
+
+<!-- SLIDES -->
+<div class="slides-wrap">
+
+  <!-- SLIDE 1 — DASHBOARD -->
+  <div class="slide active" id="slide1">
+    <div class="slide-inner">
+      <div class="slide-eyebrow">01 / 06 — Accueil</div>
+      <div class="slide-title">Votre tableau de bord</div>
+      <div class="slide-sub">Tout en un coup d'œil — cure active, poids, alertes du jour et compliance.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-topbar">
+              <div class="phone-topbar-title">Bonjour 👋</div>
+              <div class="phone-topbar-logo">PS</div>
+            </div>
+            <div class="mock-card">
+              <div class="mock-label">Cure active</div>
+              <div class="mock-val">BPC-157</div>
+              <div class="mock-sub">250 mcg · SC · Jour 18/30</div>
+              <div class="mock-bar"><div class="mock-bar-fill" style="width:60%;background:linear-gradient(90deg,#0D9488,#2B6CB0)"></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+              <div class="mock-card" style="margin-bottom:0">
+                <div class="mock-label">Poids</div>
+                <div class="mock-val" style="font-size:.75rem">78,4 kg</div>
+                <div class="mock-sub" style="color:#0D9488">↓ 1.2 kg</div>
+              </div>
+              <div class="mock-card" style="margin-bottom:0">
+                <div class="mock-label">Compliance</div>
+                <div class="mock-val" style="font-size:.75rem">87%</div>
+                <div class="mock-sub" style="color:#0D9488">Excellent</div>
+              </div>
+            </div>
+            <div class="mock-card">
+              <div class="mock-label">Prochaine injection</div>
+              <div style="font-size:.65rem;font-weight:700;color:#F97316">⏰ Aujourd'hui 20h00</div>
+              <div class="mock-sub">TB-500 · 2.5 mg · SC</div>
+            </div>
+            <div style="display:flex;gap:4px;margin-top:6px">
+              <span class="mock-pill pill-green">✓ Matin fait</span>
+              <span class="mock-pill pill-orange">⏰ Soir à faire</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="features-list">
+        <div class="feat-item"><div class="feat-icon">🎯</div><div class="feat-text"><strong>Vue d'ensemble instantanée</strong><span>Cure active, jour en cours, compliance et prochain rappel</span></div></div>
+        <div class="feat-item"><div class="feat-icon">📊</div><div class="feat-text"><strong>Mini graphique poids</strong><span>Évolution depuis le début de votre cure</span></div></div>
+        <div class="feat-item"><div class="feat-icon">✅</div><div class="feat-text"><strong>Injections du jour</strong><span>Cochez chaque injection directement depuis l'accueil</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — BIBLIOTHÈQUE -->
+  <div class="slide" id="slide2">
+    <div class="slide-inner">
+      <div class="slide-eyebrow">02 / 06 — Bibliothèque</div>
+      <div class="slide-title">52 peptides référencés</div>
+      <div class="slide-sub">Dosages, protocoles, effets, stacks et boutiques partenaires pour chaque peptide.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div style="background:var(--surface2);border-radius:6px;padding:5px 8px;font-size:.55rem;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px">
+              <span>🔍</span><span>Rechercher un peptide…</span>
+            </div>
+            <div style="display:flex;gap:4px;margin-bottom:8px;overflow:hidden">
+              <span class="mock-pill pill-green" style="font-size:.5rem">Tous</span>
+              <span class="mock-pill pill-blue" style="font-size:.5rem">GH</span>
+              <span class="mock-pill pill-orange" style="font-size:.5rem">Récup.</span>
+              <span class="mock-pill" style="background:rgba(43,108,176,.1);color:#2B6CB0;font-size:.5rem">Anti-âge</span>
+            </div>
+            <div class="mock-list-item">
+              <div class="mock-dot" style="background:#0D9488"></div>
+              <span class="mock-list-name">BPC-157</span>
+              <span class="mock-tag" style="background:rgba(13,148,136,.1);color:#0D9488">Récupération</span>
+              <span class="mock-list-val">250mcg/j</span>
+            </div>
+            <div class="mock-list-item">
+              <div class="mock-dot" style="background:#2B6CB0"></div>
+              <span class="mock-list-name">CJC-1295</span>
+              <span class="mock-tag" style="background:rgba(43,108,176,.1);color:#2B6CB0">GH / IGF-1</span>
+              <span class="mock-list-val">1mg/sem</span>
+            </div>
+            <div class="mock-list-item">
+              <div class="mock-dot" style="background:#F97316"></div>
+              <span class="mock-list-name">Semaglutide</span>
+              <span class="mock-tag" style="background:rgba(249,115,22,.1);color:#F97316">Poids</span>
+              <span class="mock-list-val">0.25mg</span>
+            </div>
+            <div class="mock-list-item">
+              <div class="mock-dot" style="background:#0D9488"></div>
+              <span class="mock-list-name">Epithalon</span>
+              <span class="mock-tag" style="background:rgba(13,148,136,.1);color:#0D9488">Anti-âge</span>
+              <span class="mock-list-val">5mg/j</span>
+            </div>
+            <div class="mock-list-item">
+              <div class="mock-dot" style="background:#6B7280"></div>
+              <span class="mock-list-name">Semax</span>
+              <span class="mock-tag" style="background:rgba(107,114,128,.1);color:#6B7280">Neuro</span>
+              <span class="mock-list-val">500mcg</span>
+            </div>
+            <div style="text-align:center;font-size:.55rem;color:var(--muted);margin-top:6px">+ 47 autres peptides →</div>
+          </div>
+        </div>
+      </div>
+      <div class="features-list">
+        <div class="feat-item"><div class="feat-icon">🧬</div><div class="feat-text"><strong>52 peptides avec fiches complètes</strong><span>Dosage, administration, durée, effets et contre-indications</span></div></div>
+        <div class="feat-item"><div class="feat-icon">💊</div><div class="feat-text"><strong>Stacks synergiques recommandés</strong><span>Les meilleures associations documentées</span></div></div>
+        <div class="feat-item"><div class="feat-icon">🛒</div><div class="feat-text"><strong>Liens boutiques partenaires vérifiées</strong><span>Accès direct aux meilleures sources européennes</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — CALENDRIER DE CURE -->
+  <div class="slide" id="slide3">
+    <div class="slide-inner">
+      <div class="slide-eyebrow">03 / 06 — Cure</div>
+      <div class="slide-title">Calendrier de cure</div>
+      <div class="slide-sub">Planifiez, suivez et analysez chaque injection de votre protocole.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-topbar">
+              <div class="phone-topbar-title">BPC-157 · J18/30</div>
+              <div style="font-size:.55rem;color:#0D9488;font-weight:700">87%</div>
+            </div>
+            <div style="font-size:.58rem;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace">JUIN 2026</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:4px">
+              <div style="font-size:.45rem;color:var(--muted);text-align:center">L</div>
+              <div style="font-size:.45rem;color:var(--muted);text-align:center">M</div>
+              <div style="font-size:.45rem;color:var(--muted);text-align:center">M</div>
+              <div style="font-size:.45rem;color:var(--muted);text-align:center">J</div>
+              <div style="font-size:.45rem;color:var(--muted);text-align:center">V</div>
+              <div style="font-size:.45rem;color:var(--muted);text-align:center">S</div>
+              <div style="font-size:.45rem;color:var(--muted);text-align:center">D</div>
+            </div>
+            <div class="mock-cal">
+              <div class="mock-cal-day cal-done">2</div><div class="mock-cal-day cal-done">3</div><div class="mock-cal-day cal-done">4</div><div class="mock-cal-day cal-done">5</div><div class="mock-cal-day cal-done">6</div><div class="mock-cal-day cal-rest">7</div><div class="mock-cal-day cal-rest">8</div>
+              <div class="mock-cal-day cal-done">9</div><div class="mock-cal-day cal-done">10</div><div class="mock-cal-day cal-done">11</div><div class="mock-cal-day cal-miss">12</div><div class="mock-cal-day cal-done">13</div><div class="mock-cal-day cal-rest">14</div><div class="mock-cal-day cal-rest">15</div>
+              <div class="mock-cal-day cal-done">16</div><div class="mock-cal-day cal-done">17</div><div class="mock-cal-day cal-today">18</div><div class="mock-cal-day" style="background:var(--surface2);color:var(--muted);opacity:.4">19</div><div class="mock-cal-day" style="background:var(--surface2);color:var(--muted);opacity:.4">20</div><div class="mock-cal-day" style="background:var(--surface2);color:var(--muted);opacity:.4">21</div><div class="mock-cal-day" style="background:var(--surface2);color:var(--muted);opacity:.4">22</div>
+            </div>
+            <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
+              <span class="mock-pill pill-green" style="font-size:.5rem">✓ Injecté</span>
+              <span class="mock-pill" style="background:rgba(220,38,38,.08);color:#DC2626;font-size:.5rem">Manqué</span>
+              <span class="mock-pill" style="background:var(--surface2);color:var(--muted);font-size:.5rem">Repos</span>
+            </div>
+            <div class="mock-card" style="margin-top:8px">
+              <div class="mock-label">Aujourd'hui — 2 injections</div>
+              <div style="font-size:.58rem;color:#0D9488">✓ 08h00 — Matin fait</div>
+              <div style="font-size:.58rem;color:#F97316">⏰ 20h00 — Soir à faire</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="features-list">
+        <div class="feat-item"><div class="feat-icon">📅</div><div class="feat-text"><strong>Calendrier visuel complet</strong><span>Jours faits, manqués, de repos en un coup d'œil</span></div></div>
+        <div class="feat-item"><div class="feat-icon">✏️</div><div class="feat-text"><strong>Notes quotidiennes</strong><span>Ajoutez vos observations pour chaque jour de cure</span></div></div>
+        <div class="feat-item"><div class="feat-icon">📈</div><div class="feat-text"><strong>Score de compliance automatique</strong><span>Calculé en temps réel sur l'ensemble de la cure</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — POIDS -->
+  <div class="slide" id="slide4">
+    <div class="slide-inner">
+      <div class="slide-eyebrow">04 / 06 — Poids</div>
+      <div class="slide-title">Suivi du poids</div>
+      <div class="slide-sub">Graphiques d'évolution, corrélation avec vos cures et projections intelligentes.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-topbar">
+              <div class="phone-topbar-title">Évolution poids</div>
+              <div style="font-size:.55rem;color:#0D9488;font-weight:700">−4.8 kg</div>
+            </div>
+            <div class="mock-chart">
+              <svg viewBox="0 0 200 50" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#0D9488" stop-opacity=".2"/>
+                    <stop offset="100%" stop-color="#0D9488" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,40 C20,38 40,34 60,30 C80,26 100,22 120,18 C140,14 160,10 200,6 L200,50 L0,50 Z" fill="url(#wg)"/>
+                <path d="M0,40 C20,38 40,34 60,30 C80,26 100,22 120,18 C140,14 160,10 200,6" fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="0" cy="40" r="2.5" fill="#0D9488"/>
+                <circle cx="200" cy="6" r="3" fill="#0D9488" stroke="#F8F9FA" stroke-width="1.5"/>
+                <line x1="80" y1="0" x2="80" y2="50" stroke="rgba(43,108,176,.3)" stroke-width="1" stroke-dasharray="2,2"/>
+                <text x="82" y="8" fill="#2B6CB0" font-size="5" font-family="Space Mono">Début cure</text>
+              </svg>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.5rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:8px">
+              <span>1 juin</span><span>8 juin</span><span>15 juin</span><span>18 juin</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">
+              <div class="mock-card" style="margin-bottom:0;text-align:center">
+                <div class="mock-label">Actuel</div>
+                <div style="font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;color:#0D9488">78.4</div>
+                <div class="mock-sub">kg</div>
+              </div>
+              <div class="mock-card" style="margin-bottom:0;text-align:center">
+                <div class="mock-label">Variation</div>
+                <div style="font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;color:#0D9488">−4.8</div>
+                <div class="mock-sub">kg total</div>
+              </div>
+              <div class="mock-card" style="margin-bottom:0;text-align:center">
+                <div class="mock-label">Rythme</div>
+                <div style="font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;color:#F97316">−0.8</div>
+                <div class="mock-sub">kg/sem</div>
+              </div>
+            </div>
+            <div class="mock-card" style="margin-top:8px">
+              <div class="mock-label">Projection fin de cure</div>
+              <div style="font-size:.62rem;font-weight:700;color:#2B6CB0">→ 76.8 kg dans 12 jours</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="features-list">
+        <div class="feat-item"><div class="feat-icon">📉</div><div class="feat-text"><strong>Graphique corrélé à votre cure</strong><span>Visualisez l'impact de chaque peptide sur votre poids</span></div></div>
+        <div class="feat-item"><div class="feat-icon">🔮</div><div class="feat-text"><strong>Projections intelligentes</strong><span>Estimation du poids à la fin de votre cure</span></div></div>
+        <div class="feat-item"><div class="feat-icon">📊</div><div class="feat-text"><strong>Historique complet + IMC</strong><span>Toutes vos mesures avec calcul de l'IMC automatique</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — CONSEILLER IA -->
+  <div class="slide" id="slide5">
+    <div class="slide-inner">
+      <div class="slide-eyebrow">05 / 06 — IA</div>
+      <div class="slide-title">Conseiller IA peptides</div>
+      <div class="slide-sub">Posez vos questions sur les dosages, protocoles et stacks. Réponses expertes en secondes.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-topbar">
+              <div style="display:flex;align-items:center;gap:5px">
+                <div style="width:18px;height:18px;border-radius:5px;background:rgba(13,148,136,.15);display:flex;align-items:center;justify-content:center;font-size:.6rem">🧬</div>
+                <div>
+                  <div style="font-size:.6rem;font-weight:700">Conseiller IA</div>
+                  <div style="font-size:.48rem;color:#0D9488">● En ligne</div>
+                </div>
+              </div>
+            </div>
+            <div class="mock-msg ai"><strong>Bonjour !</strong> Je suis votre expert peptides. Posez-moi vos questions sur les dosages, protocoles et stacks.</div>
+            <div class="mock-msg user">Quel protocole pour BPC-157 genou ?</div>
+            <div class="mock-msg ai"><strong>BPC-157 — Genou :</strong><br>• 250 mcg × 2/jour SC<br>• Près de la zone douloureuse<br>• Durée : 8 semaines<br>• Stack : + TB-500 pour synergie optimale</div>
+            <div style="margin-top:8px;font-size:.5rem;color:var(--muted)">Suggestions rapides :</div>
+            <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">
+              <span style="padding:2px 5px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);font-size:.48rem;color:var(--muted)">Stack GH ?</span>
+              <span style="padding:2px 5px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);font-size:.48rem;color:var(--muted)">Dosage Sema ?</span>
+              <span style="padding:2px 5px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);font-size:.48rem;color:var(--muted)">Conserver ?</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="features-list">
+        <div class="feat-item"><div class="feat-icon">🤖</div><div class="feat-text"><strong>Expert IA spécialisé peptides</strong><span>Contextualisé avec votre cure et objectifs personnels</span></div></div>
+        <div class="feat-item"><div class="feat-icon">💡</div><div class="feat-text"><strong>Protocoles personnalisés</strong><span>Dosages, fréquences et stacks adaptés à votre profil</span></div></div>
+        <div class="feat-item"><div class="feat-icon">⭐</div><div class="feat-text"><strong>Illimité en Premium</strong><span>3 questions gratuites — illimité avec le plan Premium</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — ANALYSE -->
+  <div class="slide" id="slide6">
+    <div class="slide-inner">
+      <div class="slide-eyebrow">06 / 06 — Analyse</div>
+      <div class="slide-title">Analyse & corrélations</div>
+      <div class="slide-sub">Le cerveau de PeptideScanner — insights automatiques qui relient compliance, poids et résultats.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-topbar">
+              <div class="phone-topbar-title">Scan Score</div>
+              <div style="font-size:.55rem;color:#0D9488;font-weight:700">Excellent</div>
+            </div>
+            <div class="mock-score-wrap">
+              <div class="mock-ring">
+                <svg viewBox="0 0 48 48" width="48" height="48">
+                  <circle cx="24" cy="24" r="20" fill="none" stroke="#E2E8F0" stroke-width="4"/>
+                  <circle cx="24" cy="24" r="20" fill="none" stroke="#0D9488" stroke-width="4" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="22" transform="rotate(-90 24 24)"/>
+                </svg>
+                <div class="mock-ring-num">83</div>
+              </div>
+              <div class="mock-score-info">
+                <div class="mock-score-label">Compliance</div>
+                <div class="mock-score-bar"><div style="width:87%;height:100%;background:#0D9488;border-radius:2px"></div></div>
+                <div class="mock-score-label">Progression</div>
+                <div class="mock-score-bar"><div style="width:75%;height:100%;background:#2B6CB0;border-radius:2px"></div></div>
+                <div class="mock-score-label">Régularité</div>
+                <div class="mock-score-bar"><div style="width:90%;height:100%;background:#F97316;border-radius:2px"></div></div>
+              </div>
+            </div>
+            <div style="margin-top:8px">
+              <div style="display:flex;align-items:flex-start;gap:6px;padding:6px;background:rgba(13,148,136,.06);border-radius:8px;border-left:2px solid #0D9488;margin-bottom:5px">
+                <span style="font-size:.7rem">🎯</span>
+                <div style="font-size:.55rem;line-height:1.4"><strong style="color:#0D9488">Compliance 87%</strong><br><span style="color:var(--muted)">Excellent — continuez ainsi !</span></div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:6px;padding:6px;background:rgba(249,115,22,.06);border-radius:8px;border-left:2px solid #F97316;margin-bottom:5px">
+                <span style="font-size:.7rem">⚠️</span>
+                <div style="font-size:.55rem;line-height:1.4"><strong style="color:#F97316">Weekend −35%</strong><br><span style="color:var(--muted)">Moins régulier sam/dim</span></div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:6px;padding:6px;background:rgba(43,108,176,.06);border-radius:8px;border-left:2px solid #2B6CB0">
+                <span style="font-size:.7rem">🔮</span>
+                <div style="font-size:.55rem;line-height:1.4"><strong style="color:#2B6CB0">Projection : 76.8 kg</strong><br><span style="color:var(--muted)">Dans 12 jours à ce rythme</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="features-list">
+        <div class="feat-item"><div class="feat-icon">🔬</div><div class="feat-text"><strong>Scan Score 0-100</strong><span>Note globale basée sur compliance, progression et régularité</span></div></div>
+        <div class="feat-item"><div class="feat-icon">🧠</div><div class="feat-text"><strong>Insights automatiques</strong><span>Détecte les patterns — weekend, gaps, tendances</span></div></div>
+        <div class="feat-item"><div class="feat-icon">📐</div><div class="feat-text"><strong>Corrélation cure × poids</strong><span>Visualise exactement l'impact de chaque peptide</span></div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides-wrap -->
+
+<!-- BOTTOM -->
+<div class="bottom-area">
+  <div class="bottom-inner">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:16.6%"></div>
+    </div>
+    <div class="dots" id="dots">
+      <div class="dot active" onclick="goTo(1)"></div>
+      <div class="dot" onclick="goTo(2)"></div>
+      <div class="dot" onclick="goTo(3)"></div>
+      <div class="dot" onclick="goTo(4)"></div>
+      <div class="dot" onclick="goTo(5)"></div>
+      <div class="dot" onclick="goTo(6)"></div>
+    </div>
+    <div id="navArea">
+      <div class="nav-btns">
+        <button class="nav-prev" id="prevBtn" onclick="prev()" style="opacity:.3;pointer-events:none">‹</button>
+        <button class="nav-next" id="nextBtn" onclick="next()">Suivant →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let current = 1;
+const TOTAL = 6;
+
+function goTo(n) {
+  const prev = document.getElementById('slide' + current);
+  prev.classList.remove('active');
+  prev.classList.add('exit-left');
+  setTimeout(() => prev.classList.remove('exit-left'), 400);
+
+  current = n;
+  const next = document.getElementById('slide' + current);
+  next.style.transform = 'translateX(60px)';
+  next.classList.add('active');
+  setTimeout(() => next.style.transform = '', 10);
+
+  updateUI();
+}
+
+function next() {
+  if (current < TOTAL) goTo(current + 1);
+}
+
+function prev() {
+  if (current > 1) goTo(current - 1);
+}
+
+function updateUI() {
+  // Progress bar
+  document.getElementById('progressFill').style.width = (current / TOTAL * 100) + '%';
+
+  // Dots
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.className = 'dot' + (i + 1 === current ? ' active' : i + 1 < current ? ' done' : '');
+  });
+
+  // Prev button
+  const prevBtn = document.getElementById('prevBtn');
+  prevBtn.style.opacity = current === 1 ? '.3' : '1';
+  prevBtn.style.pointerEvents = current === 1 ? 'none' : 'auto';
+
+  // Next button / CTA
+  const navArea = document.getElementById('navArea');
+  if (current === TOTAL) {
+    navArea.innerHTML = `
+      <a href="login.html" class="signup-final">🚀 Commencer gratuitement — inscription rapide</a>
+      <a href="login.html#register" class="signup-free">Voir les plans →</a>
+    `;
+  } else {
+    navArea.innerHTML = `
+      <div class="nav-btns">
+        <button class="nav-prev" id="prevBtn" onclick="prev()" style="opacity:${current===1?'.3':'1'};pointer-events:${current===1?'none':'auto'}">‹</button>
+        <button class="nav-next ${current===TOTAL-1?'last':''}" id="nextBtn" onclick="next()">
+          ${current === TOTAL - 1 ? '🚀 Voir comment s\'inscrire' : 'Suivant →'}
+        </button>
+      </div>
+    `;
+  }
+}
+
+// Swipe mobile
+let touchStartX = 0;
+document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+document.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) {
+    if (diff > 0 && current < TOTAL) next();
+    else if (diff < 0 && current > 1) prev();
+  }
+});
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') next();
+  if (e.key === 'ArrowLeft') prev();
+});
+</script>
+</body>
+</html>

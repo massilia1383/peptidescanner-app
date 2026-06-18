@@ -464,7 +464,7 @@
     <p>Bibliothèque complète, calendrier de cure, suivi du poids, alertes personnalisées et liens vers les meilleures boutiques — tout en un.</p>
     <div class="hero-btns">
       <button class="btn-primary" onclick="window.location.href='login.html'">Commencer gratuitement</button>
-      <button class="btn-secondary" onclick="window.location.href='dashboard.html'">Voir la démo →</button>
+      <button class="btn-secondary" onclick="window.location.href='demo.html'">Voir la démo →</button>
     </div>
   </div>
   <div class="hero-right">
@@ -992,6 +992,17 @@ async function sendDemo() {
   } catch(e) {
     resp.innerHTML = `🧬 <strong>Question reçue :</strong> "${question}"<br><br>Connectez l'API pour obtenir des réponses IA en temps réel. En attendant, consultez notre bibliothèque de protocoles ci-dessus.`;
   }
+}
+function startDemo() {
+  const expiry = Date.now() + 30 * 60 * 1000;
+  localStorage.setItem("pt_session", JSON.stringify({
+    email: "demo@peptidescanner.app",
+    loggedIn: true, demo: true, demoExpiry: expiry
+  }));
+  localStorage.setItem("pt_profil", JSON.stringify({
+    prenom: "Demo", objectif: "Récupération sportive"
+  }));
+  window.location.href = "dashboard.html";
 }
 </script>
 </body>

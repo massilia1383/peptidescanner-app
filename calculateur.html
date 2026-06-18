@@ -425,6 +425,126 @@
       </div>
     </div>
 
+    <!-- SERINGUE RECONSTITUTION -->
+    <div class="syringe-section" id="recon-syringe-section" style="display:none">
+      <div class="syringe-wrap">
+        <div class="syringe-title">💉 Visualiser la seringue</div>
+        <div class="syringe-sub">Cliquez sur une ligne du tableau pour voir la graduation. Ou glissez le piston.</div>
+        <div class="syringe-visual">
+          <div class="syringe-svg-wrap">
+            <div class="syringe-interactive-wrap">
+              <svg class="syringe-svg" viewBox="0 0 90 360" id="syringeSVG2">
+                <defs>
+                  <linearGradient id="bodyGrad2" x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0%"   stop-color="#c8dff5" stop-opacity=".6"/>
+                    <stop offset="18%"  stop-color="#e8f4ff" stop-opacity=".9"/>
+                    <stop offset="50%"  stop-color="#f5faff"/>
+                    <stop offset="82%"  stop-color="#e4f0fb" stop-opacity=".9"/>
+                    <stop offset="100%" stop-color="#b8d3ee" stop-opacity=".6"/>
+                  </linearGradient>
+                  <linearGradient id="liquidGrad2" x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0%"   stop-color="#0d9488" stop-opacity=".12"/>
+                    <stop offset="30%"  stop-color="#0d9488" stop-opacity=".28"/>
+                    <stop offset="70%"  stop-color="#14b8a6" stop-opacity=".22"/>
+                    <stop offset="100%" stop-color="#0d9488" stop-opacity=".1"/>
+                  </linearGradient>
+                  <linearGradient id="pistonGrad2" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%"   stop-color="#4a90d9"/>
+                    <stop offset="40%"  stop-color="#2B6CB0"/>
+                    <stop offset="100%" stop-color="#1a4f8a"/>
+                  </linearGradient>
+                  <clipPath id="bodyClip2">
+                    <rect x="29" y="28" width="28" height="284" rx="5"/>
+                  </clipPath>
+                </defs>
+                <rect x="27" y="26" width="32" height="288" rx="7" fill="rgba(43,108,176,.08)"/>
+                <rect x="29" y="28" width="28" height="284" rx="5" fill="url(#bodyGrad2)" stroke="#a8c8e8" stroke-width="1.2"/>
+                <rect x="31" y="30" width="4" height="280" rx="2" fill="rgba(255,255,255,.55)"/>
+                <rect x="52" y="30" width="2" height="280" rx="1" fill="rgba(255,255,255,.25)"/>
+                <g clip-path="url(#bodyClip2)">
+                  <rect id="liquidFill2" x="29" y="28" width="28" height="0" fill="url(#liquidGrad2)"/>
+                  <rect id="liquidSurface2" x="29" y="28" width="28" height="1.5" fill="rgba(13,148,136,.4)" rx="1"/>
+                </g>
+                <g fill="none">
+                  <line id="g2_0"   x1="29" y1="28"    x2="41" y2="28"    stroke="#475569" stroke-width="1.1"/>
+                  <text x="27" y="32"    font-size="7.5" fill="#475569" text-anchor="end" font-family="Space Mono" font-weight="bold">0</text>
+                  <line id="g2_10"  x1="29" y1="56.4"  x2="40" y2="56.4"  stroke="#64748b" stroke-width=".9"/>
+                  <text x="27" y="60"    font-size="7"   fill="#64748b" text-anchor="end" font-family="Space Mono">10</text>
+                  <line id="g2_20"  x1="29" y1="84.8"  x2="40" y2="84.8"  stroke="#64748b" stroke-width=".9"/>
+                  <text x="27" y="88.5"  font-size="7"   fill="#64748b" text-anchor="end" font-family="Space Mono">20</text>
+                  <line id="g2_30"  x1="29" y1="113.2" x2="40" y2="113.2" stroke="#64748b" stroke-width=".9"/>
+                  <text x="27" y="117"   font-size="7"   fill="#64748b" text-anchor="end" font-family="Space Mono">30</text>
+                  <line id="g2_40"  x1="29" y1="141.6" x2="40" y2="141.6" stroke="#64748b" stroke-width=".9"/>
+                  <text x="27" y="145.5" font-size="7"   fill="#64748b" text-anchor="end" font-family="Space Mono">40</text>
+                  <line id="g2_50"  x1="29" y1="170"   x2="43" y2="170"   stroke="#1e293b" stroke-width="1.3"/>
+                  <text x="27" y="174"   font-size="8"   fill="#1e293b" text-anchor="end" font-family="Space Mono" font-weight="bold">50</text>
+                  <line id="g2_60"  x1="29" y1="198.4" x2="40" y2="198.4" stroke="#64748b" stroke-width=".9"/>
+                  <text x="27" y="202"   font-size="7"   fill="#64748b" text-anchor="end" font-family="Space Mono">60</text>
+                  <line id="g2_70"  x1="29" y1="226.8" x2="40" y2="226.8" stroke="#64748b" stroke-width=".9"/>
+                  <text x="27" y="230.5" font-size="7"   fill="#64748b" text-anchor="end" font-family="Space Mono">70</text>
+                  <line id="g2_80"  x1="29" y1="255.2" x2="40" y2="255.2" stroke="#64748b" stroke-width=".9"/>
+                  <text x="27" y="259"   font-size="7"   fill="#64748b" text-anchor="end" font-family="Space Mono">80</text>
+                  <line id="g2_90"  x1="29" y1="283.6" x2="40" y2="283.6" stroke="#64748b" stroke-width=".9"/>
+                  <text x="27" y="287.5" font-size="7"   fill="#64748b" text-anchor="end" font-family="Space Mono">90</text>
+                  <line id="g2_100" x1="29" y1="312"   x2="43" y2="312"   stroke="#1e293b" stroke-width="1.1"/>
+                  <text x="27" y="316"   font-size="7.5" fill="#475569" text-anchor="end" font-family="Space Mono" font-weight="bold">100</text>
+                  <line x1="29" y1="42.2"  x2="36" y2="42.2"  stroke="#94a3b8" stroke-width=".7"/>
+                  <line x1="29" y1="70.6"  x2="36" y2="70.6"  stroke="#94a3b8" stroke-width=".7"/>
+                  <line x1="29" y1="99"    x2="36" y2="99"    stroke="#94a3b8" stroke-width=".7"/>
+                  <line x1="29" y1="127.4" x2="36" y2="127.4" stroke="#94a3b8" stroke-width=".7"/>
+                  <line x1="29" y1="155.8" x2="36" y2="155.8" stroke="#94a3b8" stroke-width=".7"/>
+                  <line x1="29" y1="184.2" x2="36" y2="184.2" stroke="#94a3b8" stroke-width=".7"/>
+                  <line x1="29" y1="212.6" x2="36" y2="212.6" stroke="#94a3b8" stroke-width=".7"/>
+                  <line x1="29" y1="241"   x2="36" y2="241"   stroke="#94a3b8" stroke-width=".7"/>
+                  <line x1="29" y1="269.4" x2="36" y2="269.4" stroke="#94a3b8" stroke-width=".7"/>
+                  <line x1="29" y1="297.8" x2="36" y2="297.8" stroke="#94a3b8" stroke-width=".7"/>
+                </g>
+                <g id="doseArrow2" transform="translate(0,0)" style="transition:transform .4s cubic-bezier(.4,0,.2,1)">
+                  <line x1="57" y1="28" x2="67" y2="28" stroke="#dc2626" stroke-width="1.6"/>
+                  <polygon points="57,25 57,31 62,28" fill="#dc2626"/>
+                  <rect x="67" y="19" width="20" height="18" rx="5" fill="#dc2626"/>
+                  <text id="arrowLabel2" x="77" y="31" font-size="7.5" fill="#fff" font-family="Space Mono" font-weight="bold" text-anchor="middle">0U</text>
+                </g>
+                <g id="pistonGroup2" style="transition:transform .4s cubic-bezier(.4,0,.2,1); cursor:ns-resize;">
+                  <rect x="27" y="30" width="32" height="5" rx="2.5" fill="#1a4f8a" opacity=".7"/>
+                  <rect id="piston2" x="26" y="20" width="34" height="13" rx="4" fill="url(#pistonGrad2)"/>
+                  <rect x="29" y="22" width="12" height="3" rx="1.5" fill="rgba(255,255,255,.4)"/>
+                  <line x1="34" y1="23" x2="34" y2="30" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+                  <line x1="39" y1="23" x2="39" y2="30" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+                  <line x1="44" y1="23" x2="44" y2="30" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+                  <rect x="37" y="2" width="12" height="22" rx="3" fill="#2B6CB0"/>
+                  <rect x="27" y="0" width="32" height="7" rx="3.5" fill="#1E40AF"/>
+                  <rect x="18" y="1" width="12" height="5" rx="2.5" fill="#1E40AF"/>
+                  <rect x="56" y="1" width="12" height="5" rx="2.5" fill="#1E40AF"/>
+                </g>
+                <polygon points="35,312 51,312 44,320 42,320" fill="#94a3b8"/>
+                <rect x="40" y="318" width="6" height="8" rx="1" fill="#94a3b8"/>
+                <rect x="41.5" y="326" width="3" height="28" rx="1" fill="#94a3b8"/>
+                <polygon points="41.5,354 44.5,354 43,358" fill="#64748b"/>
+              </svg>
+              <div class="syringe-drag-hint">
+                <svg width="10" height="13" viewBox="0 0 10 13" fill="none">
+                  <path d="M5 1v11M2 3.5L5 1l3 2.5M2 9.5L5 12l3-2.5" stroke="#9CA3AF" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Glisser le piston
+              </div>
+            </div>
+          </div>
+          <div class="syringe-info">
+            <div class="syringe-dose-display" id="recon-syringe-units">— U</div>
+            <div class="syringe-dose-label">unités seringue</div>
+            <div class="syringe-chip">
+              <div class="syringe-chip-val" id="recon-syringe-ml">— mL</div>
+              <div class="syringe-chip-label">volume à prélever</div>
+            </div>
+            <div class="syringe-verify-box" id="recon-syringe-info">
+              Cliquez sur une ligne du tableau ↓
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- TABLEAU DE RÉFÉRENCE -->
     <div class="dose-table-wrap" id="recon-table" style="display:none">
       <div class="dose-table-header">
@@ -962,7 +1082,7 @@ function generateDoseTable(concentration, totalMg) {
     const ml = (dose / concentration).toFixed(3);
     const isStandard = parseFloat(units) >= 5 && parseFloat(units) <= 50;
     const displayDose = dose < 1 ? (dose * 1000).toFixed(0) + ' mcg' : dose + ' mg';
-    return `<tr class="${isStandard ? 'highlighted' : ''}">
+    return `<tr class="${isStandard ? 'highlighted' : ''}" style="cursor:pointer" onclick="selectReconDose(${parseFloat(units)}, '${ml}', '${displayDose}')">
       <td>${displayDose}</td>
       <td class="mono">${ml} mL</td>
       <td class="units">${units} U</td>
@@ -971,7 +1091,109 @@ function generateDoseTable(concentration, totalMg) {
   }).join('');
 
   tableWrap.style.display = 'block';
+
+  // Afficher la seringue reconstitution
+  document.getElementById('recon-syringe-section').style.display = 'block';
+
+  // Animer automatiquement sur la première dose standard
+  const firstStandard = doses.find(d => {
+    const u = d / concentration * 100;
+    return u >= 5 && u <= 50;
+  }) || doses[0];
+  if (firstStandard) {
+    const u = firstStandard / concentration * 100;
+    const ml2 = (firstStandard / concentration).toFixed(3);
+    const disp = firstStandard < 1 ? (firstStandard*1000).toFixed(0)+' mcg' : firstStandard+' mg';
+    setTimeout(() => selectReconDose(u, ml2, disp), 100);
+  }
 }
+
+// ── SERINGUE RECONSTITUTION ───────────────────────────────────
+function selectReconDose(units, ml, doseLabel) {
+  const SVG_H = 284;
+  const pct = Math.min(Math.max(units, 0), 100) / 100;
+  const fillH = SVG_H * pct;
+
+  const liquid = document.getElementById('liquidFill2');
+  liquid.setAttribute('y', '28');
+  liquid.setAttribute('height', String(fillH.toFixed(2)));
+
+  const surface = document.getElementById('liquidSurface2');
+  if (surface) {
+    surface.setAttribute('y', String((28 + fillH - 1.5).toFixed(2)));
+    surface.style.opacity = fillH > 3 ? '1' : '0';
+  }
+
+  document.getElementById('pistonGroup2').style.transform = `translateY(${fillH.toFixed(2)}px)`;
+  document.getElementById('doseArrow2').style.transform = `translateY(${fillH.toFixed(2)}px)`;
+  document.getElementById('arrowLabel2').textContent = Math.round(units) + 'U';
+
+  document.getElementById('recon-syringe-units').textContent = units.toFixed(1) + ' U';
+  document.getElementById('recon-syringe-ml').textContent = ml + ' mL';
+  document.getElementById('recon-syringe-info').innerHTML =
+    `<strong style="color:var(--accent)">${doseLabel}</strong> → graduation <strong>${Math.round(units)}</strong>`;
+
+  // Highlight ligne tableau
+  document.querySelectorAll('#dose-table-body tr').forEach(tr => tr.style.background = '');
+  event && event.currentTarget && (event.currentTarget.style.background = 'rgba(13,148,136,.1)');
+}
+
+// Drag seringue reconstitution
+(function initReconDrag() {
+  const SVG_H = 284, SVG_TOP = 28;
+  let dragging = false;
+
+  function getUnits(clientY) {
+    const svg = document.getElementById('syringeSVG2');
+    if (!svg) return 0;
+    const rect = svg.getBoundingClientRect();
+    const scale = SVG_H / rect.height;
+    const fillY = (clientY - rect.top) * scale - SVG_TOP;
+    return Math.min(Math.max(fillY / SVG_H * 100, 0), 100);
+  }
+
+  function apply(units) {
+    const ml = (units / 100).toFixed(3);
+    selectReconDose(units, ml, units.toFixed(1) + 'U drag');
+  }
+
+  function onStart(e) {
+    const svg = document.getElementById('syringeSVG2');
+    if (!svg) return;
+    svg.classList.add('dragging');
+    document.getElementById('pistonGroup2').style.transition = 'none';
+    document.getElementById('doseArrow2').style.transition = 'none';
+    dragging = true;
+    apply(getUnits(e.touches ? e.touches[0].clientY : e.clientY));
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    apply(getUnits(e.touches ? e.touches[0].clientY : e.clientY));
+    e.preventDefault();
+  }
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    const svg = document.getElementById('syringeSVG2');
+    if (svg) svg.classList.remove('dragging');
+    document.getElementById('pistonGroup2').style.transition = 'transform .4s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('doseArrow2').style.transition = 'transform .4s cubic-bezier(.4,0,.2,1)';
+    const cur = parseFloat(document.getElementById('recon-syringe-units').textContent) || 0;
+    apply(Math.round(cur / 5) * 5);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const svg = document.getElementById('syringeSVG2');
+    if (!svg) return;
+    svg.addEventListener('mousedown', onStart, { passive: false });
+    document.addEventListener('mousemove', onMove, { passive: false });
+    document.addEventListener('mouseup', onEnd);
+    svg.addEventListener('touchstart', onStart, { passive: false });
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+  });
+})();
 
 // ── DOSAGE + SERINGUE ANIMÉE ──────────────────────────────────
 function calculateDosage() {

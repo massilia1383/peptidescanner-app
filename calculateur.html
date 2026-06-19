@@ -660,31 +660,73 @@
       <p>Entrez votre concentration (calculée dans l'onglet Reconstitution) et la dose souhaitée.</p>
 
       <div class="form-group">
-        <label class="form-label">Concentration du flacon reconstitué</label>
-        <div class="form-row">
-          <input class="form-input" id="concInput" type="number" placeholder="5" min="0.01" max="100" step="0.01" oninput="calculateDosage()">
-          <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:'Space Mono',monospace;font-size:.88rem;color:var(--muted)">mg / mL</div>
+        <label class="form-label">Unité du peptide</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="unitTypeBtns">
+          <button class="bac-btn selected" onclick="selectUnitType('mg',this)">mg / mcg</button>
+          <button class="bac-btn" onclick="selectUnitType('iu',this)">IU (HGH, HCG…)</button>
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Dose souhaitée</label>
-        <div class="form-row">
-          <input class="form-input" id="doseInput" type="number" placeholder="0.25" min="0.01" max="50" step="0.01" oninput="calculateDosage()">
-          <select class="form-select" id="doseUnit" onchange="calculateDosage()">
-            <option value="mg">mg</option>
-            <option value="mcg">mcg</option>
+      <!-- BLOC mg/mcg -->
+      <div id="blockMgMcg">
+        <div class="form-group">
+          <label class="form-label">Concentration du flacon reconstitué</label>
+          <div class="form-row">
+            <input class="form-input" id="concInput" type="number" placeholder="5" min="0.01" max="100" step="0.01" oninput="calculateDosage()">
+            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:'Space Mono',monospace;font-size:.88rem;color:var(--muted)">mg / mL</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dose souhaitée</label>
+          <div class="form-row">
+            <input class="form-input" id="doseInput" type="number" placeholder="0.25" min="0.01" max="50" step="0.01" oninput="calculateDosage()">
+            <select class="form-select" id="doseUnit" onchange="calculateDosage()">
+              <option value="mg">mg</option>
+              <option value="mcg">mcg</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOC IU -->
+      <div id="blockIU" style="display:none">
+        <div class="explainer-card" style="margin-bottom:14px">
+          <h4>💡 Comment fonctionnent les IU ?</h4>
+          <p>Pour HGH : 1 mg = 3 IU (environ). Pour HCG : 1 flacon = valeur indiquée en IU. Entrez la concentration en IU/mL après reconstitution.</p>
+          <div class="formula">Volume (mL) = Dose (IU) ÷ Concentration (IU/mL)</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Concentration après reconstitution</label>
+          <div class="form-row">
+            <input class="form-input" id="concIU" type="number" placeholder="100" min="1" max="10000" step="1" oninput="calculateDosage()">
+            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:'Space Mono',monospace;font-size:.88rem;color:var(--muted)">IU / mL</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dose souhaitée</label>
+          <div class="form-row">
+            <input class="form-input" id="doseIU" type="number" placeholder="2" min="0.1" max="10000" step="0.1" oninput="calculateDosage()">
+            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:'Space Mono',monospace;font-size:.88rem;color:var(--muted)">IU</div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:6px">
+          <label class="form-label">Peptide / référence rapide</label>
+          <select class="form-select" id="iuPreset" onchange="applyIUPreset()">
+            <option value="">Choisir un preset…</option>
+            <option value="hgh_2iu_1ml">HGH — 2 IU/jour · flacon 10 IU + 1 mL BAC</option>
+            <option value="hgh_4iu_2ml">HGH — 4 IU/jour · flacon 10 IU + 2 mL BAC</option>
+            <option value="hcg_500_2ml">HCG — 500 IU/dose · flacon 5000 IU + 2 mL BAC</option>
+            <option value="hcg_250_2ml">HCG — 250 IU/dose · flacon 5000 IU + 2 mL BAC</option>
           </select>
         </div>
       </div>
 
       <div class="form-group">
         <label class="form-label">Type de seringue <span class="syringe-auto-badge" id="autoSyringeBadge" style="display:none">✓ Auto-sélectionnée</span></label>
-        <select class="form-select" id="syringeType" onchange="calculateDosage()">
-          <option value="30">U-30 (0.3mL — 30 unités)</option>
-          <option value="50">U-50 (0.5mL — 50 unités)</option>
-          <option value="100" selected>U-100 (1mL — 100 unités) — Standard</option>
-        </select>
+        <select class="form-select" id="syringeType" onchange="calculateDosage()"></select>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:5px">
+          Seringues configurées dans votre <a href="profil.html" style="color:var(--accent);text-decoration:none;font-weight:600">profil →</a>
+        </div>
       </div>
     </div>
 
@@ -1291,18 +1333,81 @@ function selectReconDose(units, ml, doseLabel) {
   });
 })();
 
+// ── INIT SERINGUES DEPUIS ÉQUIPEMENT ─────────────────────────
+function initSyringeSelect() {
+  const eq = (() => { try { return JSON.parse(localStorage.getItem('pt_equipment')) || {}; } catch { return {}; } })();
+  const owned = eq.syringes || ['U50', 'U100'];
+  const ALL = [
+    { id:'U30',  val:30,  label:'U-30 (0.3 mL — 30 unités)' },
+    { id:'U50',  val:50,  label:'U-50 (0.5 mL — 50 unités)' },
+    { id:'U100', val:100, label:'U-100 (1 mL — 100 unités) — Standard' },
+    { id:'U200', val:200, label:'2 mL (200 unités) — Grandes doses' },
+  ];
+  const available = ALL.filter(s => owned.includes(s.id));
+  // Si rien configuré, tout afficher
+  const toShow = available.length > 0 ? available : ALL;
+  const sel = document.getElementById('syringeType');
+  sel.innerHTML = toShow.map(s =>
+    `<option value="${s.val}" ${s.id === 'U100' ? 'selected' : ''}>${s.label}</option>`
+  ).join('');
+}
+
+document.addEventListener('DOMContentLoaded', initSyringeSelect);
+
+// ── UNIT TYPE SWITCH (mg/mcg ↔ IU) ──────────────────────────
+let currentUnitType = 'mg';
+
+function selectUnitType(type, btn) {
+  currentUnitType = type;
+  document.querySelectorAll('#unitTypeBtns .bac-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('blockMgMcg').style.display = type === 'mg' ? 'block' : 'none';
+  document.getElementById('blockIU').style.display = type === 'iu' ? 'block' : 'none';
+  // Reset résultat
+  document.getElementById('dosage-result').classList.remove('show');
+  document.getElementById('splitDoseCard').classList.remove('show');
+}
+
+function applyIUPreset() {
+  const preset = document.getElementById('iuPreset').value;
+  if (!preset) return;
+  const presets = {
+    'hgh_2iu_1ml':  { concIU: 10,   doseIU: 2 },
+    'hgh_4iu_2ml':  { concIU: 5,    doseIU: 4 },
+    'hcg_500_2ml':  { concIU: 2500, doseIU: 500 },
+    'hcg_250_2ml':  { concIU: 2500, doseIU: 250 },
+  };
+  const p = presets[preset];
+  if (!p) return;
+  document.getElementById('concIU').value = p.concIU;
+  document.getElementById('doseIU').value = p.doseIU;
+  calculateDosage();
+}
+
 // ── DOSAGE + SERINGUE ANIMÉE ──────────────────────────────────
 let _pendingDosageResult = null; // stocke le résultat en attente de confirmation modale
 
 function calculateDosage() {
-  const concRaw = parseFloat(document.getElementById('concInput').value);
-  const doseRaw = parseFloat(document.getElementById('doseInput').value);
-  const doseUnit = document.getElementById('doseUnit').value;
+  let concRaw, doseRaw, doseUnit, doseMg, volumeMl;
 
-  if (!concRaw || !doseRaw || concRaw <= 0 || doseRaw <= 0) return;
+  if (currentUnitType === 'iu') {
+    // ── MODE IU ──
+    concRaw = parseFloat(document.getElementById('concIU').value);
+    doseRaw = parseFloat(document.getElementById('doseIU').value);
+    if (!concRaw || !doseRaw || concRaw <= 0 || doseRaw <= 0) return;
+    doseUnit = 'IU';
+    volumeMl = doseRaw / concRaw;
+    doseMg = null; // pas de mg en mode IU
+  } else {
+    // ── MODE mg/mcg ──
+    concRaw = parseFloat(document.getElementById('concInput').value);
+    doseRaw = parseFloat(document.getElementById('doseInput').value);
+    doseUnit = document.getElementById('doseUnit').value;
+    if (!concRaw || !doseRaw || concRaw <= 0 || doseRaw <= 0) return;
+    doseMg = doseUnit === 'mcg' ? doseRaw / 1000 : doseRaw;
+    volumeMl = doseMg / concRaw;
+  }
 
-  const doseMg = doseUnit === 'mcg' ? doseRaw / 1000 : doseRaw;
-  const volumeMl = doseMg / concRaw;
   const units = volumeMl * 100; // U-100
 
   // ── 1. SÉLECTION AUTO DE LA PLUS PETITE SERINGUE ──
@@ -1361,8 +1466,16 @@ function calculateDosage() {
 function applyDosageResult({ units, syringeMax, volumeMl, doseMg, doseRaw, doseUnit, concRaw }) {
   document.getElementById('syringe-units-display').textContent = units.toFixed(1) + ' U';
   document.getElementById('syringe-ml-display').textContent = volumeMl.toFixed(3) + ' mL';
-  document.getElementById('syringe-verify').innerHTML =
-    `<strong style="color:var(--accent)">Vérification :</strong> ${doseMg < 1 ? (doseMg*1000).toFixed(0)+'mcg' : doseMg+'mg'} ÷ ${concRaw} mg/mL × 100 = <strong>${units.toFixed(1)} unités</strong>`;
+
+  // Vérification adaptée selon le mode
+  if (doseUnit === 'IU') {
+    document.getElementById('syringe-verify').innerHTML =
+      `<strong style="color:var(--accent)">Vérification :</strong> ${doseRaw} IU ÷ ${concRaw} IU/mL = <strong>${volumeMl.toFixed(3)} mL</strong> = <strong>${units.toFixed(1)} unités</strong>`;
+  } else {
+    document.getElementById('syringe-verify').innerHTML =
+      `<strong style="color:var(--accent)">Vérification :</strong> ${doseMg < 1 ? (doseMg*1000).toFixed(0)+'mcg' : doseMg+'mg'} ÷ ${concRaw} mg/mL × 100 = <strong>${units.toFixed(1)} unités</strong>`;
+  }
+
   document.getElementById('syringe-instruction').innerHTML =
     `<strong style="color:var(--accent)">→ Remplissez jusqu'à la graduation ${Math.round(units)}</strong><br>
     Volume exact : ${volumeMl.toFixed(3)} mL · ${units.toFixed(1)} unités sur seringue U-100`;
@@ -1370,12 +1483,21 @@ function applyDosageResult({ units, syringeMax, volumeMl, doseMg, doseRaw, doseU
   animateSyringe(units, syringeMax);
 
   const formula = document.getElementById('dosage-formula-text');
-  formula.innerHTML = `
-    Dose : <strong>${doseUnit === 'mcg' ? doseRaw + ' mcg' : doseRaw + ' mg'}</strong> (= ${doseMg.toFixed(4)} mg)<br>
-    Concentration : <strong>${concRaw} mg/mL</strong><br>
-    Volume = ${doseMg.toFixed(4)} ÷ ${concRaw} = <strong>${volumeMl.toFixed(4)} mL</strong><br>
-    Unités = ${volumeMl.toFixed(4)} × 100 = <strong>${units.toFixed(1)} unités U-100</strong>
-  `;
+  if (doseUnit === 'IU') {
+    formula.innerHTML = `
+      Dose : <strong>${doseRaw} IU</strong><br>
+      Concentration : <strong>${concRaw} IU/mL</strong><br>
+      Volume = ${doseRaw} ÷ ${concRaw} = <strong>${volumeMl.toFixed(4)} mL</strong><br>
+      Unités seringue = ${volumeMl.toFixed(4)} × 100 = <strong>${units.toFixed(1)} U</strong>
+    `;
+  } else {
+    formula.innerHTML = `
+      Dose : <strong>${doseUnit === 'mcg' ? doseRaw + ' mcg' : doseRaw + ' mg'}</strong> (= ${doseMg.toFixed(4)} mg)<br>
+      Concentration : <strong>${concRaw} mg/mL</strong><br>
+      Volume = ${doseMg.toFixed(4)} ÷ ${concRaw} = <strong>${volumeMl.toFixed(4)} mL</strong><br>
+      Unités = ${volumeMl.toFixed(4)} × 100 = <strong>${units.toFixed(1)} unités U-100</strong>
+    `;
+  }
   document.getElementById('dosage-explainer').style.display = 'block';
   document.getElementById('dosage-result').classList.add('show');
 }

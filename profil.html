@@ -59,7 +59,25 @@
   .stat-box-label { font-size:.65rem; color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:.8px; }
 
   /* DANGER ZONE */
-  .danger-btn { width:100%; padding:12px; border-radius:10px; border:1px solid rgba(239,68,68,.3); background:rgba(239,68,68,.06); color:var(--danger); font-family:inherit; font-size:.86rem; font-weight:600; cursor:pointer; transition:all .2s; margin-bottom:8px; }
+  .form-select { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s; cursor:pointer; }
+  .form-select:focus { border-color:var(--accent); }
+
+  /* EQUIPMENT TOGGLE */
+  .syringe-toggle {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 12px; background:var(--surface2); border-radius:10px;
+    border:1.5px solid var(--border); transition:all .2s;
+  }
+  .syringe-toggle.active { border-color:var(--accent); background:rgba(13,148,136,.06); }
+  .syringe-toggle-info { display:flex; align-items:center; gap:10px; }
+  .syringe-toggle-label { font-size:.84rem; font-weight:600; }
+  .syringe-toggle-sub { font-size:.68rem; color:var(--muted); margin-top:2px; }
+  .toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; inset:0; border-radius:24px; background:var(--border); cursor:pointer; transition:.3s; }
+  .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; border-radius:50%; background:#fff; transition:.3s; box-shadow:0 1px 4px rgba(0,0,0,.15); }
+  .toggle input:checked + .toggle-slider { background:var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(20px); } width:100%; padding:12px; border-radius:10px; border:1px solid rgba(239,68,68,.3); background:rgba(239,68,68,.06); color:var(--danger); font-family:inherit; font-size:.86rem; font-weight:600; cursor:pointer; transition:all .2s; margin-bottom:8px; }
   .danger-btn:hover { background:rgba(239,68,68,.12); }
 
   /* BOTTOM NAV */
@@ -123,6 +141,34 @@
   <div class="section-label">Abonnement</div>
   <div class="premium-card" id="premiumCard"></div>
 
+  <!-- ÉQUIPEMENT -->
+  <div class="section-label">Mon équipement</div>
+  <div class="settings-card" id="equipmentCard">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">💉 Mes seringues</div>
+      <div style="font-size:.74rem;color:var(--muted);margin-bottom:12px;line-height:1.5">Sélectionnez les seringues que vous possédez. Le calculateur s'adaptera automatiquement.</div>
+      <div id="syringeToggles" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">🧪 Type d'aiguille préféré</div>
+      <select class="form-select" id="needlePreference" onchange="saveEquipment()" style="margin-top:8px">
+        <option value="4mm">4 mm — Très mince (SC abdominal)</option>
+        <option value="6mm">6 mm — Standard SC</option>
+        <option value="8mm">8 mm — SC/IM superficiel</option>
+        <option value="12mm">12 mm — IM profond</option>
+        <option value="25mm">25 mm — IM deltoid</option>
+      </select>
+    </div>
+    <div style="padding:14px 16px">
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">💧 Solvant de reconstitution préféré</div>
+      <select class="form-select" id="solventPreference" onchange="saveEquipment()" style="margin-top:8px">
+        <option value="bac">Eau bactériostatique (BAC) — Recommandé</option>
+        <option value="water">Eau stérile pour injection</option>
+        <option value="saline">Sérum physiologique 0.9%</option>
+      </select>
+    </div>
+  </div>
+
   <!-- PARAMÈTRES -->
   <div class="section-label">Paramètres</div>
   <div class="settings-card">
@@ -155,9 +201,9 @@
 
 <nav class="bottom-nav">
   <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
-  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label">Biblio</span></a>
   <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span></a>
-  <a class="nav-item" href="poids.html"><span class="nav-icon">⚖️</span><span class="nav-label">Poids</span></a>
+  <a class="nav-item" href="calculateur.html"><span class="nav-icon">🧮</span><span class="nav-label">Calcul</span></a>
+  <a class="nav-item" href="inventaire.html"><span class="nav-icon">🧪</span><span class="nav-label">Stock</span></a>
   <a class="nav-item" href="alertes.html"><span class="nav-icon">🔔</span><span class="nav-label">Alertes</span></a>
   <a class="nav-item active" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span><div class="nav-dot"></div></a>
 </nav>
@@ -167,6 +213,63 @@
 function getLS(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
 function setLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
+// ── ÉQUIPEMENT ────────────────────────────────────────────────
+const SYRINGES = [
+  { id:'U30',  label:'U-30', sub:'0.3 mL — 30 unités · Mini doses' },
+  { id:'U50',  label:'U-50', sub:'0.5 mL — 50 unités · Doses moyennes' },
+  { id:'U100', label:'U-100', sub:'1.0 mL — 100 unités · Standard' },
+  { id:'U200', label:'2 mL',  sub:'2.0 mL — Grandes doses / split-dose' },
+];
+
+function renderEquipment() {
+  const eq = getLS('pt_equipment', { syringes: ['U50','U100'], needle: '6mm', solvent: 'bac' });
+  const container = document.getElementById('syringeToggles');
+  if (!container) return;
+  container.innerHTML = SYRINGES.map(s => {
+    const active = (eq.syringes || ['U50','U100']).includes(s.id);
+    return `<div class="syringe-toggle ${active ? 'active' : ''}" id="st_${s.id}">
+      <div class="syringe-toggle-info">
+        <span style="font-size:1.2rem">💉</span>
+        <div>
+          <div class="syringe-toggle-label">${s.label}</div>
+          <div class="syringe-toggle-sub">${s.sub}</div>
+        </div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" ${active ? 'checked' : ''}
+          onchange="toggleSyringe('${s.id}', this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>`;
+  }).join('');
+  const needleEl = document.getElementById('needlePreference');
+  const solventEl = document.getElementById('solventPreference');
+  if (needleEl) needleEl.value = eq.needle || '6mm';
+  if (solventEl) solventEl.value = eq.solvent || 'bac';
+}
+
+function toggleSyringe(id, enabled) {
+  const eq = getLS('pt_equipment', { syringes: ['U50','U100'] });
+  let syringes = eq.syringes || ['U50','U100'];
+  if (enabled) { if (!syringes.includes(id)) syringes.push(id); }
+  else { syringes = syringes.filter(s => s !== id); }
+  if (syringes.length === 0) { showToast('⚠️ Gardez au moins une seringue'); return; }
+  eq.syringes = syringes;
+  setLS('pt_equipment', eq);
+  document.getElementById('st_' + id)?.classList.toggle('active', enabled);
+  showToast('✓ Équipement mis à jour');
+}
+
+function saveEquipment() {
+  const eq = getLS('pt_equipment', {});
+  const needle = document.getElementById('needlePreference');
+  const solvent = document.getElementById('solventPreference');
+  if (needle) eq.needle = needle.value;
+  if (solvent) eq.solvent = solvent.value;
+  setLS('pt_equipment', eq);
+  showToast('✓ Préférences enregistrées');
+}
 
 let editingField=null;
 
@@ -290,6 +393,7 @@ document.addEventListener('click',e=>{
 });
 
 render();
+renderEquipment();
 </script>
 </body>
 </html>

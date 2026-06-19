@@ -1,707 +1,398 @@
-// ═══════════════════════════════════════════════════════════════
-// PEPTIDESCANNER — Client Supabase v1.0
-// Remplace localStorage par une vraie base de données
-// ═══════════════════════════════════════════════════════════════
+// ============================================================
+// supabase.js — Couche universelle PeptideScanner
+// Importer dans chaque page : <script src="/supabase.js"></script>
+// ============================================================
 
-// ── CONFIG ────────────────────────────────────────────────────
-// Remplacer par vos vraies valeurs Supabase
-const SUPABASE_URL = 'https://VOTRE-PROJET.supabase.co';
+// ──────────────────────────────────────────────────────────────
+// CONFIG  →  remplacer par tes vraies valeurs Supabase
+// ──────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://VOTRE_PROJECT_ID.supabase.co';
 const SUPABASE_ANON_KEY = 'VOTRE_ANON_KEY';
 
-// Import SDK Supabase (à ajouter dans le <head> des pages HTML)
-// <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ═══════════════════════════════════════════════════════════════
-// AUTH — Authentification
-// ═══════════════════════════════════════════════════════════════
-
-const Auth = {
-
-  // Inscription
-  async register({ prenom, email, password, age, taille, objectif, poids, plan }) {
-    const { data, error } = await db.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { prenom } // Transmis au trigger handle_new_user
-      }
-    });
-    if (error) throw error;
-
-    // Mettre à jour le profil avec les infos complètes
-    if (data.user) {
-      await Profile.update(data.user.id, { prenom, age, taille, objectif, plan });
-
-      // Ajouter le poids initial si fourni
-      if (poids) {
-        await Weight.add({ weight_kg: parseFloat(poids), note: 'Poids initial' });
-      }
-    }
-    return data;
-  },
-
-  // Connexion
-  async login({ email, password }) {
-    const { data, error } = await db.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    return data;
-  },
-
-  // Déconnexion
-  async logout() {
-    const { error } = await db.auth.signOut();
-    if (error) throw error;
-  },
-
-  // Mot de passe oublié
-  async forgotPassword(email) {
-    const { error } = await db.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login.html?reset=true`
-    });
-    if (error) throw error;
-  },
-
-  // Utilisateur courant
-  async getUser() {
-    const { data: { user } } = await db.auth.getUser();
-    return user;
-  },
-
-  // Écouter les changements d'auth
-  onAuthChange(callback) {
-    return db.auth.onAuthStateChange(callback);
-  },
-
-  // Vérifier si connecté
-  async isLoggedIn() {
-    const user = await this.getUser();
-    return !!user;
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// PROFILE — Profil utilisateur
-// ═══════════════════════════════════════════════════════════════
-
-const Profile = {
-
-  // Charger le profil
-  async get() {
-    const user = await Auth.getUser();
-    if (!user) return null;
-
-    const { data, error } = await db
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Mettre à jour le profil
-  async update(userId, updates) {
-    const id = userId || (await Auth.getUser())?.id;
-    if (!id) throw new Error('Non connecté');
-
-    const { data, error } = await db
-      .from('profiles')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Vérifier si Premium
-  async isPremium() {
-    const profile = await this.get();
-    if (!profile) return false;
-    if (profile.plan === 'premium' || profile.plan === 'pro') {
-      // Vérifier expiration
-      if (profile.premium_until) {
-        return new Date(profile.premium_until) > new Date();
-      }
-      return true;
-    }
-    return false;
-  },
-
-  // Activer Premium (après paiement Stripe)
-  async activatePremium(stripeSubscriptionId) {
-    const premiumUntil = new Date();
-    premiumUntil.setFullYear(premiumUntil.getFullYear() + 1);
-
-    return await this.update(null, {
-      plan: 'premium',
-      premium_until: premiumUntil.toISOString()
-    });
-  },
-
-  // Stats utilisateur
-  async getStats() {
-    const user = await Auth.getUser();
-    if (!user) return null;
-
-    const { data, error } = await db
-      .from('user_stats')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// CURES — Gestion des protocoles
-// ═══════════════════════════════════════════════════════════════
-
-const Cures = {
-
-  // Toutes les cures de l'utilisateur
-  async getAll() {
-    const { data, error } = await db
-      .from('cures')
-      .select('*')
-      .order('start_date', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Cure active aujourd'hui
-  async getActive() {
-    const today = new Date().toISOString().split('T')[0];
-
-    const { data, error } = await db
-      .from('active_cures')
-      .select('*');
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Créer une cure
-  async create({ peptide, dosage, admin, freq, start_date, duration, notes }) {
-    const user = await Auth.getUser();
-    if (!user) throw new Error('Non connecté');
-
-    const { data, error } = await db
-      .from('cures')
-      .insert({
-        user_id: user.id,
-        peptide,
-        dosage,
-        admin,
-        freq: parseFloat(freq),
-        start_date,
-        duration: parseInt(duration),
-        notes,
-        status: 'active'
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Modifier une cure
-  async update(id, updates) {
-    const { data, error } = await db
-      .from('cures')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Supprimer une cure
-  async delete(id) {
-    const { error } = await db
-      .from('cures')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
-  // Compliance d'une cure
-  async getCompliance(cureId) {
-    const { data, error } = await db
-      .rpc('get_cure_compliance', { cure_uuid: cureId });
-
-    if (error) throw error;
-    return data;
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// INJECTION LOGS — Journal des injections
-// ═══════════════════════════════════════════════════════════════
-
-const InjectionLogs = {
-
-  // Logs d'une cure pour une période
-  async getByCure(cureId, startDate, endDate) {
-    let query = db
-      .from('injection_logs')
-      .select('*')
-      .eq('cure_id', cureId)
-      .order('log_date', { ascending: true });
-
-    if (startDate) query = query.gte('log_date', startDate);
-    if (endDate) query = query.lte('log_date', endDate);
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Logs du jour
-  async getToday(cureId) {
-    const today = new Date().toISOString().split('T')[0];
-    return await this.getByCure(cureId, today, today);
-  },
-
-  // Marquer une injection comme faite
-  async markDone(cureId, logDate, slot) {
-    const user = await Auth.getUser();
-    if (!user) throw new Error('Non connecté');
-
-    const { data, error } = await db
-      .from('injection_logs')
-      .upsert({
-        cure_id: cureId,
-        user_id: user.id,
-        log_date: logDate,
-        slot,
-        injected_at: new Date().toTimeString().split(' ')[0]
-      }, { onConflict: 'cure_id,log_date,slot' })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Annuler une injection
-  async markUndone(cureId, logDate, slot) {
-    const { error } = await db
-      .from('injection_logs')
-      .delete()
-      .eq('cure_id', cureId)
-      .eq('log_date', logDate)
-      .eq('slot', slot);
-
-    if (error) throw error;
-  },
-
-  // Ajouter une note à un jour
-  async addNote(cureId, logDate, note) {
-    const user = await Auth.getUser();
-    if (!user) throw new Error('Non connecté');
-
-    // Upsert sur le slot 0 pour la note du jour
-    const { error } = await db
-      .from('injection_logs')
-      .update({ note })
-      .eq('cure_id', cureId)
-      .eq('log_date', logDate);
-
-    if (error) throw error;
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// WEIGHT — Suivi du poids
-// ═══════════════════════════════════════════════════════════════
-
-const Weight = {
-
-  // Tout l'historique
-  async getAll(limitDays = 0) {
-    let query = db
-      .from('weight_entries')
-      .select('*')
-      .order('entry_date', { ascending: true });
-
-    if (limitDays > 0) {
-      const cutoff = new Date();
-      cutoff.setDate(cutoff.getDate() - limitDays);
-      query = query.gte('entry_date', cutoff.toISOString().split('T')[0]);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Ajouter / mettre à jour un poids
-  async add({ weight_kg, entry_date, note }) {
-    const user = await Auth.getUser();
-    if (!user) throw new Error('Non connecté');
-
-    const date = entry_date || new Date().toISOString().split('T')[0];
-
-    const { data, error } = await db
-      .from('weight_entries')
-      .upsert({
-        user_id: user.id,
-        entry_date: date,
-        weight_kg: parseFloat(weight_kg),
-        note: note || null
-      }, { onConflict: 'user_id,entry_date' })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Supprimer une entrée
-  async delete(id) {
-    const { error } = await db
-      .from('weight_entries')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
-  // Dernière pesée
-  async getLatest() {
-    const { data, error } = await db
-      .from('weight_entries')
-      .select('*')
-      .order('entry_date', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error && error.code !== 'PGRST116') throw error;
-    return data || null;
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// ALERTS — Alertes & rappels
-// ═══════════════════════════════════════════════════════════════
-
-const Alerts = {
-
-  // Toutes les alertes
-  async getAll() {
-    const { data, error } = await db
-      .from('alerts')
-      .select('*')
-      .order('alert_date', { ascending: true })
-      .order('alert_time', { ascending: true });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Alertes non lues
-  async getUnread() {
-    const { data, error } = await db
-      .from('alerts')
-      .select('*')
-      .eq('is_read', false)
-      .order('alert_date', { ascending: true });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Créer une alerte
-  async create({ message, alert_date, alert_time, priority, is_recurrent, recur_days }) {
-    const user = await Auth.getUser();
-    if (!user) throw new Error('Non connecté');
-
-    const { data, error } = await db
-      .from('alerts')
-      .insert({
-        user_id: user.id,
-        message,
-        alert_date,
-        alert_time,
-        priority: priority || 'green',
-        is_recurrent: is_recurrent || false,
-        recur_days: recur_days || null
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Marquer comme lue
-  async markRead(id) {
-    const { error } = await db
-      .from('alerts')
-      .update({ is_read: true })
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
-  // Supprimer
-  async delete(id) {
-    const { error } = await db
-      .from('alerts')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// IA — Conversation avec le Conseiller
-// ═══════════════════════════════════════════════════════════════
-
-const IA = {
-
-  // Récupérer la conversation
-  async getConversation() {
-    const { data, error } = await db
-      .from('ia_conversations')
-      .select('*')
-      .single();
-
-    if (error && error.code !== 'PGRST116') throw error;
-    return data || null;
-  },
-
-  // Sauvegarder les messages
-  async saveMessages(messages, questionsUsed) {
-    const user = await Auth.getUser();
-    if (!user) throw new Error('Non connecté');
-
-    const { data, error } = await db
-      .from('ia_conversations')
-      .upsert({
-        user_id: user.id,
-        messages: messages.slice(-20), // Garder les 20 derniers
-        questions_used: questionsUsed
-      }, { onConflict: 'user_id' })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Appel à l'IA via Edge Function (proxy sécurisé)
-  async ask(messages, systemPrompt) {
-    const { data: { session } } = await db.auth.getSession();
-
-    const response = await fetch(
-      `${SUPABASE_URL}/functions/v1/ai-chat`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ messages, systemPrompt })
-      }
-    );
-
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error || 'Erreur IA');
-    }
-
-    const data = await response.json();
-    return data.content?.[0]?.text || 'Désolé, je n\'ai pas pu répondre.';
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// AFFILIATE — Tracking boutiques
-// ═══════════════════════════════════════════════════════════════
-
-const Affiliate = {
-
-  // Logger un clic
-  async trackClick(shopId, shopName, sourcePage) {
-    const user = await Auth.getUser();
-
-    const { error } = await db
-      .from('affiliate_clicks')
-      .insert({
-        user_id: user?.id || null,
-        shop_id: shopId,
-        shop_name: shopName,
-        source_page: sourcePage || window.location.pathname
-      });
-
-    if (error) console.warn('Affiliate tracking error:', error);
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// REALTIME — Synchronisation temps réel
-// ═══════════════════════════════════════════════════════════════
-
-const Realtime = {
-
-  // S'abonner aux changements de cures
-  subscribeCures(callback) {
-    return db
-      .channel('cures-changes')
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'cures' },
-        callback
-      )
-      .subscribe();
-  },
-
-  // S'abonner aux nouvelles alertes
-  subscribeAlerts(callback) {
-    return db
-      .channel('alerts-changes')
-      .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'alerts' },
-        callback
-      )
-      .subscribe();
-  },
-
-  // Se désabonner
-  unsubscribe(channel) {
-    db.removeChannel(channel);
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// MIGRATION — localStorage → Supabase
-// Fonction one-shot pour migrer les données existantes
-// ═══════════════════════════════════════════════════════════════
-
-const Migration = {
-
-  async migrateFromLocalStorage() {
-    console.log('[Migration] Début de la migration localStorage → Supabase');
-    let migrated = 0;
-    const errors = [];
-
-    try {
-      // Migrer les cures
-      const localCures = JSON.parse(localStorage.getItem('pt_cures') || '[]');
-      for (const c of localCures) {
-        try {
-          const newCure = await Cures.create({
-            peptide: c.peptide,
-            dosage: c.dosage,
-            admin: c.admin,
-            freq: c.freq,
-            start_date: c.startDate,
-            duration: c.duration,
-            notes: c.notes
-          });
-
-          // Migrer les logs de cette cure
-          const localLogs = JSON.parse(localStorage.getItem('pt_logs_' + c.id) || '[]');
-          for (const log of localLogs) {
-            try {
-              await InjectionLogs.markDone(newCure.id, log.date, log.slot || 0);
-              migrated++;
-            } catch (e) { /* skip doublon */ }
-          }
-        } catch (e) {
-          errors.push('cure: ' + c.peptide + ' — ' + e.message);
-        }
-      }
-
-      // Migrer le poids
-      const localWeights = JSON.parse(localStorage.getItem('pt_weights') || '[]');
-      for (const w of localWeights) {
-        try {
-          await Weight.add({ weight_kg: w.kg, entry_date: w.date, note: w.note });
-          migrated++;
-        } catch (e) { /* skip doublon */ }
-      }
-
-      // Migrer les alertes
-      const localAlerts = JSON.parse(localStorage.getItem('pt_alertes') || '[]');
-      for (const a of localAlerts) {
-        try {
-          await Alerts.create({
-            message: a.msg,
-            alert_date: a.date,
-            alert_time: a.time,
-            priority: a.priority
-          });
-          migrated++;
-        } catch (e) { errors.push('alerte: ' + a.msg); }
-      }
-
-      // Migrer le profil
-      const localProfil = JSON.parse(localStorage.getItem('pt_profil') || '{}');
-      if (localProfil.prenom || localProfil.taille) {
-        await Profile.update(null, {
-          prenom: localProfil.prenom,
-          age: localProfil.age ? parseInt(localProfil.age) : null,
-          taille: localProfil.taille ? parseInt(localProfil.taille) : null,
-          objectif: localProfil.objectif
-        });
-      }
-
-      console.log(`[Migration] ✓ ${migrated} éléments migrés`);
-      if (errors.length > 0) console.warn('[Migration] Erreurs:', errors);
-
-      // Marquer la migration comme effectuée
-      localStorage.setItem('pt_migrated_to_supabase', new Date().toISOString());
-
-      return { success: true, migrated, errors };
-    } catch (err) {
-      console.error('[Migration] Erreur fatale:', err);
-      return { success: false, error: err.message };
-    }
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// HELPER — Vérifier la session au chargement de chaque page
-// ═══════════════════════════════════════════════════════════════
-
-async function requireAuth(redirectTo = 'login.html') {
-  const user = await Auth.getUser();
+// ──────────────────────────────────────────────────────────────
+// INIT CLIENT
+// ──────────────────────────────────────────────────────────────
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ══════════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Inscription email + mot de passe
+ * @param {string} email
+ * @param {string} password
+ * @returns {{ user, error }}
+ */
+export async function signUp(email, password) {
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  return { user: data?.user ?? null, error };
+}
+
+/**
+ * Connexion email + mot de passe
+ * @returns {{ user, session, error }}
+ */
+export async function signIn(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  return { user: data?.user ?? null, session: data?.session ?? null, error };
+}
+
+/**
+ * Déconnexion
+ */
+export async function signOut() {
+  await supabase.auth.signOut();
+  window.location.href = '/login.html';
+}
+
+/**
+ * Récupère l'utilisateur connecté (null si non authentifié)
+ */
+export async function getUser() {
+  const { data } = await supabase.auth.getUser();
+  return data?.user ?? null;
+}
+
+/**
+ * Redirige vers /login.html si l'utilisateur n'est pas connecté.
+ * À appeler en haut de chaque page protégée.
+ */
+export async function requireAuth() {
+  const user = await getUser();
   if (!user) {
-    window.location.href = redirectTo;
+    window.location.href = '/login.html';
     return null;
   }
   return user;
 }
 
-// Export global
-window.PeptideDB = {
-  Auth,
-  Profile,
-  Cures,
-  InjectionLogs,
-  Weight,
-  Alerts,
-  IA,
-  Affiliate,
-  Realtime,
-  Migration,
-  requireAuth,
-  db // accès direct si besoin
-};
+/**
+ * Écoute les changements d'état auth (connexion / déconnexion)
+ * @param {function} callback  - reçoit (event, session)
+ */
+export function onAuthChange(callback) {
+  return supabase.auth.onAuthStateChange(callback);
+}
 
-console.log('[Supabase] PeptideScanner DB client v1.0 chargé');
+// ══════════════════════════════════════════════════════════════
+// PROFIL
+// ══════════════════════════════════════════════════════════════
+
+export async function getProfile(userId) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  return { data, error };
+}
+
+export async function updateProfile(userId, updates) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId)
+    .select()
+    .single();
+  return { data, error };
+}
+
+// ══════════════════════════════════════════════════════════════
+// CURES
+// ══════════════════════════════════════════════════════════════
+
+export async function getCures(userId, status = null) {
+  let query = supabase
+    .from('cures')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (status) query = query.eq('status', status);
+
+  const { data, error } = await query;
+  return { data: data ?? [], error };
+}
+
+export async function getCure(id) {
+  const { data, error } = await supabase
+    .from('cures')
+    .select('*')
+    .eq('id', id)
+    .single();
+  return { data, error };
+}
+
+export async function createCure(userId, cure) {
+  const { data, error } = await supabase
+    .from('cures')
+    .insert({ ...cure, user_id: userId })
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function updateCure(id, updates) {
+  const { data, error } = await supabase
+    .from('cures')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function deleteCure(id) {
+  const { error } = await supabase.from('cures').delete().eq('id', id);
+  return { error };
+}
+
+// ══════════════════════════════════════════════════════════════
+// INJECTIONS
+// ══════════════════════════════════════════════════════════════
+
+export async function getInjections(userId, { cureId = null, from = null, to = null, limit = 100 } = {}) {
+  let query = supabase
+    .from('injections')
+    .select('*')
+    .eq('user_id', userId)
+    .order('injected_at', { ascending: false })
+    .limit(limit);
+
+  if (cureId) query = query.eq('cure_id', cureId);
+  if (from)   query = query.gte('injected_at', from);
+  if (to)     query = query.lte('injected_at', to);
+
+  const { data, error } = await query;
+  return { data: data ?? [], error };
+}
+
+export async function logInjection(userId, injection) {
+  const { data, error } = await supabase
+    .from('injections')
+    .insert({ ...injection, user_id: userId })
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function deleteInjection(id) {
+  const { error } = await supabase.from('injections').delete().eq('id', id);
+  return { error };
+}
+
+// ══════════════════════════════════════════════════════════════
+// POIDS
+// ══════════════════════════════════════════════════════════════
+
+export async function getWeightLogs(userId, limit = 90) {
+  const { data, error } = await supabase
+    .from('weight_logs')
+    .select('*')
+    .eq('user_id', userId)
+    .order('logged_at', { ascending: false })
+    .limit(limit);
+  return { data: data ?? [], error };
+}
+
+export async function logWeight(userId, weight_kg, notes = '') {
+  const { data, error } = await supabase
+    .from('weight_logs')
+    .insert({ user_id: userId, weight_kg, notes })
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function deleteWeightLog(id) {
+  const { error } = await supabase.from('weight_logs').delete().eq('id', id);
+  return { error };
+}
+
+// ══════════════════════════════════════════════════════════════
+// INVENTAIRE (STOCK)
+// ══════════════════════════════════════════════════════════════
+
+export async function getInventory(userId) {
+  const { data, error } = await supabase
+    .from('inventory')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  return { data: data ?? [], error };
+}
+
+export async function createInventoryItem(userId, item) {
+  const { data, error } = await supabase
+    .from('inventory')
+    .insert({ ...item, user_id: userId })
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function updateInventoryItem(id, updates) {
+  const { data, error } = await supabase
+    .from('inventory')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function deleteInventoryItem(id) {
+  const { error } = await supabase.from('inventory').delete().eq('id', id);
+  return { error };
+}
+
+// ══════════════════════════════════════════════════════════════
+// ALERTES
+// ══════════════════════════════════════════════════════════════
+
+export async function getAlerts(userId, unreadOnly = false) {
+  let query = supabase
+    .from('alerts')
+    .select('*')
+    .eq('user_id', userId)
+    .order('scheduled_at', { ascending: true });
+
+  if (unreadOnly) query = query.eq('is_read', false);
+
+  const { data, error } = await query;
+  return { data: data ?? [], error };
+}
+
+export async function markAlertRead(id) {
+  const { error } = await supabase
+    .from('alerts')
+    .update({ is_read: true })
+    .eq('id', id);
+  return { error };
+}
+
+// ══════════════════════════════════════════════════════════════
+// PEPTIDES (bibliothèque)
+// ══════════════════════════════════════════════════════════════
+
+export async function searchPeptides(query = '', limit = 20) {
+  let req = supabase
+    .from('peptides')
+    .select('*')
+    .limit(limit);
+
+  if (query) {
+    req = req.ilike('name', `%${query}%`);
+  }
+
+  const { data, error } = await req;
+  return { data: data ?? [], error };
+}
+
+// ══════════════════════════════════════════════════════════════
+// MIGRATION localStorage → Supabase
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Migre toutes les données localStorage vers Supabase.
+ * À appeler une seule fois après la 1ère connexion de l'utilisateur.
+ * Marque la migration comme faite dans localStorage pour éviter les doublons.
+ */
+export async function migrateLocalStorageToSupabase(userId) {
+  const migrationKey = 'ps_migrated_v1';
+  if (localStorage.getItem(migrationKey)) return { skipped: true };
+
+  const results = { cures: 0, injections: 0, weight: 0, inventory: 0, errors: [] };
+
+  try {
+    // ── Cures ──────────────────────────────────────────────
+    const localCures = JSON.parse(localStorage.getItem('cures') || '[]');
+    for (const cure of localCures) {
+      const { error } = await createCure(userId, {
+        name:           cure.name || cure.peptide || 'Cure importée',
+        peptide_name:   cure.peptide || cure.name,
+        dose_mcg:       parseFloat(cure.dose) || null,
+        unit:           cure.unit || 'mcg',
+        frequency:      cure.frequency || null,
+        duration_days:  parseInt(cure.duration) || null,
+        start_date:     cure.startDate || null,
+        status:         cure.status || 'active',
+        notes:          cure.notes || null,
+        injection_sites: cure.injectionSites || [],
+      });
+      if (error) results.errors.push(`cure: ${error.message}`);
+      else results.cures++;
+    }
+
+    // ── Injections ─────────────────────────────────────────
+    const localInjections = JSON.parse(localStorage.getItem('injections') || '[]');
+    for (const inj of localInjections) {
+      const { error } = await logInjection(userId, {
+        peptide_name:   inj.peptide || inj.peptideName,
+        dose_mcg:       parseFloat(inj.dose) || null,
+        unit:           inj.unit || 'mcg',
+        injection_site: inj.site || inj.injectionSite || null,
+        injected_at:    inj.date || inj.injectedAt || new Date().toISOString(),
+        notes:          inj.notes || null,
+        skipped:        inj.skipped || false,
+      });
+      if (error) results.errors.push(`injection: ${error.message}`);
+      else results.injections++;
+    }
+
+    // ── Poids ──────────────────────────────────────────────
+    const localWeight = JSON.parse(localStorage.getItem('weightLogs') || localStorage.getItem('poids') || '[]');
+    for (const w of localWeight) {
+      const { error } = await logWeight(userId, parseFloat(w.weight || w.poids), w.notes);
+      if (error) results.errors.push(`weight: ${error.message}`);
+      else results.weight++;
+    }
+
+    // ── Inventaire ─────────────────────────────────────────
+    const localInventory = JSON.parse(localStorage.getItem('inventory') || localStorage.getItem('stock') || '[]');
+    for (const item of localInventory) {
+      const { error } = await createInventoryItem(userId, {
+        peptide_name:     item.name || item.peptide,
+        vial_qty_mg:      parseFloat(item.qty || item.vialQty) || null,
+        vial_count:       parseInt(item.count || item.vialCount) || 1,
+        bac_water_ml:     parseFloat(item.bacWater || item.waterMl) || null,
+        reconstituted_at: item.reconstitutedAt || null,
+        expiry_date:      item.expiryDate || null,
+        supplier:         item.supplier || null,
+        notes:            item.notes || null,
+      });
+      if (error) results.errors.push(`inventory: ${error.message}`);
+      else results.inventory++;
+    }
+
+    // Marquer migration comme terminée
+    localStorage.setItem(migrationKey, JSON.stringify({ date: new Date().toISOString(), results }));
+    console.log('[PeptideScanner] Migration localStorage → Supabase terminée', results);
+
+  } catch (err) {
+    results.errors.push(`global: ${err.message}`);
+    console.error('[PeptideScanner] Erreur migration', err);
+  }
+
+  return results;
+}
+
+// ══════════════════════════════════════════════════════════════
+// UTILITAIRES
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Formate une erreur Supabase en message lisible
+ */
+export function formatError(error) {
+  if (!error) return null;
+  const messages = {
+    'Invalid login credentials': 'Email ou mot de passe incorrect.',
+    'Email not confirmed':       'Confirme ton email avant de te connecter.',
+    'User already registered':   'Un compte existe déjà avec cet email.',
+  };
+  return messages[error.message] || error.message || 'Une erreur est survenue.';
+}

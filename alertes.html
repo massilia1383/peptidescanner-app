@@ -208,42 +208,72 @@
   <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
 </nav>
 <div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-function getLS(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
-function setLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
-const TODAY=new Date(); TODAY.setHours(0,0,0,0);
-const todayStr=TODAY.toISOString().split('T')[0];
-const now=new Date();
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-document.getElementById('alertDate').value=todayStr;
-document.getElementById('alertTime').value=`${String(now.getHours()).padStart(2,'0')}:00`;
-document.getElementById('todayDate').textContent='Aujourd\'hui — '+TODAY.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
-function renderSchedule(){
-  const cures=getLS('pt_cures',[]);
-  const list=document.getElementById('scheduleList');
-  const active=cures.filter(c=>{
-    const s=new Date(c.startDate);s.setHours(0,0,0,0);
-    const e=new Date(c.startDate);e.setDate(e.getDate()+parseInt(c.duration));e.setHours(0,0,0,0);
-    return s<=TODAY && e>=TODAY && parseFloat(c.freq)>=1;
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
+const now = new Date();
+
+let userId = null, allCures = [], allInjections = [];
+
+async function init() {
+  const { data } = await sb.auth.getSession();
+  if (!data?.session) { window.location.href = '/login.html'; return; }
+  userId = data.session.user.id;
+
+  const dateEl = document.getElementById('alertDate');
+  const timeEl = document.getElementById('alertTime');
+  const todayLbl = document.getElementById('todayDate');
+  if (dateEl) dateEl.value = todayStr;
+  if (timeEl) timeEl.value = `${String(now.getHours()).padStart(2,'0')}:00`;
+  if (todayLbl) todayLbl.textContent = 'Aujourd\'hui — ' + TODAY.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+
+  const [cRes, iRes] = await Promise.all([
+    sb.from('cures').select('*').eq('user_id', userId),
+    sb.from('injections').select('*').eq('user_id', userId).limit(200)
+  ]);
+  allCures      = cRes.data || [];
+  allInjections = iRes.data || [];
+
+  renderSchedule();
+  renderAutoAlerts();
+  renderCustomAlerts();
+  renderInjReminders();
+  updateNotifBanner();
+  if (Notification.permission === 'granted') scheduleAllReminders();
+}
+
+// ── PROGRAMME DU JOUR ──────────────────────────────────────────
+function renderSchedule() {
+  const list = document.getElementById('scheduleList');
+  const active = allCures.filter(c => {
+    if (c.status !== 'active') return false;
+    const s = new Date(c.start_date); s.setHours(0,0,0,0);
+    const e = new Date(c.start_date); e.setDate(e.getDate()+(c.duration_days||30)); e.setHours(0,0,0,0);
+    return s<=TODAY && e>=TODAY && parseFloat(c.frequency||1)>=1;
   });
-  if(active.length===0){list.innerHTML='<div class="empty-state"><span>✅</span>Aucune injection aujourd\'hui</div>';return;}
-  let items=[];
-  active.forEach(c=>{
-    const freq=parseFloat(c.freq);
-    const cnt=Math.ceil(freq);
-    const times=cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
-    const logs=getLS('pt_logs_'+c.id,[]);
-    times.forEach((t,i)=>{
-      const done=logs.some(l=>l.date===todayStr&&l.slot===i);
-      const [h,m]=t.split(':').map(Number);
-      const isDue=!done&&(now.getHours()>h||(now.getHours()===h&&now.getMinutes()>=m));
-      items.push({time:t,h,name:c.peptide,detail:c.dosage+' · '+c.admin,done,isDue});
+  if (active.length === 0) { list.innerHTML='<div class="empty-state"><span>✅</span>Aucune injection aujourd\'hui</div>'; return; }
+  let items = [];
+  active.forEach(c => {
+    const freq = parseFloat(c.frequency||1);
+    const cnt  = Math.ceil(freq);
+    const times = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+    const todayInjs = allInjections.filter(i => i.cure_id===c.id && (i.injected_at||'').startsWith(todayStr));
+    times.forEach((t,i) => {
+      const done = todayInjs.some(l => (l.notes||'').includes('slot:'+i));
+      const [h,m] = t.split(':').map(Number);
+      const isDue = !done && (now.getHours()>h||(now.getHours()===h&&now.getMinutes()>=m));
+      items.push({time:t,h,name:c.peptide_name||c.name,detail:(c.dose_mcg||'')+(c.unit?' '+c.unit:''),done,isDue});
     });
   });
   items.sort((a,b)=>a.h-b.h);
-  list.innerHTML=items.map(it=>`
+  list.innerHTML = items.map(it=>`
     <div class="sched-item">
       <div class="sched-time">${it.time}</div>
       <div class="sched-info"><div class="sched-name">${it.name}</div><div class="sched-detail">${it.detail}</div></div>
@@ -251,54 +281,42 @@ function renderSchedule(){
     </div>`).join('');
 }
 
-function renderAutoAlerts(){
-  const cures=getLS('pt_cures',[]);
-  const alerts=[];
-  cures.forEach(c=>{
-    const s=new Date(c.startDate);s.setHours(0,0,0,0);
-    const e=new Date(c.startDate);e.setDate(e.getDate()+parseInt(c.duration));e.setHours(0,0,0,0);
-    if(s<=TODAY && e>=TODAY){
-      const daysLeft=Math.ceil((e-TODAY)/86400000);
-      const dayNum=Math.floor((TODAY-s)/86400000)+1;
-      if(daysLeft<=7) alerts.push({icon:'⚠️',type:'amber',title:`Fin de cure dans ${daysLeft} jour${daysLeft>1?'s':''}`,sub:`${c.peptide} — Prévoir le prochain stock`,time:'Auto'});
-      if([14,21,30,60].includes(dayNum)) alerts.push({icon:'🩸',type:'purple',title:'Bilan sanguin recommandé',sub:`Jour ${dayNum} de votre cure ${c.peptide} — IGF-1, hormones`,time:'Aujourd\'hui'});
-      if(dayNum===1) alerts.push({icon:'🎯',type:'green',title:'Cure démarrée aujourd\'hui',sub:`${c.peptide} · ${c.dosage} · Bonne chance !`,time:'Aujourd\'hui'});
+// ── AUTO ALERTES ───────────────────────────────────────────────
+function renderAutoAlerts() {
+  const c = document.getElementById('autoAlerts');
+  const alerts = [];
+  allCures.forEach(cure => {
+    if (!cure.start_date || !cure.duration_days) return;
+    const s = new Date(cure.start_date); s.setHours(0,0,0,0);
+    const e = new Date(cure.start_date); e.setDate(e.getDate()+cure.duration_days); e.setHours(0,0,0,0);
+    if (s<=TODAY && e>=TODAY) {
+      const daysLeft = Math.ceil((e-TODAY)/86400000);
+      if (daysLeft<=5) alerts.push({icon:'⚠️',cls:'ai-amber',title:`Fin de cure dans ${daysLeft}j`,sub:cure.peptide_name||cure.name});
+      const dayNum = Math.floor((TODAY-s)/86400000)+1;
+      if ([14,21,30].includes(dayNum)) alerts.push({icon:'🩸',cls:'ai-purple',title:'Bilan sanguin recommandé',sub:`J${dayNum} — ${cure.peptide_name||cure.name}`});
     }
-    if(e.getTime()===TODAY.getTime()) alerts.push({icon:'🏁',type:'green',title:'Cure terminée !',sub:`${c.peptide} — Félicitations pour avoir complété votre cure`,time:'Aujourd\'hui'});
   });
-  const c=document.getElementById('autoAlertsList');
-  if(alerts.length===0){c.innerHTML='<div class="alert-card"><div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">Aucune alerte automatique</div></div></div></div>';return;}
-  const iconMap={green:'ai-green',amber:'ai-amber',red:'ai-red',purple:'ai-purple'};
-  const dotMap={green:'dot-green',amber:'dot-amber',red:'dot-red',purple:'dot-amber'};
-  c.innerHTML='<div class="alert-card">'+alerts.map(a=>`
+  if (alerts.length===0) { c.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">Aucune alerte automatique 🎉</div>'; return; }
+  c.innerHTML = '<div class="alert-card">'+alerts.map(a=>`
     <div class="alert-row">
-      <div class="alert-icon ${iconMap[a.type]}">${a.icon}</div>
+      <div class="alert-icon ${a.cls}">${a.icon}</div>
       <div class="alert-body"><div class="alert-title">${a.title}</div><div class="alert-sub">${a.sub}</div></div>
-      <div class="alert-right"><div class="alert-time">${a.time}</div><div class="priority-dot ${dotMap[a.type]}"></div></div>
     </div>`).join('')+'</div>';
 }
 
-function renderCustomAlerts(){
-  const alerts=getLS('pt_alertes',[]);
-  const c=document.getElementById('customAlertsList');
-  if(alerts.length===0){c.innerHTML='<div class="alert-card"><div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">Aucun rappel — Ajoutez-en un ci-dessous</div></div></div></div>';return;}
-  const iconMap={green:'🟢',amber:'🟡',red:'🔴'};
-  const clsMap={green:'ai-green',amber:'ai-amber',red:'ai-red'};
-  const dotMap={green:'dot-green',amber:'dot-amber',red:'dot-red'};
-  // Normaliser les objets (compatibilité ancien format)
-  const normalized = alerts.map(a => ({
-    id: a.id || Date.now(),
-    msg: a.msg || a.label || a.title || 'Rappel',
-    date: a.date || todayStr,
-    time: a.time || '08:00',
-    priority: a.priority || a.type || 'green'
-  }));
-  const sorted=[...normalized].sort((a,b)=>{
-    const da = new Date(a.date + 'T' + a.time);
-    const db = new Date(b.date + 'T' + b.time);
-    return (isNaN(da)?0:da) - (isNaN(db)?0:db);
+// ── RAPPELS PERSONNALISÉS (localStorage) ───────────────────────
+function renderCustomAlerts() {
+  const c = document.getElementById('customAlerts');
+  const alerts = JSON.parse(localStorage.getItem('ps_custom_alerts')||'[]');
+  const clsMap = {high:'ai-red',medium:'ai-amber',low:'ai-green'};
+  const iconMap = {high:'🔴',medium:'🟡',low:'🟢'};
+  const dotMap  = {high:'dot-red',medium:'dot-amber',low:'dot-green'};
+  if (alerts.length===0) { c.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">Aucun rappel — ajoutez-en un ci-dessus</div>'; return; }
+  const sorted = [...alerts].sort((a,b)=>{
+    const da=new Date(a.date+'T'+a.time), db=new Date(b.date+'T'+b.time);
+    return (isNaN(da)?0:da)-(isNaN(db)?0:db);
   });
-  c.innerHTML='<div class="alert-card">'+sorted.map(a=>`
+  c.innerHTML = '<div class="alert-card">'+sorted.map(a=>`
     <div class="alert-row">
       <div class="alert-icon ${clsMap[a.priority]||'ai-green'}">${iconMap[a.priority]||'🟢'}</div>
       <div class="alert-body"><div class="alert-title">${a.msg}</div><div class="alert-sub">${new Date(a.date+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})} à ${a.time}</div></div>
@@ -306,194 +324,131 @@ function renderCustomAlerts(){
     </div>`).join('')+'</div>';
 }
 
-function addAlert(){
-  const msg=document.getElementById('alertMsg').value.trim();
-  const date=document.getElementById('alertDate').value;
-  const time=document.getElementById('alertTime').value;
-  const priority=document.getElementById('alertPriority').value;
-  if(!msg||!date||!time){showToast('⚠️ Remplir tous les champs');return;}
-  const alerts=getLS('pt_alertes',[]);
+function addAlert() {
+  const msg      = document.getElementById('alertMsg').value.trim();
+  const date     = document.getElementById('alertDate').value;
+  const time     = document.getElementById('alertTime').value;
+  const priority = document.getElementById('alertPriority').value;
+  if (!msg||!date||!time) { showToast('⚠️ Remplir tous les champs'); return; }
+  const alerts = JSON.parse(localStorage.getItem('ps_custom_alerts')||'[]');
   alerts.push({id:Date.now(),msg,date,time,priority});
-  setLS('pt_alertes',alerts);
-  document.getElementById('alertMsg').value='';
+  localStorage.setItem('ps_custom_alerts', JSON.stringify(alerts));
+  document.getElementById('alertMsg').value = '';
   showToast('✓ Rappel ajouté !');
   renderCustomAlerts();
 }
 
-function deleteAlert(id){
-  let alerts=getLS('pt_alertes',[]);
-  alerts=alerts.filter(a=>a.id!==id);
-  setLS('pt_alertes',alerts);
+function deleteAlert(id) {
+  let alerts = JSON.parse(localStorage.getItem('ps_custom_alerts')||'[]');
+  alerts = alerts.filter(a=>a.id!==id);
+  localStorage.setItem('ps_custom_alerts', JSON.stringify(alerts));
   showToast('Rappel supprimé');
   renderCustomAlerts();
 }
 
-// ── NOTIFICATIONS INTELLIGENTES ──────────────────────────────
-function updateNotifBanner() {
-  const btn = document.getElementById('notifEnableBtn');
-  const banner = document.getElementById('notifBanner');
-  if (!('Notification' in window)) {
-    banner.style.display = 'none'; return;
-  }
-  if (Notification.permission === 'granted') {
-    btn.textContent = '✓ Activées';
-    btn.classList.add('granted');
-  } else if (Notification.permission === 'denied') {
-    btn.textContent = 'Bloquées';
-    btn.classList.add('granted');
-    btn.style.background = 'rgba(220,38,38,.1)';
-    btn.style.color = 'var(--danger)';
-  }
-}
-
-function requestNotifPermission() {
-  if (!('Notification' in window)) {
-    showToast('Notifications non supportées sur ce navigateur'); return;
-  }
-  Notification.requestPermission().then(p => {
-    updateNotifBanner();
-    if (p === 'granted') {
-      showToast('✓ Notifications activées !');
-      scheduleAllReminders();
-    } else {
-      showToast('Notifications refusées — vérifiez les paramètres');
-    }
-  });
-}
-
-function sendNotif(title, body, icon) {
-  if (Notification.permission !== 'granted') return;
-  new Notification(title, {
-    body, icon: icon || '/icons/icon-192.png',
-    badge: '/icons/icon-72.png',
-    tag: 'peptidescanner-inj'
-  });
-}
-
-// Programmer les rappels du jour
-function scheduleAllReminders() {
-  const cures = getLS('pt_cures', []);
-  const reminders = getLS('pt_reminders', {});
-  const now = new Date();
-
-  cures.forEach(cure => {
-    const s = new Date(cure.startDate); s.setHours(0,0,0,0);
-    const e = new Date(cure.startDate); e.setDate(e.getDate() + parseInt(cure.duration));
-    if (s > TODAY || e < TODAY) return;
-
-    const freq = parseFloat(cure.freq);
-    if (freq < 1) return;
-    const cnt = Math.ceil(freq);
-    const defaultTimes = cnt === 1 ? ['08:00'] : cnt === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
-    const savedTimes = reminders[cure.id]?.times || defaultTimes;
-    const enabled = reminders[cure.id]?.enabled !== false;
-    if (!enabled) return;
-
-    savedTimes.forEach((t, i) => {
-      const [h, m] = t.split(':').map(Number);
-      const triggerTime = new Date();
-      triggerTime.setHours(h, m, 0, 0);
-      const msUntil = triggerTime - now;
-      if (msUntil > 0) {
-        setTimeout(() => {
-          const logs = getLS('pt_logs_' + cure.id, []);
-          const done = logs.some(l => l.date === todayStr && l.slot === i);
-          if (!done) {
-            sendNotif(
-              `💉 ${cure.peptide} — Injection ${cnt > 1 ? i+1 : 'du jour'}`,
-              `${cure.dosage} · ${cure.admin} · Heure : ${t}`,
-              '/icons/icon-192.png'
-            );
-          }
-        }, msUntil);
-      }
-    });
-  });
-}
-
+// ── RAPPELS D'INJECTION ────────────────────────────────────────
 function renderInjReminders() {
-  const cures = getLS('pt_cures', []);
-  const reminders = getLS('pt_reminders', {});
   const container = document.getElementById('injReminders');
-
-  const active = cures.filter(c => {
-    const s = new Date(c.startDate); s.setHours(0,0,0,0);
-    const e = new Date(c.startDate); e.setDate(e.getDate() + parseInt(c.duration));
-    return s <= TODAY && e >= TODAY && parseFloat(c.freq) >= 1;
+  const reminders = JSON.parse(localStorage.getItem('ps_reminders')||'{}');
+  const active = allCures.filter(c => {
+    if (c.status!=='active') return false;
+    const s=new Date(c.start_date); s.setHours(0,0,0,0);
+    const e=new Date(c.start_date); e.setDate(e.getDate()+(c.duration_days||30)); e.setHours(0,0,0,0);
+    return s<=TODAY && e>=TODAY && parseFloat(c.frequency||1)>=1;
   });
-
-  if (active.length === 0) {
-    container.innerHTML = `<div class="inj-reminder-card">
-      <div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">Aucune cure active — les rappels apparaîtront ici</div></div></div>
-    </div>`;
+  if (active.length===0) {
+    container.innerHTML='<div class="inj-reminder-card"><div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">Aucune cure active</div></div></div></div>';
     return;
   }
-
   container.innerHTML = active.map(cure => {
-    const freq = parseFloat(cure.freq);
-    const cnt = Math.ceil(freq);
-    const defaultTimes = cnt === 1 ? ['08:00'] : cnt === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
-    const saved = reminders[cure.id] || { enabled: true, times: defaultTimes };
-    const times = saved.times || defaultTimes;
+    const freq = parseFloat(cure.frequency||1);
+    const cnt  = Math.ceil(freq);
+    const defaultTimes = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+    const saved   = reminders[cure.id] || {enabled:true,times:defaultTimes};
+    const times   = saved.times || defaultTimes;
     const enabled = saved.enabled !== false;
-
-    const timesHtml = times.map((t, i) => `
+    const timesHtml = times.map((t,i)=>`
       <div class="inj-reminder-row">
         <div class="inj-reminder-info">
-          <div class="inj-reminder-name">Injection ${cnt > 1 ? i+1 : 'du jour'}</div>
-          <div class="inj-reminder-sub">${cure.dosage} · ${cure.admin}</div>
+          <div class="inj-reminder-name">Injection ${cnt>1?i+1:'du jour'}</div>
+          <div class="inj-reminder-sub">${cure.dose_mcg||''} ${cure.unit||'mcg'}</div>
         </div>
-        <input class="inj-time-input" type="time" value="${t}"
-          onchange="updateReminderTime('${cure.id}',${i},this.value)"
-          ${!enabled ? 'disabled' : ''}>
+        <input class="inj-time-input" type="time" value="${t}" onchange="updateReminderTime('${cure.id}',${i},this.value)" ${!enabled?'disabled':''}>
       </div>`).join('');
-
     return `<div class="inj-reminder-card">
       <div class="inj-reminder-header">
-        <span class="inj-reminder-title">💉 ${cure.peptide}</span>
-        <label class="toggle">
-          <input type="checkbox" ${enabled ? 'checked' : ''}
-            onchange="toggleReminder('${cure.id}',this.checked)">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-      ${timesHtml}
-    </div>`;
+        <span class="inj-reminder-title">💉 ${cure.peptide_name||cure.name}</span>
+        <label class="toggle"><input type="checkbox" ${enabled?'checked':''} onchange="toggleReminder('${cure.id}',this.checked)"><span class="toggle-slider"></span></label>
+      </div>${timesHtml}</div>`;
   }).join('');
 }
 
 function toggleReminder(cureId, enabled) {
-  const reminders = getLS('pt_reminders', {});
-  reminders[cureId] = { ...(reminders[cureId] || {}), enabled };
-  setLS('pt_reminders', reminders);
+  const r = JSON.parse(localStorage.getItem('ps_reminders')||'{}');
+  r[cureId] = {...(r[cureId]||{}), enabled};
+  localStorage.setItem('ps_reminders', JSON.stringify(r));
   renderInjReminders();
-  if (enabled && Notification.permission === 'granted') scheduleAllReminders();
-  showToast(enabled ? '🔔 Rappel activé' : '🔕 Rappel désactivé');
+  showToast(enabled?'🔔 Rappel activé':'🔕 Rappel désactivé');
 }
 
 function updateReminderTime(cureId, idx, newTime) {
-  const reminders = getLS('pt_reminders', {});
-  const cures = getLS('pt_cures', []);
-  const cure = cures.find(c => c.id === cureId);
+  const r = JSON.parse(localStorage.getItem('ps_reminders')||'{}');
+  const cure = allCures.find(c=>c.id===cureId);
   if (!cure) return;
-  const cnt = Math.ceil(parseFloat(cure.freq));
-  const defaultTimes = cnt === 1 ? ['08:00'] : cnt === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
-  const current = reminders[cureId]?.times || [...defaultTimes];
-  current[idx] = newTime;
-  reminders[cureId] = { ...(reminders[cureId] || {}), times: current };
-  setLS('pt_reminders', reminders);
-  if (Notification.permission === 'granted') scheduleAllReminders();
-  showToast('✓ Heure mise à jour — ' + newTime);
+  const cnt = Math.ceil(parseFloat(cure.frequency||1));
+  const def = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+  const cur = r[cureId]?.times || [...def];
+  cur[idx] = newTime;
+  r[cureId] = {...(r[cureId]||{}), times:cur};
+  localStorage.setItem('ps_reminders', JSON.stringify(r));
+  showToast('✓ Heure mise à jour — '+newTime);
 }
 
-// Init
-updateNotifBanner();
-renderInjReminders();
-if (Notification.permission === 'granted') scheduleAllReminders();
+// ── NOTIFICATIONS ──────────────────────────────────────────────
+function updateNotifBanner() {
+  const btn    = document.getElementById('notifEnableBtn');
+  const banner = document.getElementById('notifBanner');
+  if (!btn || !banner) return;
+  if (!('Notification' in window)) { banner.style.display='none'; return; }
+  if (Notification.permission==='granted') { btn.textContent='✓ Activées'; btn.classList.add('granted'); }
+  else if (Notification.permission==='denied') { btn.textContent='Bloquées'; btn.style.color='var(--danger)'; }
+}
 
-renderSchedule();
-renderAutoAlerts();
-renderCustomAlerts();
+function requestNotifPermission() {
+  if (!('Notification' in window)) { showToast('Non supporté'); return; }
+  Notification.requestPermission().then(p => {
+    updateNotifBanner();
+    if (p==='granted') { showToast('✓ Notifications activées !'); scheduleAllReminders(); }
+    else showToast('Notifications refusées');
+  });
+}
+
+function scheduleAllReminders() {
+  const reminders = JSON.parse(localStorage.getItem('ps_reminders')||'{}');
+  allCures.forEach(cure => {
+    const s=new Date(cure.start_date); s.setHours(0,0,0,0);
+    const e=new Date(cure.start_date); e.setDate(e.getDate()+(cure.duration_days||30));
+    if (s>TODAY||e<TODAY) return;
+    const freq=parseFloat(cure.frequency||1); if(freq<1) return;
+    const cnt=Math.ceil(freq);
+    const def=cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+    const saved=reminders[cure.id]; if(saved?.enabled===false) return;
+    const times=saved?.times||def;
+    times.forEach((t,i) => {
+      const [h,m]=t.split(':').map(Number);
+      const trigger=new Date(); trigger.setHours(h,m,0,0);
+      const ms=trigger-now;
+      if (ms>0) setTimeout(()=>{
+        const todayInjs=allInjections.filter(inj=>inj.cure_id===cure.id&&(inj.injected_at||'').startsWith(todayStr));
+        if (!todayInjs.some(l=>(l.notes||'').includes('slot:'+i))) {
+          new Notification(`💉 ${cure.peptide_name||cure.name}`,{body:`${cure.dose_mcg||''} ${cure.unit||'mcg'} · ${t}`,icon:'/icons/icon-192.png'});
+        }
+      }, ms);
+    });
+  });
+}
+
+init();
 </script>
 </body>
 </html>

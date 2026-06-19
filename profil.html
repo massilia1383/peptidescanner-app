@@ -209,191 +209,209 @@
 </nav>
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-function getLS(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
-function setLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ── ÉQUIPEMENT ────────────────────────────────────────────────
-const SYRINGES = [
-  { id:'U30',  label:'U-30', sub:'0.3 mL — 30 unités · Mini doses' },
-  { id:'U50',  label:'U-50', sub:'0.5 mL — 50 unités · Doses moyennes' },
-  { id:'U100', label:'U-100', sub:'1.0 mL — 100 unités · Standard' },
-  { id:'U200', label:'2 mL',  sub:'2.0 mL — Grandes doses / split-dose' },
-];
+function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
-function renderEquipment() {
-  const eq = getLS('pt_equipment', { syringes: ['U50','U100'], needle: '6mm', solvent: 'bac' });
-  const container = document.getElementById('syringeToggles');
-  if (!container) return;
-  container.innerHTML = SYRINGES.map(s => {
-    const active = (eq.syringes || ['U50','U100']).includes(s.id);
-    return `<div class="syringe-toggle ${active ? 'active' : ''}" id="st_${s.id}">
-      <div class="syringe-toggle-info">
-        <span style="font-size:1.2rem">💉</span>
-        <div>
-          <div class="syringe-toggle-label">${s.label}</div>
-          <div class="syringe-toggle-sub">${s.sub}</div>
-        </div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" ${active ? 'checked' : ''}
-          onchange="toggleSyringe('${s.id}', this.checked)">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>`;
-  }).join('');
-  const needleEl = document.getElementById('needlePreference');
-  const solventEl = document.getElementById('solventPreference');
-  if (needleEl) needleEl.value = eq.needle || '6mm';
-  if (solventEl) solventEl.value = eq.solvent || 'bac';
+let userId = null, userEmail = '', profil = {}, allCures = [], allInjections = [], allWeights = [];
+let editingField = null;
+
+async function init() {
+  const { data } = await sb.auth.getSession();
+  if (!data?.session) { window.location.href = '/login.html'; return; }
+  userId    = data.session.user.id;
+  userEmail = data.session.user.email;
+
+  const [pRes, cRes, iRes, wRes] = await Promise.all([
+    sb.from('profiles').select('*').eq('id', userId).single(),
+    sb.from('cures').select('*').eq('user_id', userId),
+    sb.from('injections').select('id,cure_id').eq('user_id', userId),
+    sb.from('weight_logs').select('*').eq('user_id', userId).order('logged_at', {ascending:true})
+  ]);
+  profil       = pRes.data  || {};
+  allCures     = cRes.data  || [];
+  allInjections= iRes.data  || [];
+  allWeights   = wRes.data  || [];
+
+  render();
+  renderEquipment();
 }
 
-function toggleSyringe(id, enabled) {
-  const eq = getLS('pt_equipment', { syringes: ['U50','U100'] });
-  let syringes = eq.syringes || ['U50','U100'];
-  if (enabled) { if (!syringes.includes(id)) syringes.push(id); }
-  else { syringes = syringes.filter(s => s !== id); }
-  if (syringes.length === 0) { showToast('⚠️ Gardez au moins une seringue'); return; }
-  eq.syringes = syringes;
-  setLS('pt_equipment', eq);
-  document.getElementById('st_' + id)?.classList.toggle('active', enabled);
-  showToast('✓ Équipement mis à jour');
-}
+// ── RENDER PROFIL ──────────────────────────────────────────────
+function render() {
+  const name = profil.full_name || userEmail?.split('@')[0] || 'Utilisateur';
+  const nameEl = document.getElementById('displayName');
+  const avatarEl = document.getElementById('avatarEmoji');
+  if (nameEl) nameEl.textContent = name;
+  if (avatarEl) avatarEl.textContent = name[0]?.toUpperCase() || '👤';
 
-function saveEquipment() {
-  const eq = getLS('pt_equipment', {});
-  const needle = document.getElementById('needlePreference');
-  const solvent = document.getElementById('solventPreference');
-  if (needle) eq.needle = needle.value;
-  if (solvent) eq.solvent = solvent.value;
-  setLS('pt_equipment', eq);
-  showToast('✓ Préférences enregistrées');
-}
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  set('val-prenom',  profil.full_name  || 'Non renseigné');
+  set('val-age',     profil.experience || 'Non renseigné');
+  set('val-taille',  profil.goal       || 'Non renseigné');
+  set('val-objectif',profil.goal       || 'Non renseigné');
 
-let editingField=null;
-
-function render(){
-  const p=getLS('pt_profil',{});
-  document.getElementById('displayName').textContent=p.prenom||'Utilisateur';
-  document.getElementById('avatarEmoji').textContent=p.prenom?p.prenom[0].toUpperCase():'👤';
-  document.getElementById('val-prenom').textContent=p.prenom||'Non renseigné';
-  document.getElementById('val-age').textContent=p.age?p.age+' ans':'Non renseigné';
-  document.getElementById('val-taille').textContent=p.taille?p.taille+' cm':'Non renseigné';
-  document.getElementById('val-objectif').textContent=p.objectif||'Non renseigné';
-  const isPremium=p.premium;
-  const badge=document.getElementById('planBadge');
-  badge.textContent=isPremium?'⭐ Premium':'Plan Gratuit';
-  badge.className='avatar-plan '+(isPremium?'plan-premium':'plan-free');
+  const badge = document.getElementById('planBadge');
+  if (badge) {
+    badge.textContent = profil.premium ? '⭐ Premium' : 'Plan Gratuit';
+    badge.className   = 'avatar-plan ' + (profil.premium ? 'plan-premium' : 'plan-free');
+  }
   renderStats();
-  renderPremium(isPremium);
+  renderPremium(profil.premium);
 }
 
-function renderStats(){
-  const cures=getLS('pt_cures',[]);
-  const weights=getLS('pt_weights',[]);
-  let totalInj=0;
-  cures.forEach(c=>{ totalInj+=getLS('pt_logs_'+c.id,[]).length; });
-  const completed=cures.filter(c=>{const e=new Date(c.startDate);e.setDate(e.getDate()+parseInt(c.duration));return e<new Date();});
-  const latestW=weights.length>0?[...weights].sort((a,b)=>new Date(b.date)-new Date(a.date))[0]:null;
-  const firstW=weights.length>0?[...weights].sort((a,b)=>new Date(a.date)-new Date(b.date))[0]:null;
-  const weightLost=latestW&&firstW?(latestW.kg-firstW.kg).toFixed(1):null;
-  document.getElementById('statsGrid').innerHTML=`
-    <div class="stat-box"><div class="stat-box-val">${cures.length}</div><div class="stat-box-label">Cures totales</div></div>
+function renderStats() {
+  const totalInj  = allInjections.length;
+  const completed = allCures.filter(c => {
+    if (!c.start_date||!c.duration_days) return false;
+    const e = new Date(c.start_date); e.setDate(e.getDate()+c.duration_days);
+    return e < new Date();
+  });
+  const latestW = allWeights.length > 0 ? allWeights[allWeights.length-1] : null;
+  const firstW  = allWeights.length > 0 ? allWeights[0] : null;
+  const wLost   = latestW && firstW ? (latestW.weight_kg - firstW.weight_kg).toFixed(1) : null;
+  const grid = document.getElementById('statsGrid');
+  if (!grid) return;
+  grid.innerHTML = `
+    <div class="stat-box"><div class="stat-box-val">${allCures.length}</div><div class="stat-box-label">Cures totales</div></div>
     <div class="stat-box"><div class="stat-box-val">${totalInj}</div><div class="stat-box-label">Injections</div></div>
     <div class="stat-box"><div class="stat-box-val">${completed.length}</div><div class="stat-box-label">Cures finies</div></div>
-    <div class="stat-box"><div class="stat-box-val" style="color:${weightLost<0?'var(--accent)':'var(--danger)'}">${weightLost!==null?(weightLost>0?'+':'')+weightLost+' kg':'— kg'}</div><div class="stat-box-label">Variation poids</div></div>
-  `;
+    <div class="stat-box"><div class="stat-box-val" style="color:${wLost<0?'var(--accent)':'var(--danger)'}">${wLost!==null?(wLost>0?'+':'')+wLost+' kg':'— kg'}</div><div class="stat-box-label">Variation poids</div></div>`;
 }
 
-function renderPremium(isPremium){
-  const c=document.getElementById('premiumCard');
-  if(isPremium){
-    c.innerHTML=`<h3>⭐ Premium actif</h3><p>Vous bénéficiez de toutes les fonctionnalités premium.</p>
-    <ul class="features-list"><li>Cures & calendrier illimités</li><li>Suivi du poids complet</li><li>Alertes & rappels push</li><li>Conseiller IA illimité</li><li>Export PDF</li></ul>
-    <div style="font-size:.78rem;color:var(--muted);font-family:'Space Mono',monospace">Renouvellement : 15 juin 2027</div>`;
+function renderPremium(isPremium) {
+  const c = document.getElementById('premiumCard');
+  if (!c) return;
+  if (isPremium) {
+    c.innerHTML = `<h3>⭐ Premium actif</h3><p>Vous bénéficiez de toutes les fonctionnalités premium.</p>
+    <ul class="features-list"><li>Cures & calendrier illimités</li><li>Suivi du poids complet</li><li>Alertes & rappels push</li><li>Conseiller IA illimité</li></ul>`;
   } else {
-    c.innerHTML=`<h3>Passer Premium</h3><p>Débloquez le suivi complet, les alertes intelligentes et le conseiller IA.</p>
+    c.innerHTML = `<h3>Passer Premium</h3><p>Débloquez le suivi complet, les alertes intelligentes et le conseiller IA.</p>
     <ul class="features-list"><li>Calendrier de cure illimité</li><li>Suivi du poids + graphiques</li><li>Alertes & rappels push</li><li>Conseiller IA spécialisé</li></ul>
     <button class="premium-btn" onclick="activatePremium()">⭐ S'abonner — 59 € / an</button>`;
   }
 }
 
-function editField(key, label){
-  if(editingField===key){ cancelEdit(); return; }
-  editingField=key;
-  const row=document.querySelector(`[onclick="editField('${key}','${label}')"]`);
-  const valEl=document.getElementById('val-'+key);
-  const p=getLS('pt_profil',{});
-  row.classList.add('editing');
-  valEl.innerHTML=`<input class="row-edit-input" id="edit-input" value="${p[key]||''}" placeholder="${label}" onkeydown="if(event.key==='Enter')saveField('${key}','${label}')">`;
-  setTimeout(()=>document.getElementById('edit-input').focus(),50);
+// ── EDIT CHAMPS ────────────────────────────────────────────────
+function editField(key, label) {
+  if (editingField===key) { cancelEdit(); return; }
+  editingField = key;
+  const valEl = document.getElementById('val-'+key);
+  if (!valEl) return;
+  const cur = key==='prenom' ? profil.full_name : profil[key] || '';
+  valEl.innerHTML = `<input class="row-edit-input" id="edit-input" value="${cur}" placeholder="${label}" onkeydown="if(event.key==='Enter')saveField('${key}','${label}')">`;
+  setTimeout(() => document.getElementById('edit-input')?.focus(), 50);
 }
 
-function cancelEdit(){
-  editingField=null;
+function cancelEdit() { editingField=null; render(); }
+
+async function saveField(key, label) {
+  const val = document.getElementById('edit-input')?.value.trim();
+  if (!val) { cancelEdit(); return; }
+  const dbKey = key==='prenom' ? 'full_name' : key;
+  await sb.from('profiles').update({[dbKey]: val}).eq('id', userId);
+  profil[dbKey] = val;
+  editingField = null;
+  showToast('✓ ' + label + ' mis à jour');
   render();
 }
 
-function saveField(key, label){
-  const val=document.getElementById('edit-input').value.trim();
-  if(!val){ cancelEdit(); return; }
-  const p=getLS('pt_profil',{});
-  p[key]=val;
-  setLS('pt_profil',p);
-  editingField=null;
-  showToast('✓ '+label+' mis à jour');
-  render();
-}
-
-function activatePremium(){
-  const p=getLS('pt_profil',{});
-  p.premium=true;
-  setLS('pt_profil',p);
+async function activatePremium() {
+  await sb.from('profiles').update({premium: true}).eq('id', userId);
+  profil.premium = true;
   showToast('⭐ Premium activé !');
   render();
 }
 
-function exportData(){
-  const data={
-    profil:getLS('pt_profil',{}),
-    cures:getLS('pt_cures',[]),
-    poids:getLS('pt_weights',[]),
-    alertes:getLS('pt_alertes',[]),
-    exportDate:new Date().toISOString()
-  };
-  const cures=getLS('pt_cures',[]);
-  cures.forEach(c=>{ data['logs_'+c.id]=getLS('pt_logs_'+c.id,[]); });
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='peptidescanner-export-'+new Date().toISOString().split('T')[0]+'.json';
+// ── ÉQUIPEMENT (localStorage) ──────────────────────────────────
+const SYRINGES = [
+  { id:'U30',  label:'U-30',  sub:'0.3 mL — 30 unités · Mini doses' },
+  { id:'U50',  label:'U-50',  sub:'0.5 mL — 50 unités · Doses moyennes' },
+  { id:'U100', label:'U-100', sub:'1.0 mL — 100 unités · Standard' },
+  { id:'U200', label:'2 mL',  sub:'2.0 mL — Grandes doses / split-dose' },
+];
+
+function renderEquipment() {
+  const eq = JSON.parse(localStorage.getItem('ps_equipment')||'{"syringes":["U50","U100"],"needle":"6mm","solvent":"bac"}');
+  const container = document.getElementById('syringeToggles');
+  if (!container) return;
+  container.innerHTML = SYRINGES.map(s => {
+    const active = (eq.syringes||['U50','U100']).includes(s.id);
+    return `<div class="syringe-toggle ${active?'active':''}" id="st_${s.id}">
+      <div class="syringe-toggle-info"><span style="font-size:1.2rem">💉</span>
+        <div><div class="syringe-toggle-label">${s.label}</div><div class="syringe-toggle-sub">${s.sub}</div></div>
+      </div>
+      <label class="toggle"><input type="checkbox" ${active?'checked':''} onchange="toggleSyringe('${s.id}',this.checked)"><span class="toggle-slider"></span></label>
+    </div>`;
+  }).join('');
+  const n=document.getElementById('needlePreference'); if(n) n.value=eq.needle||'6mm';
+  const s=document.getElementById('solventPreference'); if(s) s.value=eq.solvent||'bac';
+}
+
+function toggleSyringe(id, enabled) {
+  const eq = JSON.parse(localStorage.getItem('ps_equipment')||'{"syringes":["U50","U100"]}');
+  let syringes = eq.syringes||['U50','U100'];
+  if (enabled) { if(!syringes.includes(id)) syringes.push(id); }
+  else { syringes=syringes.filter(s=>s!==id); }
+  if (syringes.length===0) { showToast('⚠️ Gardez au moins une seringue'); return; }
+  eq.syringes = syringes;
+  localStorage.setItem('ps_equipment', JSON.stringify(eq));
+  document.getElementById('st_'+id)?.classList.toggle('active', enabled);
+  showToast('✓ Équipement mis à jour');
+}
+
+function saveEquipment() {
+  const eq = JSON.parse(localStorage.getItem('ps_equipment')||'{}');
+  const n=document.getElementById('needlePreference'); if(n) eq.needle=n.value;
+  const s=document.getElementById('solventPreference'); if(s) eq.solvent=s.value;
+  localStorage.setItem('ps_equipment', JSON.stringify(eq));
+  showToast('✓ Préférences enregistrées');
+}
+
+// ── EXPORT / LOGOUT / RESET ────────────────────────────────────
+async function exportData() {
+  const [cRes, iRes, wRes] = await Promise.all([
+    sb.from('cures').select('*').eq('user_id', userId),
+    sb.from('injections').select('*').eq('user_id', userId),
+    sb.from('weight_logs').select('*').eq('user_id', userId)
+  ]);
+  const data = { profil, cures:cRes.data, injections:iRes.data, poids:wRes.data, exportDate:new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'peptidescanner-export-'+new Date().toISOString().split('T')[0]+'.json';
   a.click();
   showToast('✓ Données exportées');
 }
 
-function logout(){
-  if(!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) return;
-  localStorage.removeItem('pt_session');
-  localStorage.removeItem('pt_profil');
-  window.location.href='login.html';
+async function logout() {
+  if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) return;
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
 }
 
-function resetData(){
-  if(!confirm('⚠️ Supprimer TOUTES les données ? Cette action est irréversible.')) return;
-  if(!confirm('Êtes-vous vraiment sûr ? Toutes vos cures et mesures seront perdues.')) return;
-  localStorage.clear();
+async function resetData() {
+  if (!confirm('⚠️ Supprimer TOUTES les données ? Cette action est irréversible.')) return;
+  if (!confirm('Êtes-vous vraiment sûr ?')) return;
+  await Promise.all([
+    sb.from('injections').delete().eq('user_id', userId),
+    sb.from('cures').delete().eq('user_id', userId),
+    sb.from('weight_logs').delete().eq('user_id', userId),
+    sb.from('inventory').delete().eq('user_id', userId),
+  ]);
   showToast('Données supprimées');
-  setTimeout(()=>window.location='dashboard.html',1500);
+  setTimeout(()=>window.location='dashboard.html', 1500);
 }
 
-// Click outside to cancel edit
-document.addEventListener('click',e=>{
-  if(editingField && !e.target.closest('.settings-row') && !e.target.closest('.row-edit-input')) cancelEdit();
+document.addEventListener('click', e => {
+  if (editingField && !e.target.closest('.settings-row') && !e.target.closest('.row-edit-input')) cancelEdit();
 });
 
-render();
-renderEquipment();
+init();
 </script>
 </body>
 </html>

@@ -156,7 +156,7 @@
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
   <h1>Inventaire</h1>
-  <button class="add-btn" onclick="openModal()" title="Ajouter un flacon">+</button>
+  <button class="add-btn" onclick="openAdd()" title="Ajouter un flacon">+</button>
 </div>
 
 <div class="content" id="mainContent"></div>
@@ -373,7 +373,7 @@ window.openAdd = function() {
   });
   document.getElementById('fRecon').value  = new Date().toISOString().split('T')[0];
   document.getElementById('fExpiry').value = '';
-  document.getElementById('addModal').classList.add('open');
+  document.getElementById('flaconModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 };
 
@@ -393,7 +393,7 @@ window.openEdit = function(id) {
   document.getElementById('fLot').value      = f.lot_number   || '';
   document.getElementById('fSupplier').value = f.supplier     || '';
   document.getElementById('fNotes').value    = f.notes        || '';
-  document.getElementById('addModal').classList.add('open');
+  document.getElementById('flaconModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 };
 
@@ -440,9 +440,15 @@ window.confirmDelete = async function(id) {
 
 window.deleteItem = window.confirmDelete;
 
-window.closeModal     = function() { document.getElementById('addModal').classList.remove('open'); document.body.style.overflow = ''; };
-window.closeIfOverlay = function(e) { if (e.target === document.getElementById('addModal')) window.closeModal(); };
+window.closeModal     = function() { document.getElementById('flaconModal').classList.remove('open'); document.body.style.overflow = ''; };
+window.closeIfOverlay = function(e) { if (e.target === document.getElementById('flaconModal')) window.closeModal(); };
 
 await loadData();
 </body>
 </html>
+<script>
+// Aliases pour compatibilité avec les boutons HTML originaux
+window.openModal   = window.openAdd;
+window.saveFlacon  = window.saveItem;
+window.deleteFlacon= window.confirmDelete;
+</script>

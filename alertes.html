@@ -17,7 +17,7 @@
   .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
   .section-title { font-size:.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:12px; }
   .alert-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:10px; }
-  .alert-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid rgba(30,45,69,.5); transition:background .15s; }
+  .alert-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); transition:background .15s; }
   .alert-row:last-child { border-bottom:none; }
   .alert-row:hover { background:rgba(255,255,255,.02); }
   .alert-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
@@ -46,12 +46,70 @@
   .form-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:inherit; font-size:.86rem; outline:none; transition:border-color .2s; }
   .form-input:focus { border-color:var(--accent); }
   .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .submit-btn { width:100%; padding:12px; border-radius:10px; border:none; background:var(--accent); color:#000; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; margin-top:4px; }
+  .submit-btn { width:100%; padding:12px; border-radius:10px; border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; margin-top:4px; }
 
-  /* SCHEDULE PREVIEW */
+  /* NOTIFICATIONS INTELLIGENTES */
+  .notif-banner {
+    display:flex; align-items:center; gap:12px; padding:14px 16px;
+    background:linear-gradient(135deg, rgba(13,148,136,.07), rgba(43,108,176,.05));
+    border:1.5px solid rgba(13,148,136,.2); border-radius:16px; margin-bottom:16px;
+  }
+  .notif-banner-icon { font-size:1.6rem; flex-shrink:0; }
+  .notif-banner-text { flex:1; }
+  .notif-banner-text strong { display:block; font-size:.86rem; font-weight:700; margin-bottom:2px; }
+  .notif-banner-text span { font-size:.74rem; color:var(--muted); }
+  .notif-enable-btn {
+    padding:8px 14px; border-radius:10px; border:none;
+    background:var(--accent); color:#fff; font-family:inherit;
+    font-size:.78rem; font-weight:700; cursor:pointer; flex-shrink:0;
+    transition:opacity .2s;
+  }
+  .notif-enable-btn:hover { opacity:.88; }
+  .notif-enable-btn.granted { background:rgba(13,148,136,.12); color:var(--accent); cursor:default; }
+
+  /* RAPPELS INJECTION avec toggle */
+  .inj-reminder-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:10px; }
+  .inj-reminder-header { padding:12px 16px; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .inj-reminder-title { font-size:.82rem; font-weight:700; }
+  .inj-reminder-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); }
+  .inj-reminder-row:last-child { border-bottom:none; }
+  .inj-reminder-info { flex:1; }
+  .inj-reminder-name { font-size:.84rem; font-weight:600; }
+  .inj-reminder-sub { font-size:.7rem; color:var(--muted); margin-top:2px; }
+  .inj-time-input {
+    background:var(--surface2); border:1.5px solid var(--border); border-radius:8px;
+    padding:6px 10px; font-family:'Space Mono',monospace; font-size:.8rem;
+    color:var(--text); outline:none; width:80px; text-align:center;
+    transition:border-color .2s;
+  }
+  .inj-time-input:focus { border-color:var(--accent); }
+
+  /* TOGGLE SWITCH */
+  .toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider {
+    position:absolute; inset:0; border-radius:24px;
+    background:var(--border); cursor:pointer; transition:.3s;
+  }
+  .toggle-slider::before {
+    content:''; position:absolute; width:18px; height:18px;
+    left:3px; top:3px; border-radius:50%; background:#fff;
+    transition:.3s; box-shadow:0 1px 4px rgba(0,0,0,.15);
+  }
+  .toggle input:checked + .toggle-slider { background:var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
+
+  .ss-done { background:rgba(13,148,136,.1); color:var(--accent); }
+  .ss-due { background:rgba(249,115,22,.1); color:var(--accent3); }
+  .ss-upcoming { background:var(--surface2); color:var(--muted); }
+  .ai-green { background:rgba(13,148,136,.12); }
+  .ai-amber { background:rgba(249,115,22,.12); }
+  .ai-red { background:rgba(220,38,38,.12); }
+  .ai-purple { background:rgba(168,85,247,.12); }
+  .ai-blue { background:rgba(59,130,246,.12); }
   .schedule-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; }
   .schedule-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
-  .sched-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(30,45,69,.4); }
+  .sched-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
   .sched-item:last-child { border-bottom:none; }
   .sched-time { font-family:'Space Mono',monospace; font-size:.8rem; font-weight:700; color:var(--accent); width:44px; flex-shrink:0; }
   .sched-info { flex:1; }
@@ -69,7 +127,7 @@
   .nav-icon { font-size:1.3rem; line-height:1; }
   .nav-label { font-size:.6rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
   .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
-  .toast { position:fixed; bottom:calc(var(--nav-h)+16px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#000; padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
+  .toast { position:fixed; bottom:calc(var(--nav-h)+16px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#fff; padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   .empty-state { text-align:center; padding:32px 20px; color:var(--muted); font-size:.85rem; }
   .empty-state span { font-size:2rem; display:block; margin-bottom:8px; }
@@ -82,6 +140,20 @@
   <div style="width:36px"></div>
 </div>
 <div class="content">
+
+  <!-- BANNIÈRE NOTIFICATIONS -->
+  <div class="notif-banner" id="notifBanner">
+    <div class="notif-banner-icon">🔔</div>
+    <div class="notif-banner-text">
+      <strong>Notifications intelligentes</strong>
+      <span>Recevez vos rappels d'injection même quand l'app est fermée</span>
+    </div>
+    <button class="notif-enable-btn" id="notifEnableBtn" onclick="requestNotifPermission()">Activer</button>
+  </div>
+
+  <!-- RAPPELS D'INJECTION PAR CURE -->
+  <div class="section-title">Rappels d'injection</div>
+  <div id="injReminders"></div>
 
   <!-- SCHEDULE DU JOUR -->
   <div class="section-title">Planning du jour</div>
@@ -129,14 +201,10 @@
 </div>
 <nav class="bottom-nav">
   <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
-  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label">Biblio</span></a>
   <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span></a>
-  <a class="nav-item" href="poids.html"><span class="nav-icon">⚖️</span><span class="nav-label">Poids</span></a>
+  <a class="nav-item" href="calculateur.html"><span class="nav-icon">🧮</span><span class="nav-label">Calcul</span></a>
   <a class="nav-item active" href="alertes.html"><span class="nav-icon">🔔</span><span class="nav-label">Alertes</span><div class="nav-dot"></div></a>
-  <a class="nav-item" href="inventaire.html">
-    <span class="nav-icon">🧪</span>
-    <span class="nav-label">Stock</span>
-  </a>
+  <a class="nav-item" href="inventaire.html"><span class="nav-icon">🧪</span><span class="nav-label">Stock</span></a>
   <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
 </nav>
 <div class="toast" id="toast"></div>
@@ -247,6 +315,169 @@ function deleteAlert(id){
   showToast('Rappel supprimé');
   renderCustomAlerts();
 }
+
+// ── NOTIFICATIONS INTELLIGENTES ──────────────────────────────
+function updateNotifBanner() {
+  const btn = document.getElementById('notifEnableBtn');
+  const banner = document.getElementById('notifBanner');
+  if (!('Notification' in window)) {
+    banner.style.display = 'none'; return;
+  }
+  if (Notification.permission === 'granted') {
+    btn.textContent = '✓ Activées';
+    btn.classList.add('granted');
+  } else if (Notification.permission === 'denied') {
+    btn.textContent = 'Bloquées';
+    btn.classList.add('granted');
+    btn.style.background = 'rgba(220,38,38,.1)';
+    btn.style.color = 'var(--danger)';
+  }
+}
+
+function requestNotifPermission() {
+  if (!('Notification' in window)) {
+    showToast('Notifications non supportées sur ce navigateur'); return;
+  }
+  Notification.requestPermission().then(p => {
+    updateNotifBanner();
+    if (p === 'granted') {
+      showToast('✓ Notifications activées !');
+      scheduleAllReminders();
+    } else {
+      showToast('Notifications refusées — vérifiez les paramètres');
+    }
+  });
+}
+
+function sendNotif(title, body, icon) {
+  if (Notification.permission !== 'granted') return;
+  new Notification(title, {
+    body, icon: icon || '/icons/icon-192.png',
+    badge: '/icons/icon-72.png',
+    tag: 'peptidescanner-inj'
+  });
+}
+
+// Programmer les rappels du jour
+function scheduleAllReminders() {
+  const cures = getLS('pt_cures', []);
+  const reminders = getLS('pt_reminders', {});
+  const now = new Date();
+
+  cures.forEach(cure => {
+    const s = new Date(cure.startDate); s.setHours(0,0,0,0);
+    const e = new Date(cure.startDate); e.setDate(e.getDate() + parseInt(cure.duration));
+    if (s > TODAY || e < TODAY) return;
+
+    const freq = parseFloat(cure.freq);
+    if (freq < 1) return;
+    const cnt = Math.ceil(freq);
+    const defaultTimes = cnt === 1 ? ['08:00'] : cnt === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
+    const savedTimes = reminders[cure.id]?.times || defaultTimes;
+    const enabled = reminders[cure.id]?.enabled !== false;
+    if (!enabled) return;
+
+    savedTimes.forEach((t, i) => {
+      const [h, m] = t.split(':').map(Number);
+      const triggerTime = new Date();
+      triggerTime.setHours(h, m, 0, 0);
+      const msUntil = triggerTime - now;
+      if (msUntil > 0) {
+        setTimeout(() => {
+          const logs = getLS('pt_logs_' + cure.id, []);
+          const done = logs.some(l => l.date === todayStr && l.slot === i);
+          if (!done) {
+            sendNotif(
+              `💉 ${cure.peptide} — Injection ${cnt > 1 ? i+1 : 'du jour'}`,
+              `${cure.dosage} · ${cure.admin} · Heure : ${t}`,
+              '/icons/icon-192.png'
+            );
+          }
+        }, msUntil);
+      }
+    });
+  });
+}
+
+function renderInjReminders() {
+  const cures = getLS('pt_cures', []);
+  const reminders = getLS('pt_reminders', {});
+  const container = document.getElementById('injReminders');
+
+  const active = cures.filter(c => {
+    const s = new Date(c.startDate); s.setHours(0,0,0,0);
+    const e = new Date(c.startDate); e.setDate(e.getDate() + parseInt(c.duration));
+    return s <= TODAY && e >= TODAY && parseFloat(c.freq) >= 1;
+  });
+
+  if (active.length === 0) {
+    container.innerHTML = `<div class="inj-reminder-card">
+      <div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">Aucune cure active — les rappels apparaîtront ici</div></div></div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = active.map(cure => {
+    const freq = parseFloat(cure.freq);
+    const cnt = Math.ceil(freq);
+    const defaultTimes = cnt === 1 ? ['08:00'] : cnt === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
+    const saved = reminders[cure.id] || { enabled: true, times: defaultTimes };
+    const times = saved.times || defaultTimes;
+    const enabled = saved.enabled !== false;
+
+    const timesHtml = times.map((t, i) => `
+      <div class="inj-reminder-row">
+        <div class="inj-reminder-info">
+          <div class="inj-reminder-name">Injection ${cnt > 1 ? i+1 : 'du jour'}</div>
+          <div class="inj-reminder-sub">${cure.dosage} · ${cure.admin}</div>
+        </div>
+        <input class="inj-time-input" type="time" value="${t}"
+          onchange="updateReminderTime('${cure.id}',${i},this.value)"
+          ${!enabled ? 'disabled' : ''}>
+      </div>`).join('');
+
+    return `<div class="inj-reminder-card">
+      <div class="inj-reminder-header">
+        <span class="inj-reminder-title">💉 ${cure.peptide}</span>
+        <label class="toggle">
+          <input type="checkbox" ${enabled ? 'checked' : ''}
+            onchange="toggleReminder('${cure.id}',this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      ${timesHtml}
+    </div>`;
+  }).join('');
+}
+
+function toggleReminder(cureId, enabled) {
+  const reminders = getLS('pt_reminders', {});
+  reminders[cureId] = { ...(reminders[cureId] || {}), enabled };
+  setLS('pt_reminders', reminders);
+  renderInjReminders();
+  if (enabled && Notification.permission === 'granted') scheduleAllReminders();
+  showToast(enabled ? '🔔 Rappel activé' : '🔕 Rappel désactivé');
+}
+
+function updateReminderTime(cureId, idx, newTime) {
+  const reminders = getLS('pt_reminders', {});
+  const cures = getLS('pt_cures', []);
+  const cure = cures.find(c => c.id === cureId);
+  if (!cure) return;
+  const cnt = Math.ceil(parseFloat(cure.freq));
+  const defaultTimes = cnt === 1 ? ['08:00'] : cnt === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
+  const current = reminders[cureId]?.times || [...defaultTimes];
+  current[idx] = newTime;
+  reminders[cureId] = { ...(reminders[cureId] || {}), times: current };
+  setLS('pt_reminders', reminders);
+  if (Notification.permission === 'granted') scheduleAllReminders();
+  showToast('✓ Heure mise à jour — ' + newTime);
+}
+
+// Init
+updateNotifBanner();
+renderInjReminders();
+if (Notification.permission === 'granted') scheduleAllReminders();
 
 renderSchedule();
 renderAutoAlerts();

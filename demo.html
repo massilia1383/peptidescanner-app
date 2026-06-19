@@ -45,7 +45,7 @@
   .slide {
     position:absolute; inset:0;
     display:flex; flex-direction:column; align-items:center;
-    padding:24px 20px 80px; overflow-y:auto;
+    padding:24px 20px 100px; overflow-y:auto;
     opacity:0; pointer-events:none;
     transform:translateX(60px);
     transition:all .4s cubic-bezier(.4,0,.2,1);
@@ -730,7 +730,7 @@ function updateUI() {
   if (current === TOTAL) {
     navArea.innerHTML = `
       <a href="login.html" class="signup-final">🚀 Commencer gratuitement — inscription rapide</a>
-      <a href="login.html#register" class="signup-free">Voir les plans →</a>`;
+      <a href="login.html" class="signup-free">Voir les plans →</a>`;
   } else {
     navArea.innerHTML = `
       <div class="nav-btns">

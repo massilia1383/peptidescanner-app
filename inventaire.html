@@ -377,6 +377,7 @@ function render() {
         <div style="font-family:'Space Mono',monospace;font-size:.8rem;color:${color};font-weight:700">${pct}%</div>
         <div style="font-size:.68rem;color:var(--muted);text-align:center">${remaining} / ${total} ${f.vial_qty_mg?'mg':''}</div>
         ${f.expiry_date?`<div style="font-size:.65rem;color:var(--muted)">exp. ${fmt(f.expiry_date)}</div>`:''}
+        <button onclick="event.stopPropagation();confirmDelete('${f.id}')" style="margin-top:6px;padding:4px 12px;background:rgba(220,38,38,.08);color:var(--danger);border:1px solid rgba(220,38,38,.2);border-radius:8px;font-family:inherit;font-size:.68rem;font-weight:600;cursor:pointer">🗑 Supprimer</button>
       </div>`;
     }).join('')}
     <!-- Bouton ajouter -->

@@ -285,12 +285,24 @@ function renderCustomAlerts(){
   const iconMap={green:'🟢',amber:'🟡',red:'🔴'};
   const clsMap={green:'ai-green',amber:'ai-amber',red:'ai-red'};
   const dotMap={green:'dot-green',amber:'dot-amber',red:'dot-red'};
-  const sorted=[...alerts].sort((a,b)=>new Date(a.date+' '+a.time)-new Date(b.date+' '+b.time));
+  // Normaliser les objets (compatibilité ancien format)
+  const normalized = alerts.map(a => ({
+    id: a.id || Date.now(),
+    msg: a.msg || a.label || a.title || 'Rappel',
+    date: a.date || todayStr,
+    time: a.time || '08:00',
+    priority: a.priority || a.type || 'green'
+  }));
+  const sorted=[...normalized].sort((a,b)=>{
+    const da = new Date(a.date + 'T' + a.time);
+    const db = new Date(b.date + 'T' + b.time);
+    return (isNaN(da)?0:da) - (isNaN(db)?0:db);
+  });
   c.innerHTML='<div class="alert-card">'+sorted.map(a=>`
     <div class="alert-row">
-      <div class="alert-icon ${clsMap[a.priority]}">${iconMap[a.priority]}</div>
-      <div class="alert-body"><div class="alert-title">${a.msg}</div><div class="alert-sub">${new Date(a.date).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})} à ${a.time}</div></div>
-      <div class="alert-right"><div class="alert-time">${a.date===todayStr?'Aujourd\'hui':''}</div><button class="alert-del" onclick="deleteAlert(${a.id})">🗑</button><div class="priority-dot ${dotMap[a.priority]}"></div></div>
+      <div class="alert-icon ${clsMap[a.priority]||'ai-green'}">${iconMap[a.priority]||'🟢'}</div>
+      <div class="alert-body"><div class="alert-title">${a.msg}</div><div class="alert-sub">${new Date(a.date+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})} à ${a.time}</div></div>
+      <div class="alert-right"><div class="alert-time">${a.date===todayStr?'Aujourd\'hui':''}</div><button class="alert-del" onclick="deleteAlert(${a.id})">🗑</button><div class="priority-dot ${dotMap[a.priority]||'dot-green'}"></div></div>
     </div>`).join('')+'</div>';
 }
 

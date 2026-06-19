@@ -92,6 +92,15 @@
     border: none; font-family: inherit; transition: all .2s;
   }
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,201,167,.3); }
+    .btn-demo {
+    background: rgba(13,148,136,.08); color: var(--accent);
+    padding: 14px 28px; border-radius: 8px;
+    font-weight: 700; font-size: .95rem; cursor: pointer;
+    border: 2px solid var(--accent); font-family: inherit;
+    transition: all .2s; display: flex; align-items: center; gap: 8px;
+  }
+  .btn-demo:hover { background: var(--accent); color: #fff; transform: translateY(-2px); }
+
   .btn-secondary {
     background: transparent; color: var(--text);
     padding: 14px 28px; border-radius: 8px;
@@ -464,7 +473,7 @@
     <p>Bibliothèque complète, calendrier de cure, suivi du poids, alertes personnalisées et liens vers les meilleures boutiques — tout en un.</p>
     <div class="hero-btns">
       <button class="btn-primary" onclick="window.location.href='login.html'">Commencer gratuitement</button>
-      <button class="btn-secondary" onclick="window.location.href='demo.html'">Voir la démo →</button>
+      <button class="btn-demo" onclick="window.location.href='demo.html'">▶ Voir la démo interactive</button>
     </div>
   </div>
   <div class="hero-right">
@@ -935,6 +944,19 @@
 </div>
 
 <!-- FOOTER -->
+<!-- BANNIÈRE DÉMO -->
+<div style="background:linear-gradient(135deg,rgba(13,148,136,.08),rgba(43,108,176,.06));border-top:1px solid rgba(13,148,136,.15);border-bottom:1px solid rgba(13,148,136,.15);padding:48px 32px;text-align:center;">
+  <div style="max-width:600px;margin:0 auto;">
+    <div style="font-size:.75rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;font-family:'Space Mono',monospace">▶ DÉMO INTERACTIVE</div>
+    <h2 style="font-size:1.8rem;font-weight:700;margin-bottom:12px;line-height:1.3">Voyez PeptideScanner<br>en action avant de vous inscrire</h2>
+    <p style="color:var(--muted);font-size:.95rem;margin-bottom:28px;line-height:1.6">Tour guidé de 8 écrans — Today View, calendrier, calculateur, inventaire, IA et plus. Aucune inscription requise.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="window.location.href='demo.html'" style="background:var(--accent);color:#fff;padding:14px 32px;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:700;border:none;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(13,148,136,.3)">▶ Lancer la démo</button>
+      <button onclick="window.location.href='login.html'" style="background:transparent;color:var(--text);padding:14px 32px;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:600;border:2px solid var(--border);cursor:pointer;transition:all .2s">Créer un compte gratuit →</button>
+    </div>
+  </div>
+</div>
+
 <footer>
   <div>
     <div class="logo" style="margin-bottom:8px">

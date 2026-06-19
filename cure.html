@@ -187,6 +187,10 @@
   <a class="nav-item active" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span><div class="nav-dot"></div></a>
   <a class="nav-item" href="poids.html"><span class="nav-icon">⚖️</span><span class="nav-label">Poids</span></a>
   <a class="nav-item" href="alertes.html"><span class="nav-icon">🔔</span><span class="nav-label">Alertes</span></a>
+  <a class="nav-item" href="inventaire.html">
+    <span class="nav-icon">🧪</span>
+    <span class="nav-label">Stock</span>
+  </a>
   <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
 </nav>
 
@@ -453,11 +457,16 @@ function selectDay(ds, clickable){
     });
   }
 
+  // Widget rotation sites (seulement si admin SC/IM/IV)
+  const showSiteWidget = cure.admin && cure.admin !== 'Oral' && cure.admin !== 'Nasal';
+  const siteWidgetHtml = showSiteWidget ? renderSiteWidget(currentCureId, cure.admin, ds) : '';
+
   dd.innerHTML=`
     <div class="dd-header">
       <div class="dd-date">${dateLabel}</div>
       <button class="dd-close" onclick="document.getElementById('dayDetail').classList.remove('show')">✕</button>
     </div>
+    ${siteWidgetHtml}
     ${slotsHtml}
     <textarea class="note-area" id="dayNote" rows="2" placeholder="Note pour ce jour…">${notes}</textarea>
     <button class="save-note-btn" onclick="saveNote('${ds}')">Enregistrer la note</button>`;
@@ -466,11 +475,131 @@ function selectDay(ds, clickable){
   dd.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function toggleInj(ds, slot, time){
+// ── ROTATION SITES D'INJECTION ───────────────────────────────────────
+const SITES_SC = [
+  { id:'abd_g',  label:'Abdomen gauche',   icon:'🫃', zone:'Abdomen' },
+  { id:'abd_d',  label:'Abdomen droit',    icon:'🫃', zone:'Abdomen' },
+  { id:'cuisse_g', label:'Cuisse gauche',  icon:'🦵', zone:'Cuisse' },
+  { id:'cuisse_d', label:'Cuisse droite',  icon:'🦵', zone:'Cuisse' },
+  { id:'fesse_g',  label:'Fesse gauche',   icon:'🍑', zone:'Fesse' },
+  { id:'fesse_d',  label:'Fesse droite',   icon:'🍑', zone:'Fesse' },
+];
+const SITES_IM = [
+  { id:'deltoid_g', label:'Deltoïde gauche',  icon:'💪', zone:'Épaule' },
+  { id:'deltoid_d', label:'Deltoïde droit',   icon:'💪', zone:'Épaule' },
+  { id:'quad_g',    label:'Quadriceps gauche',icon:'🦵', zone:'Cuisse' },
+  { id:'quad_d',    label:'Quadriceps droit', icon:'🦵', zone:'Cuisse' },
+  { id:'fesse_g',   label:'Fesse gauche',     icon:'🍑', zone:'Fesse' },
+  { id:'fesse_d',   label:'Fesse droite',     icon:'🍑', zone:'Fesse' },
+];
+const SITES_IV = [
+  { id:'ac_g', label:'Avant-bras gauche', icon:'💉', zone:'Bras' },
+  { id:'ac_d', label:'Avant-bras droit',  icon:'💉', zone:'Bras' },
+  { id:'saig_g', label:'Saignée gauche',  icon:'💉', zone:'Bras' },
+  { id:'saig_d', label:'Saignée droite',  icon:'💉', zone:'Bras' },
+];
+
+function getSitesForAdmin(admin) {
+  if (!admin) return SITES_SC;
+  const a = admin.toUpperCase();
+  if (a === 'IM') return SITES_IM;
+  if (a === 'IV') return SITES_IV;
+  return SITES_SC; // SC, SQ, Oral → SC par défaut
+}
+
+function getNextSite(cureId, admin) {
+  const sites = getSitesForAdmin(admin);
+  const lastIdx = getLS('pt_site_idx_' + cureId, -1);
+  const nextIdx = (lastIdx + 1) % sites.length;
+  return { site: sites[nextIdx], idx: nextIdx, sites };
+}
+
+function recordSite(cureId, siteIdx) {
+  setLS('pt_site_idx_' + cureId, siteIdx);
+}
+
+function getSiteHistory(cureId, admin) {
+  const logs = getLS('pt_logs_' + cureId, []);
+  return logs.filter(l => l.site).slice(-6).reverse();
+}
+
+function renderSiteWidget(cureId, admin, ds) {
+  const { site, idx, sites } = getNextSite(cureId, admin);
+  const history = getSiteHistory(cureId, admin);
+  const lastUsed = getLS('pt_site_idx_' + cureId, -1);
+
+  const historyHtml = history.length ? `
+    <div style="margin-top:8px">
+      <div style="font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Derniers sites utilisés</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${history.map(l => `<span style="font-size:.68rem;background:var(--surface2);border-radius:6px;padding:3px 7px;color:var(--muted)">${l.siteLabel||l.site}</span>`).join('')}
+      </div>
+    </div>` : '';
+
+  const siteDotsHtml = sites.map((s, i) => {
+    const isNext = i === idx;
+    const isLast = i === lastUsed;
+    return `<div title="${s.label}" style="
+      width:10px;height:10px;border-radius:50%;flex-shrink:0;
+      background:${isNext ? 'var(--accent)' : isLast ? 'rgba(13,148,136,.3)' : 'var(--border)'};
+      border:${isNext ? '2px solid var(--accent)' : '1.5px solid transparent'};
+      transition:background .2s;
+    "></div>`;
+  }).join('');
+
+  return `<div id="siteWidget_${ds}" style="
+    background:rgba(13,148,136,.05);border:1.5px solid rgba(13,148,136,.18);
+    border-radius:14px;padding:12px 14px;margin:10px 0;
+  ">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600">Site suggéré</div>
+      <button onclick="cycleSite('${cureId}','${ds}')" style="
+        font-size:.68rem;color:var(--accent);background:none;border:none;cursor:pointer;
+        font-family:inherit;font-weight:600;padding:2px 6px;
+      ">Changer →</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.6rem">${site.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:.92rem;font-weight:700;color:var(--text)">${site.label}</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:2px">Zone : ${site.zone}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;max-width:80px;justify-content:flex-end">
+        ${siteDotsHtml}
+      </div>
+    </div>
+    ${historyHtml}
+  </div>`;
+}
+
+function cycleSite(cureId, ds) {
+  const cure = getLS('pt_cures', []).find(x => x.id === cureId);
+  if (!cure) return;
+  const sites = getSitesForAdmin(cure.admin);
+  const currentIdx = getLS('pt_site_idx_' + cureId, -1);
+  const nextIdx = (currentIdx + 1) % sites.length;
+  setLS('pt_site_idx_' + cureId, nextIdx - 1 < 0 ? sites.length - 1 : nextIdx - 1);
+  // Re-render le detail du jour
+  selectDay(ds, true);
+}
+
+
+function toggleInj(ds, slot, time, siteId, siteLabel){
   const logs=getLS('pt_logs_'+currentCureId,[]);
   const idx=logs.findIndex(l=>l.date===ds&&l.slot===slot);
-  if(idx>=0){ logs.splice(idx,1); showToast('Injection annulée'); }
-  else { logs.push({date:ds,slot,time,ts:Date.now()}); showToast('✓ Injection enregistrée !'); }
+  const cure=getLS('pt_cures',[]).find(x=>x.id===currentCureId);
+  if(idx>=0){
+    logs.splice(idx,1);
+    showToast('Injection annulée');
+  } else {
+    if(!siteId && cure) {
+      const { site, idx: sIdx } = getNextSite(currentCureId, cure.admin);
+      siteId = site.id; siteLabel = site.label;
+      recordSite(currentCureId, sIdx);
+    }
+    logs.push({date:ds,slot,time,ts:Date.now(),site:siteId,siteLabel});
+    showToast('✓ Injection — ' + (siteLabel||''));
+  }
   setLS('pt_logs_'+currentCureId,logs);
   render();
   setTimeout(()=>selectDay(ds,true),50);

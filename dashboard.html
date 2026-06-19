@@ -133,30 +133,70 @@
   .alert-sub { font-size:.72rem; color:var(--muted); }
   .alert-time { font-family:'Space Mono',monospace; font-size:.68rem; color:var(--muted); flex-shrink:0; }
 
-  /* TODAY INJECTIONS */
+  /* TODAY VIEW */
+  .today-view-header {
+    background:linear-gradient(135deg, rgba(13,148,136,.08), rgba(43,108,176,.06));
+    border:1.5px solid rgba(13,148,136,.18); border-radius:18px;
+    padding:16px 18px; margin-bottom:12px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .today-date-label { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
+  .today-date-val { font-size:1rem; font-weight:700; }
+  .today-score { text-align:right; }
+  .today-score-val { font-family:'Space Mono',monospace; font-size:1.5rem; font-weight:700; color:var(--accent); line-height:1; }
+  .today-score-label { font-size:.65rem; color:var(--muted); margin-top:2px; }
+
+  .today-progress-bar { height:6px; background:var(--surface2); border-radius:100px; overflow:hidden; margin-top:10px; }
+  .today-progress-fill { height:100%; border-radius:100px; background:linear-gradient(90deg, var(--accent), #14b8a6); transition:width .5s ease; }
+
   .today-card {
     background:var(--surface); border:1px solid var(--border);
-    border-radius:16px; padding:16px; margin-bottom:16px;
+    border-radius:16px; overflow:hidden; margin-bottom:4px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
   }
+  .today-cure-header {
+    padding:10px 16px; background:var(--surface2);
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .today-cure-name { font-size:.78rem; font-weight:700; }
+  .today-cure-day { font-size:.68rem; color:var(--muted); font-family:'Space Mono',monospace; }
+
   .injection-item {
-    display:flex; align-items:center; gap:12px; padding:10px 0;
-    border-bottom:1px solid rgba(30,45,69,.5);
+    display:flex; align-items:center; gap:12px;
+    padding:13px 16px; border-bottom:1px solid var(--border);
+    transition:background .15s; cursor:pointer;
   }
-  .injection-item:last-child { border-bottom:none; padding-bottom:0; }
-  .injection-item:first-child { padding-top:0; }
+  .injection-item:last-child { border-bottom:none; }
+  .injection-item:active { background:var(--surface2); }
+  .injection-item.done-item { background:rgba(13,148,136,.03); }
+
   .inj-check {
-    width:28px; height:28px; border-radius:8px; flex-shrink:0;
+    width:32px; height:32px; border-radius:10px; flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
-    cursor:pointer; transition:all .2s; font-size:.85rem;
+    cursor:pointer; transition:all .2s; font-size:.9rem;
     border:2px solid var(--border); background:transparent;
   }
-  .inj-check.done { background:rgba(0,201,167,.15); border-color:var(--accent); }
-  .inj-check.pending { border-color:var(--muted); }
-  .inj-info { flex:1; }
-  .inj-name { font-size:.86rem; font-weight:600; }
-  .inj-detail { font-size:.72rem; color:var(--muted); margin-top:2px; }
-  .inj-time { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); flex-shrink:0; }
+  .inj-check.done { background:rgba(13,148,136,.15); border-color:var(--accent); color:var(--accent); }
+  .inj-check.pending { border-color:var(--border); }
+  .inj-check.due { border-color:var(--accent3); animation:pulseCheck 1.5s infinite; }
+  @keyframes pulseCheck {
+    0%,100%{ box-shadow:0 0 0 0 rgba(249,115,22,.3); }
+    50%{ box-shadow:0 0 0 5px rgba(249,115,22,0); }
+  }
+
+  .inj-info { flex:1; min-width:0; }
+  .inj-name { font-size:.86rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .inj-detail { font-size:.72rem; color:var(--muted); margin-top:2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .inj-site { background:rgba(13,148,136,.08); border-radius:5px; padding:1px 6px; color:var(--accent); font-size:.66rem; font-weight:600; }
+
+  .inj-time { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); flex-shrink:0; text-align:right; }
   .inj-time.due { color:var(--accent3); font-weight:700; }
+  .inj-time.done-time { color:var(--accent); }
+
+  .today-empty { text-align:center; padding:28px 20px; color:var(--muted); }
+  .today-empty span { font-size:2rem; display:block; margin-bottom:8px; }
+  .today-empty p { font-size:.84rem; line-height:1.5; }
 
   /* SECTION TITLE */
   .section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
@@ -342,16 +382,12 @@
     </div>
   </div>
 
-  <!-- AUJOURD'HUI -->
+  <!-- TODAY VIEW -->
   <div class="section-head">
-    <h2>Injections du jour</h2>
-    <a href="cure.html">Gérer →</a>
+    <h2>Aujourd'hui</h2>
+    <a href="cure.html">Calendrier →</a>
   </div>
-  <div class="today-card" id="todayCard">
-    <div style="text-align:center;padding:20px 0;color:var(--muted);font-size:.85rem" id="noInjToday">
-      Aucune injection prévue aujourd'hui 🎉
-    </div>
-  </div>
+  <div id="todayViewContainer"></div>
 
   <!-- ALERTES -->
   <div class="section-head" style="margin-top:4px">
@@ -373,10 +409,6 @@
     <span class="nav-label">Accueil</span>
     <div class="nav-dot"></div>
   </a>
-  <a class="nav-item" href="peptide-database.html">
-    <span class="nav-icon">🧬</span>
-    <span class="nav-label">Biblio</span>
-  </a>
   <a class="nav-item" href="cure.html">
     <span class="nav-icon">📅</span>
     <span class="nav-label">Cure</span>
@@ -388,6 +420,10 @@
   <a class="nav-item" href="alertes.html">
     <span class="nav-icon">🔔</span>
     <span class="nav-label">Alertes</span>
+  </a>
+  <a class="nav-item" href="inventaire.html">
+    <span class="nav-icon">🧪</span>
+    <span class="nav-label">Stock</span>
   </a>
   <a class="nav-item" href="profil.html">
     <span class="nav-icon">👤</span>
@@ -529,6 +565,7 @@ function loadCureActive() {
 
   // Today injections
   renderTodayInjections(active);
+  renderTodayView();
 
   return active;
 }
@@ -593,52 +630,158 @@ function renderMiniChart(weights) {
 
 // ── TODAY INJECTIONS ─────────────────────────────────────────────────
 function renderTodayInjections(active) {
-  const freq = parseFloat(active.freq);
-  if (freq < 1) return; // moins d'une fois par jour — pas forcément aujourd'hui
-  const container = document.getElementById('todayCard');
-  document.getElementById('noInjToday').style.display = 'none';
+  // On passe par renderTodayView qui gère toutes les cures
+  renderTodayView();
+}
 
-  const logs = getLS('pt_logs_' + active.id, []);
-  const todayLogs = logs.filter(l => l.date === todayStr);
-  const injPerDay = Math.ceil(freq);
+function renderTodayView() {
+  const container = document.getElementById('todayViewContainer');
+  if (!container) return;
 
-  // Horaires suggérés
-  const times = injPerDay === 1 ? ['08:00'] : injPerDay === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
+  const cures = getLS('pt_cures', []);
+  const now = new Date();
+  const dayNames = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const monthNames = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const dateLabel = `${dayNames[now.getDay()]} ${now.getDate()} ${monthNames[now.getMonth()]}`;
+
+  // Trouver toutes les cures actives aujourd'hui
+  const activeCures = cures.filter(cure => {
+    const start = new Date(cure.startDate); start.setHours(0,0,0,0);
+    const end = new Date(cure.startDate); end.setDate(end.getDate() + parseInt(cure.duration));
+    return start <= now && end > now;
+  });
+
+  // Calculer le score global du jour
+  let totalDoses = 0, doneDoses = 0;
+  activeCures.forEach(cure => {
+    const freq = parseFloat(cure.freq);
+    if (freq < 1) {
+      const start = new Date(cure.startDate); start.setHours(0,0,0,0);
+      const dayIdx = Math.floor((now - start) / 86400000);
+      const interval = Math.round(1 / freq);
+      if (dayIdx % interval !== 0) return;
+    }
+    const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
+    const logs = getLS('pt_logs_' + cure.id, []);
+    const todayLogs = logs.filter(l => l.date === todayStr);
+    totalDoses += injPerDay;
+    doneDoses += Math.min(todayLogs.length, injPerDay);
+  });
+
+  const scorePct = totalDoses > 0 ? Math.round(doneDoses / totalDoses * 100) : 0;
+  const allDone = totalDoses > 0 && doneDoses >= totalDoses;
 
   let html = '';
-  times.forEach((time, i) => {
-    const key = `${todayStr}_${i}`;
-    const done = todayLogs.some(l => l.slot === i);
-    const now = new Date();
-    const [h, m] = time.split(':').map(Number);
-    const isDue = !done && (now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m));
-    html += `
-      <div class="injection-item">
-        <div class="inj-check ${done ? 'done' : 'pending'}" onclick="toggleInjection('${active.id}', ${i}, '${time}')">
-          ${done ? '✓' : ''}
-        </div>
-        <div class="inj-info">
-          <div class="inj-name">${active.peptide} · Injection ${i+1}</div>
-          <div class="inj-detail">${active.dosage} · ${active.admin}</div>
-        </div>
-        <div class="inj-time ${isDue && !done ? 'due' : ''}">${done ? '✓ Fait' : isDue ? '⏰ À faire' : time}</div>
+
+  // Header Today
+  html += `<div class="today-view-header">
+    <div>
+      <div class="today-date-label">Programme du jour</div>
+      <div class="today-date-val">${dateLabel}</div>
+      <div class="today-progress-bar">
+        <div class="today-progress-fill" style="width:${scorePct}%"></div>
+      </div>
+    </div>
+    <div class="today-score">
+      <div class="today-score-val">${doneDoses}/${totalDoses}</div>
+      <div class="today-score-label">${allDone ? '✅ Complété' : 'doses faites'}</div>
+    </div>
+  </div>`;
+
+  if (activeCures.length === 0) {
+    html += `<div class="today-card"><div class="today-empty">
+      <span>🎉</span>
+      <p>Aucune injection prévue aujourd'hui.<br>Profitez de votre journée de repos !</p>
+    </div></div>`;
+    container.innerHTML = html;
+    return;
+  }
+
+  // Une card par cure active
+  activeCures.forEach(cure => {
+    const freq = parseFloat(cure.freq);
+    const start = new Date(cure.startDate); start.setHours(0,0,0,0);
+    const dayNum = Math.floor((now - start) / 86400000) + 1;
+
+    // Vérifier si c'est un jour d'injection
+    if (freq < 1) {
+      const dayIdx = Math.floor((now - start) / 86400000);
+      const interval = Math.round(1 / freq);
+      if (dayIdx % interval !== 0) return;
+    }
+
+    const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
+    const times = injPerDay === 1 ? ['08:00'] : injPerDay === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
+    const logs = getLS('pt_logs_' + cure.id, []);
+    const todayLogs = logs.filter(l => l.date === todayStr);
+
+    // Site suggéré
+    const SITES_SC = [
+      { id:'abd_g', label:'Abdomen G' }, { id:'abd_d', label:'Abdomen D' },
+      { id:'cuisse_g', label:'Cuisse G' }, { id:'cuisse_d', label:'Cuisse D' },
+      { id:'fesse_g', label:'Fesse G' }, { id:'fesse_d', label:'Fesse D' },
+    ];
+    const sites = SITES_SC;
+    const lastSiteIdx = getLS('pt_site_idx_' + cure.id, -1);
+    const nextSiteIdx = (lastSiteIdx + 1) % sites.length;
+    const nextSite = sites[nextSiteIdx];
+
+    html += `<div class="today-card" style="margin-bottom:12px">
+      <div class="today-cure-header">
+        <span class="today-cure-name">💉 ${cure.peptide}</span>
+        <span class="today-cure-day">J${dayNum} · ${cure.dosage}</span>
       </div>`;
+
+    times.forEach((time, i) => {
+      const done = todayLogs.some(l => l.slot === i);
+      const [h, m] = time.split(':').map(Number);
+      const isDue = !done && (now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m));
+      const showSite = !done && cure.admin !== 'Oral' && cure.admin !== 'Nasal';
+
+      html += `<div class="injection-item ${done ? 'done-item' : ''}" onclick="quickToggleInj('${cure.id}', ${i}, '${time}')">
+        <div class="inj-check ${done ? 'done' : isDue ? 'due' : 'pending'}">${done ? '✓' : isDue ? '!' : ''}</div>
+        <div class="inj-info">
+          <div class="inj-name">${injPerDay > 1 ? `Injection ${i+1}` : 'Injection du jour'}</div>
+          <div class="inj-detail">
+            ${cure.admin}
+            ${showSite ? `<span class="inj-site">📍 ${nextSite.label}</span>` : ''}
+          </div>
+        </div>
+        <div class="inj-time ${done ? 'done-time' : isDue ? 'due' : ''}">${done ? '✓ Fait' : isDue ? '⏰ Dû' : time}</div>
+      </div>`;
+    });
+
+    html += `</div>`;
   });
+
   container.innerHTML = html;
 }
 
-function toggleInjection(cureId, slot, time) {
+function quickToggleInj(cureId, slot, time) {
   const logs = getLS('pt_logs_' + cureId, []);
   const idx = logs.findIndex(l => l.date === todayStr && l.slot === slot);
+
+  // Récupérer et enregistrer le site
+  const SITES_SC = [
+    { id:'abd_g', label:'Abdomen G' }, { id:'abd_d', label:'Abdomen D' },
+    { id:'cuisse_g', label:'Cuisse G' }, { id:'cuisse_d', label:'Cuisse D' },
+    { id:'fesse_g', label:'Fesse G' }, { id:'fesse_d', label:'Fesse D' },
+  ];
+  const lastSiteIdx = getLS('pt_site_idx_' + cureId, -1);
+  const nextSiteIdx = (lastSiteIdx + 1) % SITES_SC.length;
+
   if (idx >= 0) {
     logs.splice(idx, 1);
     showToast('Injection annulée');
   } else {
-    logs.push({ date: todayStr, slot, time, ts: Date.now() });
-    showToast('✓ Injection enregistrée !');
+    const site = SITES_SC[nextSiteIdx];
+    logs.push({ date: todayStr, slot, time, ts: Date.now(), site: site.id, siteLabel: site.label });
+    setLS('pt_site_idx_' + cureId, nextSiteIdx);
+    showToast('✓ ' + site.label + ' — enregistré !');
   }
   setLS('pt_logs_' + cureId, logs);
-  loadAll();
+  renderTodayView();
+  loadAll(); // Mettre à jour les stats
 }
 
 // ── ALERTES ────────────────────────────────────────────────────────────

@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PeptideScanner — Inventaire</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0;
+    --accent:#0D9488; --accent2:#2B6CB0; --accent3:#F97316;
+    --text:#1F2937; --muted:#6B7280; --danger:#DC2626; --nav-h:64px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
+
+  /* TOPBAR */
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; box-shadow:0 1px 8px rgba(0,0,0,.06); }
+  .topbar-logo { font-family:'Space Mono',monospace; font-size:.85rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
+  .logo-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
+  .topbar h1 { font-size:1rem; font-weight:700; }
+  .add-btn { width:36px; height:36px; background:var(--accent); border-radius:10px; border:none; color:#fff; font-size:1.4rem; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:700; transition:opacity .2s; }
+  .add-btn:hover { opacity:.85; }
+
+  .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
+
+  /* SECTION LABEL */
+  .section-label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:10px; margin-top:4px; }
+  .section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .section-head h2 { font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; }
+
+  /* SUMMARY CARDS */
+  .summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .summary-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+  .summary-card.alert { border-color:rgba(220,38,38,.3); background:rgba(220,38,38,.03); }
+  .summary-card.warning { border-color:rgba(249,115,22,.3); background:rgba(249,115,22,.03); }
+  .summary-label { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; }
+  .summary-val { font-family:'Space Mono',monospace; font-size:1.6rem; font-weight:700; line-height:1; color:var(--text); }
+  .summary-val.green { color:var(--accent); }
+  .summary-val.red { color:var(--danger); }
+  .summary-val.amber { color:var(--accent3); }
+  .summary-sub { font-size:.68rem; color:var(--muted); margin-top:4px; }
+
+  /* FLACON CARD */
+  .flacon-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; padding:18px; margin-bottom:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,.04);
+    transition:border-color .2s;
+  }
+  .flacon-card.critical { border-color:rgba(220,38,38,.4); border-left:4px solid var(--danger); }
+  .flacon-card.warning  { border-color:rgba(249,115,22,.4); border-left:4px solid var(--accent3); }
+  .flacon-card.ok       { border-left:4px solid var(--accent); }
+  .flacon-card.expired  { border-color:rgba(220,38,38,.3); opacity:.75; }
+
+  .flacon-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+  .flacon-name { font-size:1rem; font-weight:700; margin-bottom:3px; }
+  .flacon-dosage { font-size:.75rem; color:var(--muted); }
+  .flacon-badges { display:flex; gap:6px; flex-direction:column; align-items:flex-end; }
+
+  .badge {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700;
+    font-family:'Space Mono',monospace; white-space:nowrap;
+  }
+  .badge-green  { background:rgba(13,148,136,.1);  color:var(--accent); }
+  .badge-amber  { background:rgba(249,115,22,.1);  color:var(--accent3); }
+  .badge-red    { background:rgba(220,38,38,.1);   color:var(--danger); }
+  .badge-blue   { background:rgba(43,108,176,.1);  color:var(--accent2); }
+  .badge-gray   { background:var(--surface2);      color:var(--muted); }
+
+  /* BARRE STOCK */
+  .stock-section { margin-bottom:14px; }
+  .stock-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .stock-label { font-size:.72rem; color:var(--muted); }
+  .stock-val { font-family:'Space Mono',monospace; font-size:.82rem; font-weight:700; }
+  .stock-bar { height:8px; background:var(--surface2); border-radius:100px; overflow:hidden; }
+  .stock-fill { height:100%; border-radius:100px; transition:width .5s ease; }
+  .stock-fill.green { background:linear-gradient(90deg, var(--accent), #14b8a6); }
+  .stock-fill.amber { background:linear-gradient(90deg, var(--accent3), #fbbf24); }
+  .stock-fill.red   { background:linear-gradient(90deg, var(--danger), #f87171); }
+
+  /* INFOS GRILLE */
+  .flacon-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .info-chip { background:var(--surface2); border-radius:10px; padding:8px 10px; }
+  .info-chip-label { font-size:.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:3px; }
+  .info-chip-val { font-family:'Space Mono',monospace; font-size:.82rem; font-weight:700; }
+  .info-chip-val.red { color:var(--danger); }
+  .info-chip-val.amber { color:var(--accent3); }
+  .info-chip-val.green { color:var(--accent); }
+
+  /* ACTIONS */
+  .flacon-actions { display:flex; gap:8px; }
+  .flacon-btn {
+    flex:1; padding:9px; border-radius:10px; border:1.5px solid var(--border);
+    background:transparent; color:var(--muted); font-family:inherit;
+    font-size:.78rem; font-weight:600; cursor:pointer; transition:all .2s;
+  }
+  .flacon-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .flacon-btn.danger:hover { border-color:var(--danger); color:var(--danger); }
+  .flacon-btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .flacon-btn.primary:hover { opacity:.88; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
+  .empty-state span { font-size:2.8rem; display:block; margin-bottom:14px; }
+  .empty-state h3 { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:8px; }
+  .empty-state p { font-size:.84rem; line-height:1.6; margin-bottom:20px; }
+  .empty-state button { background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:10px; font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; }
+
+  /* ALERTE PÉREMPTION */
+  .peremption-banner {
+    display:flex; align-items:flex-start; gap:10px;
+    background:rgba(220,38,38,.06); border:1.5px solid rgba(220,38,38,.2);
+    border-radius:14px; padding:12px 14px; margin-bottom:16px;
+  }
+  .peremption-banner-icon { font-size:1.2rem; flex-shrink:0; }
+  .peremption-banner-text { font-size:.78rem; line-height:1.6; }
+  .peremption-banner-text strong { color:var(--danger); display:block; margin-bottom:2px; }
+
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.4); backdrop-filter:blur(4px); display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
+  .modal-overlay.show { opacity:1; pointer-events:all; }
+  .modal-sheet { background:var(--surface); border-radius:22px 22px 0 0; padding:24px 20px 40px; width:100%; max-width:520px; transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); max-height:92vh; overflow-y:auto; }
+  .modal-overlay.show .modal-sheet { transform:translateY(0); }
+  .modal-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+  .modal-title { font-size:1.1rem; font-weight:700; margin-bottom:18px; }
+
+  /* FORM */
+  .form-group { margin-bottom:14px; }
+  .form-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; display:block; font-weight:600; }
+  .form-input { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; color:var(--text); font-family:'Space Grotesk',sans-serif; font-size:.95rem; outline:none; transition:border-color .2s; }
+  .form-input:focus { border-color:var(--accent); background:#fff; }
+  .form-select { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; color:var(--text); font-family:inherit; font-size:.9rem; outline:none; transition:border-color .2s; cursor:pointer; }
+  .form-select:focus { border-color:var(--accent); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .save-btn { width:100%; padding:14px; border-radius:12px; border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:.95rem; font-weight:700; cursor:pointer; margin-top:6px; transition:opacity .2s; }
+  .save-btn:hover { opacity:.88; }
+  .cancel-btn { width:100%; padding:12px; border-radius:12px; border:1.5px solid var(--border); background:transparent; color:var(--muted); font-family:inherit; font-size:.88rem; font-weight:600; cursor:pointer; margin-top:8px; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(255,255,255,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 4px; box-shadow:0 -2px 12px rgba(0,0,0,.04); }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 8px; border-radius:12px; cursor:pointer; text-decoration:none; color:var(--muted); transition:all .2s; min-width:44px; }
+  .nav-item.active { color:var(--accent); }
+  .nav-icon { font-size:1.15rem; line-height:1; }
+  .nav-label { font-size:.52rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
+  .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:1px; }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .flacon-card { animation:fadeIn .3s ease both; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
+  <h1>Inventaire</h1>
+  <button class="add-btn" onclick="openModal()" title="Ajouter un flacon">+</button>
+</div>
+
+<div class="content" id="mainContent"></div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span></a>
+  <a class="nav-item" href="calculateur.html"><span class="nav-icon">🧮</span><span class="nav-label">Calcul</span></a>
+  <a class="nav-item active" href="inventaire.html"><span class="nav-icon">🧪</span><span class="nav-label">Stock</span><div class="nav-dot"></div></a>
+  <a class="nav-item" href="analytics.html"><span class="nav-icon">📊</span><span class="nav-label">Analyse</span></a>
+  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
+</nav>
+
+<!-- MODAL AJOUT / EDITION FLACON -->
+<div class="modal-overlay" id="flaconModal" onclick="closeIfOverlay(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">Ajouter un flacon</div>
+
+    <div class="form-group">
+      <label class="form-label">Peptide</label>
+      <input class="form-input" id="fPeptide" type="text" placeholder="Ex: BPC-157, HGH, Semaglutide…">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Quantité totale</label>
+        <input class="form-input" id="fQty" type="number" placeholder="10" min="0.1" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Unité</label>
+        <select class="form-select" id="fUnit">
+          <option value="mg">mg</option>
+          <option value="mcg">mcg</option>
+          <option value="IU">IU</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Dose par injection</label>
+        <input class="form-input" id="fDosePerInj" type="number" placeholder="0.25" min="0.01" step="0.01">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Injections/jour</label>
+        <input class="form-input" id="fFreqPerDay" type="number" placeholder="1" min="0.1" step="0.1">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Date reconstitution</label>
+        <input class="form-input" id="fReconDate" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Statut</label>
+        <select class="form-select" id="fStatus">
+          <option value="active">En cours</option>
+          <option value="sealed">Scellé (non ouvert)</option>
+          <option value="finished">Terminé</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Note (optionnel)</label>
+      <input class="form-input" id="fNote" type="text" placeholder="Ex: Lot 2025, cure récupération…">
+    </div>
+
+    <input type="hidden" id="fEditId">
+    <button class="save-btn" onclick="saveFlacon()">Enregistrer le flacon</button>
+    <button class="cancel-btn" onclick="closeModal()">Annuler</button>
+  </div>
+</div>
+
+<script>
+// ── UTILS ─────────────────────────────────────────────────────
+function getLS(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
+function setLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function fmt(d){return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}
+function daysLeft(dateStr,days){
+  const end=new Date(dateStr);end.setDate(end.getDate()+days);
+  return Math.ceil((end-new Date())/(1000*60*60*24));
+}
+
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+
+// ── CALCUL STOCK DEPUIS LES CURES ─────────────────────────────
+function buildFromCures() {
+  const cures = getLS('pt_cures', []);
+  const existing = getLS('pt_inventaire', []);
+  const existingIds = new Set(existing.map(f => f.cureId).filter(Boolean));
+
+  const generated = [];
+  cures.forEach(cure => {
+    if (existingIds.has(cure.id)) return; // déjà importé
+    const logs = getLS('pt_logs_' + cure.id, []);
+    const startD = new Date(cure.startDate); startD.setHours(0,0,0,0);
+    const endD = new Date(cure.startDate); endD.setDate(endD.getDate() + parseInt(cure.duration));
+
+    // Extraire valeur numérique du dosage
+    const dosageMatch = cure.dosage.match(/([\d.]+)/);
+    const doseVal = dosageMatch ? parseFloat(dosageMatch[1]) : 1;
+    const unit = cure.dosage.toLowerCase().includes('mcg') ? 'mcg' : 'mg';
+    const freq = parseFloat(cure.freq) || 1;
+
+    // Stock estimé = durée × freq × dose
+    const totalInj = Math.round(parseInt(cure.duration) * freq);
+    const doneInj = logs.length;
+    const totalQty = totalInj * doseVal;
+    const usedQty = doneInj * doseVal;
+
+    const status = endD < TODAY ? 'finished' : startD <= TODAY ? 'active' : 'sealed';
+
+    generated.push({
+      id: 'cure_' + cure.id,
+      cureId: cure.id,
+      peptide: cure.peptide,
+      totalQty, usedQty, unit,
+      dosePerInj: doseVal,
+      freqPerDay: freq,
+      reconDate: cure.startDate,
+      status,
+      note: cure.notes || '',
+      auto: true
+    });
+  });
+
+  return [...generated, ...existing.filter(f => !f.auto)];
+}
+
+// ── RENDER PRINCIPAL ──────────────────────────────────────────
+function render() {
+  const flacons = buildFromCures();
+  const container = document.getElementById('mainContent');
+  if (!flacons.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span>🧪</span>
+        <h3>Aucun flacon enregistré</h3>
+        <p>Ajoutez vos flacons pour suivre votre stock, vos dates de péremption et vos alertes de rupture.</p>
+        <button onclick="openModal()">+ Ajouter un flacon</button>
+      </div>`;
+    return;
+  }
+
+  // Calculer stats globales
+  const actifs = flacons.filter(f => f.status === 'active');
+  const critiques = flacons.filter(f => {
+    const pct = getPct(f);
+    const dl = f.reconDate ? daysLeft(f.reconDate, 30) : 999;
+    return f.status === 'active' && (pct <= 15 || dl <= 3);
+  });
+  const expirés = flacons.filter(f => f.reconDate && daysLeft(f.reconDate, 30) <= 0 && f.status === 'active');
+
+  let html = '';
+
+  // Bannière alertes critiques
+  if (expirés.length) {
+    html += `<div class="peremption-banner">
+      <div class="peremption-banner-icon">⚠️</div>
+      <div class="peremption-banner-text">
+        <strong>${expirés.length} flacon${expirés.length>1?'s':''}  périmé${expirés.length>1?'s':''}</strong>
+        Ne jamais injecter un flacon reconstitué depuis plus de 30 jours. Jetez-le immédiatement.
+      </div>
+    </div>`;
+  }
+
+  // Summary grid
+  html += `<div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-label">Flacons actifs</div>
+      <div class="summary-val green">${actifs.length}</div>
+      <div class="summary-sub">${flacons.length} au total</div>
+    </div>
+    <div class="summary-card ${critiques.length ? 'alert' : ''}">
+      <div class="summary-label">Alertes stock</div>
+      <div class="summary-val ${critiques.length ? 'red' : 'green'}">${critiques.length}</div>
+      <div class="summary-sub">${critiques.length ? 'Action requise' : 'Tout va bien'}</div>
+    </div>
+  </div>`;
+
+  // Flacons actifs
+  const actifsSorted = flacons.filter(f => f.status === 'active')
+    .sort((a,b) => getPct(a) - getPct(b)); // les plus bas en premier
+
+  if (actifsSorted.length) {
+    html += `<div class="section-head"><h2>🟢 Flacons en cours</h2></div>`;
+    actifsSorted.forEach(f => { html += renderFlacon(f); });
+  }
+
+  // Flacons scellés
+  const scellés = flacons.filter(f => f.status === 'sealed');
+  if (scellés.length) {
+    html += `<div class="section-head" style="margin-top:16px"><h2>📦 Réserve (scellés)</h2></div>`;
+    scellés.forEach(f => { html += renderFlacon(f); });
+  }
+
+  // Flacons terminés
+  const terminés = flacons.filter(f => f.status === 'finished');
+  if (terminés.length) {
+    html += `<div class="section-head" style="margin-top:16px"><h2>✅ Terminés</h2></div>`;
+    terminés.forEach(f => { html += renderFlacon(f); });
+  }
+
+  container.innerHTML = html;
+}
+
+function getPct(f) {
+  if (!f.totalQty || f.totalQty === 0) return 100;
+  return Math.max(0, Math.round((1 - f.usedQty / f.totalQty) * 100));
+}
+
+function renderFlacon(f) {
+  const pct = getPct(f);
+  const remaining = Math.max(0, f.totalQty - f.usedQty);
+  const injLeft = f.dosePerInj > 0 ? Math.floor(remaining / f.dosePerInj) : '—';
+
+  // Couleur barre et état
+  let barColor = 'green', cardClass = 'ok', statusBadge = '';
+  if (pct <= 15) { barColor = 'red'; cardClass = 'critical'; }
+  else if (pct <= 30) { barColor = 'amber'; cardClass = 'warning'; }
+
+  // Péremption
+  let peremptionHtml = '', dlVal = '—', dlClass = 'green';
+  if (f.reconDate && f.status === 'active') {
+    const dl = daysLeft(f.reconDate, 30);
+    dlVal = dl <= 0 ? 'PÉRIMÉ' : dl + 'j';
+    dlClass = dl <= 0 ? 'red' : dl <= 7 ? 'amber' : 'green';
+    if (dl <= 0) cardClass = 'expired';
+  }
+
+  // Durée restante estimée
+  let duréeReste = '—';
+  if (f.dosePerInj > 0 && f.freqPerDay > 0 && remaining > 0) {
+    const days = Math.floor(remaining / (f.dosePerInj * f.freqPerDay));
+    duréeReste = days + ' j';
+  }
+
+  // Badge statut
+  if (f.status === 'active') statusBadge = `<span class="badge badge-green">En cours</span>`;
+  else if (f.status === 'sealed') statusBadge = `<span class="badge badge-blue">Scellé</span>`;
+  else statusBadge = `<span class="badge badge-gray">Terminé</span>`;
+
+  // Badge auto depuis cure
+  const autoBadge = f.auto ? `<span class="badge badge-blue">Auto</span>` : '';
+
+  return `<div class="flacon-card ${cardClass}" style="animation-delay:${Math.random()*.15}s">
+    <div class="flacon-header">
+      <div>
+        <div class="flacon-name">${f.peptide}</div>
+        <div class="flacon-dosage">${f.dosePerInj} ${f.unit}/inj · ${f.freqPerDay}×/jour</div>
+      </div>
+      <div class="flacon-badges">
+        ${statusBadge}
+        ${autoBadge}
+      </div>
+    </div>
+
+    ${f.status !== 'sealed' ? `
+    <div class="stock-section">
+      <div class="stock-row">
+        <span class="stock-label">Stock restant</span>
+        <span class="stock-val">${remaining.toFixed(1)} ${f.unit} <span style="color:var(--muted);font-weight:400">(${pct}%)</span></span>
+      </div>
+      <div class="stock-bar">
+        <div class="stock-fill ${barColor}" style="width:${pct}%"></div>
+      </div>
+    </div>` : `
+    <div class="stock-section">
+      <div class="stock-row">
+        <span class="stock-label">Contenu</span>
+        <span class="stock-val">${f.totalQty} ${f.unit}</span>
+      </div>
+    </div>`}
+
+    <div class="flacon-info-grid">
+      <div class="info-chip">
+        <div class="info-chip-label">Injections restantes</div>
+        <div class="info-chip-val ${pct <= 15 ? 'red' : pct <= 30 ? 'amber' : 'green'}">${injLeft}</div>
+      </div>
+      <div class="info-chip">
+        <div class="info-chip-label">Durée estimée</div>
+        <div class="info-chip-val">${duréeReste}</div>
+      </div>
+      <div class="info-chip">
+        <div class="info-chip-label">Reconstitué le</div>
+        <div class="info-chip-val">${f.reconDate ? fmt(f.reconDate) : '—'}</div>
+      </div>
+      <div class="info-chip">
+        <div class="info-chip-label">Périme dans</div>
+        <div class="info-chip-val ${dlClass}">${dlVal}</div>
+      </div>
+    </div>
+
+    ${f.note ? `<div style="font-size:.74rem;color:var(--muted);margin-bottom:12px;padding:8px 10px;background:var(--surface2);border-radius:8px">📝 ${f.note}</div>` : ''}
+
+    <div class="flacon-actions">
+      ${f.status === 'active' ? `<button class="flacon-btn primary" onclick="logInjection('${f.id}')">+ Injecter</button>` : ''}
+      ${f.status === 'sealed' ? `<button class="flacon-btn primary" onclick="openFlacon('${f.id}')">Ouvrir le flacon</button>` : ''}
+      <button class="flacon-btn" onclick="editFlacon('${f.id}')">Modifier</button>
+      <button class="flacon-btn danger" onclick="deleteFlacon('${f.id}')">Supprimer</button>
+    </div>
+  </div>`;
+}
+
+// ── ACTIONS ──────────────────────────────────────────────────
+function logInjection(id) {
+  const flacons = getLS('pt_inventaire', []);
+  // Pour les flacons auto (liés à une cure), on ne décrémente pas ici
+  // car cure.html le gère déjà via pt_logs_*
+  const f = buildFromCures().find(x => x.id === id);
+  if (!f || f.auto) {
+    // Rediriger vers cure.html pour les flacons auto
+    if (confirm('Ce flacon est lié à une cure active. Voulez-vous aller sur la page Cure pour logger l\'injection ?')) {
+      window.location.href = 'cure.html';
+    }
+    return;
+  }
+  // Flacon manuel : décrémenter directement
+  const idx = flacons.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  flacons[idx].usedQty = (flacons[idx].usedQty || 0) + flacons[idx].dosePerInj;
+  setLS('pt_inventaire', flacons);
+  render();
+}
+
+function openFlacon(id) {
+  const flacons = getLS('pt_inventaire', []);
+  const idx = flacons.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  flacons[idx].status = 'active';
+  flacons[idx].reconDate = new Date().toISOString().split('T')[0];
+  flacons[idx].usedQty = 0;
+  setLS('pt_inventaire', flacons);
+  render();
+}
+
+function deleteFlacon(id) {
+  if (!confirm('Supprimer ce flacon de l\'inventaire ?')) return;
+  const flacons = getLS('pt_inventaire', []).filter(x => x.id !== id);
+  setLS('pt_inventaire', flacons);
+  render();
+}
+
+function editFlacon(id) {
+  const all = buildFromCures();
+  const f = all.find(x => x.id === id);
+  if (!f) return;
+  document.getElementById('modalTitle').textContent = 'Modifier le flacon';
+  document.getElementById('fPeptide').value = f.peptide;
+  document.getElementById('fQty').value = f.totalQty;
+  document.getElementById('fUnit').value = f.unit;
+  document.getElementById('fDosePerInj').value = f.dosePerInj;
+  document.getElementById('fFreqPerDay').value = f.freqPerDay;
+  document.getElementById('fReconDate').value = f.reconDate || '';
+  document.getElementById('fStatus').value = f.status;
+  document.getElementById('fNote').value = f.note || '';
+  document.getElementById('fEditId').value = id;
+  openModal();
+}
+
+// ── MODAL ─────────────────────────────────────────────────────
+function openModal() {
+  document.getElementById('flaconModal').classList.add('show');
+  // Date par défaut = aujourd'hui
+  if (!document.getElementById('fReconDate').value) {
+    document.getElementById('fReconDate').value = new Date().toISOString().split('T')[0];
+  }
+}
+
+function closeModal() {
+  document.getElementById('flaconModal').classList.remove('show');
+  document.getElementById('fEditId').value = '';
+  document.getElementById('modalTitle').textContent = 'Ajouter un flacon';
+  ['fPeptide','fQty','fDosePerInj','fFreqPerDay','fNote'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fReconDate').value = '';
+  document.getElementById('fStatus').value = 'active';
+  document.getElementById('fUnit').value = 'mg';
+}
+
+function closeIfOverlay(e) {
+  if (e.target === document.getElementById('flaconModal')) closeModal();
+}
+
+function saveFlacon() {
+  const peptide = document.getElementById('fPeptide').value.trim();
+  const qty = parseFloat(document.getElementById('fQty').value);
+  const unit = document.getElementById('fUnit').value;
+  const dose = parseFloat(document.getElementById('fDosePerInj').value);
+  const freq = parseFloat(document.getElementById('fFreqPerDay').value);
+  const reconDate = document.getElementById('fReconDate').value;
+  const status = document.getElementById('fStatus').value;
+  const note = document.getElementById('fNote').value.trim();
+  const editId = document.getElementById('fEditId').value;
+
+  if (!peptide || !qty || !dose || !freq) {
+    alert('Remplissez au moins le peptide, la quantité, la dose et la fréquence.');
+    return;
+  }
+
+  let flacons = getLS('pt_inventaire', []);
+
+  if (editId) {
+    const idx = flacons.findIndex(x => x.id === editId);
+    if (idx !== -1) {
+      flacons[idx] = { ...flacons[idx], peptide, totalQty: qty, unit, dosePerInj: dose, freqPerDay: freq, reconDate, status, note };
+    } else {
+      // Flacon auto → on le persiste comme flacon manuel avec les modifications
+      flacons.push({ id: editId, peptide, totalQty: qty, usedQty: 0, unit, dosePerInj: dose, freqPerDay: freq, reconDate, status, note, auto: false });
+    }
+  } else {
+    flacons.push({
+      id: Date.now().toString(),
+      peptide, totalQty: qty, usedQty: 0, unit,
+      dosePerInj: dose, freqPerDay: freq,
+      reconDate, status, note, auto: false
+    });
+  }
+
+  setLS('pt_inventaire', flacons);
+  closeModal();
+  render();
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>

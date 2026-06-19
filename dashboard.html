@@ -494,6 +494,20 @@ import {
   getWeightLogs, logInjection, deleteInjection, createCure
 } from '/supabase.js';
 
+// ── FONCTIONS GLOBALES (disponibles immédiatement avant await) ──
+window.openAddCure = function() {
+  const s = document.getElementById('newCureStart');
+  if(s) s.value = new Date().toISOString().split('T')[0];
+  const m = document.getElementById('addCureModal');
+  if(m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+};
+window.closeIfOverlay = function(e) {
+  if (e.target === document.getElementById('addCureModal')) {
+    document.getElementById('addCureModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+};
+
 // ── AUTH ───────────────────────────────────────────────────────
 const user = await requireAuth();
 const userId = user.id;

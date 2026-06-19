@@ -349,7 +349,11 @@ function editField(key, label) {
   if (key==='age')      cur = profil.experience  || '';
   if (key==='taille')   cur = profil.height_cm   || localStorage.getItem('ps_height_cm') || '';
   if (key==='objectif') cur = profil.goal        || '';
-  valEl.innerHTML = `<input class="row-edit-input" id="edit-input" value="${cur}" placeholder="${label}" onkeydown="if(event.key==='Enter')saveField('${key}')">`;
+  valEl.innerHTML = `<div style="display:flex;gap:6px;align-items:center">
+    <input class="row-edit-input" id="edit-input" value="${cur}" placeholder="${label}" style="flex:1" onkeydown="if(event.key==='Enter')saveField('${key}')">
+    <button onclick="saveField('${key}')" style="padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap">✓</button>
+    <button onclick="cancelEdit()" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.8rem;cursor:pointer">✕</button>
+  </div>`;
   setTimeout(()=>document.getElementById('edit-input')?.focus(),50);
 }
 

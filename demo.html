@@ -34,15 +34,13 @@
     text-decoration:none; transition:opacity .2s; white-space:nowrap;
   }
   .signup-btn-top:hover { opacity:.85; }
-
-  /* DEMO BADGE */
   .demo-badge {
     background:rgba(249,115,22,.1); border:1px solid rgba(249,115,22,.3);
     border-radius:100px; padding:4px 12px; font-size:.7rem; font-weight:700;
     color:var(--accent3); font-family:'Space Mono',monospace;
   }
 
-  /* SLIDES CONTAINER */
+  /* SLIDES */
   .slides-wrap { flex:1; position:relative; overflow:hidden; }
   .slide {
     position:absolute; inset:0;
@@ -55,7 +53,6 @@
   .slide.active { opacity:1; pointer-events:all; transform:translateX(0); }
   .slide.exit-left { opacity:0; transform:translateX(-60px); }
 
-  /* SLIDE CONTENT */
   .slide-inner { width:100%; max-width:480px; }
   .slide-eyebrow {
     font-family:'Space Mono',monospace; font-size:.68rem;
@@ -65,10 +62,8 @@
   .slide-title { font-size:1.4rem; font-weight:700; text-align:center; margin-bottom:6px; line-height:1.2; }
   .slide-sub { font-size:.85rem; color:var(--muted); text-align:center; line-height:1.6; margin-bottom:20px; }
 
-  /* MOCKUP PHONE */
-  .phone-wrap {
-    display:flex; justify-content:center; margin-bottom:20px;
-  }
+  /* PHONE MOCKUP */
+  .phone-wrap { display:flex; justify-content:center; margin-bottom:20px; }
   .phone {
     width:220px; background:var(--surface); border-radius:28px;
     border:2px solid var(--border); padding:16px 14px;
@@ -77,36 +72,26 @@
   }
   .phone::before {
     content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
-    width:60px; height:16px; background:var(--bg);
-    border-radius:0 0 10px 10px;
+    width:60px; height:16px; background:var(--bg); border-radius:0 0 10px 10px;
   }
   .phone-screen { margin-top:10px; }
-  .phone-topbar {
-    display:flex; justify-content:space-between; align-items:center;
-    margin-bottom:12px;
-  }
+  .phone-topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
   .phone-topbar-title { font-size:.65rem; font-weight:700; color:var(--text); }
   .phone-topbar-logo { font-family:'Space Mono',monospace; font-size:.6rem; color:var(--accent); font-weight:700; }
 
-  /* MOCKUP CARDS */
-  .mock-card {
-    background:var(--surface2); border-radius:10px; padding:10px;
-    margin-bottom:8px; border:1px solid var(--border);
-  }
+  /* MOCK COMPONENTS */
+  .mock-card { background:var(--surface2); border-radius:10px; padding:10px; margin-bottom:8px; border:1px solid var(--border); }
   .mock-label { font-size:.55rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:4px; }
   .mock-val { font-family:'Space Mono',monospace; font-size:.9rem; font-weight:700; color:var(--accent); }
   .mock-sub { font-size:.55rem; color:var(--muted); margin-top:2px; }
   .mock-bar { height:3px; background:var(--border); border-radius:2px; margin-top:6px; overflow:hidden; }
   .mock-bar-fill { height:100%; border-radius:2px; }
-  .mock-pill {
-    display:inline-block; padding:2px 7px; border-radius:100px;
-    font-size:.55rem; font-weight:700; margin-top:4px;
-  }
+  .mock-pill { display:inline-block; padding:2px 7px; border-radius:100px; font-size:.55rem; font-weight:700; margin-top:4px; }
   .pill-green { background:rgba(13,148,136,.1); color:var(--accent); }
   .pill-orange { background:rgba(249,115,22,.1); color:var(--accent3); }
   .pill-blue { background:rgba(43,108,176,.1); color:var(--accent2); }
+  .pill-red { background:rgba(220,38,38,.08); color:var(--danger); }
 
-  /* MOCK CALENDAR */
   .mock-cal { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-top:8px; }
   .mock-cal-day { aspect-ratio:1; border-radius:3px; font-size:.45rem; display:flex; align-items:center; justify-content:center; font-weight:600; }
   .cal-done { background:rgba(13,148,136,.2); color:var(--accent); }
@@ -114,28 +99,20 @@
   .cal-rest { background:var(--border); color:var(--muted); }
   .cal-today { background:var(--accent); color:#fff; }
 
-  /* MOCK CHART */
   .mock-chart { height:50px; position:relative; margin-top:8px; }
   .mock-chart svg { width:100%; height:100%; }
 
-  /* MOCK LIST */
-  .mock-list-item {
-    display:flex; align-items:center; gap:6px; padding:5px 0;
-    border-bottom:1px solid var(--border); font-size:.6rem;
-  }
+  .mock-list-item { display:flex; align-items:center; gap:6px; padding:5px 0; border-bottom:1px solid var(--border); font-size:.6rem; }
   .mock-list-item:last-child { border-bottom:none; }
   .mock-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
   .mock-list-name { font-weight:600; color:var(--text); flex:1; }
   .mock-list-val { font-family:'Space Mono',monospace; color:var(--muted); font-size:.55rem; }
-  .mock-tag { padding:2px 5px; border-radius:3px; font-size:.5rem; font-weight:700; }
 
-  /* MOCK CHAT */
   .mock-msg { border-radius:8px; padding:7px 9px; margin-bottom:6px; font-size:.58rem; line-height:1.4; }
   .mock-msg.user { background:rgba(13,148,136,.1); color:var(--text); margin-left:20px; }
   .mock-msg.ai { background:var(--surface2); color:var(--text); margin-right:20px; border:1px solid var(--border); }
   .mock-msg strong { color:var(--accent); }
 
-  /* MOCK SCORE */
   .mock-score-wrap { display:flex; align-items:center; gap:10px; margin-top:8px; }
   .mock-ring { position:relative; width:48px; height:48px; flex-shrink:0; }
   .mock-ring svg { transform:rotate(-90deg); }
@@ -155,7 +132,15 @@
   .feat-text strong { display:block; font-size:.84rem; font-weight:700; margin-bottom:2px; }
   .feat-text span { font-size:.75rem; color:var(--muted); }
 
-  /* BOTTOM AREA */
+  /* NEW badge */
+  .new-badge {
+    display:inline-block; padding:1px 6px; border-radius:4px;
+    background:rgba(249,115,22,.12); color:var(--accent3);
+    font-size:.55rem; font-weight:700; margin-left:6px;
+    font-family:'Space Mono',monospace; vertical-align:middle;
+  }
+
+  /* BOTTOM */
   .bottom-area {
     position:fixed; bottom:0; left:0; right:0;
     background:var(--surface); border-top:1px solid var(--border);
@@ -163,14 +148,12 @@
     box-shadow:0 -4px 20px rgba(0,0,0,.06);
   }
   .bottom-inner { max-width:480px; margin:0 auto; }
-
-  /* DOTS */
+  .progress-bar { height:2px; background:var(--border); border-radius:1px; margin-bottom:12px; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--accent); border-radius:1px; transition:width .4s ease; }
   .dots { display:flex; justify-content:center; gap:6px; margin-bottom:12px; }
   .dot { width:6px; height:6px; border-radius:50%; background:var(--border); transition:all .3s; cursor:pointer; }
   .dot.active { background:var(--accent); width:20px; border-radius:3px; }
   .dot.done { background:rgba(13,148,136,.4); }
-
-  /* NAV BUTTONS */
   .nav-btns { display:flex; gap:10px; align-items:center; }
   .nav-prev {
     width:44px; height:44px; border-radius:12px; border:1.5px solid var(--border);
@@ -198,18 +181,13 @@
     border:1.5px solid var(--border); background:transparent;
     color:var(--muted); font-family:inherit; font-size:.84rem;
     font-weight:600; text-align:center; text-decoration:none;
-    margin-top:8px; transition:all .2s; cursor:pointer;
+    margin-top:8px; transition:all .2s;
   }
   .signup-free:hover { border-color:var(--accent); color:var(--accent); }
-
-  /* PROGRESS BAR */
-  .progress-bar { height:2px; background:var(--border); border-radius:1px; margin-bottom:12px; overflow:hidden; }
-  .progress-fill { height:100%; background:var(--accent); border-radius:1px; transition:width .4s ease; }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="logo"><div class="logo-dot"></div>PeptideScanner</div>
   <div class="demo-badge">👁 Visite guidée</div>
@@ -219,56 +197,68 @@
   </div>
 </div>
 
-<!-- SLIDES -->
 <div class="slides-wrap">
 
-  <!-- SLIDE 1 — DASHBOARD -->
+  <!-- SLIDE 1 — TODAY VIEW -->
   <div class="slide active" id="slide1">
     <div class="slide-inner">
-      <div class="slide-eyebrow">01 / 06 — Accueil</div>
-      <div class="slide-title">Votre tableau de bord</div>
-      <div class="slide-sub">Tout en un coup d'œil — cure active, poids, alertes du jour et compliance.</div>
+      <div class="slide-eyebrow">01 / 08 — Accueil</div>
+      <div class="slide-title">Today View — tout en un tap</div>
+      <div class="slide-sub">Toutes vos doses du jour, score de compliance et site d'injection suggéré. Directement depuis l'accueil.</div>
       <div class="phone-wrap">
         <div class="phone">
           <div class="phone-screen">
             <div class="phone-topbar">
-              <div class="phone-topbar-title">Bonjour 👋</div>
-              <div class="phone-topbar-logo">PS</div>
+              <div><div style="font-size:.5rem;color:var(--muted)">Bonjour 👋</div><div style="font-size:.65rem;font-weight:700">Alexandre</div></div>
+              <div class="phone-topbar-logo">PS•</div>
             </div>
-            <div class="mock-card">
-              <div class="mock-label">Cure active</div>
-              <div class="mock-val">BPC-157</div>
-              <div class="mock-sub">250 mcg · SC · Jour 18/30</div>
-              <div class="mock-bar"><div class="mock-bar-fill" style="width:60%;background:linear-gradient(90deg,#0D9488,#2B6CB0)"></div></div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-              <div class="mock-card" style="margin-bottom:0">
-                <div class="mock-label">Poids</div>
-                <div class="mock-val" style="font-size:.75rem">78,4 kg</div>
-                <div class="mock-sub" style="color:#0D9488">↓ 1.2 kg</div>
+            <!-- Today header -->
+            <div style="background:linear-gradient(135deg,rgba(13,148,136,.1),rgba(43,108,176,.07));border:1px solid rgba(13,148,136,.2);border-radius:10px;padding:8px 10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:.48rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Programme du jour</div>
+                <div style="font-size:.65rem;font-weight:700;margin:2px 0">Mercredi 18 juin</div>
+                <div style="height:3px;background:var(--border);border-radius:2px;margin-top:4px;width:80px;overflow:hidden"><div style="width:50%;height:100%;background:var(--accent);border-radius:2px"></div></div>
               </div>
-              <div class="mock-card" style="margin-bottom:0">
-                <div class="mock-label">Compliance</div>
-                <div class="mock-val" style="font-size:.75rem">87%</div>
-                <div class="mock-sub" style="color:#0D9488">Excellent</div>
+              <div style="text-align:right">
+                <div style="font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;color:var(--accent);line-height:1">1/2</div>
+                <div style="font-size:.48rem;color:var(--muted);margin-top:2px">doses faites</div>
               </div>
             </div>
-            <div class="mock-card">
-              <div class="mock-label">Prochaine injection</div>
-              <div style="font-size:.65rem;font-weight:700;color:#F97316">⏰ Aujourd'hui 20h00</div>
-              <div class="mock-sub">TB-500 · 2.5 mg · SC</div>
+            <!-- Injection items -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:6px">
+              <div style="padding:6px 8px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between">
+                <span style="font-size:.58rem;font-weight:700">💉 BPC-157</span>
+                <span style="font-size:.5rem;color:var(--muted);font-family:'Space Mono',monospace">J18 · 250mcg</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px;padding:7px 8px;border-bottom:1px solid var(--border)">
+                <div style="width:20px;height:20px;border-radius:6px;background:rgba(13,148,136,.15);border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--accent)">✓</div>
+                <div style="flex:1">
+                  <div style="font-size:.58rem;font-weight:600">Injection matin</div>
+                  <div style="font-size:.48rem;color:var(--muted)">SC · <span style="background:rgba(13,148,136,.08);color:var(--accent);padding:1px 4px;border-radius:3px;font-weight:600">📍 Abdomen G</span></div>
+                </div>
+                <div style="font-size:.52rem;color:var(--accent);font-family:'Space Mono',monospace">✓ Fait</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px;padding:7px 8px">
+                <div style="width:20px;height:20px;border-radius:6px;border:1.5px solid var(--accent3);display:flex;align-items:center;justify-content:center;font-size:.55rem;color:var(--accent3);animation:none">!</div>
+                <div style="flex:1">
+                  <div style="font-size:.58rem;font-weight:600">Injection soir</div>
+                  <div style="font-size:.48rem;color:var(--muted)">SC · <span style="background:rgba(13,148,136,.08);color:var(--accent);padding:1px 4px;border-radius:3px;font-weight:600">📍 Abdomen D</span></div>
+                </div>
+                <div style="font-size:.52rem;color:var(--accent3);font-weight:700;font-family:'Space Mono',monospace">⏰ Dû</div>
+              </div>
             </div>
-            <div style="display:flex;gap:4px;margin-top:6px">
+            <div style="display:flex;gap:4px">
               <span class="mock-pill pill-green">✓ Matin fait</span>
               <span class="mock-pill pill-orange">⏰ Soir à faire</span>
+              <span class="mock-pill pill-blue">📍 Rotation auto</span>
             </div>
           </div>
         </div>
       </div>
       <div class="features-list">
-        <div class="feat-item"><div class="feat-icon">🎯</div><div class="feat-text"><strong>Vue d'ensemble instantanée</strong><span>Cure active, jour en cours, compliance et prochain rappel</span></div></div>
-        <div class="feat-item"><div class="feat-icon">📊</div><div class="feat-text"><strong>Mini graphique poids</strong><span>Évolution depuis le début de votre cure</span></div></div>
-        <div class="feat-item"><div class="feat-icon">✅</div><div class="feat-text"><strong>Injections du jour</strong><span>Cochez chaque injection directement depuis l'accueil</span></div></div>
+        <div class="feat-item"><div class="feat-icon">⚡</div><div class="feat-text"><strong>Log en 1 tap</strong><span>Cochez chaque injection directement depuis l'accueil sans naviguer</span></div></div>
+        <div class="feat-item"><div class="feat-icon">📍</div><div class="feat-text"><strong>Site d'injection suggéré <span class="new-badge">NEW</span></strong><span>Rotation automatique abdomen G/D, cuisses, fesses pour éviter les lipodystrophies</span></div></div>
+        <div class="feat-item"><div class="feat-icon">🎯</div><div class="feat-text"><strong>Score du jour en temps réel</strong><span>Barre de progression et compteur doses faites / total</span></div></div>
       </div>
     </div>
   </div>
@@ -276,7 +266,7 @@
   <!-- SLIDE 2 — BIBLIOTHÈQUE -->
   <div class="slide" id="slide2">
     <div class="slide-inner">
-      <div class="slide-eyebrow">02 / 06 — Bibliothèque</div>
+      <div class="slide-eyebrow">02 / 08 — Bibliothèque</div>
       <div class="slide-title">52 peptides référencés</div>
       <div class="slide-sub">Dosages, protocoles, effets, stacks et boutiques partenaires pour chaque peptide.</div>
       <div class="phone-wrap">
@@ -294,98 +284,240 @@
             <div class="mock-list-item">
               <div class="mock-dot" style="background:#0D9488"></div>
               <span class="mock-list-name">BPC-157</span>
-              <span class="mock-tag" style="background:rgba(13,148,136,.1);color:#0D9488">Récupération</span>
-              <span class="mock-list-val">250mcg/j</span>
+              <span class="mock-pill pill-green" style="font-size:.48rem">Récupération</span>
+              <span class="mock-list-val">250–500 mcg</span>
             </div>
             <div class="mock-list-item">
               <div class="mock-dot" style="background:#2B6CB0"></div>
-              <span class="mock-list-name">CJC-1295</span>
-              <span class="mock-tag" style="background:rgba(43,108,176,.1);color:#2B6CB0">GH / IGF-1</span>
-              <span class="mock-list-val">1mg/sem</span>
+              <span class="mock-list-name">TB-500</span>
+              <span class="mock-pill pill-blue" style="font-size:.48rem">Cicatrisation</span>
+              <span class="mock-list-val">2–5 mg</span>
             </div>
             <div class="mock-list-item">
               <div class="mock-dot" style="background:#F97316"></div>
               <span class="mock-list-name">Semaglutide</span>
-              <span class="mock-tag" style="background:rgba(249,115,22,.1);color:#F97316">Poids</span>
-              <span class="mock-list-val">0.25mg</span>
+              <span class="mock-pill pill-orange" style="font-size:.48rem">Poids</span>
+              <span class="mock-list-val">0.25–2.4 mg</span>
             </div>
             <div class="mock-list-item">
-              <div class="mock-dot" style="background:#0D9488"></div>
+              <div class="mock-dot" style="background:#A855F7"></div>
               <span class="mock-list-name">Epithalon</span>
-              <span class="mock-tag" style="background:rgba(13,148,136,.1);color:#0D9488">Anti-âge</span>
-              <span class="mock-list-val">5mg/j</span>
+              <span class="mock-pill" style="background:rgba(168,85,247,.1);color:#A855F7;font-size:.48rem">Anti-âge</span>
+              <span class="mock-list-val">5–10 mg</span>
             </div>
             <div class="mock-list-item">
-              <div class="mock-dot" style="background:#6B7280"></div>
-              <span class="mock-list-name">Semax</span>
-              <span class="mock-tag" style="background:rgba(107,114,128,.1);color:#6B7280">Neuro</span>
-              <span class="mock-list-val">500mcg</span>
+              <div class="mock-dot" style="background:#DC2626"></div>
+              <span class="mock-list-name">HGH Frag</span>
+              <span class="mock-pill pill-red" style="font-size:.48rem">Lipolyse</span>
+              <span class="mock-list-val">250 mcg</span>
             </div>
-            <div style="text-align:center;font-size:.55rem;color:var(--muted);margin-top:6px">+ 47 autres peptides →</div>
           </div>
         </div>
       </div>
       <div class="features-list">
-        <div class="feat-item"><div class="feat-icon">🧬</div><div class="feat-text"><strong>52 peptides avec fiches complètes</strong><span>Dosage, administration, durée, effets et contre-indications</span></div></div>
-        <div class="feat-item"><div class="feat-icon">💊</div><div class="feat-text"><strong>Stacks synergiques recommandés</strong><span>Les meilleures associations documentées</span></div></div>
-        <div class="feat-item"><div class="feat-icon">🛒</div><div class="feat-text"><strong>Liens boutiques partenaires vérifiées</strong><span>Accès direct aux meilleures sources européennes</span></div></div>
+        <div class="feat-item"><div class="feat-icon">🧬</div><div class="feat-text"><strong>Base de données complète</strong><span>52 peptides avec dosages, effets, contre-indications et stacks</span></div></div>
+        <div class="feat-item"><div class="feat-icon">🔍</div><div class="feat-text"><strong>Recherche & filtres</strong><span>Par catégorie, objectif, mode d'administration</span></div></div>
+        <div class="feat-item"><div class="feat-icon">🛒</div><div class="feat-text"><strong>Boutiques partenaires</strong><span>Liens directs vers les fournisseurs vérifiés pour chaque peptide</span></div></div>
       </div>
     </div>
   </div>
 
-  <!-- SLIDE 3 — CALENDRIER DE CURE -->
+  <!-- SLIDE 3 — CURE & CALENDRIER -->
   <div class="slide" id="slide3">
     <div class="slide-inner">
-      <div class="slide-eyebrow">03 / 06 — Cure</div>
-      <div class="slide-title">Calendrier de cure</div>
-      <div class="slide-sub">Planifiez, suivez et analysez chaque injection de votre protocole.</div>
+      <div class="slide-eyebrow">03 / 08 — Cure</div>
+      <div class="slide-title">Calendrier de cure visuel</div>
+      <div class="slide-sub">Planifiez, suivez et analysez vos protocoles peptidiques avec un calendrier complet.</div>
       <div class="phone-wrap">
         <div class="phone">
           <div class="phone-screen">
             <div class="phone-topbar">
               <div class="phone-topbar-title">BPC-157 · J18/30</div>
-              <div style="font-size:.55rem;color:#0D9488;font-weight:700">87%</div>
+              <div style="font-size:.52rem;color:#0D9488;font-weight:700">87%</div>
             </div>
-            <div style="font-size:.58rem;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace">JUIN 2026</div>
-            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:4px">
-              <div style="font-size:.45rem;color:var(--muted);text-align:center">L</div>
-              <div style="font-size:.45rem;color:var(--muted);text-align:center">M</div>
-              <div style="font-size:.45rem;color:var(--muted);text-align:center">M</div>
-              <div style="font-size:.45rem;color:var(--muted);text-align:center">J</div>
-              <div style="font-size:.45rem;color:var(--muted);text-align:center">V</div>
-              <div style="font-size:.45rem;color:var(--muted);text-align:center">S</div>
-              <div style="font-size:.45rem;color:var(--muted);text-align:center">D</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">
+              <div style="font-size:.45rem;color:var(--muted);text-align:center">L</div><div style="font-size:.45rem;color:var(--muted);text-align:center">M</div><div style="font-size:.45rem;color:var(--muted);text-align:center">M</div><div style="font-size:.45rem;color:var(--muted);text-align:center">J</div><div style="font-size:.45rem;color:var(--muted);text-align:center">V</div><div style="font-size:.45rem;color:var(--muted);text-align:center">S</div><div style="font-size:.45rem;color:var(--muted);text-align:center">D</div>
             </div>
             <div class="mock-cal">
               <div class="mock-cal-day cal-done">2</div><div class="mock-cal-day cal-done">3</div><div class="mock-cal-day cal-done">4</div><div class="mock-cal-day cal-done">5</div><div class="mock-cal-day cal-done">6</div><div class="mock-cal-day cal-rest">7</div><div class="mock-cal-day cal-rest">8</div>
               <div class="mock-cal-day cal-done">9</div><div class="mock-cal-day cal-done">10</div><div class="mock-cal-day cal-done">11</div><div class="mock-cal-day cal-miss">12</div><div class="mock-cal-day cal-done">13</div><div class="mock-cal-day cal-rest">14</div><div class="mock-cal-day cal-rest">15</div>
               <div class="mock-cal-day cal-done">16</div><div class="mock-cal-day cal-done">17</div><div class="mock-cal-day cal-today">18</div><div class="mock-cal-day" style="background:var(--surface2);color:var(--muted);opacity:.4">19</div><div class="mock-cal-day" style="background:var(--surface2);color:var(--muted);opacity:.4">20</div><div class="mock-cal-day" style="background:var(--surface2);color:var(--muted);opacity:.4">21</div><div class="mock-cal-day" style="background:var(--surface2);color:var(--muted);opacity:.4">22</div>
             </div>
-            <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
+            <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
               <span class="mock-pill pill-green" style="font-size:.5rem">✓ Injecté</span>
-              <span class="mock-pill" style="background:rgba(220,38,38,.08);color:#DC2626;font-size:.5rem">Manqué</span>
+              <span class="mock-pill pill-red" style="font-size:.5rem">Manqué</span>
               <span class="mock-pill" style="background:var(--surface2);color:var(--muted);font-size:.5rem">Repos</span>
             </div>
-            <div class="mock-card" style="margin-top:8px">
-              <div class="mock-label">Aujourd'hui — 2 injections</div>
-              <div style="font-size:.58rem;color:#0D9488">✓ 08h00 — Matin fait</div>
-              <div style="font-size:.58rem;color:#F97316">⏰ 20h00 — Soir à faire</div>
+            <!-- Site rotation widget -->
+            <div style="background:rgba(13,148,136,.06);border:1px solid rgba(13,148,136,.18);border-radius:8px;padding:7px 8px;margin-top:8px">
+              <div style="font-size:.48rem;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Site suggéré aujourd'hui</div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="font-size:1rem">🫃</span>
+                <div>
+                  <div style="font-size:.6rem;font-weight:700">Abdomen droit</div>
+                  <div style="font-size:.48rem;color:var(--muted)">Rotation 4/6 · prochains : Cuisse G</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
       <div class="features-list">
         <div class="feat-item"><div class="feat-icon">📅</div><div class="feat-text"><strong>Calendrier visuel complet</strong><span>Jours faits, manqués, de repos en un coup d'œil</span></div></div>
-        <div class="feat-item"><div class="feat-icon">✏️</div><div class="feat-text"><strong>Notes quotidiennes</strong><span>Ajoutez vos observations pour chaque jour de cure</span></div></div>
-        <div class="feat-item"><div class="feat-icon">📈</div><div class="feat-text"><strong>Score de compliance automatique</strong><span>Calculé en temps réel sur l'ensemble de la cure</span></div></div>
+        <div class="feat-item"><div class="feat-icon">🔄</div><div class="feat-text"><strong>Rotation sites d'injection <span class="new-badge">NEW</span></strong><span>6 zones en rotation automatique — abdomen, cuisses, fesses, épaules</span></div></div>
+        <div class="feat-item"><div class="feat-icon">📈</div><div class="feat-text"><strong>Compliance automatique</strong><span>Score calculé en temps réel sur l'ensemble de la cure</span></div></div>
       </div>
     </div>
   </div>
 
-  <!-- SLIDE 4 — POIDS -->
+  <!-- SLIDE 4 — CALCULATEUR SERINGUE -->
   <div class="slide" id="slide4">
     <div class="slide-inner">
-      <div class="slide-eyebrow">04 / 06 — Poids</div>
+      <div class="slide-eyebrow">04 / 08 — Calculateur</div>
+      <div class="slide-title">Seringue interactive & calcul précis</div>
+      <div class="slide-sub">Visualisez votre dose exacte sur une seringue animée. Glissez le piston, calculez en mg, mcg ou IU.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-topbar">
+              <div class="phone-topbar-title">💉 Calculateur</div>
+              <div style="font-size:.5rem;color:var(--accent);font-weight:700">Dosage</div>
+            </div>
+            <!-- Mode selector -->
+            <div style="display:flex;gap:4px;margin-bottom:8px">
+              <div style="flex:1;background:rgba(13,148,136,.12);border:1px solid var(--accent);border-radius:6px;padding:4px;text-align:center;font-size:.52rem;font-weight:700;color:var(--accent)">mg / mcg</div>
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px;text-align:center;font-size:.52rem;color:var(--muted)">IU (HGH…)</div>
+            </div>
+            <!-- Seringue + info -->
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <!-- Mini seringue SVG -->
+              <svg viewBox="0 0 40 160" width="40" height="160" style="flex-shrink:0">
+                <rect x="13" y="12" width="14" height="130" rx="3" fill="#EEF7FF" stroke="#a8c8e8" stroke-width="1"/>
+                <rect x="14" y="12" width="2" height="128" rx="1" fill="rgba(255,255,255,.6)"/>
+                <!-- Liquid -->
+                <rect x="13" y="12" width="14" height="65" rx="2" fill="rgba(13,148,136,.25)"/>
+                <!-- Graduations -->
+                <line x1="13" y1="12" x2="19" y2="12" stroke="#475569" stroke-width=".8"/>
+                <line x1="13" y1="38.5" x2="18" y2="38.5" stroke="#64748b" stroke-width=".6"/>
+                <line x1="13" y1="64" x2="19" y2="64" stroke="#1e293b" stroke-width=".9"/>
+                <line x1="13" y1="90.5" x2="18" y2="90.5" stroke="#64748b" stroke-width=".6"/>
+                <line x1="13" y1="117" x2="19" y2="117" stroke="#1e293b" stroke-width=".9"/>
+                <line x1="13" y1="142" x2="18" y2="142" stroke="#64748b" stroke-width=".6"/>
+                <text x="11" y="15" font-size="4" fill="#475569" text-anchor="end" font-family="Space Mono">0</text>
+                <text x="11" y="67" font-size="4" fill="#1e293b" text-anchor="end" font-family="Space Mono">50</text>
+                <text x="11" y="120" font-size="4" fill="#1e293b" text-anchor="end" font-family="Space Mono">100</text>
+                <!-- Piston -->
+                <g transform="translateY(65)">
+                  <rect x="11" y="70" width="18" height="7" rx="2" fill="#2B6CB0"/>
+                  <rect x="15" y="58" width="10" height="14" rx="2" fill="#2B6CB0"/>
+                  <rect x="12" y="56" width="16" height="4" rx="2" fill="#1E40AF"/>
+                </g>
+                <!-- Arrow indicator -->
+                <line x1="27" y1="77" x2="33" y2="77" stroke="#dc2626" stroke-width="1"/>
+                <polygon points="27,75 27,79 30,77" fill="#dc2626"/>
+                <rect x="33" y="73" width="9" height="8" rx="2" fill="#dc2626"/>
+                <text x="37.5" y="79" font-size="3.5" fill="#fff" font-family="Space Mono" font-weight="bold" text-anchor="middle">50U</text>
+                <!-- Needle -->
+                <rect x="18.5" y="142" width="3" height="14" rx="1" fill="#94a3b8"/>
+                <polygon points="18.5,156 21.5,156 20,158" fill="#64748b"/>
+                <!-- Aiguille capuchon -->
+                <rect x="17.5" y="140" width="5" height="18" rx="2.5" fill="rgba(148,163,184,.1)" stroke="#cbd5e1" stroke-width=".5"/>
+              </svg>
+              <!-- Infos -->
+              <div style="flex:1">
+                <div class="mock-card" style="margin-bottom:6px">
+                  <div class="mock-label">Graduation</div>
+                  <div style="font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700;color:var(--accent)">50 U</div>
+                </div>
+                <div class="mock-card" style="margin-bottom:6px">
+                  <div class="mock-label">Volume</div>
+                  <div style="font-family:'Space Mono',monospace;font-size:.78rem;font-weight:700;color:var(--accent2)">0.500 mL</div>
+                </div>
+                <div style="background:rgba(13,148,136,.06);border:1px solid rgba(13,148,136,.15);border-radius:7px;padding:6px 7px;font-size:.52rem;line-height:1.5;color:var(--text)">
+                  <strong style="color:var(--accent)">→ Grad. 50</strong><br>
+                  500 mcg · 0.500 mL
+                </div>
+              </div>
+            </div>
+            <!-- Alertes nouvelles features -->
+            <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+              <div style="background:rgba(43,108,176,.06);border-radius:6px;padding:5px 7px;font-size:.5rem;color:var(--accent2)">✂️ Split-dose auto si dose > seringue</div>
+              <div style="background:rgba(220,38,38,.05);border-radius:6px;padding:5px 7px;font-size:.5rem;color:var(--danger)">⚠️ Alerte si volume > 0.5 mL</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="features-list">
+        <div class="feat-item"><div class="feat-icon">💉</div><div class="feat-text"><strong>Seringue interactive drag & drop <span class="new-badge">NEW</span></strong><span>Glissez le piston pour explorer les doses visuellement</span></div></div>
+        <div class="feat-item"><div class="feat-icon">🧮</div><div class="feat-text"><strong>Support mg, mcg et IU <span class="new-badge">NEW</span></strong><span>HGH, HCG, insuline — presets pour les protocoles courants</span></div></div>
+        <div class="feat-item"><div class="feat-icon">✂️</div><div class="feat-text"><strong>Split-dose & alertes sécurité <span class="new-badge">NEW</span></strong><span>Division automatique + modale de confirmation si dose élevée</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — INVENTAIRE -->
+  <div class="slide" id="slide5">
+    <div class="slide-inner">
+      <div class="slide-eyebrow">05 / 08 — Inventaire</div>
+      <div class="slide-title">Stock des flacons en temps réel</div>
+      <div class="slide-sub">Ne tombez plus à court de peptides. Suivi automatique du stock, dates de péremption et alertes de rupture.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-topbar">
+              <div class="phone-topbar-title">🧪 Inventaire</div>
+              <div style="font-size:.52rem;color:var(--danger);font-weight:700">1 alerte</div>
+            </div>
+            <!-- Summary -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px">
+              <div class="mock-card" style="margin-bottom:0;text-align:center">
+                <div class="mock-label">Flacons actifs</div>
+                <div style="font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700;color:var(--accent)">3</div>
+              </div>
+              <div class="mock-card" style="margin-bottom:0;text-align:center;border-color:rgba(220,38,38,.3);background:rgba(220,38,38,.03)">
+                <div class="mock-label">Alertes stock</div>
+                <div style="font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700;color:var(--danger)">1</div>
+              </div>
+            </div>
+            <!-- Flacon cards -->
+            <div style="border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:7px 8px;margin-bottom:5px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.6rem;font-weight:700">BPC-157</span>
+                <span style="font-size:.48rem;background:rgba(13,148,136,.1);color:var(--accent);padding:1px 5px;border-radius:4px;font-weight:700">En cours</span>
+              </div>
+              <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:3px"><div style="width:62%;height:100%;background:linear-gradient(90deg,var(--accent),#14b8a6);border-radius:2px"></div></div>
+              <div style="display:flex;justify-content:space-between;font-size:.48rem;color:var(--muted)"><span>6.2 mg restant (62%)</span><span>Périme J+18</span></div>
+            </div>
+            <div style="border:1px solid rgba(220,38,38,.4);border-left:3px solid var(--danger);border-radius:8px;padding:7px 8px;margin-bottom:5px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.6rem;font-weight:700">Semaglutide</span>
+                <span style="font-size:.48rem;background:rgba(220,38,38,.1);color:var(--danger);padding:1px 5px;border-radius:4px;font-weight:700">⚠️ Critique</span>
+              </div>
+              <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:3px"><div style="width:12%;height:100%;background:linear-gradient(90deg,var(--danger),#f87171);border-radius:2px"></div></div>
+              <div style="display:flex;justify-content:space-between;font-size:.48rem;color:var(--muted)"><span>0.6 mg restant (12%)</span><span>3 injections</span></div>
+            </div>
+            <div style="border:1px solid rgba(43,108,176,.3);border-left:3px solid var(--accent2);border-radius:8px;padding:7px 8px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.6rem;font-weight:700">TB-500</span>
+                <span style="font-size:.48rem;background:rgba(43,108,176,.1);color:var(--accent2);padding:1px 5px;border-radius:4px;font-weight:700">📦 Scellé</span>
+              </div>
+              <div style="font-size:.5rem;color:var(--muted)">5 mg · Non ouvert · Réserve</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="features-list">
+        <div class="feat-item"><div class="feat-icon">🧪</div><div class="feat-text"><strong>Stock automatique depuis vos cures <span class="new-badge">NEW</span></strong><span>Se synchronise avec vos logs d'injection sans saisie manuelle</span></div></div>
+        <div class="feat-item"><div class="feat-icon">⚠️</div><div class="feat-text"><strong>Alertes péremption & rupture <span class="new-badge">NEW</span></strong><span>Notification à J+25 et quand le stock passe sous 20%</span></div></div>
+        <div class="feat-item"><div class="feat-icon">📦</div><div class="feat-text"><strong>Gestion des réserves</strong><span>Flacons scellés, dates d'ouverture et durée de vie restante</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — POIDS -->
+  <div class="slide" id="slide6">
+    <div class="slide-inner">
+      <div class="slide-eyebrow">06 / 08 — Poids</div>
       <div class="slide-title">Suivi du poids</div>
       <div class="slide-sub">Graphiques d'évolution, corrélation avec vos cures et projections intelligentes.</div>
       <div class="phone-wrap">
@@ -446,10 +578,10 @@
     </div>
   </div>
 
-  <!-- SLIDE 5 — CONSEILLER IA -->
-  <div class="slide" id="slide5">
+  <!-- SLIDE 7 — CONSEILLER IA -->
+  <div class="slide" id="slide7">
     <div class="slide-inner">
-      <div class="slide-eyebrow">05 / 06 — IA</div>
+      <div class="slide-eyebrow">07 / 08 — IA</div>
       <div class="slide-title">Conseiller IA peptides</div>
       <div class="slide-sub">Posez vos questions sur les dosages, protocoles et stacks. Réponses expertes en secondes.</div>
       <div class="phone-wrap">
@@ -484,10 +616,10 @@
     </div>
   </div>
 
-  <!-- SLIDE 6 — ANALYSE -->
-  <div class="slide" id="slide6">
+  <!-- SLIDE 8 — ANALYSE -->
+  <div class="slide" id="slide8">
     <div class="slide-inner">
-      <div class="slide-eyebrow">06 / 06 — Analyse</div>
+      <div class="slide-eyebrow">08 / 08 — Analyse</div>
       <div class="slide-title">Analyse & corrélations</div>
       <div class="slide-sub">Le cerveau de PeptideScanner — insights automatiques qui relient compliance, poids et résultats.</div>
       <div class="phone-wrap">
@@ -532,7 +664,7 @@
         </div>
       </div>
       <div class="features-list">
-        <div class="feat-item"><div class="feat-icon">🔬</div><div class="feat-text"><strong>Scan Score 0-100</strong><span>Note globale basée sur compliance, progression et régularité</span></div></div>
+        <div class="feat-item"><div class="feat-icon">🔬</div><div class="feat-text"><strong>Scan Score 0–100</strong><span>Note globale basée sur compliance, progression et régularité</span></div></div>
         <div class="feat-item"><div class="feat-icon">🧠</div><div class="feat-text"><strong>Insights automatiques</strong><span>Détecte les patterns — weekend, gaps, tendances</span></div></div>
         <div class="feat-item"><div class="feat-icon">📐</div><div class="feat-text"><strong>Corrélation cure × poids</strong><span>Visualise exactement l'impact de chaque peptide</span></div></div>
       </div>
@@ -545,7 +677,7 @@
 <div class="bottom-area">
   <div class="bottom-inner">
     <div class="progress-bar">
-      <div class="progress-fill" id="progressFill" style="width:16.6%"></div>
+      <div class="progress-fill" id="progressFill" style="width:12.5%"></div>
     </div>
     <div class="dots" id="dots">
       <div class="dot active" onclick="goTo(1)"></div>
@@ -554,6 +686,8 @@
       <div class="dot" onclick="goTo(4)"></div>
       <div class="dot" onclick="goTo(5)"></div>
       <div class="dot" onclick="goTo(6)"></div>
+      <div class="dot" onclick="goTo(7)"></div>
+      <div class="dot" onclick="goTo(8)"></div>
     </div>
     <div id="navArea">
       <div class="nav-btns">
@@ -566,61 +700,45 @@
 
 <script>
 let current = 1;
-const TOTAL = 6;
+const TOTAL = 8;
 
 function goTo(n) {
-  const prev = document.getElementById('slide' + current);
-  prev.classList.remove('active');
-  prev.classList.add('exit-left');
-  setTimeout(() => prev.classList.remove('exit-left'), 400);
-
+  const prevEl = document.getElementById('slide' + current);
+  prevEl.classList.remove('active');
+  prevEl.classList.add('exit-left');
+  setTimeout(() => prevEl.classList.remove('exit-left'), 400);
   current = n;
-  const next = document.getElementById('slide' + current);
-  next.style.transform = 'translateX(60px)';
-  next.classList.add('active');
-  setTimeout(() => next.style.transform = '', 10);
-
+  const nextEl = document.getElementById('slide' + current);
+  nextEl.style.transform = 'translateX(60px)';
+  nextEl.classList.add('active');
+  setTimeout(() => nextEl.style.transform = '', 10);
   updateUI();
 }
 
-function next() {
-  if (current < TOTAL) goTo(current + 1);
-}
-
-function prev() {
-  if (current > 1) goTo(current - 1);
-}
+function next() { if (current < TOTAL) goTo(current + 1); }
+function prev() { if (current > 1) goTo(current - 1); }
 
 function updateUI() {
-  // Progress bar
   document.getElementById('progressFill').style.width = (current / TOTAL * 100) + '%';
-
-  // Dots
   document.querySelectorAll('.dot').forEach((d, i) => {
     d.className = 'dot' + (i + 1 === current ? ' active' : i + 1 < current ? ' done' : '');
   });
-
-  // Prev button
   const prevBtn = document.getElementById('prevBtn');
   prevBtn.style.opacity = current === 1 ? '.3' : '1';
   prevBtn.style.pointerEvents = current === 1 ? 'none' : 'auto';
-
-  // Next button / CTA
   const navArea = document.getElementById('navArea');
   if (current === TOTAL) {
     navArea.innerHTML = `
       <a href="login.html" class="signup-final">🚀 Commencer gratuitement — inscription rapide</a>
-      <a href="login.html#register" class="signup-free">Voir les plans →</a>
-    `;
+      <a href="login.html#register" class="signup-free">Voir les plans →</a>`;
   } else {
     navArea.innerHTML = `
       <div class="nav-btns">
-        <button class="nav-prev" id="prevBtn" onclick="prev()" style="opacity:${current===1?'.3':'1'};pointer-events:${current===1?'none':'auto'}">‹</button>
-        <button class="nav-next ${current===TOTAL-1?'last':''}" id="nextBtn" onclick="next()">
-          ${current === TOTAL - 1 ? '🚀 Voir comment s\'inscrire' : 'Suivant →'}
+        <button class="nav-prev" onclick="prev()" style="opacity:${current===1?'.3':'1'};pointer-events:${current===1?'none':'auto'}">‹</button>
+        <button class="nav-next ${current===TOTAL-1?'last':''}" onclick="next()">
+          ${current === TOTAL - 1 ? '🚀 Découvrir le bilan' : 'Suivant →'}
         </button>
-      </div>
-    `;
+      </div>`;
   }
 }
 

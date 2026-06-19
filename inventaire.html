@@ -12,7 +12,7 @@
     --text:#1F2937; --muted:#6B7280; --danger:#DC2626; --nav-h:64px;
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+32px); }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+60px); }
 
   /* TOPBAR */
   .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; box-shadow:0 1px 8px rgba(0,0,0,.06); }
@@ -260,34 +260,63 @@ async function loadData() {
 
 // ── FLACON SVG ─────────────────────────────────────────────────
 function vialSVG(pct, color, isSealed) {
-  const fillH = Math.round(pct * 80 / 100); // hauteur de remplissage sur 80px
-  const y     = 100 - fillH; // position Y du fill (SVG de 0 à 100)
-  const liquidColor = color;
-  const capColor    = isSealed ? '#94A3B8' : color;
+  const capColor  = isSealed ? '#94A3B8' : color;
+  const fillH     = Math.round(pct * 52 / 100); // max fill height = 52px
+  const fillY     = 44 + (52 - fillH);           // starts from bottom of body
 
-  return `<svg viewBox="0 0 60 120" xmlns="http://www.w3.org/2000/svg" style="width:54px;height:108px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.12))">
-    <!-- Capsule -->
-    <rect x="20" y="4" width="20" height="14" rx="4" fill="${capColor}" opacity=".9"/>
-    <rect x="22" y="16" width="16" height="4" rx="0" fill="${capColor}" opacity=".7"/>
-    <!-- Corps du flacon -->
-    <rect x="12" y="20" width="36" height="82" rx="8" fill="white" stroke="#E2E8F0" stroke-width="1.5"/>
+  const uid = Math.random().toString(36).substr(2,6);
+  return `<svg viewBox="0 0 48 110" xmlns="http://www.w3.org/2000/svg" style="width:48px;height:110px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.15))">
+    <defs>
+      <clipPath id="bodyClip_${uid}">
+        <rect x="8" y="42" width="32" height="54" rx="5"/>
+      </clipPath>
+      <linearGradient id="bodyGrad_${uid}" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#f0f4f8"/>
+        <stop offset="40%" stop-color="#ffffff"/>
+        <stop offset="100%" stop-color="#e2e8f0"/>
+      </linearGradient>
+      <linearGradient id="capGrad_${uid}" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="${capColor}" stop-opacity=".7"/>
+        <stop offset="50%" stop-color="${capColor}"/>
+        <stop offset="100%" stop-color="${capColor}" stop-opacity=".8"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Capuchon aluminium -->
+    <rect x="14" y="2" width="20" height="18" rx="4" fill="url(#capGrad_${uid})"/>
+    <!-- Bord inférieur capuchon (rebord) -->
+    <rect x="12" y="18" width="24" height="4" rx="1" fill="${capColor}" opacity=".6"/>
+
+    <!-- Septum caoutchouc -->
+    <ellipse cx="24" cy="26" rx="10" ry="5" fill="#CBD5E1"/>
+    <ellipse cx="24" cy="25" rx="8" ry="3.5" fill="#94A3B8"/>
+    <!-- Point central septum -->
+    <circle cx="24" cy="25" r="2" fill="#64748B"/>
+
+    <!-- Col du flacon -->
+    <rect x="17" y="28" width="14" height="14" rx="3" fill="url(#bodyGrad_${uid})" stroke="#E2E8F0" stroke-width="1"/>
+
+    <!-- Corps principal -->
+    <rect x="8" y="42" width="32" height="54" rx="5" fill="url(#bodyGrad_${uid})" stroke="#D1D9E0" stroke-width="1.2"/>
+
     <!-- Liquide -->
-    ${pct > 0 ? `
-    <clipPath id="vialClip_${Math.random().toString(36).substr(2,5)}">
-      <rect x="12" y="20" width="36" height="82" rx="8"/>
-    </clipPath>
-    <rect x="12" y="${20 + (82 - fillH)}" width="36" height="${fillH}" fill="${liquidColor}" opacity=".25"/>
-    <rect x="12" y="${20 + (82 - fillH)}" width="36" height="3" fill="${liquidColor}" opacity=".5"/>
-    ` : ''}
-    <!-- Reflet -->
-    <rect x="16" y="24" width="6" height="40" rx="3" fill="white" opacity=".5"/>
-    <!-- Graduation -->
-    <line x1="42" y1="40" x2="46" y2="40" stroke="#CBD5E1" stroke-width="1"/>
-    <line x1="42" y1="55" x2="46" y2="55" stroke="#CBD5E1" stroke-width="1"/>
-    <line x1="42" y1="70" x2="46" y2="70" stroke="#CBD5E1" stroke-width="1"/>
-    <line x1="42" y1="85" x2="46" y2="85" stroke="#CBD5E1" stroke-width="1"/>
-    <!-- Base -->
-    <rect x="14" y="98" width="32" height="4" rx="2" fill="#E2E8F0"/>
+    ${pct > 0 ? `<rect x="8" y="${fillY}" width="32" height="${fillH}" fill="${color}" opacity=".18" clip-path="url(#bodyClip_${uid})"/>
+    <rect x="8" y="${fillY}" width="32" height="2.5" fill="${color}" opacity=".35" clip-path="url(#bodyClip_${uid})"/>` : ''}
+
+    <!-- Reflet gauche -->
+    <rect x="12" y="46" width="4" height="36" rx="2" fill="white" opacity=".55"/>
+
+    <!-- Graduations -->
+    <line x1="36" y1="56" x2="40" y2="56" stroke="#CBD5E1" stroke-width="1"/>
+    <line x1="36" y1="66" x2="40" y2="66" stroke="#CBD5E1" stroke-width="1"/>
+    <line x1="36" y1="76" x2="40" y2="76" stroke="#CBD5E1" stroke-width="1"/>
+    <line x1="36" y1="86" x2="40" y2="86" stroke="#CBD5E1" stroke-width="1"/>
+
+    <!-- Étiquette -->
+    <rect x="10" y="58" width="20" height="22" rx="2" fill="white" opacity=".7" stroke="${color}" stroke-width=".8" stroke-opacity=".3"/>
+
+    <!-- Base arrondie -->
+    <rect x="9" y="92" width="30" height="4" rx="2" fill="#E2E8F0"/>
   </svg>`;
 }
 

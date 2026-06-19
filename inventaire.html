@@ -156,7 +156,7 @@
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
   <h1>Inventaire</h1>
-  <button class="add-btn" onclick="openAdd()" title="Ajouter un flacon">+</button>
+  <button class="add-btn" onclick="openModal()" title="Ajouter un flacon">+</button>
 </div>
 
 <div class="content" id="mainContent"></div>
@@ -232,10 +232,10 @@
 <script type="module">
 import {
   requireAuth, getCures, getInjections,
-  getInventory, createInventoryItem, updateInventoryItem, deleteInventoryItem
+  getInventory, createInventoryItem, updateInventoryItem, deleteInventoryItem,
+  logInjection as logInj
 } from '/supabase.js';
 
-// ── AUTH ───────────────────────────────────────────────────────
 const user = await requireAuth();
 const userId = user.id;
 
@@ -247,12 +247,9 @@ function showToast(m) {
 function fmt(d) { return d ? new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' }) : '—'; }
 
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+let allCures = [], allInjections = [], allInventory = [];
+let editId = null;
 
-let allCures      = [];
-let allInjections = [];
-let allInventory  = [];
-
-// ── CHARGER DONNÉES ────────────────────────────────────────────
 async function loadData() {
   const [cRes, iRes, invRes] = await Promise.all([
     getCures(userId),
@@ -263,7 +260,6 @@ async function loadData() {
   allInjections = iRes.data   || [];
   allInventory  = invRes.data || [];
 
-  // Auto-importer depuis les cures si inventaire vide
   if (allInventory.length === 0 && allCures.length > 0) {
     await autoImportFromCures();
   } else {
@@ -271,17 +267,14 @@ async function loadData() {
   }
 }
 
-// ── AUTO-IMPORT DEPUIS CURES ───────────────────────────────────
 async function autoImportFromCures() {
   for (const cure of allCures) {
     const cureInjs = allInjections.filter(i => i.cure_id === cure.id);
     const freq     = parseFloat(cure.frequency) || 1;
     const dur      = cure.duration_days || 30;
     const doseVal  = cure.dose_mcg || 1;
-    const unit     = cure.unit || 'mcg';
     const totalQty = Math.round(dur * freq) * doseVal;
     const usedQty  = cureInjs.length * doseVal;
-
     await createInventoryItem(userId, {
       peptide_name:    cure.peptide_name || cure.name,
       vial_qty_mg:     totalQty,
@@ -290,47 +283,37 @@ async function autoImportFromCures() {
       notes:           `Import auto · cure:${cure.id}`,
     });
   }
-
-  const invRes  = await getInventory(userId);
-  allInventory  = invRes.data || [];
+  const invRes = await getInventory(userId);
+  allInventory = invRes.data || [];
   render();
 }
 
-// ── RENDER ─────────────────────────────────────────────────────
 function render() {
   const container = document.getElementById('mainContent');
 
+  // Stats
+  const statActive = document.getElementById('statActive');
+  const statLow    = document.getElementById('statLow');
+  const statTotal  = document.getElementById('statTotal');
+  if (statActive) statActive.textContent = allInventory.length;
+  if (statLow)    statLow.textContent    = allInventory.filter(f => f.remaining_units !== null && f.vial_qty_mg && (f.remaining_units / f.vial_qty_mg) < 0.2).length;
+  if (statTotal)  statTotal.textContent  = allInventory.length;
+
+  if (!container) return;
+
   if (allInventory.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <span>🧪</span>
-        <p>Aucun flacon enregistré.<br>Ajoutez votre premier flacon ou commencez une cure.</p>
-        <button class="empty-btn" onclick="openAdd()">+ Ajouter un flacon</button>
-      </div>`;
+    container.innerHTML = `<div class="empty-state"><span>🧪</span><p>Aucun flacon enregistré.<br>Ajoutez votre premier flacon.</p><button class="empty-btn" onclick="openModal()">+ Ajouter un flacon</button></div>`;
     return;
   }
 
-  // Stats globales
-  const active   = allInventory.filter(f => {
-    if (!f.expiry_date) return true;
-    return new Date(f.expiry_date) >= TODAY;
-  });
-  const lowStock = allInventory.filter(f => f.remaining_units !== null && f.vial_qty_mg && (f.remaining_units / f.vial_qty_mg) < 0.2);
-
-  document.getElementById('statActive').textContent   = active.length;
-  document.getElementById('statLow').textContent      = lowStock.length;
-  document.getElementById('statTotal').textContent    = allInventory.length;
-
-  // Cards flacons
-  const cardsHtml = allInventory.map(f => {
+  container.innerHTML = allInventory.map(f => {
     const remaining = f.remaining_units ?? f.vial_qty_mg ?? 0;
     const total     = f.vial_qty_mg ?? 1;
     const pct       = total > 0 ? Math.min(100, Math.round((remaining / total) * 100)) : 0;
     const isLow     = pct < 20;
     const isExpired = f.expiry_date && new Date(f.expiry_date) < TODAY;
-
-    const barColor = isExpired ? 'var(--danger)' : isLow ? 'var(--accent3)' : 'var(--accent)';
-    const badge    = isExpired ? '⚠️ Expiré' : isLow ? '⚠️ Stock bas' : '';
+    const barColor  = isExpired ? 'var(--danger)' : isLow ? 'var(--accent3)' : 'var(--accent)';
+    const badge     = isExpired ? '⚠️ Expiré' : isLow ? '⚠️ Stock bas' : '';
 
     return `<div class="flacon-card ${isLow ? 'low' : ''} ${isExpired ? 'expired' : ''}">
       <div class="fc-header">
@@ -339,12 +322,12 @@ function render() {
           ${badge ? `<div class="fc-badge">${badge}</div>` : ''}
         </div>
         <div class="fc-actions">
-          <button class="fc-btn" onclick="openEdit('${f.id}')">✏️</button>
-          <button class="fc-btn danger" onclick="confirmDelete('${f.id}')">🗑</button>
+          <button class="flacon-btn" onclick="editFlacon('${f.id}')">✏️ Modifier</button>
+          <button class="flacon-btn danger" onclick="deleteFlacon('${f.id}')">Supprimer</button>
         </div>
       </div>
       <div class="fc-stats">
-        <div class="fc-stat"><div class="fc-stat-val">${remaining}${f.remaining_units !== null ? '' : ''}</div><div class="fc-stat-label">restant</div></div>
+        <div class="fc-stat"><div class="fc-stat-val">${remaining}</div><div class="fc-stat-label">restant</div></div>
         <div class="fc-stat"><div class="fc-stat-val">${total}</div><div class="fc-stat-label">total</div></div>
         <div class="fc-stat"><div class="fc-stat-val">${f.vial_count || 1}</div><div class="fc-stat-label">flacons</div></div>
         <div class="fc-stat"><div class="fc-stat-val">${fmt(f.expiry_date)}</div><div class="fc-stat-label">expiration</div></div>
@@ -356,65 +339,60 @@ function render() {
       ${f.notes ? `<div class="fc-note">${f.notes}</div>` : ''}
     </div>`;
   }).join('');
-
-  container.innerHTML = cardsHtml;
 }
 
-// ── MODAL ADD / EDIT ───────────────────────────────────────────
-let editId = null;
-
-window.openAdd = function() {
+// ── MODAL (noms originaux du HTML) ─────────────────────────────
+window.openModal = function() {
   editId = null;
-  document.getElementById('modalTitle').textContent  = 'Nouveau flacon';
-  document.getElementById('modalSubmit').textContent = 'Ajouter';
-  document.getElementById('modalDelete').style.display = 'none';
+  document.getElementById('modalTitle').textContent = 'Ajouter un flacon';
   ['fPeptide','fQty','fCount','fWater','fLot','fSupplier','fNotes'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  document.getElementById('fRecon').value  = new Date().toISOString().split('T')[0];
-  document.getElementById('fExpiry').value = '';
-  document.getElementById('flaconModal').classList.add('open');
+  const fCount = document.getElementById('fCount');
+  if (fCount) fCount.value = 1;
+  const fRecon = document.getElementById('fRecon');
+  if (fRecon) fRecon.value = new Date().toISOString().split('T')[0];
+  const fExpiry = document.getElementById('fExpiry');
+  if (fExpiry) fExpiry.value = '';
+  document.getElementById('flaconModal').classList.add('show');
   document.body.style.overflow = 'hidden';
 };
 
-window.openEdit = function(id) {
+window.editFlacon = function(id) {
   const f = allInventory.find(x => x.id === id);
   if (!f) return;
   editId = id;
-  document.getElementById('modalTitle').textContent  = 'Modifier le flacon';
-  document.getElementById('modalSubmit').textContent = 'Enregistrer';
-  document.getElementById('modalDelete').style.display = 'block';
-  document.getElementById('fPeptide').value  = f.peptide_name || '';
-  document.getElementById('fQty').value      = f.vial_qty_mg  || '';
-  document.getElementById('fCount').value    = f.vial_count   || 1;
-  document.getElementById('fWater').value    = f.bac_water_ml || '';
-  document.getElementById('fRecon').value    = f.reconstituted_at || '';
-  document.getElementById('fExpiry').value   = f.expiry_date  || '';
-  document.getElementById('fLot').value      = f.lot_number   || '';
-  document.getElementById('fSupplier').value = f.supplier     || '';
-  document.getElementById('fNotes').value    = f.notes        || '';
-  document.getElementById('flaconModal').classList.add('open');
+  document.getElementById('modalTitle').textContent = 'Modifier le flacon';
+  const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
+  set('fPeptide', f.peptide_name);
+  set('fQty',     f.vial_qty_mg);
+  set('fCount',   f.vial_count || 1);
+  set('fWater',   f.bac_water_ml);
+  set('fRecon',   f.reconstituted_at);
+  set('fExpiry',  f.expiry_date);
+  set('fLot',     f.lot_number);
+  set('fSupplier',f.supplier);
+  set('fNotes',   f.notes);
+  document.getElementById('flaconModal').classList.add('show');
   document.body.style.overflow = 'hidden';
 };
 
-window.saveItem = async function() {
-  const peptide = document.getElementById('fPeptide').value.trim();
+window.saveFlacon = async function() {
+  const peptide = document.getElementById('fPeptide')?.value.trim();
   if (!peptide) { showToast('⚠️ Nom du peptide requis'); return; }
-
-  const qty = parseFloat(document.getElementById('fQty').value) || null;
+  const qty = parseFloat(document.getElementById('fQty')?.value) || null;
   const payload = {
     peptide_name:     peptide,
     vial_qty_mg:      qty,
-    remaining_units:  qty,
-    vial_count:       parseInt(document.getElementById('fCount').value) || 1,
-    bac_water_ml:     parseFloat(document.getElementById('fWater').value) || null,
-    reconstituted_at: document.getElementById('fRecon').value  || null,
-    expiry_date:      document.getElementById('fExpiry').value || null,
-    lot_number:       document.getElementById('fLot').value    || null,
-    supplier:         document.getElementById('fSupplier').value || null,
-    notes:            document.getElementById('fNotes').value  || null,
+    remaining_units:  editId ? undefined : qty,
+    vial_count:       parseInt(document.getElementById('fCount')?.value) || 1,
+    bac_water_ml:     parseFloat(document.getElementById('fWater')?.value) || null,
+    reconstituted_at: document.getElementById('fRecon')?.value  || null,
+    expiry_date:      document.getElementById('fExpiry')?.value || null,
+    lot_number:       document.getElementById('fLot')?.value    || null,
+    supplier:         document.getElementById('fSupplier')?.value || null,
+    notes:            document.getElementById('fNotes')?.value  || null,
   };
-
   if (editId) {
     await updateInventoryItem(editId, payload);
     showToast('✓ Flacon mis à jour');
@@ -422,14 +400,13 @@ window.saveItem = async function() {
     await createInventoryItem(userId, payload);
     showToast('✓ Flacon ajouté');
   }
-
   closeModal();
   const invRes = await getInventory(userId);
   allInventory = invRes.data || [];
   render();
 };
 
-window.confirmDelete = async function(id) {
+window.deleteFlacon = async function(id) {
   if (!confirm('Supprimer ce flacon ?')) return;
   await deleteInventoryItem(id);
   showToast('Flacon supprimé');
@@ -438,17 +415,34 @@ window.confirmDelete = async function(id) {
   render();
 };
 
-window.deleteItem = window.confirmDelete;
+window.openFlacon = async function(id) {
+  await updateInventoryItem(id, { notes: 'Ouvert' });
+  showToast('✓ Flacon ouvert');
+  const invRes = await getInventory(userId);
+  allInventory = invRes.data || [];
+  render();
+};
 
-window.closeModal     = function() { document.getElementById('flaconModal').classList.remove('open'); document.body.style.overflow = ''; };
+window.logInjection = async function(id) {
+  const f = allInventory.find(x => x.id === id);
+  if (!f) return;
+  await logInj(userId, {
+    peptide_name:   f.peptide_name,
+    injected_at:    new Date().toISOString(),
+    notes:          `inventory:${id}`,
+  });
+  const newRemaining = Math.max(0, (f.remaining_units || 0) - (f.vial_qty_mg ? f.vial_qty_mg / 10 : 1));
+  await updateInventoryItem(id, { remaining_units: newRemaining });
+  showToast('✓ Injection enregistrée');
+  const invRes = await getInventory(userId);
+  allInventory = invRes.data || [];
+  render();
+};
+
+window.closeModal     = function() { document.getElementById('flaconModal').classList.remove('show'); document.body.style.overflow = ''; };
 window.closeIfOverlay = function(e) { if (e.target === document.getElementById('flaconModal')) window.closeModal(); };
 
 await loadData();
+</script>
 </body>
 </html>
-<script>
-// Aliases pour compatibilité avec les boutons HTML originaux
-window.openModal   = window.openAdd;
-window.saveFlacon  = window.saveItem;
-window.deleteFlacon= window.confirmDelete;
-</script>

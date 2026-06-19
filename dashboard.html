@@ -745,7 +745,7 @@ function renderTodayView() {
           <div class="inj-name">${injPerDay > 1 ? `Injection ${i+1}` : 'Injection du jour'}</div>
           <div class="inj-detail">
             ${cure.admin}
-            ${showSite ? `<span class="inj-site">📍 ${nextSite.label}</span>` : ''}
+            ${showSite ? `<span class="inj-site" onclick="event.stopPropagation();cycleSiteDashboard('${cure.id}')" style="cursor:pointer" title="Toucher pour changer">📍 ${nextSite.label} ↻</span>` : ''}
           </div>
         </div>
         <div class="inj-time ${done ? 'done-time' : isDue ? 'due' : ''}">${done ? '✓ Fait' : isDue ? '⏰ Dû' : time}</div>
@@ -758,7 +758,17 @@ function renderTodayView() {
   container.innerHTML = html;
 }
 
-function quickToggleInj(cureId, slot, time) {
+function cycleSiteDashboard(cureId) {
+  const SITES_SC = [
+    { id:'abd_g', label:'Abdomen G' }, { id:'abd_d', label:'Abdomen D' },
+    { id:'cuisse_g', label:'Cuisse G' }, { id:'cuisse_d', label:'Cuisse D' },
+    { id:'fesse_g', label:'Fesse G' },  { id:'fesse_d', label:'Fesse D' },
+  ];
+  const lastIdx = getLS('pt_site_idx_' + cureId, -1);
+  const nextIdx = (lastIdx + 1) % SITES_SC.length;
+  setLS('pt_site_idx_' + cureId, nextIdx);
+  renderTodayView();
+}
   const logs = getLS('pt_logs_' + cureId, []);
   const idx = logs.findIndex(l => l.date === todayStr && l.slot === slot);
 

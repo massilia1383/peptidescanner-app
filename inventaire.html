@@ -444,5 +444,7 @@ window.closeIfOverlay = function(e) { if (e.target === document.getElementById('
 
 await loadData();
 </script>
+<div class="toast" id="toast" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#fff;padding:10px 20px;border-radius:100px;font-size:.82rem;font-weight:700;opacity:0;pointer-events:none;transition:all .3s;z-index:300;white-space:nowrap;"></div>
+<style>.toast.show{opacity:1!important;transform:translateX(-50%) translateY(0)!important;}</style>
 </body>
 </html>

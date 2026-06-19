@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PeptideScanner — Accès privé</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg:#F8F9FA; --surface:#FFFFFF; --border:#E2E8F0;
+    --accent:#0D9488; --text:#1F2937; --muted:#6B7280; --danger:#DC2626;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Space Grotesk',sans-serif; background:var(--bg);
+    color:var(--text); min-height:100vh;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:24px; padding:36px 28px; width:100%; max-width:360px;
+    box-shadow:0 8px 40px rgba(0,0,0,.08); text-align:center;
+  }
+  .logo {
+    font-family:'Space Mono',monospace; font-size:1rem; font-weight:700;
+    color:var(--accent); display:flex; align-items:center; justify-content:center;
+    gap:6px; margin-bottom:24px;
+  }
+  .logo-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
+  .title { font-size:1.2rem; font-weight:700; margin-bottom:6px; }
+  .sub { font-size:.82rem; color:var(--muted); margin-bottom:28px; line-height:1.5; }
+  .lock-icon { font-size:2.4rem; margin-bottom:16px; }
+  .input-wrap { position:relative; margin-bottom:14px; }
+  .code-input {
+    width:100%; padding:14px 44px 14px 16px;
+    background:#F8F9FA; border:1.5px solid var(--border);
+    border-radius:12px; font-family:'Space Mono',monospace;
+    font-size:1.2rem; letter-spacing:6px; text-align:center;
+    color:var(--text); outline:none; transition:border-color .2s;
+  }
+  .code-input:focus { border-color:var(--accent); background:#fff; }
+  .code-input.error { border-color:var(--danger); animation:shake .3s ease; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-6px)}
+    75%{transform:translateX(6px)}
+  }
+  .toggle-vis {
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; font-size:1rem; color:var(--muted);
+  }
+  .enter-btn {
+    width:100%; padding:14px; border-radius:12px; border:none;
+    background:var(--accent); color:#fff; font-family:inherit;
+    font-size:.95rem; font-weight:700; cursor:pointer; transition:opacity .2s;
+    margin-bottom:10px;
+  }
+  .enter-btn:hover { opacity:.88; }
+  .error-msg {
+    font-size:.78rem; color:var(--danger); margin-top:8px;
+    min-height:20px; transition:opacity .2s;
+  }
+  .hint { font-size:.7rem; color:var(--muted); margin-top:16px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo"><div class="logo-dot"></div>PeptideScanner</div>
+  <div class="lock-icon">🔐</div>
+  <div class="title">Accès privé</div>
+  <div class="sub">Zone réservée. Entrez le code d'accès pour charger la démo complète.</div>
+
+  <div class="input-wrap">
+    <input class="code-input" id="codeInput" type="password"
+      placeholder="••••••" maxlength="10"
+      onkeydown="if(event.key==='Enter') checkCode()">
+    <button class="toggle-vis" onclick="toggleVis()" id="visBtn">👁</button>
+  </div>
+  <div class="error-msg" id="errMsg"></div>
+
+  <button class="enter-btn" onclick="checkCode()">Accéder →</button>
+  <div class="hint">Accès strictement personnel</div>
+</div>
+
+<script>
+const SECRET = '@1307';
+
+function checkCode() {
+  const val = document.getElementById('codeInput').value;
+  const input = document.getElementById('codeInput');
+  const err = document.getElementById('errMsg');
+
+  if (val === SECRET) {
+    initDemoData();
+    window.location.href = 'dashboard.html';
+  } else {
+    input.classList.add('error');
+    err.textContent = 'Code incorrect. Réessayez.';
+    setTimeout(() => { input.classList.remove('error'); input.value = ''; }, 800);
+  }
+}
+
+function toggleVis() {
+  const input = document.getElementById('codeInput');
+  const btn = document.getElementById('visBtn');
+  if (input.type === 'password') {
+    input.type = 'text'; btn.textContent = '🙈';
+  } else {
+    input.type = 'password'; btn.textContent = '👁';
+  }
+}
+
+function initDemoData() {
+  const today = new Date();
+  const s = d => d.toISOString().split('T')[0];
+  const start1 = new Date(today); start1.setDate(today.getDate() - 17);
+  const start2 = new Date(today); start2.setDate(today.getDate() - 10);
+
+  // Session
+  localStorage.setItem('pt_session', JSON.stringify({ loggedIn: true }));
+
+  // Profil
+  localStorage.setItem('pt_profil', JSON.stringify({
+    prenom: 'James', objectif: 'Récupération & performance',
+    admin_pref: 'SC', experience: 'Intermédiaire'
+  }));
+
+  // Cures
+  const cures = [
+    {
+      id: 'demo1',
+      peptide: 'BPC-157',
+      dosage: '250 mcg',
+      admin: 'SC',
+      startDate: s(start1),
+      duration: '30',
+      freq: '2',
+      notes: 'Cure récupération genou gauche'
+    },
+    {
+      id: 'demo2',
+      peptide: 'TB-500',
+      dosage: '2.5 mg',
+      admin: 'SC',
+      startDate: s(start2),
+      duration: '20',
+      freq: '1',
+      notes: 'Stack avec BPC-157 pour synergie'
+    }
+  ];
+  localStorage.setItem('pt_cures', JSON.stringify(cures));
+
+  // Logs BPC-157 (2x/jour sur 17 jours, quelques manqués)
+  const logs1 = [];
+  for (let i = 0; i < 17; i++) {
+    const d = new Date(start1); d.setDate(d.getDate() + i);
+    const ds = s(d);
+    if (i !== 4 && i !== 11) { // 2 jours manqués
+      logs1.push({ date: ds, slot: 0, time: '08:00', ts: d.getTime(), site: 'abd_g', siteLabel: 'Abdomen G' });
+      if (i !== 7) { // 1 injection soir manquée
+        logs1.push({ date: ds, slot: 1, time: '20:00', ts: d.getTime() + 3600000, site: 'abd_d', siteLabel: 'Abdomen D' });
+      }
+    }
+  }
+  localStorage.setItem('pt_logs_demo1', JSON.stringify(logs1));
+
+  // Logs TB-500 (1x/jour sur 10 jours)
+  const logs2 = [];
+  for (let i = 0; i < 10; i++) {
+    const d = new Date(start2); d.setDate(d.getDate() + i);
+    if (i !== 3) {
+      logs2.push({ date: s(d), slot: 0, time: '08:00', ts: d.getTime(), site: 'cuisse_g', siteLabel: 'Cuisse G' });
+    }
+  }
+  localStorage.setItem('pt_logs_demo2', JSON.stringify(logs2));
+
+  // Sites d'injection
+  localStorage.setItem('pt_site_idx_demo1', '3');
+  localStorage.setItem('pt_site_idx_demo2', '2');
+
+  // Poids (18 mesures sur 3 semaines)
+  const poids = [];
+  const poidsBase = [83.2, 82.9, 82.7, 82.4, 82.1, 81.8, 81.5, 81.2, 80.9, 80.6, 80.4, 80.1, 79.8, 79.5, 79.3, 79.0, 78.7, 78.4];
+  for (let i = 0; i < 18; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - (17 - i));
+    poids.push({ date: s(d), kg: poidsBase[i] });
+  }
+  localStorage.setItem('pt_poids', JSON.stringify(poids));
+
+  // Inventaire flacons
+  const inventaire = [
+    {
+      id: 'inv1', peptide: 'BPC-157', totalQty: 10, usedQty: 4.25,
+      unit: 'mg', dosePerInj: 0.25, freqPerDay: 2,
+      reconDate: s(start1), status: 'active', note: 'Lot 2025-A', auto: false
+    },
+    {
+      id: 'inv2', peptide: 'TB-500', totalQty: 25, usedQty: 9,
+      unit: 'mg', dosePerInj: 2.5, freqPerDay: 1,
+      reconDate: s(start2), status: 'active', note: 'Stack BPC', auto: false
+    },
+    {
+      id: 'inv3', peptide: 'Semaglutide', totalQty: 5, usedQty: 4.4,
+      unit: 'mg', dosePerInj: 0.5, freqPerDay: 0.14,
+      reconDate: s(start2), status: 'active', note: 'Flacon presque vide', auto: false
+    },
+    {
+      id: 'inv4', peptide: 'Epithalon', totalQty: 10, usedQty: 0,
+      unit: 'mg', dosePerInj: 5, freqPerDay: 1,
+      reconDate: '', status: 'sealed', note: 'Prochaine cure', auto: false
+    }
+  ];
+  localStorage.setItem('pt_inventaire', JSON.stringify(inventaire));
+
+  // Alertes
+  const alertes = [
+    { id: 'a1', type: 'injection', label: 'BPC-157 matin', time: '08:00', active: true },
+    { id: 'a2', type: 'injection', label: 'BPC-157 soir', time: '20:00', active: true },
+    { id: 'a3', type: 'injection', label: 'TB-500', time: '08:00', active: true }
+  ];
+  localStorage.setItem('pt_alertes', JSON.stringify(alertes));
+}
+</script>
+</body>
+</html>

@@ -488,6 +488,31 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<script>
+// Fonctions appelées via onclick — doivent être dans un script classique (pas module)
+function openAddCure() {
+  const s = document.getElementById('newCureStart');
+  if (s) s.value = new Date().toISOString().split('T')[0];
+  const m = document.getElementById('addCureModal');
+  if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeIfOverlay(e) {
+  if (e.target === document.getElementById('addCureModal')) {
+    document.getElementById('addCureModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+function saveCure() {
+  if (window._saveCure) window._saveCure();
+  else alert('Chargement en cours, réessayez dans 1 seconde.');
+}
+function quickToggleInj(cureId, slot, time, peptideName, doseLabel, site) {
+  if (window._quickToggleInj) window._quickToggleInj(cureId, slot, time, peptideName, doseLabel, site);
+}
+function cycleSiteDashboard(cureId) {
+  if (window._cycleSiteDashboard) window._cycleSiteDashboard(cureId);
+}
+</script>
 <script type="module">
 import {
   requireAuth, getProfile, getCures, getInjections,
@@ -780,7 +805,7 @@ function renderTodayView() {
 }
 
 // ── QUICK LOG INJECTION ────────────────────────────────────────
-window.quickToggleInj = async function(cureId, slot, time, peptideName, dose, site) {
+window._quickToggleInj = async function(cureId, slot, time, peptideName, dose, site) {
   // Vérifier si déjà logué aujourd'hui pour ce slot
   const existing = allInjections.find(i =>
     i.cure_id === cureId &&
@@ -874,7 +899,7 @@ window.closeIfOverlay = function(e) {
   }
 };
 
-window.saveCure = async function() {
+window._saveCure = async function() {
   const peptide   = document.getElementById('newCurePeptide').value;
   const dosage    = document.getElementById('newCureDosage').value;
   const admin     = document.getElementById('newCureAdmin').value;

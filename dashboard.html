@@ -37,26 +37,27 @@
 
   /* CURE ACTIVE CARD */
   .cure-card {
-    background:linear-gradient(135deg, #0D1F3C 0%, #1A2235 100%);
-    border:1px solid rgba(0,201,167,.25); border-radius:20px;
-    padding:20px; margin-bottom:16px; position:relative; overflow:hidden;
+    background:linear-gradient(135deg, rgba(13,148,136,.08) 0%, rgba(43,108,176,.06) 100%);
+    border:1.5px solid rgba(13,148,136,.2); border-radius:22px;
+    padding:22px 20px; margin-bottom:16px; position:relative; overflow:hidden;
+    box-shadow:0 4px 20px rgba(13,148,136,.08);
   }
   .cure-card::before {
     content:''; position:absolute; top:-40px; right:-40px;
     width:160px; height:160px; border-radius:50%;
-    background:radial-gradient(circle, rgba(0,201,167,.12) 0%, transparent 70%);
+    background:radial-gradient(circle, rgba(13,148,136,.06) 0%, transparent 70%);
   }
   .cure-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
   .cure-label { font-size:.68rem; color:var(--accent); text-transform:uppercase; letter-spacing:1.5px; font-family:'Space Mono',monospace; margin-bottom:4px; }
-  .cure-name { font-size:1.3rem; font-weight:700; }
+  .cure-name { font-size:1.3rem; font-weight:700; color:var(--text); }
   .cure-sub { font-size:.78rem; color:var(--muted); margin-top:2px; }
   .cure-day-badge {
-    background:rgba(0,201,167,.15); border:1px solid rgba(0,201,167,.3);
-    border-radius:10px; padding:6px 12px; text-align:center;
-    flex-shrink:0;
+    background:rgba(13,148,136,.1); border:1px solid rgba(13,148,136,.25);
+    border-radius:10px; padding:6px 12px; text-align:center; flex-shrink:0;
   }
   .cure-day-num { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--accent); line-height:1; }
   .cure-day-label { font-size:.62rem; color:var(--muted); margin-top:2px; }
+  .cure-btn.primary { background:var(--accent); color:#fff; }
 
   /* Progress ring */
   .progress-section { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
@@ -124,7 +125,7 @@
     display:flex; align-items:center; justify-content:center;
     font-size:.9rem; flex-shrink:0;
   }
-  .alert-icon.green { background:rgba(0,201,167,.12); }
+  .alert-icon.green { background:rgba(13,148,136,.12); }
   .alert-icon.amber { background:rgba(245,158,11,.12); }
   .alert-icon.red { background:rgba(239,68,68,.12); }
   .alert-icon.purple { background:rgba(99,102,241,.12); }
@@ -227,7 +228,7 @@
   /* TOAST */
   .toast {
     position:fixed; bottom:calc(var(--nav-h) + 16px); left:50%; transform:translateX(-50%) translateY(20px);
-    background:var(--accent); color:#000; padding:10px 20px; border-radius:100px;
+    background:var(--accent); color:#fff; padding:10px 20px; border-radius:100px;
     font-size:.82rem; font-weight:700; opacity:0; pointer-events:none;
     transition:all .3s; z-index:300; white-space:nowrap;
   }
@@ -259,7 +260,7 @@
   .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .submit-btn {
     width:100%; padding:14px; border-radius:12px; border:none;
-    background:var(--accent); color:#000; font-family:inherit;
+    background:var(--accent); color:#fff; font-family:inherit;
     font-size:.95rem; font-weight:700; cursor:pointer; margin-top:8px; transition:opacity .2s;
   }
   .submit-btn:hover { opacity:.85; }
@@ -812,7 +813,13 @@ function loadAlertes() {
     }
   });
 
-  const allAlerts = [...autoAlerts, ...alertes.slice(0,3)];
+  const allAlerts = [...autoAlerts, ...alertes.slice(0,3).map(a => ({
+    icon: a.icon || '💉',
+    type: a.type || 'green',
+    title: a.title || a.label || 'Rappel injection',
+    sub: a.sub || a.peptide || '',
+    time: a.time || ''
+  }))];
   if (badge > 0) { document.getElementById('notifBadge').style.display = 'block'; }
   else { document.getElementById('notifBadge').style.display = 'none'; }
 

@@ -12,7 +12,7 @@
     --text:#1F2937; --muted:#6B7280; --danger:#DC2626; --nav-h:64px;
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+40px); }
 
   .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:rgba(248,249,250,.97); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; backdrop-filter:blur(12px); }
   .topbar h1 { font-size:1.1rem; font-weight:700; }
@@ -202,148 +202,223 @@ function showToast(m) { const t=document.getElementById('toast'); t.textContent=
 
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
-let userId = null, allWeights = [], currentPeriod = 30;
+let userId=null, allWeights=[], currentPeriod=30, editId=null, heightCm=null;
 
 async function init() {
   const { data } = await sb.auth.getSession();
-  if (!data?.session) { window.location.href = '/login.html'; return; }
+  if (!data?.session) { window.location.href='/login.html'; return; }
   userId = data.session.user.id;
   document.getElementById('weightDate').value = todayStr;
+
+  // Récupérer la taille depuis le profil ou localStorage
+  const { data: profil } = await sb.from('profiles').select('*').eq('id', userId).single();
+  heightCm = profil?.height_cm || parseInt(localStorage.getItem('ps_height_cm')) || null;
+
   await loadData();
 }
 
 async function loadData() {
-  const { data } = await sb.from('weight_logs').select('*').eq('user_id', userId).order('logged_at', { ascending: true }).limit(365);
+  const { data } = await sb.from('weight_logs').select('*').eq('user_id',userId).order('logged_at',{ascending:true}).limit(365);
   allWeights = data || [];
+
+  // Si premier ajout et pas de taille → afficher le modal taille
+  if (allWeights.length === 0 && !heightCm) showHeightPrompt();
+
   render();
 }
 
+// ── MODAL TAILLE (premier ajout) ──────────────────────────────
+function showHeightPrompt() {
+  const existing = document.getElementById('heightPrompt');
+  if (existing) return;
+  const el = document.createElement('div');
+  el.id = 'heightPrompt';
+  el.style.cssText = 'background:rgba(13,148,136,.07);border:1.5px solid rgba(13,148,136,.2);border-radius:14px;padding:16px;margin-bottom:12px;';
+  el.innerHTML = `
+    <div style="font-size:.84rem;font-weight:700;margin-bottom:4px;color:var(--accent)">📏 Votre taille ?</div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">Nécessaire pour calculer votre IMC correctement.</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="heightInput" type="number" min="100" max="250" placeholder="178" style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:.9rem;outline:none">
+      <span style="color:var(--muted);font-size:.84rem">cm</span>
+      <button onclick="saveHeight()" style="padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:inherit;font-weight:700;cursor:pointer">OK</button>
+    </div>`;
+  const addCard = document.querySelector('.add-weight-card');
+  if (addCard) addCard.insertAdjacentElement('beforebegin', el);
+}
+
+async function saveHeight() {
+  const val = parseInt(document.getElementById('heightInput')?.value);
+  if (!val || val < 100 || val > 250) { showToast('⚠️ Taille invalide'); return; }
+  heightCm = val;
+  localStorage.setItem('ps_height_cm', val);
+  try { await sb.from('profiles').update({ height_cm: val }).eq('id', userId); } catch(e) {}
+  document.getElementById('heightPrompt')?.remove();
+  showToast('✓ Taille enregistrée');
+  render();
+}
+
+// ── ADD WEIGHT ─────────────────────────────────────────────────
 async function addWeight() {
+  // Si pas de taille, demander d'abord
+  if (!heightCm) { showHeightPrompt(); showToast('📏 Indiquez votre taille d\'abord'); return; }
   const kg   = parseFloat(document.getElementById('weightInput').value);
   const date = document.getElementById('weightDate').value;
   const note = document.getElementById('weightNote').value;
-  if (!kg || kg < 30 || kg > 300) { showToast('⚠️ Poids invalide'); return; }
+  if (!kg||kg<30||kg>300) { showToast('⚠️ Poids invalide'); return; }
   if (!date) { showToast('⚠️ Date requise'); return; }
-  await sb.from('weight_logs').insert({ user_id: userId, weight_kg: kg, logged_at: date, notes: note||null });
-  document.getElementById('weightInput').value = '';
-  document.getElementById('weightNote').value  = '';
-  showToast('✓ Poids enregistré : ' + kg + ' kg');
+  await sb.from('weight_logs').insert({user_id:userId, weight_kg:kg, logged_at:date, notes:note||null});
+  document.getElementById('weightInput').value='';
+  document.getElementById('weightNote').value='';
+  showToast('✓ Poids enregistré : '+kg+' kg');
   await loadData();
 }
 
+// ── EDIT WEIGHT ────────────────────────────────────────────────
+function startEdit(id, currentKg, currentNotes) {
+  editId = id;
+  // Remplacer la ligne par un formulaire d'édition
+  const item = document.querySelector(`[data-id="${id}"]`);
+  if (!item) return;
+  item.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;flex:1">
+      <input id="editKg" type="number" step="0.1" value="${currentKg}" style="width:80px;padding:6px 10px;border:1.5px solid var(--accent);border-radius:8px;font-family:inherit;font-size:.84rem;outline:none">
+      <span style="font-size:.78rem;color:var(--muted)">kg</span>
+      <input id="editNote" type="text" value="${currentNotes||''}" placeholder="Note..." style="flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.78rem;outline:none">
+    </div>
+    <div style="display:flex;gap:6px">
+      <button onclick="saveEdit('${id}')" style="padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer">✓</button>
+      <button onclick="cancelEdit()" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.78rem;cursor:pointer">✕</button>
+    </div>`;
+  document.getElementById('editKg')?.focus();
+}
+
+async function saveEdit(id) {
+  const kg   = parseFloat(document.getElementById('editKg')?.value);
+  const note = document.getElementById('editNote')?.value.trim();
+  if (!kg||kg<30||kg>300) { showToast('⚠️ Poids invalide'); return; }
+  await sb.from('weight_logs').update({weight_kg:kg, notes:note||null}).eq('id',id);
+  editId=null;
+  showToast('✓ Poids modifié');
+  await loadData();
+}
+
+function cancelEdit() { editId=null; render(); }
+
 async function deleteWeight(id) {
-  await sb.from('weight_logs').delete().eq('id', id);
+  await sb.from('weight_logs').delete().eq('id',id);
   showToast('Entrée supprimée');
   await loadData();
 }
 
 function focusInput() { document.getElementById('weightInput').focus(); document.getElementById('weightInput').scrollIntoView({behavior:'smooth'}); }
 
-function setPeriod(days, btn) {
-  currentPeriod = days;
-  document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
+function setPeriod(days,btn) {
+  currentPeriod=days;
+  document.querySelectorAll('.period-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   render();
 }
 
 function getFiltered() {
-  if (currentPeriod === 0) return allWeights;
-  const cutoff = new Date(TODAY); cutoff.setDate(cutoff.getDate() - currentPeriod);
-  return allWeights.filter(w => new Date(w.logged_at) >= cutoff);
+  if(currentPeriod===0) return allWeights;
+  const cutoff=new Date(TODAY); cutoff.setDate(cutoff.getDate()-currentPeriod);
+  return allWeights.filter(w=>new Date(w.logged_at)>=cutoff);
 }
 
 function render() {
-  const filtered = getFiltered();
-  renderStats(allWeights, filtered);
+  const filtered=getFiltered();
+  renderStats(allWeights,filtered);
   renderChart(filtered);
   renderHistory(allWeights);
   renderBMI(allWeights);
 }
 
-function renderStats(all, filtered) {
-  const c = document.getElementById('weightStats');
-  if (all.length === 0) { c.innerHTML = ''; return; }
-  const latest = all[all.length-1];
-  const first  = filtered[0];
-  const diff   = filtered.length > 1 ? (latest.weight_kg - first.weight_kg).toFixed(1) : null;
-  const sign   = diff > 0 ? '+' : '';
-  const cls    = diff > 0 ? 'red' : diff < 0 ? 'green' : 'amber';
-  c.innerHTML = `
+function renderStats(all,filtered) {
+  const c=document.getElementById('weightStats');
+  if(all.length===0){c.innerHTML='';return;}
+  const latest=all[all.length-1];
+  const first=filtered[0];
+  const diff=filtered.length>1?(latest.weight_kg-first.weight_kg).toFixed(1):null;
+  const sign=diff>0?'+':'';
+  const cls=diff>0?'red':diff<0?'green':'amber';
+  c.innerHTML=`
     <div class="ws-card"><div class="ws-val green">${latest.weight_kg}</div><div class="ws-label">kg actuel</div></div>
-    <div class="ws-card"><div class="ws-val ${cls}">${diff !== null ? sign+diff : '—'}</div><div class="ws-label">variation</div></div>
+    <div class="ws-card"><div class="ws-val ${cls}">${diff!==null?sign+diff:'—'}</div><div class="ws-label">variation</div></div>
     <div class="ws-card"><div class="ws-val amber">${filtered.length}</div><div class="ws-label">mesures</div></div>`;
 }
 
 function renderChart(weights) {
-  const svg = document.getElementById('mainChart');
-  const empty = document.getElementById('emptyChart');
-  const labels = document.getElementById('chartLabels');
-  if (weights.length < 2) { svg.style.display='none'; empty.style.display='flex'; labels.innerHTML=''; return; }
-  svg.style.display = 'block'; empty.style.display = 'none';
+  const svg=document.getElementById('mainChart');
+  const empty=document.getElementById('emptyChart');
+  const labels=document.getElementById('chartLabels');
+  if(weights.length<2){svg.style.display='none';empty.style.display='flex';labels.innerHTML='';return;}
+  svg.style.display='block';empty.style.display='none';
   const W=400,H=180,PL=32,PR=10,PT=10,PB=20;
-  const vals = weights.map(w => w.weight_kg);
-  const mn = Math.min(...vals)-0.5, mx = Math.max(...vals)+0.5;
-  const pts = vals.map((v,i) => ({
-    x: PL+(i/(vals.length-1))*(W-PL-PR),
-    y: PT+(1-(v-mn)/(mx-mn))*(H-PT-PB),
-    kg: v, date: weights[i].logged_at
+  const vals=weights.map(w=>w.weight_kg);
+  const mn=Math.min(...vals)-0.5,mx=Math.max(...vals)+0.5;
+  const pts=vals.map((v,i)=>({
+    x:PL+(i/(vals.length-1))*(W-PL-PR),
+    y:PT+(1-(v-mn)/(mx-mn))*(H-PT-PB),
+    kg:v,date:weights[i].logged_at
   }));
-  let gridHtml = '';
-  for (let i=0; i<=4; i++) {
-    const y = PT+i*(H-PT-PB)/4;
-    const val = (mx-(mx-mn)*i/4).toFixed(1);
-    gridHtml += `<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#E2E8F0" stroke-width="1"/>
-    <text x="${PL-4}" y="${y+4}" fill="#6B7280" font-size="9" text-anchor="end" font-family="Space Mono">${val}</text>`;
+  let gridHtml='';
+  for(let i=0;i<=4;i++){
+    const y=PT+i*(H-PT-PB)/4;
+    gridHtml+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="${PL-4}" y="${y+4}" fill="#6B7280" font-size="9" text-anchor="end" font-family="Space Mono">${(mx-(mx-mn)*i/4).toFixed(1)}</text>`;
   }
-  const line = pts.map((p,i) => i===0?`M${p.x},${p.y}`:`L${p.x},${p.y}`).join(' ');
-  const area = line + ` L${pts[pts.length-1].x},${H-PB} L${PL},${H-PB} Z`;
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svg.innerHTML = `<defs><linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
+  const line=pts.map((p,i)=>i===0?`M${p.x},${p.y}`:`L${p.x},${p.y}`).join(' ');
+  const area=line+` L${pts[pts.length-1].x},${H-PB} L${PL},${H-PB} Z`;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.innerHTML=`<defs><linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0%" stop-color="#0D9488" stop-opacity=".2"/><stop offset="100%" stop-color="#0D9488" stop-opacity="0"/>
   </linearGradient></defs>${gridHtml}
   <path d="${area}" fill="url(#aG)"/>
   <path d="${line}" fill="none" stroke="#0D9488" stroke-width="2.5" stroke-linecap="round"/>
   ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="#0D9488"/>`).join('')}`;
-  const step = Math.max(1, Math.floor(weights.length/5));
-  labels.innerHTML = pts.filter((_,i)=>i%step===0||i===pts.length-1)
+  const step=Math.max(1,Math.floor(weights.length/5));
+  labels.innerHTML=pts.filter((_,i)=>i%step===0||i===pts.length-1)
     .map(p=>`<span>${new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</span>`).join('');
 }
 
 function renderHistory(all) {
-  const list = document.getElementById('historyList');
-  const sorted = [...all].sort((a,b) => new Date(b.logged_at)-new Date(a.logged_at));
-  if (sorted.length === 0) { list.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">Aucune donnée</div>'; return; }
-  list.innerHTML = sorted.slice(0,20).map((w,i) => {
-    const prev = sorted[i+1];
-    let diffHtml = '';
-    if (prev) { const d=(w.weight_kg-prev.weight_kg).toFixed(1); const s=d>0?'+':''; const c=d>0?'up':'down'; diffHtml=`<span class="hist-diff ${c}">${s}${d}</span>`; }
-    return `<div class="hist-item">
+  const list=document.getElementById('historyList');
+  const sorted=[...all].sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
+  if(sorted.length===0){list.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">Aucune donnée</div>';return;}
+  list.innerHTML=sorted.slice(0,30).map((w,i)=>{
+    const prev=sorted[i+1];
+    let diffHtml='';
+    if(prev){const d=(w.weight_kg-prev.weight_kg).toFixed(1);const s=d>0?'+':'';const c=d>0?'up':'down';diffHtml=`<span class="hist-diff ${c}">${s}${d}</span>`;}
+    return `<div class="hist-item" data-id="${w.id}">
       <span class="hist-date">${new Date(w.logged_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</span>
       <span class="hist-val">${w.weight_kg} kg${diffHtml}</span>
       ${w.notes?`<span class="hist-note">${w.notes}</span>`:'<span class="hist-note"></span>'}
-      <button class="hist-del" onclick="deleteWeight('${w.id}')">🗑</button>
+      <div style="display:flex;gap:4px">
+        <button class="hist-del" onclick="startEdit('${w.id}',${w.weight_kg},'${w.notes||''}')" title="Modifier" style="background:rgba(13,148,136,.1);color:var(--accent);border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:.8rem">✏️</button>
+        <button class="hist-del" onclick="deleteWeight('${w.id}')">🗑</button>
+      </div>
     </div>`;
   }).join('');
 }
 
 function renderBMI(all) {
-  const card = document.getElementById('bmiCard');
-  if (all.length === 0) { card.style.display='none'; return; }
-  card.style.display = 'block';
-  const latest = all[all.length-1];
-  const h = 1.78;
-  const bmi = (latest.weight_kg/(h*h)).toFixed(1);
-  let status, color, pct;
-  if (bmi<18.5)      { status='Insuffisance pondérale'; color='#3B82F6'; pct=Math.max(5,(bmi/40)*100); }
-  else if (bmi<25)   { status='Poids normal ✓';         color='var(--accent)'; pct=(bmi/40)*100; }
-  else if (bmi<30)   { status='Surpoids';               color='var(--accent3)'; pct=(bmi/40)*100; }
-  else               { status='Obésité';                color='var(--danger)'; pct=Math.min(95,(bmi/40)*100); }
-  document.getElementById('bmiContent').innerHTML = `
+  const card=document.getElementById('bmiCard');
+  if(!heightCm||all.length===0){card.style.display='none';return;}
+  card.style.display='block';
+  const latest=all[all.length-1];
+  const h=heightCm/100;
+  const bmi=(latest.weight_kg/(h*h)).toFixed(1);
+  let status,color,pct;
+  if(bmi<18.5){status='Insuffisance pondérale';color='#3B82F6';pct=Math.max(5,(bmi/40)*100);}
+  else if(bmi<25){status='Poids normal ✓';color='var(--accent)';pct=(bmi/40)*100;}
+  else if(bmi<30){status='Surpoids';color='var(--accent3)';pct=(bmi/40)*100;}
+  else{status='Obésité';color='var(--danger)';pct=Math.min(95,(bmi/40)*100);}
+  document.getElementById('bmiContent').innerHTML=`
     <div class="bmi-val" style="color:${color}">${bmi}</div>
     <div class="bmi-bar"><div class="bmi-fill" style="width:${pct}%;background:${color}"></div></div>
     <div class="bmi-labels"><span>16</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div>
     <div class="bmi-status" style="color:${color}">${status}</div>
-    <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Poids : ${latest.weight_kg} kg</div>`;
+    <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Taille : ${heightCm} cm · Poids : ${latest.weight_kg} kg</div>`;
 }
 
 init();

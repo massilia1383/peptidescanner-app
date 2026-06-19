@@ -8,7 +8,7 @@
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
   :root { --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0; --accent:#0D9488; --accent2:#2B6CB0; --accent3:#F97316; --text:#1F2937; --muted:#6B7280; --danger:#DC2626; --nav-h:64px; }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+40px); }
   .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:rgba(248,249,250,.97); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; backdrop-filter:blur(12px); }
   .topbar h1 { font-size:1.1rem; font-weight:700; }
   .topbar-logo { font-family:'Space Mono',monospace; font-size:.85rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
@@ -217,43 +217,79 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
-let userId = null, userEmail = '', profil = {}, allCures = [], allInjections = [], allWeights = [];
-let editingField = null;
+let userId=null, userEmail='', profil={}, allCures=[], allInjections=[], allWeights=[];
+let editingField=null;
 
 async function init() {
   const { data } = await sb.auth.getSession();
-  if (!data?.session) { window.location.href = '/login.html'; return; }
+  if (!data?.session) { window.location.href='/login.html'; return; }
   userId    = data.session.user.id;
   userEmail = data.session.user.email;
 
-  const [pRes, cRes, iRes, wRes] = await Promise.all([
-    sb.from('profiles').select('*').eq('id', userId).single(),
-    sb.from('cures').select('*').eq('user_id', userId),
-    sb.from('injections').select('id,cure_id').eq('user_id', userId),
-    sb.from('weight_logs').select('*').eq('user_id', userId).order('logged_at', {ascending:true})
+  const [pRes,cRes,iRes,wRes] = await Promise.all([
+    sb.from('profiles').select('*').eq('id',userId).single(),
+    sb.from('cures').select('*').eq('user_id',userId),
+    sb.from('injections').select('id,cure_id').eq('user_id',userId),
+    sb.from('weight_logs').select('*').eq('user_id',userId).order('logged_at',{ascending:true})
   ]);
-  profil       = pRes.data  || {};
-  allCures     = cRes.data  || [];
-  allInjections= iRes.data  || [];
-  allWeights   = wRes.data  || [];
+  profil        = pRes.data  || {};
+  allCures      = cRes.data  || [];
+  allInjections = iRes.data  || [];
+  allWeights    = wRes.data  || [];
+
+  // Si pas de pseudo, proposer d'en créer un
+  if (!profil.full_name) showPseudoPrompt();
 
   render();
   renderEquipment();
 }
 
-// ── RENDER PROFIL ──────────────────────────────────────────────
-function render() {
-  const name = profil.full_name || userEmail?.split('@')[0] || 'Utilisateur';
-  const nameEl = document.getElementById('displayName');
-  const avatarEl = document.getElementById('avatarEmoji');
-  if (nameEl) nameEl.textContent = name;
-  if (avatarEl) avatarEl.textContent = name[0]?.toUpperCase() || '👤';
+// ── PROMPT PSEUDO (première connexion) ────────────────────────
+function showPseudoPrompt() {
+  const banner = document.createElement('div');
+  banner.id = 'pseudoBanner';
+  banner.style.cssText = 'background:rgba(13,148,136,.08);border:1.5px solid rgba(13,148,136,.2);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;';
+  banner.innerHTML = `
+    <span style="font-size:1.4rem">👋</span>
+    <div style="flex:1">
+      <div style="font-size:.84rem;font-weight:600;margin-bottom:6px">Choisissez votre pseudo</div>
+      <div style="display:flex;gap:8px">
+        <input id="pseudoInput" type="text" placeholder="Ex: James" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.84rem;outline:none;background:var(--surface)">
+        <button onclick="savePseudo()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer">OK</button>
+      </div>
+    </div>`;
+  const content = document.querySelector('.content');
+  if (content) content.insertBefore(banner, content.firstChild);
+}
 
-  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
-  set('val-prenom',  profil.full_name  || 'Non renseigné');
-  set('val-age',     profil.experience || 'Non renseigné');
-  set('val-taille',  profil.goal       || 'Non renseigné');
-  set('val-objectif',profil.goal       || 'Non renseigné');
+async function savePseudo() {
+  const val = document.getElementById('pseudoInput')?.value.trim();
+  if (!val) return;
+  await sb.from('profiles').update({ full_name: val }).eq('id', userId);
+  profil.full_name = val;
+  document.getElementById('pseudoBanner')?.remove();
+  showToast('✓ Pseudo enregistré !');
+  render();
+  // Mettre à jour le dashboard aussi
+  localStorage.setItem('ps_display_name', val);
+}
+
+// ── RENDER ─────────────────────────────────────────────────────
+function render() {
+  const name = profil.full_name || '—';
+  const nameEl   = document.getElementById('displayName');
+  const avatarEl = document.getElementById('avatarEmoji');
+  if (nameEl)   nameEl.textContent   = name;
+  if (avatarEl) avatarEl.textContent = profil.full_name ? profil.full_name[0].toUpperCase() : '👤';
+
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val||'Non renseigné'; };
+  set('val-prenom',  profil.full_name);
+  set('val-age',     profil.experience ? profil.experience + ' ans' : null);
+  set('val-taille',  profil.weight_kg ? null : (profil.goal || null)); // taille stockée dans goal temporairement
+  // Chercher taille dans metadata
+  const taille = profil.height_cm || localStorage.getItem('ps_height_cm');
+  set('val-taille', taille ? taille + ' cm' : null);
+  set('val-objectif', profil.goal);
 
   const badge = document.getElementById('planBadge');
   if (badge) {
@@ -268,12 +304,11 @@ function renderStats() {
   const totalInj  = allInjections.length;
   const completed = allCures.filter(c => {
     if (!c.start_date||!c.duration_days) return false;
-    const e = new Date(c.start_date); e.setDate(e.getDate()+c.duration_days);
-    return e < new Date();
+    const e=new Date(c.start_date); e.setDate(e.getDate()+c.duration_days); return e<new Date();
   });
-  const latestW = allWeights.length > 0 ? allWeights[allWeights.length-1] : null;
-  const firstW  = allWeights.length > 0 ? allWeights[0] : null;
-  const wLost   = latestW && firstW ? (latestW.weight_kg - firstW.weight_kg).toFixed(1) : null;
+  const wLost = allWeights.length>1
+    ? (allWeights[allWeights.length-1].weight_kg - allWeights[0].weight_kg).toFixed(1)
+    : null;
   const grid = document.getElementById('statsGrid');
   if (!grid) return;
   grid.innerHTML = `
@@ -297,37 +332,57 @@ function renderPremium(isPremium) {
 }
 
 // ── EDIT CHAMPS ────────────────────────────────────────────────
+const FIELD_MAP = {
+  'prenom':  { db: 'full_name',   label: 'Prénom / Pseudo' },
+  'age':     { db: 'experience',  label: 'Âge' },
+  'taille':  { db: null,          label: 'Taille (cm)' },   // stocké en localStorage + profiles
+  'objectif':{ db: 'goal',        label: 'Objectif' },
+};
+
 function editField(key, label) {
   if (editingField===key) { cancelEdit(); return; }
   editingField = key;
   const valEl = document.getElementById('val-'+key);
   if (!valEl) return;
-  const cur = key==='prenom' ? profil.full_name : profil[key] || '';
-  valEl.innerHTML = `<input class="row-edit-input" id="edit-input" value="${cur}" placeholder="${label}" onkeydown="if(event.key==='Enter')saveField('${key}','${label}')">`;
-  setTimeout(() => document.getElementById('edit-input')?.focus(), 50);
+  let cur = '';
+  if (key==='prenom')   cur = profil.full_name   || '';
+  if (key==='age')      cur = profil.experience  || '';
+  if (key==='taille')   cur = profil.height_cm   || localStorage.getItem('ps_height_cm') || '';
+  if (key==='objectif') cur = profil.goal        || '';
+  valEl.innerHTML = `<input class="row-edit-input" id="edit-input" value="${cur}" placeholder="${label}" onkeydown="if(event.key==='Enter')saveField('${key}')">`;
+  setTimeout(()=>document.getElementById('edit-input')?.focus(),50);
 }
 
 function cancelEdit() { editingField=null; render(); }
 
-async function saveField(key, label) {
+async function saveField(key) {
   const val = document.getElementById('edit-input')?.value.trim();
   if (!val) { cancelEdit(); return; }
-  const dbKey = key==='prenom' ? 'full_name' : key;
-  await sb.from('profiles').update({[dbKey]: val}).eq('id', userId);
-  profil[dbKey] = val;
-  editingField = null;
-  showToast('✓ ' + label + ' mis à jour');
+  const map = FIELD_MAP[key];
+  if (key==='taille') {
+    // Stocker la taille en localStorage ET dans le profil si colonne existe
+    localStorage.setItem('ps_height_cm', val);
+    profil.height_cm = val;
+    // Tenter de sauvegarder dans Supabase si la colonne existe
+    try { await sb.from('profiles').update({ height_cm: parseInt(val) }).eq('id', userId); } catch(e) {}
+  } else if (map?.db) {
+    await sb.from('profiles').update({ [map.db]: val }).eq('id', userId);
+    profil[map.db] = val;
+    if (key==='prenom') localStorage.setItem('ps_display_name', val);
+  }
+  editingField=null;
+  showToast('✓ ' + map.label + ' mis à jour');
   render();
 }
 
 async function activatePremium() {
-  await sb.from('profiles').update({premium: true}).eq('id', userId);
-  profil.premium = true;
+  await sb.from('profiles').update({premium:true}).eq('id',userId);
+  profil.premium=true;
   showToast('⭐ Premium activé !');
   render();
 }
 
-// ── ÉQUIPEMENT (localStorage) ──────────────────────────────────
+// ── ÉQUIPEMENT ─────────────────────────────────────────────────
 const SYRINGES = [
   { id:'U30',  label:'U-30',  sub:'0.3 mL — 30 unités · Mini doses' },
   { id:'U50',  label:'U-50',  sub:'0.5 mL — 50 unités · Doses moyennes' },
@@ -340,7 +395,7 @@ function renderEquipment() {
   const container = document.getElementById('syringeToggles');
   if (!container) return;
   container.innerHTML = SYRINGES.map(s => {
-    const active = (eq.syringes||['U50','U100']).includes(s.id);
+    const active=(eq.syringes||['U50','U100']).includes(s.id);
     return `<div class="syringe-toggle ${active?'active':''}" id="st_${s.id}">
       <div class="syringe-toggle-info"><span style="font-size:1.2rem">💉</span>
         <div><div class="syringe-toggle-label">${s.label}</div><div class="syringe-toggle-sub">${s.sub}</div></div>
@@ -353,62 +408,62 @@ function renderEquipment() {
 }
 
 function toggleSyringe(id, enabled) {
-  const eq = JSON.parse(localStorage.getItem('ps_equipment')||'{"syringes":["U50","U100"]}');
-  let syringes = eq.syringes||['U50','U100'];
-  if (enabled) { if(!syringes.includes(id)) syringes.push(id); }
-  else { syringes=syringes.filter(s=>s!==id); }
-  if (syringes.length===0) { showToast('⚠️ Gardez au moins une seringue'); return; }
-  eq.syringes = syringes;
-  localStorage.setItem('ps_equipment', JSON.stringify(eq));
-  document.getElementById('st_'+id)?.classList.toggle('active', enabled);
+  const eq=JSON.parse(localStorage.getItem('ps_equipment')||'{"syringes":["U50","U100"]}');
+  let syringes=eq.syringes||['U50','U100'];
+  if(enabled){if(!syringes.includes(id))syringes.push(id);}
+  else{syringes=syringes.filter(s=>s!==id);}
+  if(syringes.length===0){showToast('⚠️ Gardez au moins une seringue');return;}
+  eq.syringes=syringes;
+  localStorage.setItem('ps_equipment',JSON.stringify(eq));
+  document.getElementById('st_'+id)?.classList.toggle('active',enabled);
   showToast('✓ Équipement mis à jour');
 }
 
 function saveEquipment() {
-  const eq = JSON.parse(localStorage.getItem('ps_equipment')||'{}');
+  const eq=JSON.parse(localStorage.getItem('ps_equipment')||'{}');
   const n=document.getElementById('needlePreference'); if(n) eq.needle=n.value;
   const s=document.getElementById('solventPreference'); if(s) eq.solvent=s.value;
-  localStorage.setItem('ps_equipment', JSON.stringify(eq));
+  localStorage.setItem('ps_equipment',JSON.stringify(eq));
   showToast('✓ Préférences enregistrées');
 }
 
 // ── EXPORT / LOGOUT / RESET ────────────────────────────────────
 async function exportData() {
-  const [cRes, iRes, wRes] = await Promise.all([
-    sb.from('cures').select('*').eq('user_id', userId),
-    sb.from('injections').select('*').eq('user_id', userId),
-    sb.from('weight_logs').select('*').eq('user_id', userId)
+  const [cRes,iRes,wRes]=await Promise.all([
+    sb.from('cures').select('*').eq('user_id',userId),
+    sb.from('injections').select('*').eq('user_id',userId),
+    sb.from('weight_logs').select('*').eq('user_id',userId)
   ]);
-  const data = { profil, cures:cRes.data, injections:iRes.data, poids:wRes.data, exportDate:new Date().toISOString() };
-  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'peptidescanner-export-'+new Date().toISOString().split('T')[0]+'.json';
+  const data={profil,cures:cRes.data,injections:iRes.data,poids:wRes.data,exportDate:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='peptidescanner-export-'+new Date().toISOString().split('T')[0]+'.json';
   a.click();
   showToast('✓ Données exportées');
 }
 
 async function logout() {
-  if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) return;
+  if(!confirm('Se déconnecter ?')) return;
   await sb.auth.signOut();
-  window.location.href = 'login.html';
+  window.location.href='login.html';
 }
 
 async function resetData() {
-  if (!confirm('⚠️ Supprimer TOUTES les données ? Cette action est irréversible.')) return;
-  if (!confirm('Êtes-vous vraiment sûr ?')) return;
+  if(!confirm('⚠️ Supprimer TOUTES les données ? Irréversible.')) return;
+  if(!confirm('Vraiment supprimer tout ?')) return;
   await Promise.all([
-    sb.from('injections').delete().eq('user_id', userId),
-    sb.from('cures').delete().eq('user_id', userId),
-    sb.from('weight_logs').delete().eq('user_id', userId),
-    sb.from('inventory').delete().eq('user_id', userId),
+    sb.from('injections').delete().eq('user_id',userId),
+    sb.from('cures').delete().eq('user_id',userId),
+    sb.from('weight_logs').delete().eq('user_id',userId),
+    sb.from('inventory').delete().eq('user_id',userId),
   ]);
   showToast('Données supprimées');
-  setTimeout(()=>window.location='dashboard.html', 1500);
+  setTimeout(()=>window.location='dashboard.html',1500);
 }
 
-document.addEventListener('click', e => {
-  if (editingField && !e.target.closest('.settings-row') && !e.target.closest('.row-edit-input')) cancelEdit();
+document.addEventListener('click',e=>{
+  if(editingField&&!e.target.closest('.settings-row')&&!e.target.closest('.row-edit-input'))cancelEdit();
 });
 
 init();

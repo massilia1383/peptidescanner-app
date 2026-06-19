@@ -505,7 +505,7 @@ function formatDate(d) {
   return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
 }
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
-const todayStr = TODAY.toISOString().split('T')[0];
+const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
 
 let userId = null;
 let allCures = [], allInjections = [], allWeights = [];

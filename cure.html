@@ -254,71 +254,118 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
-function getLS(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
-function setLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+<script type="module">
+import {
+  requireAuth, getCures, getInjections, logInjection,
+  deleteInjection, createCure, updateCure, deleteCure
+} from '/supabase.js';
 
-const TODAY=new Date(); TODAY.setHours(0,0,0,0);
-const todayStr=`${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
-const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-const DAYS_SHORT=['L','M','M','J','V','S','D'];
+// ── AUTH ───────────────────────────────────────────────────────
+const user = await requireAuth();
+const userId = user.id;
 
-let currentCureId = null;
-let calYear = TODAY.getFullYear();
-let calMonth = TODAY.getMonth();
-let editCureId = null;
-
-// ── INIT DEMO DATA ────────────────────────────────────────────────────
-function initDemo(){
-  if(getLS('pt_cures',[]).length===0){
-    const s=new Date(TODAY); s.setDate(s.getDate()-17);
-    setLS('pt_cures',[{id:'demo1',peptide:'BPC-157',dosage:'250 mcg',admin:'SC',startDate:s.toISOString().split('T')[0],duration:'30',freq:'2',notes:'Cure récupération genou'}]);
-    const logs=[];
-    for(let i=0;i<17;i++){const d=new Date(s);d.setDate(d.getDate()+i);const ds=d.toISOString().split('T')[0];if(Math.random()>.1)logs.push({date:ds,slot:0,ts:Date.now()});if(Math.random()>.15)logs.push({date:ds,slot:1,ts:Date.now()});}
-    setLS('pt_logs_demo1',logs);
-  }
+function showToast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ── RENDER MAIN ───────────────────────────────────────────────────────
-function render(){
-  const cures=getLS('pt_cures',[]);
-  const c=document.getElementById('mainContent');
-  if(cures.length===0){
-    c.innerHTML=`<div class="empty-state"><span>📅</span><p>Aucune cure enregistrée.<br>Commencez par ajouter votre premier protocole.</p><button class="empty-btn" onclick="openAddCure()">+ Nouvelle cure</button></div>`;
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
+const MONTHS    = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const DAYS_SHORT= ['L','M','M','J','V','S','D'];
+
+let currentCureId = null;
+let calYear  = TODAY.getFullYear();
+let calMonth = TODAY.getMonth();
+let editCureId = null;
+let allCures = [];
+let allInjections = [];
+
+// ── ROTATION SITES ─────────────────────────────────────────────
+const SITES_SC = [
+  { id:'abd_g',    label:'Abdomen gauche',   icon:'🫃', zone:'Abdomen' },
+  { id:'abd_d',    label:'Abdomen droit',    icon:'🫃', zone:'Abdomen' },
+  { id:'cuisse_g', label:'Cuisse gauche',    icon:'🦵', zone:'Cuisse' },
+  { id:'cuisse_d', label:'Cuisse droite',    icon:'🦵', zone:'Cuisse' },
+  { id:'fesse_g',  label:'Fesse gauche',     icon:'🍑', zone:'Fesse' },
+  { id:'fesse_d',  label:'Fesse droite',     icon:'🍑', zone:'Fesse' },
+];
+const SITES_IM = [
+  { id:'deltoid_g', label:'Deltoïde gauche',   icon:'💪', zone:'Épaule' },
+  { id:'deltoid_d', label:'Deltoïde droit',    icon:'💪', zone:'Épaule' },
+  { id:'quad_g',    label:'Quadriceps gauche', icon:'🦵', zone:'Cuisse' },
+  { id:'quad_d',    label:'Quadriceps droit',  icon:'🦵', zone:'Cuisse' },
+  { id:'fesse_g',   label:'Fesse gauche',      icon:'🍑', zone:'Fesse' },
+  { id:'fesse_d',   label:'Fesse droite',      icon:'🍑', zone:'Fesse' },
+];
+
+function getSitesForAdmin(admin) {
+  if (!admin) return SITES_SC;
+  return admin.toUpperCase() === 'IM' ? SITES_IM : SITES_SC;
+}
+
+function getNextSiteIdx(cureId, sites) {
+  const lastIdx = parseInt(localStorage.getItem('ps_site_' + cureId) ?? '-1');
+  return (lastIdx + 1) % sites.length;
+}
+
+// ── CHARGEMENT ─────────────────────────────────────────────────
+async function loadData() {
+  const [cRes, iRes] = await Promise.all([
+    getCures(userId),
+    getInjections(userId, { limit: 1000 })
+  ]);
+  allCures      = cRes.data || [];
+  allInjections = iRes.data || [];
+  render();
+}
+
+// ── RENDER MAIN ────────────────────────────────────────────────
+function render() {
+  const c = document.getElementById('mainContent');
+  if (allCures.length === 0) {
+    c.innerHTML = `<div class="empty-state"><span>📅</span><p>Aucune cure enregistrée.<br>Commencez par ajouter votre premier protocole.</p><button class="empty-btn" onclick="openAddCure()">+ Nouvelle cure</button></div>`;
     return;
   }
 
-  if(!currentCureId || !cures.find(x=>x.id===currentCureId)) currentCureId=cures[0].id;
+  if (!currentCureId || !allCures.find(x => x.id === currentCureId))
+    currentCureId = allCures[0].id;
 
-  // Tabs
-  const tabs=cures.map(cu=>`<div class="cure-tab ${cu.id===currentCureId?'active':''}" onclick="selectCure('${cu.id}')">${cu.peptide}</div>`).join('');
+  const tabs = allCures.map(cu =>
+    `<div class="cure-tab ${cu.id === currentCureId ? 'active' : ''}" onclick="selectCure('${cu.id}')">${cu.peptide_name || cu.name}</div>`
+  ).join('');
 
-  const cure=cures.find(x=>x.id===currentCureId);
-  const startD=new Date(cure.startDate); startD.setHours(0,0,0,0);
-  const endD=new Date(startD); endD.setDate(endD.getDate()+parseInt(cure.duration));
-  const dayNum=Math.max(1,Math.floor((TODAY-startD)/86400000)+1);
-  const daysLeft=Math.max(0,Math.ceil((endD-TODAY)/86400000));
-  const logs=getLS('pt_logs_'+currentCureId,[]);
-  const freq=parseFloat(cure.freq);
-  const totalExpected=Math.round(Math.min(dayNum, parseInt(cure.duration)) * freq);
-  const done=logs.length;
-  const compPct=totalExpected>0?Math.min(100,Math.round(done/totalExpected*100)):0;
-  let status='active', statusLabel='En cours';
-  if(endD<TODAY){status='ended';statusLabel='Terminée';}
-  else if(startD>TODAY){status='future';statusLabel='À venir';}
+  const cure    = allCures.find(x => x.id === currentCureId);
+  const startD  = new Date(cure.start_date); startD.setHours(0,0,0,0);
+  const endD    = new Date(startD); endD.setDate(endD.getDate() + (cure.duration_days || 30));
+  const dayNum  = Math.max(1, Math.floor((TODAY - startD) / 86400000) + 1);
+  const daysLeft= Math.max(0, Math.ceil((endD - TODAY) / 86400000));
+  const cureInjs= allInjections.filter(i => i.cure_id === currentCureId);
+  const freq    = parseFloat(cure.frequency) || 1;
+  const totalExp= Math.round(Math.min(dayNum, cure.duration_days || 30) * freq);
+  const done    = cureInjs.length;
+  const compPct = totalExp > 0 ? Math.min(100, Math.round(done / totalExp * 100)) : 0;
 
-  c.innerHTML=`
+  let status = 'active', statusLabel = 'En cours';
+  if (endD < TODAY)  { status = 'ended';  statusLabel = 'Terminée'; }
+  if (startD > TODAY){ status = 'future'; statusLabel = 'À venir';  }
+
+  const doseLabel = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit || 'mcg'}` : '—';
+  const admin     = cure.notes?.includes('admin:') ? cure.notes.split('admin:')[1] : cure.frequency || '';
+  const freqLabel = freq >= 1 ? freq + '×/j' : '1×/' + Math.round(1/freq) + 'j';
+
+  c.innerHTML = `
     <div class="cure-tabs">${tabs}</div>
     <div class="cure-info">
       <div class="ci-header">
-        <div class="ci-name">${cure.peptide}</div>
+        <div class="ci-name">${cure.peptide_name || cure.name}</div>
         <div class="ci-status ${status}">${statusLabel}</div>
       </div>
       <div class="ci-grid">
-        <div class="ci-box"><div class="ci-box-label">Dosage</div><div class="ci-box-val">${cure.dosage}</div></div>
-        <div class="ci-box"><div class="ci-box-label">Admin.</div><div class="ci-box-val">${cure.admin}</div></div>
-        <div class="ci-box"><div class="ci-box-label">Durée</div><div class="ci-box-val">${cure.duration}j</div></div>
+        <div class="ci-box"><div class="ci-box-label">Dosage</div><div class="ci-box-val">${doseLabel}</div></div>
+        <div class="ci-box"><div class="ci-box-label">Fréquence</div><div class="ci-box-val">${freqLabel}</div></div>
+        <div class="ci-box"><div class="ci-box-label">Durée</div><div class="ci-box-val">${cure.duration_days || '—'}j</div></div>
         <div class="ci-box"><div class="ci-box-label">Début</div><div class="ci-box-val">${formatD(startD)}</div></div>
         <div class="ci-box"><div class="ci-box-label">Fin</div><div class="ci-box-val">${formatD(endD)}</div></div>
         <div class="ci-box"><div class="ci-box-label">Restant</div><div class="ci-box-val" style="color:${daysLeft<=5?'var(--danger)':'var(--accent)'}">${daysLeft}j</div></div>
@@ -334,79 +381,73 @@ function render(){
     <div class="stats-section">
       <h3>Statistiques</h3>
       <div class="stat-row"><span class="stat-row-key">Injections faites</span><span class="stat-row-val" style="color:var(--accent)">${done}</span></div>
-      <div class="stat-row"><span class="stat-row-key">Injections attendues</span><span class="stat-row-val">${totalExpected}</span></div>
-      <div class="stat-row"><span class="stat-row-key">Injections manquées</span><span class="stat-row-val" style="color:var(--danger)">${Math.max(0,totalExpected-done)}</span></div>
-      <div class="stat-row"><span class="stat-row-key">Jour actuel</span><span class="stat-row-val">J${Math.min(dayNum,parseInt(cure.duration))}</span></div>
-      <div class="stat-row"><span class="stat-row-key">Fréquence</span><span class="stat-row-val">${freq>=1?freq+'×/j':'1×/'+Math.round(1/freq)+'j'}</span></div>
-      ${cure.notes?`<div class="stat-row"><span class="stat-row-key">Notes</span><span class="stat-row-val" style="font-family:inherit;font-size:.8rem;color:var(--muted);max-width:180px;text-align:right">${cure.notes}</span></div>`:''}
-    </div>
-  `;
+      <div class="stat-row"><span class="stat-row-key">Injections attendues</span><span class="stat-row-val">${totalExp}</span></div>
+      <div class="stat-row"><span class="stat-row-key">Manquées</span><span class="stat-row-val" style="color:var(--danger)">${Math.max(0, totalExp - done)}</span></div>
+      <div class="stat-row"><span class="stat-row-key">Jour actuel</span><span class="stat-row-val">J${Math.min(dayNum, cure.duration_days || 30)}</span></div>
+      <div class="stat-row"><span class="stat-row-key">Fréquence</span><span class="stat-row-val">${freqLabel}</span></div>
+      ${cure.notes ? `<div class="stat-row"><span class="stat-row-key">Notes</span><span class="stat-row-val" style="font-family:inherit;font-size:.8rem;color:var(--muted)">${cure.notes}</span></div>` : ''}
+    </div>`;
+
   renderCalendar();
 }
 
-function formatD(d){return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}
+function formatD(d) { return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short' }); }
 
-// ── CALENDAR ──────────────────────────────────────────────────────────
-function renderCalendar(){
-  const cure=getLS('pt_cures',[]).find(x=>x.id===currentCureId);
-  if(!cure) return;
-  const startD=new Date(cure.startDate); startD.setHours(0,0,0,0);
-  const endD=new Date(startD); endD.setDate(endD.getDate()+parseInt(cure.duration));
-  const logs=getLS('pt_logs_'+currentCureId,[]);
-  const freq=parseFloat(cure.freq);
-  const inj_per_day=freq>=1?Math.ceil(freq):1;
+// ── CALENDRIER ─────────────────────────────────────────────────
+function renderCalendar() {
+  const cure = allCures.find(x => x.id === currentCureId);
+  if (!cure) return;
+  const startD = new Date(cure.start_date); startD.setHours(0,0,0,0);
+  const endD   = new Date(startD); endD.setDate(endD.getDate() + (cure.duration_days || 30));
+  const freq   = parseFloat(cure.frequency) || 1;
+  const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
+  const cureInjs  = allInjections.filter(i => i.cure_id === currentCureId);
 
-  const firstDay=new Date(calYear,calMonth,1);
-  const lastDay=new Date(calYear,calMonth+1,0);
-  let startDow=(firstDay.getDay()+6)%7; // Lundi=0
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay  = new Date(calYear, calMonth + 1, 0);
+  const startDow = (firstDay.getDay() + 6) % 7;
 
-  const cal=document.getElementById('calSection');
-  if(!cal) return;
+  const cal = document.getElementById('calSection');
+  if (!cal) return;
 
-  let daysHtml='';
-  // Empty cells
-  for(let i=0;i<startDow;i++) daysHtml+=`<div class="cal-day empty"></div>`;
+  let daysHtml = '';
+  for (let i = 0; i < startDow; i++) daysHtml += `<div class="cal-day empty"></div>`;
 
-  for(let d=1;d<=lastDay.getDate();d++){
-    const date=new Date(calYear,calMonth,d); date.setHours(0,0,0,0);
-    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday=ds===todayStr;
-    const inCure=date>=startD && date<endD;
-    const isFuture=date>TODAY;
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const date = new Date(calYear, calMonth, d); date.setHours(0,0,0,0);
+    const ds   = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday  = ds === todayStr;
+    const inCure   = date >= startD && date < endD;
+    const isFuture = date > TODAY;
 
-    let cls='cal-day', dot='';
-    if(!inCure){ cls+=' outside'; }
-    else if(isFuture){ cls+=' future-day'; }
+    let cls = 'cal-day', dot = '';
+    if (!inCure) { cls += ' outside'; }
+    else if (isFuture) { cls += ' future-day'; }
     else {
-      const dayLogs=logs.filter(l=>l.date===ds);
-      const doneCt=dayLogs.length;
-      if(freq<1){
-        // Pas tous les jours — vérifier si jour d'injection
-        const dayIndex=Math.floor((date-startD)/86400000);
-        const interval=Math.round(1/freq);
-        const isInjDay=dayIndex%interval===0;
-        if(isInjDay){
-          cls+=doneCt>=1?' done':' missed';
-          dot=doneCt>=1?'green':'red';
-        } else { cls+=' rest'; }
+      const dayLogs = cureInjs.filter(i => i.injected_at?.startsWith(ds));
+      const doneCt  = dayLogs.length;
+      if (freq < 1) {
+        const dayIndex = Math.floor((date - startD) / 86400000);
+        const isInjDay = dayIndex % Math.round(1/freq) === 0;
+        if (isInjDay) { cls += doneCt >= 1 ? ' done' : ' missed'; dot = doneCt >= 1 ? 'green' : 'red'; }
+        else { cls += ' rest'; }
       } else {
-        if(doneCt>=inj_per_day){ cls+=' done'; dot='green'; }
-        else if(doneCt>0){ cls+=' partial'; dot='amber'; }
-        else { cls+=' missed'; dot='red'; }
+        if (doneCt >= injPerDay)    { cls += ' done';    dot = 'green'; }
+        else if (doneCt > 0)        { cls += ' partial'; dot = 'amber'; }
+        else                        { cls += ' missed';  dot = 'red';   }
       }
     }
-    if(isToday) cls+=' today';
-
-    daysHtml+=`<div class="${cls}" onclick="selectDay('${ds}',${inCure&&!isFuture})">${d}${dot?`<div class="day-dot ${dot}"></div>`:''}</div>`;
+    if (isToday) cls += ' today';
+    daysHtml += `<div class="${cls}" onclick="selectDay('${ds}',${inCure&&!isFuture})">${d}${dot ? `<div class="day-dot ${dot}"></div>` : ''}</div>`;
   }
 
-  cal.innerHTML=`
+  cal.innerHTML = `
     <div class="cal-nav">
       <button onclick="changeMonth(-1)">‹</button>
       <div class="cal-month">${MONTHS[calMonth]} ${calYear}</div>
       <button onclick="changeMonth(1)">›</button>
     </div>
-    <div class="cal-days-header">${DAYS_SHORT.map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>
+    <div class="cal-days-header">${DAYS_SHORT.map(d => `<div class="cal-day-label">${d}</div>`).join('')}</div>
     <div class="cal-grid">${daysHtml}</div>
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:rgba(0,201,167,.25)"></div>Fait</div>
@@ -416,281 +457,220 @@ function renderCalendar(){
     </div>`;
 }
 
-function changeMonth(dir){
-  calMonth+=dir;
-  if(calMonth<0){calMonth=11;calYear--;}
-  if(calMonth>11){calMonth=0;calYear++;}
+window.changeMonth = function(dir) {
+  calMonth += dir;
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0;  calYear++; }
   renderCalendar();
-}
+};
 
-// ── DAY DETAIL ────────────────────────────────────────────────────────
-function selectDay(ds, clickable){
-  const dd=document.getElementById('dayDetail');
-  if(!clickable){ dd.classList.remove('show'); return; }
+// ── DAY DETAIL ─────────────────────────────────────────────────
+window.selectDay = function(ds, clickable) {
+  const dd = document.getElementById('dayDetail');
+  if (!clickable) { dd.classList.remove('show'); return; }
 
-  const cure=getLS('pt_cures',[]).find(x=>x.id===currentCureId);
-  if(!cure) return;
-  const logs=getLS('pt_logs_'+currentCureId,[]);
-  const freq=parseFloat(cure.freq);
-  const inj_per_day=freq>=1?Math.ceil(freq):1;
-  const times=inj_per_day===1?['08:00']:inj_per_day===2?['08:00','20:00']:['07:00','13:00','20:00'];
-  const date=new Date(ds);
-  const dateLabel=date.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
-  const notes=getLS('pt_notes_'+currentCureId+'_'+ds,'');
+  const cure    = allCures.find(x => x.id === currentCureId);
+  if (!cure) return;
+  const freq      = parseFloat(cure.frequency) || 1;
+  const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
+  const times     = injPerDay === 1 ? ['08:00'] : injPerDay === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
+  const date      = new Date(ds);
+  const dateLabel = date.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  const dayInjs   = allInjections.filter(i => i.cure_id === currentCureId && i.injected_at?.startsWith(ds));
 
-  let slotsHtml='';
-  if(freq<1){
-    const startD=new Date(cure.startDate);startD.setHours(0,0,0,0);
-    const dayIndex=Math.floor((date-startD)/86400000);
-    const interval=Math.round(1/freq);
-    const isInjDay=dayIndex%interval===0;
-    if(!isInjDay){
-      slotsHtml='<div style="text-align:center;padding:12px;color:var(--muted);font-size:.84rem">Jour de repos 😴</div>';
+  const adminStr  = cure.notes?.includes('admin:') ? cure.notes.split('admin:')[1] : 'SC';
+  const sites     = getSitesForAdmin(adminStr);
+  const nextIdx   = getNextSiteIdx(currentCureId, sites);
+  const nextSite  = sites[nextIdx];
+
+  let slotsHtml = '';
+  if (freq < 1) {
+    const startD   = new Date(cure.start_date); startD.setHours(0,0,0,0);
+    const dayIndex = Math.floor((date - startD) / 86400000);
+    const isInjDay = dayIndex % Math.round(1/freq) === 0;
+    if (!isInjDay) {
+      slotsHtml = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:.84rem">Jour de repos 😴</div>';
     } else {
-      const done=logs.some(l=>l.date===ds&&l.slot===0);
-      slotsHtml=`<div class="inj-slot ${done?'done':''}" onclick="toggleInj('${ds}',0,'${times[0]}')"><div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div><div class="slot-info"><div class="slot-name">${cure.peptide}</div><div class="slot-detail">${cure.dosage} · ${cure.admin}</div></div><div class="slot-time">${times[0]}</div></div>`;
+      const done = dayInjs.length > 0;
+      slotsHtml = `<div class="inj-slot ${done ? 'done' : ''}" onclick="toggleInj('${ds}',0,'${times[0]}')">
+        <div class="slot-check ${done ? 'checked' : 'unchecked'}">${done ? '✓' : ''}</div>
+        <div class="slot-info"><div class="slot-name">${cure.peptide_name || cure.name}</div><div class="slot-detail">${cure.dose_mcg || ''} ${cure.unit || 'mcg'} · ${adminStr}</div></div>
+        <div class="slot-time">${times[0]}</div></div>`;
     }
   } else {
-    times.forEach((t,i)=>{
-      const done=logs.some(l=>l.date===ds&&l.slot===i);
-      slotsHtml+=`<div class="inj-slot ${done?'done':''}" onclick="toggleInj('${ds}',${i},'${t}')"><div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div><div class="slot-info"><div class="slot-name">${cure.peptide} · #${i+1}</div><div class="slot-detail">${cure.dosage} · ${cure.admin}</div></div><div class="slot-time">${t}</div></div>`;
+    times.forEach((t, i) => {
+      const done = dayInjs.some(l => l.notes?.includes(`slot:${i}`));
+      slotsHtml += `<div class="inj-slot ${done ? 'done' : ''}" onclick="toggleInj('${ds}',${i},'${t}')">
+        <div class="slot-check ${done ? 'checked' : 'unchecked'}">${done ? '✓' : ''}</div>
+        <div class="slot-info"><div class="slot-name">${cure.peptide_name || cure.name} · #${i+1}</div><div class="slot-detail">${cure.dose_mcg || ''} ${cure.unit || 'mcg'} · ${adminStr}</div></div>
+        <div class="slot-time">${t}</div></div>`;
     });
   }
 
-  // Widget rotation sites (seulement si admin SC/IM/IV)
-  const showSiteWidget = cure.admin && cure.admin !== 'Oral' && cure.admin !== 'Nasal';
-  const siteWidgetHtml = showSiteWidget ? renderSiteWidget(currentCureId, cure.admin, ds) : '';
+  const siteWidget = `<div style="background:rgba(13,148,136,.05);border:1.5px solid rgba(13,148,136,.18);border-radius:14px;padding:12px 14px;margin:10px 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600">Site suggéré</div>
+      <button onclick="cycleSite('${ds}')" style="font-size:.68rem;color:var(--accent);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;padding:2px 6px">Changer →</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.6rem">${nextSite.icon}</span>
+      <div><div style="font-size:.92rem;font-weight:700">${nextSite.label}</div><div style="font-size:.7rem;color:var(--muted)">Zone : ${nextSite.zone}</div></div>
+    </div>
+  </div>`;
 
-  dd.innerHTML=`
+  dd.innerHTML = `
     <div class="dd-header">
       <div class="dd-date">${dateLabel}</div>
       <button class="dd-close" onclick="document.getElementById('dayDetail').classList.remove('show')">✕</button>
     </div>
-    ${siteWidgetHtml}
+    ${siteWidget}
     ${slotsHtml}
-    <textarea class="note-area" id="dayNote" rows="2" placeholder="Note pour ce jour…">${notes}</textarea>
+    <textarea class="note-area" id="dayNote" rows="2" placeholder="Note pour ce jour…"></textarea>
     <button class="save-note-btn" onclick="saveNote('${ds}')">Enregistrer la note</button>`;
 
   dd.classList.add('show');
-  dd.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
+  dd.scrollIntoView({ behavior:'smooth', block:'nearest' });
+};
 
-// ── ROTATION SITES D'INJECTION ───────────────────────────────────────
-const SITES_SC = [
-  { id:'abd_g',  label:'Abdomen gauche',   icon:'🫃', zone:'Abdomen' },
-  { id:'abd_d',  label:'Abdomen droit',    icon:'🫃', zone:'Abdomen' },
-  { id:'cuisse_g', label:'Cuisse gauche',  icon:'🦵', zone:'Cuisse' },
-  { id:'cuisse_d', label:'Cuisse droite',  icon:'🦵', zone:'Cuisse' },
-  { id:'fesse_g',  label:'Fesse gauche',   icon:'🍑', zone:'Fesse' },
-  { id:'fesse_d',  label:'Fesse droite',   icon:'🍑', zone:'Fesse' },
-];
-const SITES_IM = [
-  { id:'deltoid_g', label:'Deltoïde gauche',  icon:'💪', zone:'Épaule' },
-  { id:'deltoid_d', label:'Deltoïde droit',   icon:'💪', zone:'Épaule' },
-  { id:'quad_g',    label:'Quadriceps gauche',icon:'🦵', zone:'Cuisse' },
-  { id:'quad_d',    label:'Quadriceps droit', icon:'🦵', zone:'Cuisse' },
-  { id:'fesse_g',   label:'Fesse gauche',     icon:'🍑', zone:'Fesse' },
-  { id:'fesse_d',   label:'Fesse droite',     icon:'🍑', zone:'Fesse' },
-];
-const SITES_IV = [
-  { id:'ac_g', label:'Avant-bras gauche', icon:'💉', zone:'Bras' },
-  { id:'ac_d', label:'Avant-bras droit',  icon:'💉', zone:'Bras' },
-  { id:'saig_g', label:'Saignée gauche',  icon:'💉', zone:'Bras' },
-  { id:'saig_d', label:'Saignée droite',  icon:'💉', zone:'Bras' },
-];
-
-function getSitesForAdmin(admin) {
-  if (!admin) return SITES_SC;
-  const a = admin.toUpperCase();
-  if (a === 'IM') return SITES_IM;
-  if (a === 'IV') return SITES_IV;
-  return SITES_SC; // SC, SQ, Oral → SC par défaut
-}
-
-function getNextSite(cureId, admin) {
+window.cycleSite = function(ds) {
+  const cure  = allCures.find(x => x.id === currentCureId);
+  const admin = cure?.notes?.includes('admin:') ? cure.notes.split('admin:')[1] : 'SC';
   const sites = getSitesForAdmin(admin);
-  const lastIdx = getLS('pt_site_idx_' + cureId, -1);
-  const nextIdx = (lastIdx + 1) % sites.length;
-  return { site: sites[nextIdx], idx: nextIdx, sites };
-}
+  const cur   = parseInt(localStorage.getItem('ps_site_' + currentCureId) ?? '-1');
+  localStorage.setItem('ps_site_' + currentCureId, (cur + 1) % sites.length);
+  window.selectDay(ds, true);
+};
 
-function recordSite(cureId, siteIdx) {
-  setLS('pt_site_idx_' + cureId, siteIdx);
-}
+window.toggleInj = async function(ds, slot, time) {
+  const existing = allInjections.find(i =>
+    i.cure_id === currentCureId &&
+    i.injected_at?.startsWith(ds) &&
+    i.notes?.includes(`slot:${slot}`)
+  );
 
-function getSiteHistory(cureId, admin) {
-  const logs = getLS('pt_logs_' + cureId, []);
-  return logs.filter(l => l.site).slice(-6).reverse();
-}
-
-function renderSiteWidget(cureId, admin, ds) {
-  const { site, idx, sites } = getNextSite(cureId, admin);
-  const history = getSiteHistory(cureId, admin);
-  const lastUsed = getLS('pt_site_idx_' + cureId, -1);
-
-  const historyHtml = history.length ? `
-    <div style="margin-top:8px">
-      <div style="font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Derniers sites utilisés</div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">
-        ${history.map(l => `<span style="font-size:.68rem;background:var(--surface2);border-radius:6px;padding:3px 7px;color:var(--muted)">${l.siteLabel||l.site}</span>`).join('')}
-      </div>
-    </div>` : '';
-
-  const siteDotsHtml = sites.map((s, i) => {
-    const isNext = i === idx;
-    const isLast = i === lastUsed;
-    return `<div title="${s.label}" style="
-      width:10px;height:10px;border-radius:50%;flex-shrink:0;
-      background:${isNext ? 'var(--accent)' : isLast ? 'rgba(13,148,136,.3)' : 'var(--border)'};
-      border:${isNext ? '2px solid var(--accent)' : '1.5px solid transparent'};
-      transition:background .2s;
-    "></div>`;
-  }).join('');
-
-  return `<div id="siteWidget_${ds}" style="
-    background:rgba(13,148,136,.05);border:1.5px solid rgba(13,148,136,.18);
-    border-radius:14px;padding:12px 14px;margin:10px 0;
-  ">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600">Site suggéré</div>
-      <button onclick="cycleSite('${cureId}','${ds}')" style="
-        font-size:.68rem;color:var(--accent);background:none;border:none;cursor:pointer;
-        font-family:inherit;font-weight:600;padding:2px 6px;
-      ">Changer →</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <span style="font-size:1.6rem">${site.icon}</span>
-      <div style="flex:1">
-        <div style="font-size:.92rem;font-weight:700;color:var(--text)">${site.label}</div>
-        <div style="font-size:.7rem;color:var(--muted);margin-top:2px">Zone : ${site.zone}</div>
-      </div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap;max-width:80px;justify-content:flex-end">
-        ${siteDotsHtml}
-      </div>
-    </div>
-    ${historyHtml}
-  </div>`;
-}
-
-function cycleSite(cureId, ds) {
-  const cure = getLS('pt_cures', []).find(x => x.id === cureId);
-  if (!cure) return;
-  const sites = getSitesForAdmin(cure.admin);
-  const currentIdx = getLS('pt_site_idx_' + cureId, -1);
-  const nextIdx = (currentIdx + 1) % sites.length;
-  setLS('pt_site_idx_' + cureId, nextIdx - 1 < 0 ? sites.length - 1 : nextIdx - 1);
-  // Re-render le detail du jour
-  selectDay(ds, true);
-}
-
-
-function toggleInj(ds, slot, time, siteId, siteLabel){
-  const logs=getLS('pt_logs_'+currentCureId,[]);
-  const idx=logs.findIndex(l=>l.date===ds&&l.slot===slot);
-  const cure=getLS('pt_cures',[]).find(x=>x.id===currentCureId);
-  if(idx>=0){
-    logs.splice(idx,1);
+  if (existing) {
+    await deleteInjection(existing.id);
     showToast('Injection annulée');
   } else {
-    if(!siteId && cure) {
-      const { site, idx: sIdx } = getNextSite(currentCureId, cure.admin);
-      siteId = site.id; siteLabel = site.label;
-      recordSite(currentCureId, sIdx);
-    }
-    logs.push({date:ds,slot,time,ts:Date.now(),site:siteId,siteLabel});
-    showToast('✓ Injection — ' + (siteLabel||''));
+    const cure  = allCures.find(x => x.id === currentCureId);
+    const admin = cure?.notes?.includes('admin:') ? cure.notes.split('admin:')[1] : 'SC';
+    const sites = getSitesForAdmin(admin);
+    const nIdx  = getNextSiteIdx(currentCureId, sites);
+    const site  = sites[nIdx];
+    localStorage.setItem('ps_site_' + currentCureId, nIdx);
+
+    await logInjection(userId, {
+      cure_id:        currentCureId,
+      peptide_name:   cure?.peptide_name || cure?.name,
+      dose_mcg:       cure?.dose_mcg || null,
+      injection_site: site.label,
+      injected_at:    new Date(`${ds}T${time}`).toISOString(),
+      notes:          `slot:${slot}`,
+    });
+    showToast('✓ Injection — ' + site.label);
   }
-  setLS('pt_logs_'+currentCureId,logs);
+
+  const [cRes, iRes] = await Promise.all([getCures(userId), getInjections(userId, { limit: 1000 })]);
+  allCures = cRes.data || [];
+  allInjections = iRes.data || [];
   render();
-  setTimeout(()=>selectDay(ds,true),50);
-}
+  setTimeout(() => window.selectDay(ds, true), 50);
+};
 
-function saveNote(ds){
-  const note=document.getElementById('dayNote').value;
-  setLS('pt_notes_'+currentCureId+'_'+ds, note);
+window.saveNote = function(ds) {
+  localStorage.setItem('ps_note_' + currentCureId + '_' + ds, document.getElementById('dayNote').value);
   showToast('✓ Note enregistrée');
-}
+};
 
-// ── CURE MANAGEMENT ───────────────────────────────────────────────────
-function selectCure(id){ currentCureId=id; calMonth=TODAY.getMonth(); calYear=TODAY.getFullYear(); render(); }
+// ── CRUD CURES ─────────────────────────────────────────────────
+window.selectCure = function(id) {
+  currentCureId = id;
+  calMonth = TODAY.getMonth();
+  calYear  = TODAY.getFullYear();
+  render();
+};
 
-function openAddCure(){
-  editCureId=null;
-  document.getElementById('modalTitle').textContent='Nouvelle cure';
-  document.getElementById('modalSubmit').textContent='Démarrer la cure';
-  document.getElementById('modalDelete').style.display='none';
-  document.getElementById('newCurePeptide').value='';
-  document.getElementById('newCureDosage').value='';
-  document.getElementById('newCureAdmin').value='SC';
-  document.getElementById('newCureStart').value=todayStr;
-  document.getElementById('newCureDuration').value='';
-  document.getElementById('newCureFreq').value='1';
-  document.getElementById('newCureNotes').value='';
+window.openAddCure = function() {
+  editCureId = null;
+  document.getElementById('modalTitle').textContent  = 'Nouvelle cure';
+  document.getElementById('modalSubmit').textContent = 'Démarrer la cure';
+  document.getElementById('modalDelete').style.display = 'none';
+  ['newCurePeptide','newCureDosage','newCureNotes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('newCureAdmin').value    = 'SC';
+  document.getElementById('newCureStart').value    = todayStr;
+  document.getElementById('newCureDuration').value = '';
+  document.getElementById('newCureFreq').value     = '1';
   document.getElementById('addCureModal').classList.add('open');
-  document.body.style.overflow='hidden';
-}
+  document.body.style.overflow = 'hidden';
+};
 
-function openEditCure(id){
-  const cure=getLS('pt_cures',[]).find(x=>x.id===id);
-  if(!cure) return;
-  editCureId=id;
-  document.getElementById('modalTitle').textContent='Modifier la cure';
-  document.getElementById('modalSubmit').textContent='Enregistrer';
-  document.getElementById('modalDelete').style.display='block';
-  document.getElementById('newCurePeptide').value=cure.peptide;
-  document.getElementById('newCureDosage').value=cure.dosage;
-  document.getElementById('newCureAdmin').value=cure.admin;
-  document.getElementById('newCureStart').value=cure.startDate;
-  document.getElementById('newCureDuration').value=cure.duration;
-  document.getElementById('newCureFreq').value=cure.freq;
-  document.getElementById('newCureNotes').value=cure.notes||'';
+window.openEditCure = function(id) {
+  const cure = allCures.find(x => x.id === id);
+  if (!cure) return;
+  editCureId = id;
+  document.getElementById('modalTitle').textContent  = 'Modifier la cure';
+  document.getElementById('modalSubmit').textContent = 'Enregistrer';
+  document.getElementById('modalDelete').style.display = 'block';
+  const admin = cure.notes?.includes('admin:') ? cure.notes.split('admin:')[1] : 'SC';
+  document.getElementById('newCurePeptide').value  = cure.peptide_name || cure.name;
+  document.getElementById('newCureDosage').value   = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit || 'mcg'}` : '';
+  document.getElementById('newCureAdmin').value    = admin;
+  document.getElementById('newCureStart').value    = cure.start_date;
+  document.getElementById('newCureDuration').value = cure.duration_days;
+  document.getElementById('newCureFreq').value     = cure.frequency || '1';
+  document.getElementById('newCureNotes').value    = cure.notes || '';
   document.getElementById('addCureModal').classList.add('open');
-  document.body.style.overflow='hidden';
-}
+  document.body.style.overflow = 'hidden';
+};
 
-function saveCure(){
-  const peptide=document.getElementById('newCurePeptide').value;
-  const dosage=document.getElementById('newCureDosage').value;
-  const admin=document.getElementById('newCureAdmin').value;
-  const startDate=document.getElementById('newCureStart').value;
-  const duration=document.getElementById('newCureDuration').value;
-  const freq=document.getElementById('newCureFreq').value;
-  const notes=document.getElementById('newCureNotes').value;
-  if(!peptide||!dosage||!startDate||!duration){showToast('⚠️ Remplir tous les champs');return;}
-  const cures=getLS('pt_cures',[]);
-  if(editCureId){
-    const idx=cures.findIndex(x=>x.id===editCureId);
-    if(idx>=0) cures[idx]={...cures[idx],peptide,dosage,admin,startDate,duration,freq,notes};
+window.saveCure = async function() {
+  const peptide  = document.getElementById('newCurePeptide').value;
+  const dosage   = document.getElementById('newCureDosage').value;
+  const admin    = document.getElementById('newCureAdmin').value;
+  const startDate= document.getElementById('newCureStart').value;
+  const duration = document.getElementById('newCureDuration').value;
+  const freq     = document.getElementById('newCureFreq').value;
+  const notes    = document.getElementById('newCureNotes').value;
+  if (!peptide || !dosage || !startDate || !duration) { showToast('⚠️ Remplir tous les champs'); return; }
+
+  const doseNum = parseFloat(dosage);
+  const unit    = dosage.toLowerCase().includes('mg') ? 'mg' : dosage.toLowerCase().includes('iu') ? 'IU' : 'mcg';
+  const payload = {
+    name: peptide, peptide_name: peptide,
+    dose_mcg: doseNum || null, unit,
+    frequency: freq,
+    duration_days: parseInt(duration),
+    start_date: startDate,
+    status: 'active',
+    notes: `admin:${admin}${notes ? ' | ' + notes : ''}`,
+  };
+
+  if (editCureId) {
+    await updateCure(editCureId, payload);
     showToast('✓ Cure mise à jour');
   } else {
-    const newCure={id:Date.now().toString(),peptide,dosage,admin,startDate,duration,freq,notes};
-    cures.push(newCure);
-    currentCureId=newCure.id;
+    const { data } = await createCure(userId, payload);
+    if (data) currentCureId = data.id;
     showToast('✓ Cure démarrée !');
   }
-  setLS('pt_cures',cures);
-  closeModal();
-  render();
-}
 
-function deleteCure(){
-  if(!editCureId) return;
-  if(!confirm('Supprimer cette cure et toutes ses données ?')) return;
-  let cures=getLS('pt_cures',[]);
-  cures=cures.filter(x=>x.id!==editCureId);
-  setLS('pt_cures',cures);
-  localStorage.removeItem('pt_logs_'+editCureId);
-  currentCureId=cures.length>0?cures[0].id:null;
+  closeModal();
+  await loadData();
+};
+
+window.deleteCure = async function() {
+  if (!editCureId) return;
+  if (!confirm('Supprimer cette cure et toutes ses données ?')) return;
+  await deleteCure(editCureId);
+  currentCureId = null;
   closeModal();
   showToast('Cure supprimée');
-  render();
-}
+  await loadData();
+};
 
-function closeModal(){ document.getElementById('addCureModal').classList.remove('open'); document.body.style.overflow=''; }
-function closeIfOverlay(e){ if(e.target===document.getElementById('addCureModal')) closeModal(); }
+window.closeModal      = function() { document.getElementById('addCureModal').classList.remove('open'); document.body.style.overflow = ''; };
+window.closeIfOverlay  = function(e) { if (e.target === document.getElementById('addCureModal')) window.closeModal(); };
 
-initDemo();
-render();
-</script>
+await loadData();
 </body>
 </html>

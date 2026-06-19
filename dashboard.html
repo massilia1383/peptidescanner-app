@@ -488,10 +488,17 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script>
-// ── UTILS ──────────────────────────────────────────────────────────────
-function getLS(key, def) { try { return JSON.parse(localStorage.getItem(key)) ?? def; } catch { return def; } }
-function setLS(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+<script type="module">
+import {
+  requireAuth, getProfile, getCures, getInjections,
+  getWeightLogs, logInjection, deleteInjection, createCure
+} from '/supabase.js';
+
+// ── AUTH ───────────────────────────────────────────────────────
+const user = await requireAuth();
+const userId = user.id;
+
+// ── UTILS ──────────────────────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -500,125 +507,136 @@ function showToast(msg) {
 function formatDate(d) {
   return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
 }
-
-// ── INIT DATE ─────────────────────────────────────────────────────────
-const TODAY = new Date();
-TODAY.setHours(0,0,0,0);
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 const todayStr = TODAY.toISOString().split('T')[0];
 
-// ── PROFIL ────────────────────────────────────────────────────────────
-const profil = getLS('pt_profil', { prenom: 'Utilisateur' });
-document.getElementById('userName').textContent = profil.prenom;
+// ── ÉTAT GLOBAL ────────────────────────────────────────────────
+let allCures = [];
+let allInjections = [];
+let allWeights = [];
 
-// ── CURE ACTIVE ───────────────────────────────────────────────────────
-function loadCureActive() {
-  const cures = getLS('pt_cures', []);
-  const active = cures.find(c => {
-    const start = new Date(c.startDate); start.setHours(0,0,0,0);
-    const end = new Date(c.startDate);
-    end.setDate(end.getDate() + parseInt(c.duration)); end.setHours(0,0,0,0);
+// ── PROFIL ─────────────────────────────────────────────────────
+const { data: profil } = await getProfile(userId);
+document.getElementById('userName').textContent =
+  profil?.full_name || user.email?.split('@')[0] || 'Utilisateur';
+
+// ── CHARGEMENT INITIAL ─────────────────────────────────────────
+async function loadAll() {
+  const [curesRes, injRes, wRes] = await Promise.all([
+    getCures(userId),
+    getInjections(userId, { limit: 500 }),
+    getWeightLogs(userId, 90)
+  ]);
+  allCures      = curesRes.data  || [];
+  allInjections = injRes.data    || [];
+  allWeights    = (wRes.data || []).sort((a,b) => new Date(a.logged_at) - new Date(b.logged_at));
+
+  renderCureActive();
+  renderStats();
+  renderTodayView();
+  renderAlerts();
+}
+
+// ── CURE ACTIVE ────────────────────────────────────────────────
+function renderCureActive() {
+  const active = allCures.find(c => {
+    if (c.status !== 'active') return false;
+    const start = new Date(c.start_date); start.setHours(0,0,0,0);
+    const end   = new Date(c.start_date);
+    end.setDate(end.getDate() + (c.duration_days || 30)); end.setHours(0,0,0,0);
     return start <= TODAY && end >= TODAY;
   });
 
   if (!active) {
-    document.getElementById('cureName').textContent = 'Aucune cure active';
-    document.getElementById('cureSub').textContent = 'Appuyez sur "+ Nouvelle cure" pour commencer';
-    document.getElementById('cureDay').textContent = '—';
+    document.getElementById('cureName').textContent   = 'Aucune cure active';
+    document.getElementById('cureSub').textContent    = 'Appuyez sur "+ Nouvelle cure" pour commencer';
+    document.getElementById('cureDay').textContent    = '—';
     document.getElementById('cureDuration').textContent = '—';
-    document.getElementById('ringPct').textContent = '0%';
-    document.getElementById('daysLeft').textContent = '—';
-    document.getElementById('endDate').textContent = '—';
-    document.getElementById('injDone').textContent = '0 / 0';
+    document.getElementById('ringPct').textContent    = '0%';
+    document.getElementById('daysLeft').textContent   = '—';
+    document.getElementById('endDate').textContent    = '—';
+    document.getElementById('injDone').textContent    = '0 / 0';
+    document.getElementById('compliance').textContent = '—';
     return;
   }
 
-  const start = new Date(active.startDate); start.setHours(0,0,0,0);
-  const dayNum = Math.floor((TODAY - start) / 86400000) + 1;
-  const dur = parseInt(active.duration);
-  const pct = Math.min(100, Math.round((dayNum / dur) * 100));
-  const daysLeft = Math.max(0, dur - dayNum);
+  const start   = new Date(active.start_date); start.setHours(0,0,0,0);
+  const dur     = active.duration_days || 30;
+  const dayNum  = Math.floor((TODAY - start) / 86400000) + 1;
+  const pct     = Math.min(100, Math.round((dayNum / dur) * 100));
+  const daysLeft= Math.max(0, dur - dayNum);
   const endDate = new Date(start); endDate.setDate(endDate.getDate() + dur);
 
-  // Injections
-  const logs = getLS('pt_logs_' + active.id, []);
-  const totalExpected = Math.round(dayNum * parseFloat(active.freq));
-  const done = logs.length;
-  const injPct = totalExpected > 0 ? Math.min(100, Math.round((done / totalExpected) * 100)) : 0;
+  // Injections pour cette cure
+  const cureInjs   = allInjections.filter(i => i.cure_id === active.id);
+  const freqVal    = parseFloat(active.frequency) || 1;
+  const totalExp   = Math.round(dayNum * freqVal);
+  const done       = cureInjs.length;
+  const injPct     = totalExp > 0 ? Math.min(100, Math.round((done / totalExp) * 100)) : 0;
 
-  document.getElementById('cureName').textContent = active.peptide;
-  document.getElementById('cureSub').textContent = `${active.dosage} · ${active.admin} · ${active.freq >= 1 ? active.freq + '×/jour' : '1×/' + Math.round(1/active.freq) + 'j'}`;
-  document.getElementById('cureDay').textContent = dayNum;
+  const freqLabel  = freqVal >= 1
+    ? freqVal + '×/jour'
+    : '1×/' + Math.round(1/freqVal) + 'j';
+
+  document.getElementById('cureName').textContent     = active.peptide_name || active.name;
+  document.getElementById('cureSub').textContent      = `${active.dose_mcg ? active.dose_mcg + ' ' + (active.unit||'mcg') : ''} · ${active.frequency || ''} · ${freqLabel}`;
+  document.getElementById('cureDay').textContent      = dayNum;
   document.getElementById('cureDuration').textContent = dur;
-  document.getElementById('ringPct').textContent = pct + '%';
-  document.getElementById('daysLeft').textContent = daysLeft + ' j';
-  document.getElementById('endDate').textContent = formatDate(endDate);
-  document.getElementById('injDone').textContent = done + ' / ' + totalExpected;
-  document.getElementById('injBar').style.width = injPct + '%';
+  document.getElementById('ringPct').textContent      = pct + '%';
+  document.getElementById('daysLeft').textContent     = daysLeft + ' j';
+  document.getElementById('endDate').textContent      = formatDate(endDate);
+  document.getElementById('injDone').textContent      = done + ' / ' + totalExp;
+  document.getElementById('injBar').style.width       = injPct + '%';
+  document.getElementById('compliance').textContent   = injPct + '%';
 
-  // Ring
-  const circ = 2 * Math.PI * 27;
+  // Ring SVG
+  const circ   = 2 * Math.PI * 27;
   const offset = circ * (1 - pct / 100);
-  document.getElementById('ringFill').style.strokeDasharray = circ;
+  document.getElementById('ringFill').style.strokeDasharray  = circ;
   document.getElementById('ringFill').style.strokeDashoffset = offset;
-
-  // Compliance
-  document.getElementById('compliance').textContent = injPct + '%';
-
-  // Today injections
-  renderTodayInjections(active);
-  renderTodayView();
-
-  return active;
 }
 
-// ── STATS ─────────────────────────────────────────────────────────────
-function loadStats() {
-  const cures = getLS('pt_cures', []);
-  const weights = getLS('pt_weights', []);
-
+// ── STATS ──────────────────────────────────────────────────────
+function renderStats() {
   // Poids
-  if (weights.length > 0) {
-    const sorted = [...weights].sort((a,b) => new Date(a.date) - new Date(b.date));
-    const latest = sorted[sorted.length - 1];
-    document.getElementById('currentWeight').textContent = latest.kg + ' kg';
-    if (sorted.length > 1) {
-      const first = sorted[0];
-      const diff = (latest.kg - first.kg).toFixed(1);
-      const sign = diff > 0 ? '+' : '';
-      const cls = diff > 0 ? 'trend-up' : 'trend-down';
-      document.getElementById('weightDiff').innerHTML = `<span class="${cls}">${sign}${diff} kg</span> depuis J1`;
+  if (allWeights.length > 0) {
+    const latest = allWeights[allWeights.length - 1];
+    document.getElementById('currentWeight').textContent = latest.weight_kg + ' kg';
+    if (allWeights.length > 1) {
+      const first = allWeights[0];
+      const diff  = (latest.weight_kg - first.weight_kg).toFixed(1);
+      const sign  = diff > 0 ? '+' : '';
+      const cls   = diff > 0 ? 'trend-up' : 'trend-down';
+      document.getElementById('weightDiff').innerHTML =
+        `<span class="${cls}">${sign}${diff} kg</span> depuis J1`;
     } else {
       document.getElementById('weightDiff').textContent = 'Première mesure';
     }
-    renderMiniChart(sorted);
+    renderMiniChart(allWeights);
   } else {
     document.getElementById('currentWeight').textContent = '— kg';
-    document.getElementById('weightDiff').textContent = 'Aucune donnée';
+    document.getElementById('weightDiff').textContent    = 'Aucune donnée';
   }
 
   // Cures complétées
-  const completed = cures.filter(c => {
-    const end = new Date(c.startDate);
-    end.setDate(end.getDate() + parseInt(c.duration));
-    return end < TODAY;
-  });
+  const completed = allCures.filter(c => c.status === 'completed' ||
+    (c.start_date && c.duration_days &&
+     new Date(new Date(c.start_date).setDate(new Date(c.start_date).getDate() + c.duration_days)) < TODAY));
   document.getElementById('curesCount').textContent = completed.length;
 
-  // Injections totales
-  let total = 0;
-  cures.forEach(c => { total += getLS('pt_logs_' + c.id, []).length; });
-  document.getElementById('totalInj').textContent = total;
+  // Total injections
+  document.getElementById('totalInj').textContent = allInjections.length;
 }
 
-// ── MINI CHART ────────────────────────────────────────────────────────
+// ── MINI CHART ─────────────────────────────────────────────────
 function renderMiniChart(weights) {
   if (weights.length < 2) return;
   document.getElementById('chartEmpty').style.display = 'none';
-  const vals = weights.map(w => parseFloat(w.kg));
-  const mn = Math.min(...vals) - 1;
-  const mx = Math.max(...vals) + 1;
+  const vals = weights.map(w => parseFloat(w.weight_kg));
+  const mn   = Math.min(...vals) - 1;
+  const mx   = Math.max(...vals) + 1;
   const W = 400, H = 80;
-  const pts = vals.map((v, i) => {
+  const pts  = vals.map((v, i) => {
     const x = (i / (vals.length - 1)) * W;
     const y = H - ((v - mn) / (mx - mn)) * (H - 10) - 5;
     return [x, y];
@@ -629,53 +647,47 @@ function renderMiniChart(weights) {
   document.getElementById('chartArea').setAttribute('d', area);
 }
 
-// ── TODAY INJECTIONS ─────────────────────────────────────────────────
-function renderTodayInjections(active) {
-  // On passe par renderTodayView qui gère toutes les cures
-  renderTodayView();
-}
-
+// ── TODAY VIEW ─────────────────────────────────────────────────
 function renderTodayView() {
   const container = document.getElementById('todayViewContainer');
   if (!container) return;
 
-  const cures = getLS('pt_cures', []);
   const now = new Date();
-  const dayNames = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-  const monthNames = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-  const dateLabel = `${dayNames[now.getDay()]} ${now.getDate()} ${monthNames[now.getMonth()]}`;
+  const dayNames    = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const monthNames  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const dateLabel   = `${dayNames[now.getDay()]} ${now.getDate()} ${monthNames[now.getMonth()]}`;
 
-  // Trouver toutes les cures actives aujourd'hui
-  const activeCures = cures.filter(cure => {
-    const start = new Date(cure.startDate); start.setHours(0,0,0,0);
-    const end = new Date(cure.startDate); end.setDate(end.getDate() + parseInt(cure.duration));
+  const activeCures = allCures.filter(c => {
+    if (c.status !== 'active') return false;
+    const start = new Date(c.start_date); start.setHours(0,0,0,0);
+    const end   = new Date(c.start_date);
+    end.setDate(end.getDate() + (c.duration_days || 30)); end.setHours(0,0,0,0);
     return start <= now && end > now;
   });
 
-  // Calculer le score global du jour
+  // Score du jour
   let totalDoses = 0, doneDoses = 0;
+  const todayInjsByDb = allInjections.filter(i =>
+    i.injected_at?.startsWith(todayStr) || i.created_at?.startsWith(todayStr)
+  );
+
   activeCures.forEach(cure => {
-    const freq = parseFloat(cure.freq);
+    const freq = parseFloat(cure.frequency) || 1;
     if (freq < 1) {
-      const start = new Date(cure.startDate); start.setHours(0,0,0,0);
+      const start  = new Date(cure.start_date); start.setHours(0,0,0,0);
       const dayIdx = Math.floor((now - start) / 86400000);
-      const interval = Math.round(1 / freq);
-      if (dayIdx % interval !== 0) return;
+      if (dayIdx % Math.round(1 / freq) !== 0) return;
     }
-    const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
-    const logs = getLS('pt_logs_' + cure.id, []);
-    const todayLogs = logs.filter(l => l.date === todayStr);
+    const injPerDay   = freq >= 1 ? Math.ceil(freq) : 1;
+    const cureToday   = todayInjsByDb.filter(i => i.cure_id === cure.id && !i.skipped);
     totalDoses += injPerDay;
-    doneDoses += Math.min(todayLogs.length, injPerDay);
+    doneDoses  += Math.min(cureToday.length, injPerDay);
   });
 
   const scorePct = totalDoses > 0 ? Math.round(doneDoses / totalDoses * 100) : 0;
-  const allDone = totalDoses > 0 && doneDoses >= totalDoses;
+  const allDone  = totalDoses > 0 && doneDoses >= totalDoses;
 
-  let html = '';
-
-  // Header Today
-  html += `<div class="today-view-header">
+  let html = `<div class="today-view-header">
     <div>
       <div class="today-date-label">Programme du jour</div>
       <div class="today-date-val">${dateLabel}</div>
@@ -691,62 +703,57 @@ function renderTodayView() {
 
   if (activeCures.length === 0) {
     html += `<div class="today-card"><div class="today-empty">
-      <span>🎉</span>
-      <p>Aucune injection prévue aujourd'hui.<br>Profitez de votre journée de repos !</p>
+      <span>🎉</span><p>Aucune injection prévue aujourd'hui.<br>Profitez de votre journée de repos !</p>
     </div></div>`;
     container.innerHTML = html;
     return;
   }
 
-  // Une card par cure active
-  activeCures.forEach(cure => {
-    const freq = parseFloat(cure.freq);
-    const start = new Date(cure.startDate); start.setHours(0,0,0,0);
-    const dayNum = Math.floor((now - start) / 86400000) + 1;
+  const SITES_SC = [
+    { id:'abd_g', label:'Abdomen G' }, { id:'abd_d', label:'Abdomen D' },
+    { id:'cuisse_g', label:'Cuisse G' }, { id:'cuisse_d', label:'Cuisse D' },
+    { id:'fesse_g', label:'Fesse G' },  { id:'fesse_d', label:'Fesse D' },
+  ];
 
-    // Vérifier si c'est un jour d'injection
+  activeCures.forEach(cure => {
+    const freq     = parseFloat(cure.frequency) || 1;
+    const start    = new Date(cure.start_date); start.setHours(0,0,0,0);
+    const dayNum   = Math.floor((now - start) / 86400000) + 1;
+
     if (freq < 1) {
       const dayIdx = Math.floor((now - start) / 86400000);
-      const interval = Math.round(1 / freq);
-      if (dayIdx % interval !== 0) return;
+      if (dayIdx % Math.round(1 / freq) !== 0) return;
     }
 
-    const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
-    const times = injPerDay === 1 ? ['08:00'] : injPerDay === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
-    const logs = getLS('pt_logs_' + cure.id, []);
-    const todayLogs = logs.filter(l => l.date === todayStr);
+    const injPerDay  = freq >= 1 ? Math.ceil(freq) : 1;
+    const times      = injPerDay === 1 ? ['08:00'] : injPerDay === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
+    const cureToday  = todayInjsByDb.filter(i => i.cure_id === cure.id);
 
-    // Site suggéré
-    const SITES_SC = [
-      { id:'abd_g', label:'Abdomen G' }, { id:'abd_d', label:'Abdomen D' },
-      { id:'cuisse_g', label:'Cuisse G' }, { id:'cuisse_d', label:'Cuisse D' },
-      { id:'fesse_g', label:'Fesse G' }, { id:'fesse_d', label:'Fesse D' },
-    ];
-    const sites = SITES_SC;
-    const lastSiteIdx = getLS('pt_site_idx_' + cure.id, -1);
-    const nextSiteIdx = (lastSiteIdx + 1) % sites.length;
-    const nextSite = sites[nextSiteIdx];
+    // Site rotation (localStorage pour la session)
+    const siteKey    = 'ps_site_' + cure.id;
+    const lastIdx    = parseInt(localStorage.getItem(siteKey) ?? '-1');
+    const nextIdx    = (lastIdx + 1) % SITES_SC.length;
+    const nextSite   = SITES_SC[nextIdx];
+    const peptideName = cure.peptide_name || cure.name;
+    const doseLabel  = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit || 'mcg'}` : '';
 
     html += `<div class="today-card" style="margin-bottom:12px">
       <div class="today-cure-header">
-        <span class="today-cure-name">💉 ${cure.peptide}</span>
-        <span class="today-cure-day">J${dayNum} · ${cure.dosage}</span>
+        <span class="today-cure-name">💉 ${peptideName}</span>
+        <span class="today-cure-day">J${dayNum} · ${doseLabel}</span>
       </div>`;
 
     times.forEach((time, i) => {
-      const done = todayLogs.some(l => l.slot === i);
+      const done   = cureToday.some(l => l.notes?.includes(`slot:${i}`) || cureToday[i]);
       const [h, m] = time.split(':').map(Number);
-      const isDue = !done && (now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m));
-      const showSite = !done && cure.admin !== 'Oral' && cure.admin !== 'Nasal';
+      const isDue  = !done && (now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m));
 
-      html += `<div class="injection-item ${done ? 'done-item' : ''}" onclick="quickToggleInj('${cure.id}', ${i}, '${time}')">
+      html += `<div class="injection-item ${done ? 'done-item' : ''}"
+        onclick="quickToggleInj('${cure.id}', ${i}, '${time}', '${peptideName}', '${doseLabel}', '${nextSite.label}')">
         <div class="inj-check ${done ? 'done' : isDue ? 'due' : 'pending'}">${done ? '✓' : isDue ? '!' : ''}</div>
         <div class="inj-info">
           <div class="inj-name">${injPerDay > 1 ? `Injection ${i+1}` : 'Injection du jour'}</div>
-          <div class="inj-detail">
-            ${cure.admin}
-            ${showSite ? `<span class="inj-site" onclick="event.stopPropagation();cycleSiteDashboard('${cure.id}')" style="cursor:pointer" title="Toucher pour changer">📍 ${nextSite.label} ↻</span>` : ''}
-          </div>
+          <div class="inj-detail">SC <span class="inj-site">📍 ${nextSite.label}</span></div>
         </div>
         <div class="inj-time ${done ? 'done-time' : isDue ? 'due' : ''}">${done ? '✓ Fait' : isDue ? '⏰ Dû' : time}</div>
       </div>`;
@@ -758,88 +765,77 @@ function renderTodayView() {
   container.innerHTML = html;
 }
 
-function cycleSiteDashboard(cureId) {
-  const SITES_SC = [
-    { id:'abd_g', label:'Abdomen G' }, { id:'abd_d', label:'Abdomen D' },
-    { id:'cuisse_g', label:'Cuisse G' }, { id:'cuisse_d', label:'Cuisse D' },
-    { id:'fesse_g', label:'Fesse G' },  { id:'fesse_d', label:'Fesse D' },
-  ];
-  const lastIdx = getLS('pt_site_idx_' + cureId, -1);
-  const nextIdx = (lastIdx + 1) % SITES_SC.length;
-  setLS('pt_site_idx_' + cureId, nextIdx);
-  renderTodayView();
-}
-  const logs = getLS('pt_logs_' + cureId, []);
-  const idx = logs.findIndex(l => l.date === todayStr && l.slot === slot);
+// ── QUICK LOG INJECTION ────────────────────────────────────────
+window.quickToggleInj = async function(cureId, slot, time, peptideName, dose, site) {
+  // Vérifier si déjà logué aujourd'hui pour ce slot
+  const existing = allInjections.find(i =>
+    i.cure_id === cureId &&
+    (i.injected_at?.startsWith(todayStr)) &&
+    i.notes?.includes(`slot:${slot}`)
+  );
 
-  // Récupérer et enregistrer le site
-  const SITES_SC = [
-    { id:'abd_g', label:'Abdomen G' }, { id:'abd_d', label:'Abdomen D' },
-    { id:'cuisse_g', label:'Cuisse G' }, { id:'cuisse_d', label:'Cuisse D' },
-    { id:'fesse_g', label:'Fesse G' }, { id:'fesse_d', label:'Fesse D' },
-  ];
-  const lastSiteIdx = getLS('pt_site_idx_' + cureId, -1);
-  const nextSiteIdx = (lastSiteIdx + 1) % SITES_SC.length;
-
-  if (idx >= 0) {
-    logs.splice(idx, 1);
+  if (existing) {
+    const { error } = await import('/supabase.js').then(m => m.deleteInjection(existing.id));
     showToast('Injection annulée');
   } else {
-    const site = SITES_SC[nextSiteIdx];
-    logs.push({ date: todayStr, slot, time, ts: Date.now(), site: site.id, siteLabel: site.label });
-    setLS('pt_site_idx_' + cureId, nextSiteIdx);
-    showToast('✓ ' + site.label + ' — enregistré !');
+    const siteKey = 'ps_site_' + cureId;
+    const lastIdx = parseInt(localStorage.getItem(siteKey) ?? '-1');
+    const SITES_SC = [
+      { id:'abd_g', label:'Abdomen G' }, { id:'abd_d', label:'Abdomen D' },
+      { id:'cuisse_g', label:'Cuisse G' }, { id:'cuisse_d', label:'Cuisse D' },
+      { id:'fesse_g', label:'Fesse G' },  { id:'fesse_d', label:'Fesse D' },
+    ];
+    const nextIdx  = (lastIdx + 1) % SITES_SC.length;
+    const nextSite = SITES_SC[nextIdx];
+    localStorage.setItem(siteKey, nextIdx);
+
+    await logInjection(userId, {
+      cure_id:        cureId,
+      peptide_name:   peptideName,
+      dose_mcg:       parseFloat(dose) || null,
+      injection_site: nextSite.label,
+      injected_at:    new Date().toISOString(),
+      notes:          `slot:${slot}`,
+    });
+    showToast(`✓ ${nextSite.label} — enregistré !`);
   }
-  setLS('pt_logs_' + cureId, logs);
-  renderTodayView();
-  loadAll(); // Mettre à jour les stats
-}
 
-// ── ALERTES ────────────────────────────────────────────────────────────
-function loadAlertes() {
-  const alertes = getLS('pt_alertes', []);
+  await loadAll();
+};
+
+// ── ALERTES (auto depuis cures) ────────────────────────────────
+function renderAlerts() {
   const container = document.getElementById('alertsCard');
-  let badge = 0;
-
-  // Auto-générer alertes depuis les cures
-  const cures = getLS('pt_cures', []);
   const autoAlerts = [];
 
-  cures.forEach(c => {
-    const start = new Date(c.startDate); start.setHours(0,0,0,0);
-    const end = new Date(c.startDate);
-    end.setDate(end.getDate() + parseInt(c.duration)); end.setHours(0,0,0,0);
+  allCures.forEach(c => {
+    if (!c.start_date || !c.duration_days) return;
+    const start = new Date(c.start_date); start.setHours(0,0,0,0);
+    const end   = new Date(c.start_date);
+    end.setDate(end.getDate() + c.duration_days); end.setHours(0,0,0,0);
     if (start <= TODAY && end >= TODAY) {
       const daysLeft = Math.ceil((end - TODAY) / 86400000);
       if (daysLeft <= 5) {
-        autoAlerts.push({ icon:'⚠️', type:'amber', title:`Fin de cure dans ${daysLeft} jours`, sub:`${c.peptide} — Préparer le prochain stock`, time:'Auto' });
-        badge++;
-      }
-      const dayNum = Math.floor((TODAY - start) / 86400000) + 1;
-      if (dayNum === 14 || dayNum === 21 || dayNum === 30) {
-        autoAlerts.push({ icon:'🩸', type:'purple', title:'Bilan sanguin recommandé', sub:`J${dayNum} de cure ${c.peptide}`, time:'Aujourd\'hui' });
-        badge++;
+        autoAlerts.push({ icon:'⚠️', type:'amber',
+          title:`Fin de cure dans ${daysLeft} jour${daysLeft > 1 ? 's' : ''}`,
+          sub:`${c.peptide_name || c.name} — Préparer le prochain stock`, time:'Auto' });
       }
     }
   });
 
-  const allAlerts = [...autoAlerts, ...alertes.slice(0,3).map(a => ({
-    icon: a.icon || '💉',
-    type: a.type || 'green',
-    title: a.title || a.label || 'Rappel injection',
-    sub: a.sub || a.peptide || '',
-    time: a.time || ''
-  }))];
-  if (badge > 0) { document.getElementById('notifBadge').style.display = 'block'; }
-  else { document.getElementById('notifBadge').style.display = 'none'; }
+  if (autoAlerts.length > 0) {
+    document.getElementById('notifBadge').style.display = 'block';
+  } else {
+    document.getElementById('notifBadge').style.display = 'none';
+  }
 
-  if (allAlerts.length === 0) {
+  if (autoAlerts.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:16px 0;color:var(--muted);font-size:.85rem">Aucune alerte active 🎉</div>';
     return;
   }
 
   const typeIcons = { green:'alert-icon green', amber:'alert-icon amber', red:'alert-icon red', purple:'alert-icon purple' };
-  container.innerHTML = allAlerts.slice(0,4).map(a => `
+  container.innerHTML = autoAlerts.slice(0,4).map(a => `
     <div class="alert-item">
       <div class="${typeIcons[a.type] || 'alert-icon amber'}">${a.icon}</div>
       <div class="alert-text">
@@ -850,91 +846,57 @@ function loadAlertes() {
     </div>`).join('');
 }
 
-// ── ADD CURE ──────────────────────────────────────────────────────────
-function openAddCure() {
+// ── ADD CURE ───────────────────────────────────────────────────
+window.openAddCure = function() {
   document.getElementById('newCureStart').value = todayStr;
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
-}
-function closeIfOverlay(e) {
+};
+
+window.closeIfOverlay = function(e) {
   if (e.target === document.getElementById('addCureModal')) {
     document.getElementById('addCureModal').classList.remove('open');
     document.body.style.overflow = '';
   }
-}
-function saveCure() {
-  const peptide = document.getElementById('newCurePeptide').value;
-  const dosage = document.getElementById('newCureDosage').value;
-  const admin = document.getElementById('newCureAdmin').value;
+};
+
+window.saveCure = async function() {
+  const peptide   = document.getElementById('newCurePeptide').value;
+  const dosage    = document.getElementById('newCureDosage').value;
+  const admin     = document.getElementById('newCureAdmin').value;
   const startDate = document.getElementById('newCureStart').value;
-  const duration = document.getElementById('newCureDuration').value;
-  const freq = document.getElementById('newCureFreq').value;
+  const duration  = document.getElementById('newCureDuration').value;
+  const freq      = document.getElementById('newCureFreq').value;
 
   if (!peptide || !dosage || !startDate || !duration) {
-    showToast('⚠️ Remplir tous les champs');
-    return;
+    showToast('⚠️ Remplir tous les champs'); return;
   }
 
-  const cures = getLS('pt_cures', []);
-  cures.push({ id: Date.now().toString(), peptide, dosage, admin, startDate, duration, freq });
-  setLS('pt_cures', cures);
+  const doseNum = parseFloat(dosage);
+  const unit    = dosage.toLowerCase().includes('mg') ? 'mg'
+                : dosage.toLowerCase().includes('iu') ? 'IU' : 'mcg';
+
+  const { error } = await createCure(userId, {
+    name:          peptide,
+    peptide_name:  peptide,
+    dose_mcg:      doseNum || null,
+    unit,
+    frequency:     freq,
+    duration_days: parseInt(duration),
+    start_date:    startDate,
+    status:        'active',
+    notes:         `admin:${admin}`,
+  });
+
+  if (error) { showToast('Erreur : ' + error.message); return; }
 
   document.getElementById('addCureModal').classList.remove('open');
   document.body.style.overflow = '';
   showToast('✓ Cure démarrée !');
-  loadAll();
-}
+  await loadAll();
+};
 
-// ── LOAD ALL ──────────────────────────────────────────────────────────
-function loadAll() {
-  loadCureActive();
-  loadStats();
-  loadAlertes();
-}
-
-// Démo data si vide
-function initDemoData() {
-  if (getLS('pt_cures', []).length === 0) {
-    const start = new Date(TODAY);
-    start.setDate(start.getDate() - 17);
-    const cures = [{
-      id: 'demo1', peptide: 'BPC-157', dosage: '250 mcg',
-      admin: 'SC', startDate: start.toISOString().split('T')[0],
-      duration: '30', freq: '2'
-    }];
-    setLS('pt_cures', cures);
-    // logs des 17 derniers jours
-    const logs = [];
-    for (let i = 0; i < 17; i++) {
-      const d = new Date(start); d.setDate(d.getDate() + i);
-      const ds = d.toISOString().split('T')[0];
-      if (Math.random() > 0.1) { logs.push({ date: ds, slot: 0, time: '08:00', ts: Date.now() }); }
-      if (Math.random() > 0.15) { logs.push({ date: ds, slot: 1, time: '20:00', ts: Date.now() }); }
-    }
-    setLS('pt_logs_demo1', logs);
-  }
-  if (getLS('pt_weights', []).length === 0) {
-    const weights = [];
-    for (let i = 17; i >= 0; i--) {
-      const d = new Date(TODAY); d.setDate(d.getDate() - i);
-      weights.push({ date: d.toISOString().split('T')[0], kg: (83 - (17-i)*0.15 + (Math.random()-.4)*.3).toFixed(1) });
-    }
-    setLS('pt_weights', weights);
-  }
-  if (!getLS('pt_profil', null)) {
-    setLS('pt_profil', { prenom: 'Alexandre' });
-    document.getElementById('userName').textContent = 'Alexandre';
-  }
-}
-
-// Vérifier la session
-const session = getLS('pt_session', null);
-if (!session || !session.loggedIn) {
-  window.location.href = 'login.html';
-}
-
-initDemoData();
-loadAll();
-</script>
+// ── LANCER ─────────────────────────────────────────────────────
+await loadAll();
 </body>
 </html>

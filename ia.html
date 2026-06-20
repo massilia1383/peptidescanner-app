@@ -261,43 +261,131 @@
   <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
 </nav>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-function getLS(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
-function setLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
+// ═══════════════════════════════════════════════════════════════
+// PeptideScanner — Conseiller IA
+// IA_ENABLED = false → base de connaissances locale (gratuit)
+// IA_ENABLED = true  → Claude via Supabase Edge Function (Premium)
+// ═══════════════════════════════════════════════════════════════
 
-// ── STATE ─────────────────────────────────────────────────────────────
-const profil = getLS('pt_profil', {});
-const cures  = getLS('pt_cures', []);
-const weights= getLS('pt_weights', []);
-let history  = getLS('pt_ia_history', []);
-let freeQuestions = getLS('pt_ia_free', 0);
-let isLoading = false;
+const IA_ENABLED = false; // ← mettre true pour activer Claude
 
-const isPremium = profil.premium || false;
-const FREE_LIMIT = 3;
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ── CONTEXT ───────────────────────────────────────────────────────────
+const MONTHLY_QUOTA = 30; // questions IA / mois par utilisateur Premium
+
+// ── STATE ─────────────────────────────────────────────────────
+let userId      = null;
+let userSession = null;
+let profil      = {};
+let allCures    = [];
+let allWeights  = [];
+let chatHistory = [];
+let isLoading   = false;
+let isPremium   = false;
+let freeQuestions = 0;
+const FREE_LIMIT  = 3;
+
+// ── INIT ──────────────────────────────────────────────────────
+async function init() {
+  const { data } = await sb.auth.getSession();
+  if (!data?.session) { window.location.href = '/login.html'; return; }
+  userSession = data.session;
+  userId      = data.session.user.id;
+
+  // Charger profil + cures + poids
+  const [pRes, cRes, wRes] = await Promise.all([
+    sb.from('profiles').select('*').eq('id', userId).single(),
+    sb.from('cures').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+    sb.from('weight_logs').select('*').eq('user_id', userId).order('logged_at', { ascending: false }).limit(1)
+  ]);
+  profil     = pRes.data  || {};
+  allCures   = cRes.data  || [];
+  allWeights = wRes.data  || [];
+  isPremium  = profil.premium || false;
+
+  // Quota mensuel depuis localStorage (clé par user + mois)
+  const monthKey = `ps_ia_quota_${userId}_${new Date().toISOString().slice(0,7)}`;
+  freeQuestions  = parseInt(localStorage.getItem('ps_ia_free_'+userId)||'0');
+  const monthUsed= parseInt(localStorage.getItem(monthKey)||'0');
+
+  renderContext();
+  renderSuggestions();
+  checkAccess(monthUsed, monthKey);
+
+  // Historique session (mémoire courte)
+  const saved = localStorage.getItem('ps_ia_history_'+userId);
+  if (saved) {
+    try { chatHistory = JSON.parse(saved); } catch { chatHistory = []; }
+  }
+
+  if (chatHistory.length > 0) {
+    chatHistory.forEach(m => addMessage(m.role === 'user' ? 'user' : 'ai', m.content));
+  } else {
+    renderWelcome();
+  }
+
+  setTimeout(() => document.getElementById('chatInput').focus(), 300);
+}
+
+function checkAccess(monthUsed, monthKey) {
+  const gate = document.getElementById('premiumGate');
+
+  // Cas 1 : IA désactivée (flag)
+  if (!IA_ENABLED) {
+    gate.style.display = 'none'; // On laisse accès à la KB locale
+    // Mettre un badge "Bientôt" dans le topbar
+    const badge = document.getElementById('iaBadge');
+    if (badge) badge.style.display = 'flex';
+    return;
+  }
+
+  // Cas 2 : IA activée, utilisateur non Premium
+  if (!isPremium) {
+    if (freeQuestions >= FREE_LIMIT) {
+      gate.style.display = 'flex';
+    } else {
+      gate.style.display = 'none';
+    }
+    return;
+  }
+
+  // Cas 3 : Premium mais quota mensuel dépassé
+  if (monthUsed >= MONTHLY_QUOTA) {
+    gate.innerHTML = `
+      <div class="gate-icon">📊</div>
+      <div class="gate-title">Quota mensuel atteint</div>
+      <div class="gate-sub">Vous avez utilisé vos ${MONTHLY_QUOTA} questions ce mois-ci.<br>Votre quota se renouvelle le 1er du mois prochain.</div>`;
+    gate.style.display = 'flex';
+    return;
+  }
+
+  gate.style.display = 'none';
+}
+
+// ── CONTEXT ───────────────────────────────────────────────────
 function buildContext() {
   const parts = [];
-  if (profil.prenom) parts.push(`Utilisateur: ${profil.prenom}`);
-  if (profil.objectif) parts.push(`Objectif: ${profil.objectif}`);
-  // Cure active
   const TODAY = new Date(); TODAY.setHours(0,0,0,0);
-  const active = cures.find(c => {
-    const s=new Date(c.startDate);s.setHours(0,0,0,0);
-    const e=new Date(c.startDate);e.setDate(e.getDate()+parseInt(c.duration));e.setHours(0,0,0,0);
-    return s<=TODAY&&e>=TODAY;
+  if (profil.full_name) parts.push(`Utilisateur: ${profil.full_name}`);
+  if (profil.goal)      parts.push(`Objectif: ${profil.goal}`);
+  if (profil.weight_kg) parts.push(`Poids: ${profil.weight_kg} kg`);
+
+  const active = allCures.find(c => {
+    if (c.status !== 'active') return false;
+    const s = new Date(c.start_date); s.setHours(0,0,0,0);
+    const e = new Date(c.start_date); e.setDate(e.getDate()+(c.duration_days||30)); e.setHours(0,0,0,0);
+    return s <= TODAY && e >= TODAY;
   });
   if (active) {
-    const dayNum = Math.floor((TODAY - new Date(active.startDate)) / 86400000) + 1;
-    parts.push(`Cure: ${active.peptide} J${dayNum}/${active.duration}`);
-    parts.push(`Dosage: ${active.dosage} ${active.admin}`);
+    const dayNum = Math.floor((TODAY - new Date(active.start_date)) / 86400000) + 1;
+    parts.push(`Cure active: ${active.peptide_name||active.name} J${dayNum}/${active.duration_days}`);
+    parts.push(`Dosage: ${active.dose_mcg||''} ${active.unit||'mcg'} ${active.frequency||''}×/j`);
   }
-  // Poids
-  if (weights.length > 0) {
-    const sorted = [...weights].sort((a,b)=>new Date(b.date)-new Date(a.date));
-    parts.push(`Poids: ${sorted[0].kg} kg`);
-  }
+  if (allWeights.length > 0) parts.push(`Dernier poids: ${allWeights[0].weight_kg} kg`);
   return parts;
 }
 
@@ -309,7 +397,7 @@ function renderContext() {
     ctx.map(c => `<div class="ctx-tag">📋 ${c}</div>`).join('');
 }
 
-// ── SYSTEM PROMPT ─────────────────────────────────────────────────────
+// ── SYSTEM PROMPT ─────────────────────────────────────────────
 function buildSystemPrompt() {
   const ctx = buildContext();
   const ctxStr = ctx.length > 0 ? `\n\nCONTEXTE UTILISATEUR:\n${ctx.join('\n')}` : '';
@@ -329,12 +417,153 @@ TES RÈGLES:
 FORMAT DE RÉPONSE IDÉAL:
 - Titre en gras
 - 2-4 points clés
-- Tableau ou liste si pertinent
+- Liste ou tableau si pertinent
 - Stack recommandé si applicable
 - ⚠️ Avertissement court en fin${ctxStr}`;
 }
 
-// ── SUGGESTIONS ───────────────────────────────────────────────────────
+// ── SEND ──────────────────────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text  = input.value.trim();
+  if (!text || isLoading) return;
+
+  const monthKey  = `ps_ia_quota_${userId}_${new Date().toISOString().slice(0,7)}`;
+  const monthUsed = parseInt(localStorage.getItem(monthKey)||'0');
+
+  // Vérification accès
+  if (IA_ENABLED) {
+    if (!isPremium && freeQuestions >= FREE_LIMIT) {
+      document.getElementById('premiumGate').style.display = 'flex';
+      return;
+    }
+    if (isPremium && monthUsed >= MONTHLY_QUOTA) {
+      document.getElementById('premiumGate').style.display = 'flex';
+      return;
+    }
+  }
+
+  input.value = ''; autoResize(input);
+  isLoading = true;
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳';
+  document.getElementById('suggestionsWrap').style.display = 'none';
+
+  addMessage('user', text);
+  chatHistory.push({ role:'user', content:text });
+
+  showTyping();
+
+  let reply;
+
+  if (IA_ENABLED) {
+    // ── Appel Claude via Edge Function ──────────────────────
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/ai-proxy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userSession.access_token}`
+        },
+        body: JSON.stringify({
+          system:   buildSystemPrompt(),
+          messages: chatHistory.slice(-10) // 10 derniers messages max
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 402) {
+          reply = '⚠️ **Quota mensuel atteint.** Votre quota de ' + MONTHLY_QUOTA + ' questions se renouvelle le 1er du mois.';
+        } else if (res.status === 403) {
+          reply = '⚠️ **Accès Premium requis** pour utiliser le Conseiller IA.';
+        } else {
+          reply = '⚠️ Une erreur est survenue. Réessayez dans quelques instants.\n\n_Détail : ' + (err.error || res.status) + '_';
+        }
+      } else {
+        const data = await res.json();
+        reply = data.content || '⚠️ Réponse vide reçue.';
+
+        // Incrémenter le quota mensuel
+        localStorage.setItem(monthKey, monthUsed + 1);
+        if (!isPremium) {
+          freeQuestions++;
+          localStorage.setItem('ps_ia_free_'+userId, freeQuestions);
+        }
+      }
+    } catch (e) {
+      reply = '⚠️ Impossible de contacter le serveur IA. Vérifiez votre connexion.';
+    }
+  } else {
+    // ── Base de connaissances locale ─────────────────────────
+    await new Promise(r => setTimeout(r, 600 + Math.random() * 800));
+    reply = getLocalAIResponse(text);
+    if (!isPremium) {
+      freeQuestions++;
+      localStorage.setItem('ps_ia_free_'+userId, freeQuestions);
+    }
+  }
+
+  hideTyping();
+  addMessage('ai', reply);
+  chatHistory.push({ role:'assistant', content:reply });
+  localStorage.setItem('ps_ia_history_'+userId, JSON.stringify(chatHistory.slice(-20)));
+
+  // Avertissement quota free
+  if (!isPremium && freeQuestions >= FREE_LIMIT) {
+    setTimeout(() => {
+      addMessage('ai', `⚠️ Vous avez utilisé vos **${FREE_LIMIT} questions gratuites**.\n\nPassez Premium pour des questions illimitées et un accès complet à PeptideScanner.`);
+      document.getElementById('premiumGate').style.display = 'flex';
+    }, 1000);
+  }
+
+  renderSuggestions();
+  document.getElementById('suggestionsWrap').style.display = 'flex';
+  isLoading = false;
+  btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '↑';
+}
+
+// ── BASE DE CONNAISSANCES LOCALE ──────────────────────────────
+function getLocalAIResponse(text) {
+  const q = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+  for (const item of KB) {
+    let score = 0;
+    for (const key of item.keys) {
+      if (q.includes(key)) score += key.length;
+    }
+    if (score > 2) {
+      const active = getActiveCure();
+      let resp = item.resp;
+      if (active && (q.includes('ma cure') || q.includes('mon protocole') || q.includes('actuellement'))) {
+        resp = `*Contexte de votre cure ${active.peptide_name||active.name} en cours :*\n\n` + resp;
+      }
+      return resp;
+    }
+  }
+
+  if (q.includes('merci') || q.includes('super') || q.includes('parfait'))
+    return `Avec plaisir ! 😊\n\nN'hésitez pas si vous avez d'autres questions sur vos peptides.\n\n⚠️ Pensez toujours à consulter un professionnel de santé pour valider votre protocole.`;
+
+  if (q.includes('bonjour') || q.includes('salut') || q.includes('hello')) {
+    const prenom = profil.full_name ? ` ${profil.full_name.split(' ')[0]}` : '';
+    return `Bonjour${prenom} ! 👋\n\nJe suis votre Conseiller IA spécialisé en peptides. Posez-moi n'importe quelle question sur :\n- Les dosages et protocoles\n- Les stacks synergiques\n- La reconstitution et conservation\n- Les effets et contre-indications\n\nQue souhaitez-vous savoir ?`;
+  }
+
+  return `**Votre question sur les peptides** 🧬\n\nJe n'ai pas de réponse spécifique sur ce sujet dans ma base de connaissances locale.\n\nConsultez :\n- La **bibliothèque peptides** de PeptideScanner\n- Un médecin spécialisé en médecine fonctionnelle\n\n**Exemples de questions :**\n- "Quel protocole pour BPC-157 ?"\n- "Comment reconstituer mes peptides ?"\n- "Quels bilans sanguins faire ?"\n\n⚠️ Usage éducatif uniquement — Consultez toujours un professionnel de santé.`;
+}
+
+function getActiveCure() {
+  const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+  return allCures.find(c => {
+    if (c.status !== 'active') return false;
+    const s = new Date(c.start_date); s.setHours(0,0,0,0);
+    const e = new Date(c.start_date); e.setDate(e.getDate()+(c.duration_days||30)); e.setHours(0,0,0,0);
+    return s <= TODAY && e >= TODAY;
+  });
+}
+
+// ── SUGGESTIONS ───────────────────────────────────────────────
 const SUGGESTIONS_POOL = [
   '🔬 Quel peptide pour la récupération tendon ?',
   '💪 Stack optimal pour prise de masse ?',
@@ -352,7 +581,6 @@ const SUGGESTIONS_POOL = [
 
 function renderSuggestions() {
   const wrap = document.getElementById('suggestionsWrap');
-  // Show 4 random suggestions
   const shuffled = [...SUGGESTIONS_POOL].sort(() => Math.random() - 0.5).slice(0, 4);
   wrap.innerHTML = shuffled.map(s =>
     `<div class="suggestion-chip" onclick="useSuggestion('${s.replace(/'/g,"\\'")}')"> ${s}</div>`
@@ -360,15 +588,14 @@ function renderSuggestions() {
 }
 
 function useSuggestion(text) {
-  // Remove emoji prefix
   const clean = text.replace(/^[^\w\s]+\s/, '');
   document.getElementById('chatInput').value = clean;
   sendMessage();
 }
 
-// ── MESSAGES ──────────────────────────────────────────────────────────
-function now() {
-  return new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+// ── MESSAGES ──────────────────────────────────────────────────
+function nowTime() {
+  return new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
 }
 
 function addMessage(role, content, time) {
@@ -376,16 +603,13 @@ function addMessage(role, content, time) {
   const isUser = role === 'user';
   const div = document.createElement('div');
   div.className = `msg ${isUser ? 'user' : 'ai'}`;
-
-  const formattedContent = formatContent(content);
-
+  const initial = profil.full_name?.[0]?.toUpperCase() || '👤';
   div.innerHTML = `
-    <div class="msg-avatar ${isUser ? 'user-av' : 'ai'}">${isUser ? (profil.prenom?.[0]?.toUpperCase() || '👤') : '🧬'}</div>
+    <div class="msg-avatar ${isUser ? 'user-av' : 'ai'}">${isUser ? initial : '🧬'}</div>
     <div>
-      <div class="msg-bubble">${formattedContent}</div>
-      <div class="msg-time">${time || now()}</div>
+      <div class="msg-bubble">${formatContent(content)}</div>
+      <div class="msg-time">${time || nowTime()}</div>
     </div>`;
-
   container.appendChild(div);
   scrollToBottom();
 }
@@ -410,9 +634,7 @@ function showTyping() {
     <div class="msg-avatar ai">🧬</div>
     <div class="typing-wrap">
       <div class="typing-bubble">
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
+        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
       </div>
     </div>`;
   container.appendChild(div);
@@ -429,7 +651,56 @@ function scrollToBottom() {
   setTimeout(() => m.scrollTop = m.scrollHeight, 50);
 }
 
-// ── KNOWLEDGE BASE ────────────────────────────────────────────────────
+// ── WELCOME ───────────────────────────────────────────────────
+function renderWelcome() {
+  const active = getActiveCure();
+  const prenom = profil.full_name ? ` ${profil.full_name.split(' ')[0]}` : '';
+  let welcome = `**Bonjour${prenom} ! Je suis votre Conseiller IA spécialisé en peptides.** 🧬\n\n`;
+
+  if (IA_ENABLED) {
+    welcome += isPremium
+      ? `Je suis connecté à Claude (Anthropic) et prêt à répondre à toutes vos questions.\n\n`
+      : `Vous disposez de **${FREE_LIMIT - freeQuestions} question(s) gratuite(s)** avant de passer Premium.\n\n`;
+  } else {
+    welcome += `*(Mode base de connaissances locale — IA Claude bientôt disponible)*\n\n`;
+  }
+
+  if (active) {
+    const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+    const dayNum = Math.floor((TODAY - new Date(active.start_date)) / 86400000) + 1;
+    welcome += `Je vois que vous êtes au **Jour ${dayNum}** de votre cure **${active.peptide_name||active.name}**.\n\nJe peux vous aider avec :\n- Optimisation de votre protocole\n- Dosages et effets\n- Stacks synergiques\n- Bilans sanguins à surveiller\n\nQue souhaitez-vous savoir ?`;
+  } else {
+    welcome += `Je peux vous aider avec :\n- Choisir le bon peptide selon vos objectifs\n- Établir un protocole de cure complet\n- Comprendre les dosages et voies d'administration\n- Créer des stacks synergiques\n\nQuelle est votre question ?`;
+  }
+
+  welcome += '\n\n⚠️ Usage éducatif uniquement — Consultez un médecin avant tout protocole.';
+  addMessage('ai', welcome);
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
+}
+
+function clearChat() {
+  if (!confirm('Effacer l\'historique de conversation ?')) return;
+  chatHistory = [];
+  localStorage.removeItem('ps_ia_history_'+userId);
+  document.getElementById('messages').innerHTML = '';
+  renderWelcome();
+  renderSuggestions();
+}
+
+function unlockPremium() {
+  window.location.href = 'lemon-checkout.html';
+}
+
+// ── KNOWLEDGE BASE ────────────────────────────────────────────
 const KB = [
   {
     keys:['bpc','bpc-157','bpc157','tendon','genou','ligament','cicatri','gastrique','estomac','intestin','récupér'],
@@ -938,146 +1209,9 @@ function getActiveCure() {
   });
 }
 
-// ── SEND ──────────────────────────────────────────────────────────────
-async function sendMessage() {
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if (!text || isLoading) return;
-
-  // Check access
-  if (!isPremium && freeQuestions >= FREE_LIMIT) {
-    document.getElementById('premiumGate').style.display = 'flex';
-    return;
-  }
-
-  input.value = ''; autoResize(input);
-  isLoading = true;
-  document.getElementById('sendBtn').disabled = true;
-  document.getElementById('sendBtn').classList.add('loading');
-  document.getElementById('sendBtn').textContent = '⏳';
-  document.getElementById('suggestionsWrap').style.display = 'none';
-
-  // Add user message
-  addMessage('user', text);
-  history.push({role:'user', content:text});
-
-  // Show typing (délai réaliste)
-  showTyping();
-  const delay = 800 + Math.random() * 1000;
-
-  await new Promise(r => setTimeout(r, delay));
-  hideTyping();
-
-  // Générer réponse locale
-  const reply = getAIResponse(text);
-  addMessage('ai', reply);
-  history.push({role:'assistant', content:reply});
-  setLS('pt_ia_history', history.slice(-20));
-
-  // Increment free counter
-  if (!isPremium) {
-    freeQuestions++;
-    setLS('pt_ia_free', freeQuestions);
-    if (freeQuestions >= FREE_LIMIT) {
-      setTimeout(() => {
-        addMessage('ai', `⚠️ Vous avez utilisé vos **${FREE_LIMIT} questions gratuites**.\n\nPassez Premium pour des questions illimitées et un accès complet à PeptideScanner.`);
-      }, 1000);
-    }
-  }
-
-  renderSuggestions();
-  document.getElementById('suggestionsWrap').style.display = 'flex';
-
-  isLoading = false;
-  document.getElementById('sendBtn').disabled = false;
-  document.getElementById('sendBtn').classList.remove('loading');
-  document.getElementById('sendBtn').textContent = '↑';
-}
-
-// ── UTILS ─────────────────────────────────────────────────────────────
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-}
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
-}
-
-function clearChat() {
-  if (!confirm('Effacer l\'historique de conversation ?')) return;
-  history = [];
-  setLS('pt_ia_history', []);
-  document.getElementById('messages').innerHTML = '';
-  renderWelcome();
-  renderSuggestions();
-}
-
-function unlockPremium() {
-  const p = getLS('pt_profil', {});
-  p.premium = true;
-  setLS('pt_profil', p);
-  document.getElementById('premiumGate').style.display = 'none';
-  addMessage('ai', '⭐ **Plan Premium activé !** Vous avez maintenant accès à des questions illimitées. Comment puis-je vous aider ?');
-}
-
-function demoUnlock() {
-  freeQuestions = 0;
-  setLS('pt_ia_free', 0);
-  document.getElementById('premiumGate').style.display = 'none';
-  addMessage('ai', '🎯 **Mode démo** — Vous avez 3 questions gratuites pour tester le Conseiller IA. Posez votre première question !');
-}
-
-// ── WELCOME MESSAGE ───────────────────────────────────────────────────
-function renderWelcome() {
-  const active = (() => {
-    const TODAY = new Date(); TODAY.setHours(0,0,0,0);
-    return cures.find(c => {
-      const s=new Date(c.startDate);s.setHours(0,0,0,0);
-      const e=new Date(c.startDate);e.setDate(e.getDate()+parseInt(c.duration));e.setHours(0,0,0,0);
-      return s<=TODAY&&e>=TODAY;
-    });
-  })();
-
-  let welcome = `**Bonjour ${profil.prenom || ''} ! Je suis votre Conseiller IA spécialisé en peptides.** 🧬\n\n`;
-
-  if (active) {
-    const TODAY = new Date(); TODAY.setHours(0,0,0,0);
-    const dayNum = Math.floor((TODAY - new Date(active.startDate)) / 86400000) + 1;
-    welcome += `Je vois que vous êtes au **Jour ${dayNum}** de votre cure **${active.peptide}** (${active.dosage} · ${active.admin}).\n\nJe peux vous aider avec :\n- Optimisation de votre protocole en cours\n- Questions sur les dosages et effets\n- Stacks synergiques recommandés\n- Bilans sanguins à surveiller\n\nQue souhaitez-vous savoir ?`;
-  } else {
-    welcome += `Je peux vous aider avec :\n- Choisir le bon peptide selon vos objectifs\n- Établir un protocole de cure complet\n- Comprendre les dosages et voies d'administration\n- Créer des stacks synergiques\n\nQuelle est votre question ?`;
-  }
-
-  welcome += '\n\n⚠️ Usage éducatif uniquement — Consultez un médecin avant tout protocole.';
-  addMessage('ai', welcome);
-}
-
-// ── INIT ──────────────────────────────────────────────────────────────
-function init() {
-  renderContext();
-  renderSuggestions();
-
-  // Check premium
-  const gate = document.getElementById('premiumGate');
-  if (!isPremium && freeQuestions >= FREE_LIMIT) {
-    gate.style.display = 'flex';
-  } else {
-    gate.style.display = 'none';
-  }
-
-  // Restore or welcome
-  if (history.length > 0) {
-    history.forEach(m => addMessage(m.role === 'user' ? 'user' : 'ai', m.content));
-  } else {
-    renderWelcome();
-  }
-
-  // Focus input
-  setTimeout(() => document.getElementById('chatInput').focus(), 300);
-}
-
+// ── LANCER ────────────────────────────────────────────────────
 init();
+
 </script>
 </body>
 </html>

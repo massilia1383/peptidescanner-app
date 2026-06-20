@@ -449,11 +449,12 @@ function render() {
         <div style="font-size:.68rem;color:var(--muted);text-align:center">${remaining} / ${total} mg</div>
         ${f.expiry_date?`<div style="font-size:.65rem;color:var(--muted)">exp. ${fmt(f.expiry_date)}</div>`:''}
         ${(() => {
-          const temp = f.supplier; // température stockée dans supplier
-          const note = f.storage_temp; // note stockée dans storage_temp
+          const notesRaw  = f.notes || '';
+          const tempMatch  = notesRaw.match(/temp:([^|]+)/);
+          const snoteMatch = notesRaw.match(/snote:([^|]+)/);
           const info = getStorageInfo(f.peptide_name);
-          const displayTemp = temp || info?.temp;
-          const displayNote = note || info?.note;
+          const displayTemp = tempMatch  ? tempMatch[1].trim()  : info?.temp;
+          const displayNote = snoteMatch ? snoteMatch[1].trim() : info?.note;
           if (!displayTemp) return '';
           return `<div style="background:rgba(43,108,176,.06);border:1px solid rgba(43,108,176,.15);border-radius:8px;padding:5px 8px;width:100%;text-align:center;margin-top:2px">
             <div style="font-size:.65rem;font-weight:700;color:var(--accent2)">🌡 ${displayTemp}</div>
@@ -525,12 +526,18 @@ function openEditModal(id) {
   document.getElementById('fFreqPerDay').value = f.lot_number || '';
   document.getElementById('fUnit').value       = 'mg';
   document.getElementById('fReconDate').value  = f.reconstituted_at||'';
-  document.getElementById('fNote').value        = f.notes||'';
-  // Conservation
-  const storInfo = getStorageInfo(f.peptide_name);
-  document.getElementById('fStorageTemp').value = f.supplier || storInfo?.temp || '';
-  document.getElementById('fStorageDays').value = f.expiry_date ? '' : (storInfo?.days || '');
-  document.getElementById('fStorageNote').value = f.lot_number && isNaN(f.lot_number) ? f.lot_number : (storInfo?.note || '');
+  // Extraire les infos depuis les notes
+  const notesRaw = f.notes || '';
+  const tempMatch  = notesRaw.match(/temp:([^|]+)/);
+  const daysMatch  = notesRaw.match(/days:([^|]+)/);
+  const snoteMatch = notesRaw.match(/snote:([^|]+)/);
+  const storInfo   = getStorageInfo(f.peptide_name);
+  // Note utilisateur = tout sauf les tags techniques
+  const userNote = notesRaw.replace(/\s*\|?\s*(active|sealed|finished|temp:[^|]+|days:[^|]+|snote:[^|]+)/g,'').replace(/^\s*\|\s*/,'').trim();
+  document.getElementById('fNote').value        = userNote;
+  document.getElementById('fStorageTemp').value = tempMatch  ? tempMatch[1].trim()  : (storInfo?.temp || '');
+  document.getElementById('fStorageDays').value = daysMatch  ? daysMatch[1].trim()  : (storInfo?.days || '');
+  document.getElementById('fStorageNote').value = snoteMatch ? snoteMatch[1].trim() : (storInfo?.note || '');
   const statusMap = { active:'active', sealed:'sealed', finished:'finished' };
   document.getElementById('fStatus').value = f.notes?.includes('sealed')?'sealed':f.notes?.includes('finished')?'finished':'active';
   document.getElementById('flaconModal').classList.add('show');
@@ -556,20 +563,25 @@ async function saveFlacon() {
     // remaining = qty (on commence avec tout)
   }
 
-  const storageTemp = document.getElementById('fStorageTemp')?.value.trim()||null;
-  const storageDays = parseInt(document.getElementById('fStorageDays')?.value)||null;
-  const storageNote = document.getElementById('fStorageNote')?.value.trim()||null;
+  const storageTemp = document.getElementById('fStorageTemp')?.value.trim()||'';
+  const storageDays = document.getElementById('fStorageDays')?.value||'';
+  const storageNote = document.getElementById('fStorageNote')?.value.trim()||'';
+
+  // Encoder conservation dans les notes : status | note_user | temp:X | days:X | snote:X
+  let noteParts = [status];
+  if (note) noteParts.push(note);
+  if (storageTemp) noteParts.push('temp:'+storageTemp);
+  if (storageDays) noteParts.push('days:'+storageDays);
+  if (storageNote) noteParts.push('snote:'+storageNote);
 
   const payload = {
     peptide_name:    peptide,
     vial_qty_mg:     qty,
     remaining_units: editId ? undefined : qty,
-    bac_water_ml:    dose,                    // dose par injection (mg)
-    lot_number:      freq ? String(freq) : null, // fréquence exacte
-    supplier:        storageTemp,             // température conservation
-    storage_temp:    storageNote,             // note conservation (réutilise storage_temp)
+    bac_water_ml:    dose,
+    lot_number:      freq ? String(freq) : null,
     reconstituted_at:recon,
-    notes:           status + (note ? ' | '+note : ''),
+    notes:           noteParts.join(' | '),
   };
 
   if (editId) {

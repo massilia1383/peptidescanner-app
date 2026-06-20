@@ -307,6 +307,30 @@
   <div class="modal" id="modalContent"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Map nom peptide → research_phase (chargé depuis Supabase)
+let PHASE_MAP = {};
+
+async function loadPhases() {
+  try {
+    const { data } = await sb.from('peptides').select('name, research_phase');
+    if (data) {
+      data.forEach(p => {
+        PHASE_MAP[p.name.toLowerCase()] = p.research_phase || 'experimental';
+      });
+    }
+  } catch(e) { console.warn('Phases non chargées:', e); }
+}
+
+function getPhase(peptideName) {
+  return PHASE_MAP[peptideName.toLowerCase()] || 'experimental';
+}
+</script>
 <script>
 const PEPTIDES = [
   // ── GH / IGF-1 ──────────────────────────────────────────────────────
@@ -1000,7 +1024,10 @@ function renderCards() {
         <div>
           <div class="card-name">${p.name}</div>
           <div class="card-alias">${p.alias}</div>
-          <div class="card-cat"><span class="cat ${getCatClass(p.cat)}">${p.cat}</span></div>
+          <div class="card-cat">
+          <span class="cat ${getCatClass(p.cat)}">${p.cat}</span>
+          ${phaseVisual ? phaseMiniBadge(getPhase(p.name)) : ''}
+        </div>
         </div>
         <div style="text-align:right;flex-shrink:0;padding-left:10px">
           <div style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted)">Admin</div>
@@ -1054,6 +1081,7 @@ function filterPeptides() {
 function openModal(id) {
   const p = PEPTIDES.find(x => x.id === id);
   if (!p) return;
+  const phase = getPhase(p.name);
 
   document.getElementById('modalContent').innerHTML = `
     <div class="modal-header">
@@ -1064,6 +1092,7 @@ function openModal(id) {
       </div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
+    ${phaseVisualFull(phase)}
     <div class="modal-body">
       <div class="modal-grid">
         <div class="modal-info-box">
@@ -1142,22 +1171,45 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Init
+// Init — charger les phases depuis Supabase puis render
 document.getElementById('totalCount').textContent = PEPTIDES.length;
-document.getElementById('shownCount').textContent = PEPTIDES.length;
-renderCards();
+loadPhases().then(() => {
+  renderCards();
+  document.getElementById('shownCount').textContent = PEPTIDES.length;
+});
 
-function phaseBadge(phase) {
-  const phases = {
-    'established':  ['✅', 'Usage établi (communauté)',  'established'],
-    'preclinical':  ['🔬', 'Préclinique (animaux)',       'preclinical'],
-    'phase1':       ['🧪', 'Essai clinique Phase I',      'phase1'],
-    'phase2':       ['🧪', 'Essai clinique Phase II',     'phase2'],
-    'phase3':       ['🧪', 'Essai clinique Phase III',    'phase3'],
-    'experimental': ['❓', 'Expérimental / données limitées', 'experimental'],
-  };
-  const p = phases[phase] || phases['experimental'];
-  return '<span class="phase-badge phase-'+p[2]+'">'+p[0]+' '+p[1]+'</span>';
+const PHASE_DATA_LOCAL = {
+  'experimental': { emoji:'⚪', label:'Données limitées',               desc:'Très peu d\'études disponibles.', color:'#9CA3AF', steps:0 },
+  'preclinical':  { emoji:'🔴', label:'Recherche animale',              desc:'Testé uniquement sur des animaux.', color:'#EF4444', steps:1 },
+  'phase1':       { emoji:'🟠', label:'Premiers tests humains',         desc:'Sécurité vérifiée sur quelques volontaires.', color:'#F97316', steps:2 },
+  'phase2':       { emoji:'🟡', label:'Études d\'efficacité en cours', desc:'Testé sur des centaines de personnes.', color:'#EAB308', steps:3 },
+  'phase3':       { emoji:'🟢', label:'Études avancées',                desc:'Testé sur des milliers — approbation proche.', color:'#22C55E', steps:4 },
+  'established':  { emoji:'✅', label:'Largement utilisé',              desc:'Retours abondants, profil bien documenté.', color:'#0D9488', steps:5 },
+};
+const PHASE_STEPS = ['Recherche','Tests','Études','Avancé','Établi'];
+
+function phaseMiniBadge(phase) {
+  const d = PHASE_DATA_LOCAL[phase] || PHASE_DATA_LOCAL['experimental'];
+  return '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:.6rem;font-weight:700;background:'+d.color+'22;color:'+d.color+';border:1px solid '+d.color+'44;margin-left:4px">'+d.emoji+' '+d.label+'</span>';
+}
+
+function phaseVisualFull(phase) {
+  const d = PHASE_DATA_LOCAL[phase] || PHASE_DATA_LOCAL['experimental'];
+  const steps = PHASE_STEPS.map((lbl, i) => {
+    const active = i < d.steps;
+    return '<div style="flex:1;text-align:center">'
+      + '<div style="height:5px;border-radius:3px;margin-bottom:3px;background:'+(active?d.color:'#E2E8F0')+'"></div>'
+      + '<div style="font-size:.52rem;color:'+(active?d.color:'#9CA3AF')+';font-weight:'+(active?'700':'400')+'">'+lbl+'</div>'
+      + '</div>';
+  }).join('');
+  return '<div style="margin:12px 0;padding:12px;background:'+d.color+'0D;border:1px solid '+d.color+'33;border-radius:10px">'
+    + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
+    + '<div style="width:8px;height:8px;border-radius:50%;background:'+d.color+'"></div>'
+    + '<span style="font-size:.75rem;font-weight:700;color:'+d.color+'">'+d.emoji+' '+d.label+'</span>'
+    + '</div>'
+    + '<div style="display:flex;gap:3px;margin-bottom:5px">'+steps+'</div>'
+    + '<div style="font-size:.68rem;color:#6B7280;font-style:italic">'+d.desc+'</div>'
+    + '</div>';
 }
 </script>
 </body>

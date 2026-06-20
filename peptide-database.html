@@ -300,7 +300,37 @@
   <button class="filter-btn" onclick="filterCat('Peau', this)">Peau</button>
 </div>
 
+<div style="max-width:1300px;margin:0 auto;padding:0 28px 16px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+    <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">📊 Guide — Avancement de la recherche</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#6B7280">⚪ Données limitées</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Très peu d'études disponibles</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EF4444;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EF4444">🔴 Recherche animale</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Testé uniquement sur des animaux</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#F97316;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#F97316">🟠 Premiers tests humains</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Sécurité vérifiée sur quelques personnes</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EAB308;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EAB308">🟡 Études en cours</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Efficacité testée sur des centaines de personnes</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#22C55E;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#22C55E">🟢 Études avancées</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Testé sur des milliers — proche du marché</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#0D9488;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#0D9488">✅ Largement utilisé</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Retours abondants, profil bien documenté</div></div></div>
+    </div>
+  </div>
+</div>
+
 <div class="db-grid" id="dbGrid"></div>
+
+<!-- LEGENDE + DISCLAIMER -->
+<div style="max-width:1300px;margin:0 auto;padding:0 28px 20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px;margin-bottom:16px">
+    <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">📊 Guide — Avancement de la recherche</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#6B7280">⚪ Données limitées</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Très peu d'études disponibles</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EF4444;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EF4444">🔴 Recherche animale</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Testé uniquement sur des animaux</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#F97316;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#F97316">🟠 Premiers tests humains</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Sécurité vérifiée sur quelques personnes</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EAB308;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EAB308">🟡 Études en cours</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Efficacité testée sur des centaines de personnes</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#22C55E;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#22C55E">🟢 Études avancées</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Testé sur des milliers — proche du marché</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#0D9488;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#0D9488">✅ Largement utilisé</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Retours abondants, profil bien documenté</div></div></div>
+    </div>
+  </div>
+  <div class="legal-disclaimer"><span class="legal-disclaimer-icon">⚠️</span><div class="legal-disclaimer-text"><strong>Avertissement légal — Usage éducatif et informatif uniquement.</strong> Les peptides présentés sont des peptides de recherche. Leur acquisition, détention ou usage à des fins autres que la recherche scientifique peut être illégal dans votre pays. Les informations fournies ne constituent pas un avis médical ni une prescription. Consultez un professionnel de santé qualifié avant tout protocole. PeptideScanner décline toute responsabilité quant aux conséquences liées à l'usage des informations disponibles sur cette application.</div></div>
+</div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">

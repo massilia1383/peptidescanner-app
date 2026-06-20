@@ -1173,16 +1173,12 @@ document.addEventListener('keydown', e => {
 
 // Init — charger les phases depuis Supabase puis render
 document.getElementById('totalCount').textContent = PEPTIDES.length;
-loadPhases().then(() => {
-  renderCards();
-  document.getElementById('shownCount').textContent = PEPTIDES.length;
-});
 
 const PHASE_DATA_LOCAL = {
   'experimental': { emoji:'⚪', label:'Données limitées',               desc:'Très peu d\'études disponibles.', color:'#9CA3AF', steps:0 },
   'preclinical':  { emoji:'🔴', label:'Recherche animale',              desc:'Testé uniquement sur des animaux.', color:'#EF4444', steps:1 },
   'phase1':       { emoji:'🟠', label:'Premiers tests humains',         desc:'Sécurité vérifiée sur quelques volontaires.', color:'#F97316', steps:2 },
-  'phase2':       { emoji:'🟡', label:'Études d\'efficacité en cours', desc:'Testé sur des centaines de personnes.', color:'#EAB308', steps:3 },
+  'phase2':       { emoji:'🟡', label:'Études d\'efficacité en cours',  desc:'Testé sur des centaines de personnes.', color:'#EAB308', steps:3 },
   'phase3':       { emoji:'🟢', label:'Études avancées',                desc:'Testé sur des milliers — approbation proche.', color:'#22C55E', steps:4 },
   'established':  { emoji:'✅', label:'Largement utilisé',              desc:'Retours abondants, profil bien documenté.', color:'#0D9488', steps:5 },
 };
@@ -1211,6 +1207,11 @@ function phaseVisualFull(phase) {
     + '<div style="font-size:.68rem;color:#6B7280;font-style:italic">'+d.desc+'</div>'
     + '</div>';
 }
+
+// Render immédiat sans attendre Supabase + reload après chargement phases
+renderCards();
+document.getElementById('shownCount').textContent = PEPTIDES.length;
+loadPhases().then(() => renderCards()); // re-render avec phases
 </script>
 </body>
 </html>

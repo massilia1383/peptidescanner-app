@@ -349,9 +349,20 @@ function deleteAlert(id) {
 }
 
 // ── RAPPELS D'INJECTION ────────────────────────────────────────
+function getReminders() {
+  // Clé par userId pour isoler les données par utilisateur
+  const key = 'ps_reminders_' + (userId || 'anon');
+  try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; }
+}
+
+function saveReminders(r) {
+  const key = 'ps_reminders_' + (userId || 'anon');
+  localStorage.setItem(key, JSON.stringify(r));
+}
+
 function renderInjReminders() {
   const container = document.getElementById('injReminders');
-  const reminders = JSON.parse(localStorage.getItem('ps_reminders')||'{}');
+  const reminders = getReminders();
   const active = allCures.filter(c => {
     if (c.status!=='active') return false;
     const s=new Date(c.start_date); s.setHours(0,0,0,0);
@@ -366,9 +377,11 @@ function renderInjReminders() {
     const freq = parseFloat(cure.frequency||1);
     const cnt  = Math.ceil(freq);
     const defaultTimes = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
-    const saved   = reminders[cure.id] || {enabled:true,times:defaultTimes};
-    const times   = saved.times || defaultTimes;
-    const enabled = saved.enabled !== false;
+    const saved = reminders[cure.id];
+    // Si pas encore de préférence sauvegardée → activé par défaut
+    // Si sauvegardé → utiliser la valeur exacte (true OU false)
+    const enabled = saved ? saved.enabled === true : true;
+    const times   = saved?.times || defaultTimes;
     const timesHtml = times.map((t,i)=>`
       <div class="inj-reminder-row">
         <div class="inj-reminder-info">
@@ -386,24 +399,25 @@ function renderInjReminders() {
 }
 
 function toggleReminder(cureId, enabled) {
-  const r = JSON.parse(localStorage.getItem('ps_reminders')||'{}');
-  r[cureId] = {...(r[cureId]||{}), enabled};
-  localStorage.setItem('ps_reminders', JSON.stringify(r));
+  const r = getReminders();
+  // Sauvegarder explicitement true ou false — jamais undefined
+  r[cureId] = { ...(r[cureId] || {}), enabled: enabled === true };
+  saveReminders(r);
   renderInjReminders();
-  showToast(enabled?'🔔 Rappel activé':'🔕 Rappel désactivé');
+  showToast(enabled ? '🔔 Rappel activé' : '🔕 Rappel désactivé');
 }
 
 function updateReminderTime(cureId, idx, newTime) {
-  const r = JSON.parse(localStorage.getItem('ps_reminders')||'{}');
+  const r = getReminders();
   const cure = allCures.find(c=>c.id===cureId);
   if (!cure) return;
   const cnt = Math.ceil(parseFloat(cure.frequency||1));
   const def = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
-  const cur = r[cureId]?.times || [...def];
+  const cur = r[cureId]?.times ? [...r[cureId].times] : [...def];
   cur[idx] = newTime;
-  r[cureId] = {...(r[cureId]||{}), times:cur};
-  localStorage.setItem('ps_reminders', JSON.stringify(r));
-  showToast('✓ Heure mise à jour — '+newTime);
+  r[cureId] = { ...(r[cureId] || {}), times: cur };
+  saveReminders(r);
+  showToast('✓ Heure mise à jour — ' + newTime);
 }
 
 // ── NOTIFICATIONS ──────────────────────────────────────────────

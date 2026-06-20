@@ -222,7 +222,7 @@
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Dosage</label>
-        <input class="form-input" id="newCureDosage" placeholder="ex: 250 mcg">
+        <input class="form-input" id="newCureDosage" placeholder="ex: 0.25 mg">
       </div>
       <div class="form-group">
         <label class="form-label">Admin.</label>
@@ -344,7 +344,7 @@ function render() {
   const compPct = totalExp > 0 ? Math.min(100, Math.round(done/totalExp*100)) : 0;
   const admin   = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
   const freqLabel = freq >= 1 ? freq+'×/j' : '1×/'+Math.round(1/freq)+'j';
-  const doseLabel = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mcg'}` : '—';
+  const doseLabel = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mg'}` : '—';
 
   let status = 'active', statusLabel = 'En cours';
   if (endD < TODAY)   { status = 'ended';  statusLabel = 'Terminée'; }
@@ -502,7 +502,7 @@ function selectDay(ds, clickable) {
       const displayTime0 = existInj0 ? (existInj0.injected_at||'').slice(11,16) : times[0];
       slotsHtml = `<div class="inj-slot ${done?'done':''}" onclick="handleSlotClick(event,'${ds}',0,'${times[0]}')">
         <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
-        <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name}</div><div class="slot-detail">${cure.dose_mcg||''} ${cure.unit||'mcg'} · ${admin}</div></div>
+        <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name}</div><div class="slot-detail">${cure.dose_mcg||''} ${cure.unit||'mg'} · ${admin}</div></div>
         <input type="time" class="slot-time-input ${existInj0?'saved':''}" value="${displayTime0}" data-inj-id="${existInj0?.id||''}" data-ds="${ds}" data-slot="0" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;
     }
   } else {
@@ -512,7 +512,7 @@ function selectDay(ds, clickable) {
       const displayT= existInj ? (existInj.injected_at||'').slice(11,16) : t;
       slotsHtml += `<div class="inj-slot ${done?'done':''}" onclick="handleSlotClick(event,'${ds}',${i},'${t}')">
         <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
-        <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name} · #${i+1}</div><div class="slot-detail">${cure.dose_mcg||''} ${cure.unit||'mcg'} · ${admin}</div></div>
+        <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name} · #${i+1}</div><div class="slot-detail">${cure.dose_mcg||''} ${cure.unit||'mg'} · ${admin}</div></div>
         <input type="time" class="slot-time-input ${existInj?'saved':''}" value="${displayT}" data-inj-id="${existInj?.id||''}" data-ds="${ds}" data-slot="${i}" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;
     });
   }
@@ -653,9 +653,9 @@ async function updateStockAfterInjection(cure, direction) {
   // Calculer nouvelle quantité
   let newRemaining = parseFloat(flacon.remaining_units ?? flacon.vial_qty_mg ?? 0);
   if (cure.dose_mcg) {
-    const doseUnit = (cure.unit || 'mcg').toLowerCase();
     let doseMg = parseFloat(cure.dose_mcg) || 0;
-    if (doseUnit === 'mcg') doseMg = doseMg / 1000;
+    // Conversion si l'unité est mcg (ancienne donnée)
+    if ((cure.unit||'mg').toLowerCase() === 'mcg') doseMg = doseMg / 1000;
     newRemaining = Math.max(0, newRemaining + direction * doseMg);
   }
 
@@ -759,7 +759,7 @@ async function openEditCure(id) {
   document.getElementById('modalDelete').style.display = 'block';
   const admin = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
   await populatePeptideSelect(cure.peptide_name||cure.name);
-  document.getElementById('newCureDosage').value   = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mcg'}` : '';
+  document.getElementById('newCureDosage').value   = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mg'}` : '';
   document.getElementById('newCureAdmin').value    = admin;
   document.getElementById('newCureStart').value    = cure.start_date;
   document.getElementById('newCureDuration').value = cure.duration_days;
@@ -779,7 +779,7 @@ async function saveCure() {
   const notes    = document.getElementById('newCureNotes').value;
   if (!peptide||!dosage||!startDate||!duration) { showToast('⚠️ Remplir tous les champs'); return; }
   const doseNum = parseFloat(dosage);
-  const unit    = dosage.toLowerCase().includes('mg')?'mg':dosage.toLowerCase().includes('iu')?'IU':'mcg';
+  const unit    = dosage.toLowerCase().includes('iu')?'IU':'mg'; // mg par défaut
 
   // Chercher si ce peptide correspond à un flacon du stock → stocker l'inventory_id
   let inventoryId = null;

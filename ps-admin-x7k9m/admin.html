@@ -173,13 +173,26 @@
   .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
   .legal-disclaimer-text { font-size:.72rem; color:#92400E; line-height:1.5; }
   .legal-disclaimer-text strong { color:#78350F; }
-  .phase-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700; }
-  .phase-established  { background:rgba(13,148,136,.1);  color:#065F46; border:1px solid rgba(13,148,136,.2); }
-  .phase-preclinical  { background:rgba(43,108,176,.1);  color:#1E3A5F; border:1px solid rgba(43,108,176,.2); }
-  .phase-phase1       { background:rgba(245,158,11,.1);  color:#78350F; border:1px solid rgba(245,158,11,.2); }
-  .phase-phase2       { background:rgba(249,115,22,.1);  color:#7C2D12; border:1px solid rgba(249,115,22,.2); }
-  .phase-phase3       { background:rgba(139,92,246,.1);  color:#4C1D95; border:1px solid rgba(139,92,246,.2); }
-  .phase-experimental { background:rgba(220,38,38,.08);  color:#7F1D1D; border:1px solid rgba(220,38,38,.15); }
+
+  /* PHASE VISUELLE */
+  .phase-visual { margin:10px 0; }
+  .phase-bar { display:flex; align-items:center; gap:3px; margin-bottom:6px; }
+  .phase-step {
+    flex:1; height:6px; border-radius:3px; background:var(--border);
+    transition:background .3s;
+  }
+  .phase-step.active-red    { background:#EF4444; }
+  .phase-step.active-orange { background:#F97316; }
+  .phase-step.active-yellow { background:#EAB308; }
+  .phase-step.active-green  { background:#22C55E; }
+  .phase-step.active-teal   { background:var(--accent); }
+  .phase-label {
+    display:flex; align-items:center; gap:6px;
+    font-size:.75rem; font-weight:700; margin-bottom:3px;
+  }
+  .phase-desc { font-size:.68rem; color:var(--muted); line-height:1.4; font-style:italic; }
+  .phase-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
 </style>
 </head>
 <body>
@@ -427,12 +440,12 @@
     </div>
     <div class="form-group"><label class="form-label">Phase de recherche</label>
     <select class="form-select" id="pPhase">
-      <option value="established">✅ Usage établi (communauté)</option>
-      <option value="preclinical">🔬 Préclinique (animaux)</option>
-      <option value="phase1">🧪 Essai clinique Phase I</option>
-      <option value="phase2">🧪 Essai clinique Phase II</option>
-      <option value="phase3">🧪 Essai clinique Phase III</option>
-      <option value="experimental">❓ Expérimental</option>
+      <option value="experimental">⚪ Données limitées</option>
+      <option value="preclinical">🔴 Recherche animale</option>
+      <option value="phase1">🟠 Premiers tests humains</option>
+      <option value="phase2">🟡 Études d'efficacité en cours</option>
+      <option value="phase3">🟢 Études avancées — proche du marché</option>
+      <option value="established">✅ Largement utilisé</option>
     </select></div>
     <div class="form-group"><label class="form-label">Description FR</label><textarea class="form-input" id="pDescFr" rows="3" placeholder="Description en français…" style="resize:vertical"></textarea></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
@@ -460,18 +473,87 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
+
+const PHASE_DATA = {
+  'experimental': {
+    emoji: '⚪',
+    label: 'Données limitées',
+    desc:  'Très peu d\'études disponibles. Usage basé sur des rapports anecdotiques.',
+    color: '#9CA3AF',
+    dotClass: 'background:#9CA3AF',
+    steps: 1,
+    stepColor: 'active-red'
+  },
+  'preclinical': {
+    emoji: '🔴',
+    label: 'Recherche animale',
+    desc:  'Testé uniquement sur des animaux pour l\'instant. Pas encore d\'essais officiels sur l\'humain.',
+    color: '#EF4444',
+    dotClass: 'background:#EF4444',
+    steps: 1,
+    stepColor: 'active-red'
+  },
+  'phase1': {
+    emoji: '🟠',
+    label: 'Premiers tests humains',
+    desc:  'Premiers essais sur quelques dizaines de volontaires pour vérifier la sécurité.',
+    color: '#F97316',
+    dotClass: 'background:#F97316',
+    steps: 2,
+    stepColor: 'active-orange'
+  },
+  'phase2': {
+    emoji: '🟡',
+    label: 'Études d\'efficacité en cours',
+    desc:  'Testé sur plusieurs centaines de personnes. L\'efficacité est en cours d\'évaluation.',
+    color: '#EAB308',
+    dotClass: 'background:#EAB308',
+    steps: 3,
+    stepColor: 'active-yellow'
+  },
+  'phase3': {
+    emoji: '🟢',
+    label: 'Études avancées — proche du marché',
+    desc:  'Testé sur des milliers de personnes. Approbation officielle potentiellement proche.',
+    color: '#22C55E',
+    dotClass: 'background:#22C55E',
+    steps: 4,
+    stepColor: 'active-green'
+  },
+  'established': {
+    emoji: '✅',
+    label: 'Largement utilisé',
+    desc:  'Retours d\'expérience abondants dans la communauté. Profil de sécurité bien documenté.',
+    color: '#0D9488',
+    dotClass: 'background:#0D9488',
+    steps: 5,
+    stepColor: 'active-teal'
+  },
+};
+
+const PHASE_STEPS_LABELS = ['Recherche', 'Tests', 'Études', 'Avancé', 'Établi'];
+
 function phaseBadge(phase) {
-  const phases = {
-    'established':  ['✅', 'Usage établi (communauté)',  'established'],
-    'preclinical':  ['🔬', 'Préclinique (animaux)',       'preclinical'],
-    'phase1':       ['🧪', 'Essai clinique Phase I',      'phase1'],
-    'phase2':       ['🧪', 'Essai clinique Phase II',     'phase2'],
-    'phase3':       ['🧪', 'Essai clinique Phase III',    'phase3'],
-    'experimental': ['❓', 'Expérimental / données limitées', 'experimental'],
-  };
-  const p = phases[phase] || phases['experimental'];
-  return '<span class="phase-badge phase-'+p[2]+'">'+p[0]+' '+p[1]+'</span>';
+  const d = PHASE_DATA[phase] || PHASE_DATA['experimental'];
+  return '<span class="phase-badge phase-'+phase+'" style="background:'+d.color+'22;color:'+d.color+';border:1px solid '+d.color+'44">'+d.emoji+' '+d.label+'</span>';
 }
+
+function phaseVisual(phase) {
+  const d = PHASE_DATA[phase] || PHASE_DATA['experimental'];
+  const steps = PHASE_STEPS_LABELS.map((lbl, i) => {
+    const isActive = i < d.steps;
+    return '<div style="flex:1;text-align:center">'
+      + '<div style="height:6px;border-radius:3px;margin-bottom:3px;background:'+(isActive ? d.color : '#E2E8F0')+'"></div>'
+      + '<div style="font-size:.55rem;color:'+(isActive ? d.color : '#9CA3AF')+';font-weight:'+(isActive?'700':'400')+'">'+lbl+'</div>'
+      + '</div>';
+  }).join('');
+  return '<div class="phase-visual">'
+    + '<div class="phase-label"><div class="phase-dot" style="'+d.dotClass+'"></div>'+d.emoji+' <span style="color:'+d.color+'">'+d.label+'</span></div>'
+    + '<div style="display:flex;gap:3px;margin:4px 0 3px">'+steps+'</div>'
+    + '<div class="phase-desc">'+d.desc+'</div>'
+    + '</div>';
+}
+
 </script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';

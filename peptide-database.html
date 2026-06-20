@@ -243,13 +243,26 @@
   .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
   .legal-disclaimer-text { font-size:.72rem; color:#92400E; line-height:1.5; }
   .legal-disclaimer-text strong { color:#78350F; }
-  .phase-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700; }
-  .phase-established  { background:rgba(13,148,136,.1);  color:#065F46; border:1px solid rgba(13,148,136,.2); }
-  .phase-preclinical  { background:rgba(43,108,176,.1);  color:#1E3A5F; border:1px solid rgba(43,108,176,.2); }
-  .phase-phase1       { background:rgba(245,158,11,.1);  color:#78350F; border:1px solid rgba(245,158,11,.2); }
-  .phase-phase2       { background:rgba(249,115,22,.1);  color:#7C2D12; border:1px solid rgba(249,115,22,.2); }
-  .phase-phase3       { background:rgba(139,92,246,.1);  color:#4C1D95; border:1px solid rgba(139,92,246,.2); }
-  .phase-experimental { background:rgba(220,38,38,.08);  color:#7F1D1D; border:1px solid rgba(220,38,38,.15); }
+
+  /* PHASE VISUELLE */
+  .phase-visual { margin:10px 0; }
+  .phase-bar { display:flex; align-items:center; gap:3px; margin-bottom:6px; }
+  .phase-step {
+    flex:1; height:6px; border-radius:3px; background:var(--border);
+    transition:background .3s;
+  }
+  .phase-step.active-red    { background:#EF4444; }
+  .phase-step.active-orange { background:#F97316; }
+  .phase-step.active-yellow { background:#EAB308; }
+  .phase-step.active-green  { background:#22C55E; }
+  .phase-step.active-teal   { background:var(--accent); }
+  .phase-label {
+    display:flex; align-items:center; gap:6px;
+    font-size:.75rem; font-weight:700; margin-bottom:3px;
+  }
+  .phase-desc { font-size:.68rem; color:var(--muted); line-height:1.4; font-style:italic; }
+  .phase-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
 </style>
 </head>
 <body>

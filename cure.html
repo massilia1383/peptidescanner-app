@@ -618,45 +618,62 @@ async function toggleInj(ds, slot, time) {
 // Met à jour remaining_units dans inventory après une injection
 // direction : -1 = déduire, +1 = remettre (annulation)
 async function updateStockAfterInjection(cure, direction) {
-  if (!cure?.dose_mcg) return;
-  const peptideName = cure.peptide_name || cure.name;
-  const doseUnit    = (cure.unit || 'mcg').toLowerCase();
+  const peptideName = cure?.peptide_name || cure?.name;
+  if (!peptideName) { console.warn('[Stock] Pas de nom peptide'); return; }
 
-  // Chercher tous les flacons correspondant à ce peptide (actifs ET scellés)
-  const { data: flacons } = await sb.from('inventory')
-    .select('id, remaining_units, vial_qty_mg, notes')
+  console.log('[Stock] updateStock →', peptideName, 'direction:', direction, 'dose_mcg:', cure?.dose_mcg);
+
+  // Chercher tous les flacons de ce peptide non terminés
+  const { data: flacons, error } = await sb.from('inventory')
+    .select('id, remaining_units, vial_qty_mg, notes, reconstituted_at')
     .eq('user_id', userId)
-    .ilike('peptide_name', peptideName)
     .order('created_at', { ascending: false });
 
-  if (!flacons || flacons.length === 0) return;
+  console.log('[Stock] Flacons trouvés:', flacons?.length, error);
 
-  // Prendre le premier flacon non terminé (actif OU scellé)
-  const flacon = flacons.find(f => !(f.notes||'').includes('finished'));
-  if (!flacon) return;
+  if (!flacons || flacons.length === 0) { console.warn('[Stock] Aucun flacon'); return; }
 
-  // Convertir la dose en mg si nécessaire
-  let doseMg = parseFloat(cure.dose_mcg) || 0;
-  if (doseUnit === 'mcg') doseMg = doseMg / 1000;
+  // Chercher par nom (insensible à la casse, partiel)
+  const flacon = flacons.find(f => {
+    const fn = (f.peptide_name||'').toLowerCase();
+    const pn = peptideName.toLowerCase();
+    return fn.includes(pn) || pn.includes(fn);
+  });
 
-  const currentRemaining = parseFloat(flacon.remaining_units ?? flacon.vial_qty_mg ?? 0);
-  const newRemaining     = Math.max(0, currentRemaining + direction * doseMg);
+  if (!flacon) { console.warn('[Stock] Aucun flacon correspondant pour:', peptideName); return; }
+  if ((flacon.notes||'').includes('finished')) { console.warn('[Stock] Flacon terminé'); return; }
 
-  // Si le flacon était scellé → le passer en active à la première injection
-  let newNotes = flacon.notes || '';
-  if (direction === -1 && newNotes.includes('sealed')) {
-    newNotes = newNotes.replace('sealed', 'active');
+  console.log('[Stock] Flacon trouvé:', flacon.id, 'notes:', flacon.notes);
+
+  // Calculer la nouvelle quantité restante
+  let newRemaining = parseFloat(flacon.remaining_units ?? flacon.vial_qty_mg ?? 0);
+  if (cure?.dose_mcg) {
+    const doseUnit = (cure.unit || 'mcg').toLowerCase();
+    let doseMg = parseFloat(cure.dose_mcg) || 0;
+    if (doseUnit === 'mcg') doseMg = doseMg / 1000;
+    newRemaining = Math.max(0, newRemaining + direction * doseMg);
   }
 
-  await sb.from('inventory')
-    .update({
-      remaining_units: Math.round(newRemaining * 1000) / 1000,
-      notes: newNotes,
-      reconstituted_at: (!flacon.notes || flacon.notes.includes('sealed'))
-        ? new Date().toISOString().split('T')[0]
-        : undefined
-    })
+  // Toujours passer en active si c'était sealed et c'est une injection (direction = -1)
+  let newNotes = (flacon.notes || '').replace('sealed', 'active');
+  if (!newNotes.includes('active')) newNotes = 'active' + (newNotes ? ' | ' + newNotes : '');
+
+  const updatePayload = {
+    remaining_units:  Math.round(newRemaining * 1000) / 1000,
+    notes:            direction === -1 ? newNotes : flacon.notes,
+    reconstituted_at: (direction === -1 && !flacon.reconstituted_at)
+      ? new Date().toISOString().split('T')[0]
+      : flacon.reconstituted_at,
+  };
+
+  console.log('[Stock] Update payload:', updatePayload);
+
+  const { error: updErr } = await sb.from('inventory')
+    .update(updatePayload)
     .eq('id', flacon.id);
+
+  if (updErr) console.error('[Stock] Erreur update:', updErr);
+  else console.log('[Stock] ✓ Stock mis à jour');
 }
 
 function saveNote(ds) {

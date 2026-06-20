@@ -65,7 +65,8 @@
     transition:opacity .2s;
   }
   .notif-enable-btn:hover { opacity:.88; }
-  .notif-enable-btn.granted { background:rgba(13,148,136,.12); color:var(--accent); cursor:default; }
+  .notif-enable-btn.granted { background:rgba(13,148,136,.12); color:var(--accent); }
+  .notif-enable-btn.disabled-notif { background:rgba(107,114,128,.1); color:var(--muted); }
 
   /* RAPPELS INJECTION avec toggle */
   .inj-reminder-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:10px; }
@@ -422,39 +423,56 @@ function updateReminderTime(cureId, idx, newTime) {
 
 // ── NOTIFICATIONS ──────────────────────────────────────────────
 function updateNotifBanner() {
-  const btn    = document.getElementById('notifEnableBtn');
+  const btn  = document.getElementById('notifEnableBtn');
   const banner = document.getElementById('notifBanner');
   if (!btn || !banner) return;
   if (!('Notification' in window)) { banner.style.display='none'; return; }
-  if (Notification.permission === 'granted') {
-    btn.textContent = '✓ Activées'; btn.classList.add('granted'); btn.onclick = null; return;
-  }
+
+  const choice = localStorage.getItem('ps_notif_choice'); // 'on' | 'off' | null
+
   if (Notification.permission === 'denied') {
-    btn.textContent = 'Bloquées ⚠️'; btn.style.color = 'var(--danger)'; btn.classList.add('granted'); return;
+    btn.textContent = 'Bloquées ⚠️'; btn.style.color = 'var(--danger)';
+    btn.onclick = null; return;
   }
-  // Permission "default" mais l'user avait déjà cliqué
-  if (localStorage.getItem('ps_notif_choice') === 'requested') {
-    btn.textContent = '✓ Activées'; btn.classList.add('granted');
+  if (choice === 'off') {
+    btn.textContent = 'Activer';
+    btn.classList.remove('granted'); btn.classList.remove('disabled-notif');
+    btn.onclick = requestNotifPermission;
+    return;
   }
+  if (Notification.permission === 'granted' || choice === 'on') {
+    btn.textContent = '✓ Activées — Désactiver';
+    btn.classList.add('granted');
+    btn.onclick = disableNotifications;
+    return;
+  }
+  // État par défaut
+  btn.textContent = 'Activer';
+  btn.onclick = requestNotifPermission;
 }
 
 function requestNotifPermission() {
   if (!('Notification' in window)) { showToast('Non supporté sur ce navigateur'); return; }
-  // Sauvegarder que l'user a cliqué
-  localStorage.setItem('ps_notif_choice', 'requested');
-  // Mettre le bouton en état activé immédiatement
+  localStorage.setItem('ps_notif_choice', 'on');
   const btn = document.getElementById('notifEnableBtn');
-  if (btn) { btn.textContent = '✓ Activées'; btn.classList.add('granted'); btn.onclick = null; }
+  if (btn) { btn.textContent = '✓ Activées — Désactiver'; btn.classList.add('granted'); btn.onclick = disableNotifications; }
   Notification.requestPermission().then(p => {
     if (p === 'granted') {
       showToast('✓ Notifications activées !');
       scheduleAllReminders();
     } else if (p === 'denied') {
       localStorage.removeItem('ps_notif_choice');
-      if (btn) { btn.textContent = 'Bloquées ⚠️'; btn.style.color = 'var(--danger)'; }
+      if (btn) { btn.textContent = 'Bloquées ⚠️'; btn.style.color = 'var(--danger)'; btn.onclick = null; }
       showToast('Notifications refusées — vérifiez les réglages Safari');
     }
   });
+}
+
+function disableNotifications() {
+  localStorage.setItem('ps_notif_choice', 'off');
+  const btn = document.getElementById('notifEnableBtn');
+  if (btn) { btn.textContent = 'Activer'; btn.classList.remove('granted'); btn.onclick = requestNotifPermission; }
+  showToast('🔕 Notifications désactivées');
 }
 
 function scheduleAllReminders() {

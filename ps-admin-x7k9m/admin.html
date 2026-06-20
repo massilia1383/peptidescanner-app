@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PeptideScanner — Administration</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0;
+    --accent:#0D9488; --accent2:#2B6CB0; --accent3:#F97316;
+    --text:#1F2937; --muted:#6B7280; --danger:#DC2626;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* TOPBAR */
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px; height:60px; background:var(--surface);
+    border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100;
+  }
+  .logo { font-family:'Space Mono',monospace; font-size:.9rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:8px; }
+  .admin-badge { background:var(--danger); color:#fff; font-size:.6rem; font-weight:700; padding:2px 7px; border-radius:100px; letter-spacing:.5px; }
+  .topbar-right { display:flex; align-items:center; gap:12px; }
+  .topbar-user { font-size:.78rem; color:var(--muted); }
+  .logout-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:inherit; font-size:.78rem; cursor:pointer; transition:all .2s; }
+  .logout-btn:hover { border-color:var(--danger); color:var(--danger); }
+
+  /* LAYOUT */
+  .layout { display:flex; min-height:calc(100vh - 60px); }
+
+  /* SIDEBAR */
+  .sidebar {
+    width:220px; flex-shrink:0; background:var(--surface);
+    border-right:1px solid var(--border); padding:20px 0;
+    position:sticky; top:60px; height:calc(100vh - 60px); overflow-y:auto;
+  }
+  .sidebar-section { margin-bottom:24px; }
+  .sidebar-label { font-size:.65rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:0 20px; margin-bottom:6px; }
+  .nav-item {
+    display:flex; align-items:center; gap:10px; padding:9px 20px;
+    font-size:.85rem; color:var(--muted); cursor:pointer; transition:all .15s;
+    border-left:2px solid transparent;
+  }
+  .nav-item:hover { background:var(--surface2); color:var(--text); }
+  .nav-item.active { background:rgba(13,148,136,.08); color:var(--accent); border-left-color:var(--accent); font-weight:600; }
+  .nav-icon { font-size:1rem; width:20px; text-align:center; }
+
+  /* MAIN */
+  .main { flex:1; padding:28px 32px; overflow-x:hidden; }
+  .page { display:none; }
+  .page.active { display:block; }
+
+  /* PAGE HEADER */
+  .page-header { margin-bottom:24px; }
+  .page-title { font-size:1.4rem; font-weight:700; margin-bottom:4px; }
+  .page-sub { font-size:.82rem; color:var(--muted); }
+
+  /* STATS GRID */
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:16px; margin-bottom:28px; }
+  .stat-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    padding:18px 20px; transition:box-shadow .2s;
+  }
+  .stat-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.06); }
+  .stat-icon { font-size:1.4rem; margin-bottom:10px; }
+  .stat-val { font-family:'Space Mono',monospace; font-size:1.8rem; font-weight:700; color:var(--accent); line-height:1; margin-bottom:4px; }
+  .stat-label { font-size:.72rem; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:.5px; }
+  .stat-card.blue .stat-val { color:var(--accent2); }
+  .stat-card.orange .stat-val { color:var(--accent3); }
+  .stat-card.red .stat-val { color:var(--danger); }
+
+  /* TABLE */
+  .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:24px; }
+  .table-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); }
+  .table-title { font-size:.9rem; font-weight:700; }
+  .search-input {
+    padding:7px 12px; border:1px solid var(--border); border-radius:8px;
+    font-family:inherit; font-size:.8rem; background:var(--surface2); outline:none;
+    width:200px; transition:border-color .2s;
+  }
+  .search-input:focus { border-color:var(--accent); }
+  table { width:100%; border-collapse:collapse; }
+  th { padding:10px 16px; text-align:left; font-size:.72rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; background:var(--surface2); border-bottom:1px solid var(--border); }
+  td { padding:12px 16px; font-size:.82rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--surface2); }
+
+  /* BADGES */
+  .badge { display:inline-flex; align-items:center; padding:3px 9px; border-radius:100px; font-size:.68rem; font-weight:700; }
+  .badge-premium { background:rgba(245,158,11,.12); color:#B45309; border:1px solid rgba(245,158,11,.2); }
+  .badge-free { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+  .badge-admin { background:rgba(220,38,38,.1); color:var(--danger); border:1px solid rgba(220,38,38,.2); }
+  .badge-active { background:rgba(13,148,136,.1); color:var(--accent); border:1px solid rgba(13,148,136,.2); }
+
+  /* ACTIONS */
+  .action-btn {
+    padding:5px 12px; border-radius:7px; border:1px solid var(--border);
+    font-family:inherit; font-size:.72rem; font-weight:600; cursor:pointer;
+    transition:all .2s; background:var(--surface);
+  }
+  .action-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .action-btn.danger:hover { border-color:var(--danger); color:var(--danger); }
+  .action-btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .action-btn.primary:hover { opacity:.85; }
+
+  /* SECTION CARD */
+  .section-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:20px; }
+  .section-card-title { font-size:.9rem; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+
+  /* FORM */
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .form-group { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; }
+  .form-label { font-size:.75rem; font-weight:600; color:var(--muted); }
+  .form-input { padding:9px 12px; border:1px solid var(--border); border-radius:10px; font-family:inherit; font-size:.85rem; background:var(--surface2); outline:none; transition:border-color .2s; }
+  .form-input:focus { border-color:var(--accent); background:#fff; }
+  .form-select { padding:9px 12px; border:1px solid var(--border); border-radius:10px; font-family:inherit; font-size:.85rem; background:var(--surface2); outline:none; }
+
+  /* TOAST */
+  .toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--text); color:#fff; padding:10px 20px; border-radius:12px;
+    font-size:.82rem; font-weight:600; opacity:0; transition:all .3s; z-index:999; white-space:nowrap;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* MODAL */
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal {
+    background:var(--surface); border-radius:20px; padding:24px;
+    width:100%; max-width:480px; max-height:80vh; overflow-y:auto;
+    transform:scale(.95); transition:transform .2s;
+  }
+  .modal-overlay.open .modal { transform:scale(1); }
+  .modal-title { font-size:1rem; font-weight:700; margin-bottom:16px; }
+
+  /* PEPTIDE EDITOR */
+  .peptide-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); }
+  .peptide-row:last-child { border-bottom:none; }
+  .peptide-name { font-weight:600; font-size:.85rem; flex:1; }
+  .peptide-cat { font-size:.72rem; color:var(--muted); }
+
+  /* LOADING */
+  .loading { display:flex; align-items:center; justify-content:center; padding:40px; color:var(--muted); font-size:.85rem; gap:8px; }
+  .spinner { width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* EMPTY */
+  .empty { text-align:center; padding:40px; color:var(--muted); font-size:.85rem; }
+
+  /* ACCESS DENIED */
+  .access-denied {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:100vh; text-align:center; padding:24px;
+  }
+  .access-denied .icon { font-size:3rem; margin-bottom:16px; }
+  .access-denied h1 { font-size:1.2rem; font-weight:700; margin-bottom:8px; color:var(--danger); }
+  .access-denied p { font-size:.85rem; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ACCESS DENIED (affiché par défaut, caché si admin) -->
+<div id="accessDenied" class="access-denied">
+  <div class="icon">🔒</div>
+  <h1>Accès refusé</h1>
+  <p>Vous n'avez pas les droits d'accès à cette page.</p>
+</div>
+
+<!-- ADMIN APP (caché par défaut) -->
+<div id="adminApp" style="display:none">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo">
+      PeptideScanner
+      <span class="admin-badge">ADMIN</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="adminEmail"></span>
+      <button class="logout-btn" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Vue d'ensemble</div>
+        <div class="nav-item active" onclick="showPage('dashboard')">
+          <span class="nav-icon">📊</span> Dashboard
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Utilisateurs</div>
+        <div class="nav-item" onclick="showPage('users')">
+          <span class="nav-icon">👥</span> Tous les users
+        </div>
+        <div class="nav-item" onclick="showPage('premium')">
+          <span class="nav-icon">⭐</span> Premium
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Contenu</div>
+        <div class="nav-item" onclick="showPage('peptides')">
+          <span class="nav-icon">🧬</span> Bibliothèque
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Système</div>
+        <div class="nav-item" onclick="showPage('config')">
+          <span class="nav-icon">⚙️</span> Configuration
+        </div>
+        <div class="nav-item" onclick="showPage('notifications')">
+          <span class="nav-icon">📢</span> Notifications
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- ── DASHBOARD ── -->
+      <div id="page-dashboard" class="page active">
+        <div class="page-header">
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub" id="lastRefresh">Chargement…</div>
+        </div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="loading"><div class="spinner"></div> Chargement…</div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Dernières inscriptions</div>
+            <button class="action-btn primary" onclick="loadDashboard()">↻ Rafraîchir</button>
+          </div>
+          <table>
+            <thead><tr>
+              <th>Email</th><th>Inscrit le</th><th>Statut</th><th>Cures</th>
+            </tr></thead>
+            <tbody id="recentUsers"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── USERS ── -->
+      <div id="page-users" class="page">
+        <div class="page-header">
+          <div class="page-title">Utilisateurs</div>
+          <div class="page-sub">Gestion de tous les comptes</div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Tous les utilisateurs</div>
+            <input class="search-input" type="text" placeholder="🔍 Rechercher…" oninput="filterUsers(this.value)">
+          </div>
+          <table>
+            <thead><tr>
+              <th>Email</th><th>Nom</th><th>Inscrit le</th><th>Statut</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PREMIUM ── -->
+      <div id="page-premium" class="page">
+        <div class="page-header">
+          <div class="page-title">Utilisateurs Premium</div>
+          <div class="page-sub">Gestion des abonnements</div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Comptes Premium</div>
+            <button class="action-btn primary" onclick="openAddPremiumModal()">+ Activer Premium</button>
+          </div>
+          <table>
+            <thead><tr>
+              <th>Email</th><th>Premium depuis</th><th>Expire le</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="premiumTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PEPTIDES ── -->
+      <div id="page-peptides" class="page">
+        <div class="page-header">
+          <div class="page-title">Bibliothèque Peptides</div>
+          <div class="page-sub">Gérer la base de données peptidique</div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Peptides</div>
+            <button class="action-btn primary" onclick="openPeptideModal()">+ Ajouter</button>
+          </div>
+          <table>
+            <thead><tr>
+              <th>Nom</th><th>Catégorie</th><th>Dose typique</th><th>Unité</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="peptidesTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── CONFIG ── -->
+      <div id="page-config" class="page">
+        <div class="page-header">
+          <div class="page-title">Configuration</div>
+          <div class="page-sub">Paramètres système de l'application</div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-title">🤖 Conseiller IA</div>
+          <div class="form-group">
+            <label class="form-label">Statut IA</label>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="iaEnabledToggle" onchange="toggleIA(this.checked)"
+                  style="width:16px;height:16px;accent-color:var(--accent)">
+                <span style="font-size:.85rem">IA activée (Gemini Flash)</span>
+              </label>
+            </div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:6px">
+              ⚠️ Modifier ia.html manuellement et changer IA_ENABLED = true/false puis git push
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quota mensuel (questions/user Premium)</label>
+            <input class="form-input" type="number" value="30" id="iaQuota" style="max-width:120px">
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-title">👑 Accès Admin</div>
+          <div class="form-group">
+            <label class="form-label">Promouvoir un utilisateur admin</label>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <input class="form-input" type="email" id="newAdminEmail" placeholder="email@exemple.com" style="flex:1">
+              <button class="action-btn primary" onclick="promoteAdmin()">Promouvoir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NOTIFICATIONS ── -->
+      <div id="page-notifications" class="page">
+        <div class="page-header">
+          <div class="page-title">Notifications globales</div>
+          <div class="page-sub">Envoyer un message à tous les utilisateurs</div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-title">📢 Nouvelle notification</div>
+          <div class="form-group">
+            <label class="form-label">Titre</label>
+            <input class="form-input" id="notifTitle" type="text" placeholder="Ex: Nouvelle fonctionnalité disponible">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-input" id="notifMessage" rows="4" placeholder="Votre message…" style="resize:vertical"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <select class="form-select" id="notifType" style="max-width:200px">
+              <option value="info">ℹ️ Info</option>
+              <option value="success">✅ Succès</option>
+              <option value="warning">⚠️ Avertissement</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Destinataires</label>
+            <select class="form-select" id="notifTarget" style="max-width:200px">
+              <option value="all">Tous les utilisateurs</option>
+              <option value="premium">Premium uniquement</option>
+              <option value="free">Gratuit uniquement</option>
+            </select>
+          </div>
+          <button class="action-btn primary" onclick="sendGlobalNotif()">📢 Envoyer la notification</button>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /layout -->
+</div><!-- /adminApp -->
+
+<!-- MODAL PEPTIDE -->
+<div class="modal-overlay" id="peptideModal">
+  <div class="modal">
+    <div class="modal-title" id="peptideModalTitle">Ajouter un peptide</div>
+    <input type="hidden" id="pEditId">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nom *</label><input class="form-input" id="pName" type="text" placeholder="BPC-157"></div>
+      <div class="form-group"><label class="form-label">Catégorie</label><input class="form-input" id="pCategory" type="text" placeholder="GH, PT, IGF…"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Dose typique</label><input class="form-input" id="pDose" type="number" placeholder="0.25"></div>
+      <div class="form-group"><label class="form-label">Unité</label>
+        <select class="form-select" id="pUnit">
+          <option value="mg">mg</option>
+          <option value="mcg">mcg</option>
+          <option value="IU">IU</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Description FR</label><textarea class="form-input" id="pDescFr" rows="3" placeholder="Description en français…" style="resize:vertical"></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="action-btn" onclick="closePeptideModal()">Annuler</button>
+      <button class="action-btn primary" onclick="savePeptide()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PREMIUM -->
+<div class="modal-overlay" id="premiumModal">
+  <div class="modal">
+    <div class="modal-title">Activer Premium manuellement</div>
+    <div class="form-group"><label class="form-label">Email utilisateur</label><input class="form-input" id="premiumEmail" type="email" placeholder="user@exemple.com"></div>
+    <div class="form-group"><label class="form-label">Date d'expiration (laisser vide = illimité)</label><input class="form-input" id="premiumUntil" type="date"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="action-btn" onclick="closePremiumModal()">Annuler</button>
+      <button class="action-btn primary" onclick="activatePremium()">Activer Premium</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let adminUser = null;
+let allUsers  = [];
+
+// ── INIT ────────────────────────────────────────────────────────
+async function init() {
+  const { data } = await sb.auth.getSession();
+  if (!data?.session) { window.location.href = '/login.html'; return; }
+  adminUser = data.session.user;
+
+  // Vérifier is_admin dans profiles
+  const { data: profile } = await sb.from('profiles')
+    .select('is_admin, email, full_name')
+    .eq('id', adminUser.id)
+    .single();
+
+  if (!profile?.is_admin) {
+    document.getElementById('accessDenied').style.display = 'flex';
+    return;
+  }
+
+  // Afficher l'app admin
+  document.getElementById('accessDenied').style.display = 'none';
+  document.getElementById('adminApp').style.display = 'block';
+  document.getElementById('adminEmail').textContent = profile.email || adminUser.email;
+
+  await loadDashboard();
+}
+
+// ── NAVIGATION ──────────────────────────────────────────────────
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  event.currentTarget.classList.add('active');
+
+  // Charger les données de la page
+  if (page === 'users')       loadUsers();
+  if (page === 'premium')     loadPremium();
+  if (page === 'peptides')    loadPeptides();
+}
+
+// ── DASHBOARD ───────────────────────────────────────────────────
+async function loadDashboard() {
+  document.getElementById('lastRefresh').textContent =
+    'Dernière mise à jour : ' + new Date().toLocaleTimeString('fr-FR');
+
+  // Charger stats en parallèle
+  const [usersRes, curesRes, injRes, premiumRes, stockRes] = await Promise.all([
+    sb.from('profiles').select('id, created_at, premium, email, full_name', { count: 'exact' }).order('created_at', { ascending: false }),
+    sb.from('cures').select('id', { count: 'exact' }),
+    sb.from('injections').select('id', { count: 'exact' }),
+    sb.from('profiles').select('id', { count: 'exact' }).eq('premium', true),
+    sb.from('inventory').select('id', { count: 'exact' }),
+  ]);
+
+  const users   = usersRes.data   || [];
+  const total   = users.length;
+  const premium = premiumRes.count || 0;
+  const free    = total - premium;
+  const cures   = curesRes.count  || 0;
+  const inj     = injRes.count    || 0;
+  const stock   = stockRes.count  || 0;
+
+  // Stats
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-val">${total}</div>
+      <div class="stat-label">Utilisateurs</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-val">${premium}</div>
+      <div class="stat-label">Premium</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">🆓</div>
+      <div class="stat-val">${free}</div>
+      <div class="stat-label">Gratuit</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💉</div>
+      <div class="stat-val">${cures}</div>
+      <div class="stat-label">Cures</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">📅</div>
+      <div class="stat-val">${inj}</div>
+      <div class="stat-label">Injections</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🧪</div>
+      <div class="stat-val">${stock}</div>
+      <div class="stat-label">Flacons</div>
+    </div>
+  `;
+
+  // Dernières inscriptions (5 derniers)
+  const recent = users.slice(0, 5);
+  allUsers = users;
+
+  // Charger nb cures par user
+  const { data: curesByUser } = await sb.from('cures').select('user_id');
+  const cureCount = {};
+  (curesByUser||[]).forEach(c => { cureCount[c.user_id] = (cureCount[c.user_id]||0) + 1; });
+
+  document.getElementById('recentUsers').innerHTML = recent.map(u => `
+    <tr>
+      <td>${u.email || '—'}</td>
+      <td>${fmtDate(u.created_at)}</td>
+      <td>${u.premium
+        ? '<span class="badge badge-premium">⭐ Premium</span>'
+        : '<span class="badge badge-free">Gratuit</span>'}</td>
+      <td>${cureCount[u.id] || 0}</td>
+    </tr>
+  `).join('');
+}
+
+// ── USERS ────────────────────────────────────────────────────────
+async function loadUsers() {
+  const tbody = document.getElementById('usersTable');
+  tbody.innerHTML = '<tr><td colspan="5" class="loading"><div class="spinner"></div> Chargement…</td></tr>';
+
+  const { data } = await sb.from('profiles')
+    .select('id, email, full_name, created_at, premium, is_admin')
+    .order('created_at', { ascending: false });
+
+  allUsers = data || [];
+  renderUsersTable(allUsers);
+}
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('usersTable');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun utilisateur</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>${u.email || '—'}</td>
+      <td>${u.full_name || '—'}</td>
+      <td>${fmtDate(u.created_at)}</td>
+      <td>
+        ${u.is_admin ? '<span class="badge badge-admin">Admin</span> ' : ''}
+        ${u.premium
+          ? '<span class="badge badge-premium">⭐ Premium</span>'
+          : '<span class="badge badge-free">Gratuit</span>'}
+      </td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        ${!u.premium
+          ? `<button class="action-btn" onclick="quickPremium('${u.id}', true)">⭐ Premium</button>`
+          : `<button class="action-btn danger" onclick="quickPremium('${u.id}', false)">✗ Révoquer</button>`}
+        <button class="action-btn danger" onclick="deleteUser('${u.id}', '${u.email}')">🗑</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterUsers(q) {
+  const filtered = allUsers.filter(u =>
+    (u.email||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.full_name||'').toLowerCase().includes(q.toLowerCase())
+  );
+  renderUsersTable(filtered);
+}
+
+async function quickPremium(userId, enable) {
+  const { error } = await sb.from('profiles')
+    .update({ premium: enable, premium_until: enable ? null : new Date().toISOString() })
+    .eq('id', userId);
+  if (error) { showToast('⚠️ Erreur : ' + error.message); return; }
+  showToast(enable ? '⭐ Premium activé !' : '✗ Premium révoqué');
+  loadUsers();
+}
+
+async function deleteUser(userId, email) {
+  if (!confirm(`Supprimer le compte de ${email} ?\n\nToutes ses données seront effacées.`)) return;
+  const { error } = await sb.from('profiles').delete().eq('id', userId);
+  if (error) { showToast('⚠️ Erreur : ' + error.message); return; }
+  showToast('🗑 Compte supprimé');
+  loadUsers();
+}
+
+// ── PREMIUM ──────────────────────────────────────────────────────
+async function loadPremium() {
+  const tbody = document.getElementById('premiumTable');
+  tbody.innerHTML = '<tr><td colspan="4" class="loading"><div class="spinner"></div> Chargement…</td></tr>';
+
+  const { data } = await sb.from('profiles')
+    .select('id, email, created_at, premium_until')
+    .eq('premium', true)
+    .order('created_at', { ascending: false });
+
+  if (!data?.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">Aucun utilisateur Premium</td></tr>'; return; }
+  tbody.innerHTML = (data||[]).map(u => `
+    <tr>
+      <td>${u.email || '—'}</td>
+      <td>${fmtDate(u.created_at)}</td>
+      <td>${u.premium_until ? fmtDate(u.premium_until) : '<span class="badge badge-active">Illimité</span>'}</td>
+      <td><button class="action-btn danger" onclick="quickPremium('${u.id}', false)">✗ Révoquer</button></td>
+    </tr>
+  `).join('');
+}
+
+function openAddPremiumModal() {
+  document.getElementById('premiumEmail').value = '';
+  document.getElementById('premiumUntil').value = '';
+  document.getElementById('premiumModal').classList.add('open');
+}
+function closePremiumModal() { document.getElementById('premiumModal').classList.remove('open'); }
+
+async function activatePremium() {
+  const email = document.getElementById('premiumEmail').value.trim();
+  const until = document.getElementById('premiumUntil').value;
+  if (!email) { showToast('⚠️ Email requis'); return; }
+
+  const { data: user } = await sb.from('profiles').select('id').eq('email', email).single();
+  if (!user) { showToast('⚠️ Utilisateur introuvable'); return; }
+
+  const { error } = await sb.from('profiles').update({
+    premium: true,
+    premium_until: until ? new Date(until).toISOString() : null
+  }).eq('id', user.id);
+
+  if (error) { showToast('⚠️ Erreur : ' + error.message); return; }
+  showToast('⭐ Premium activé pour ' + email);
+  closePremiumModal();
+  loadPremium();
+}
+
+// ── PEPTIDES ─────────────────────────────────────────────────────
+async function loadPeptides() {
+  const tbody = document.getElementById('peptidesTable');
+  tbody.innerHTML = '<tr><td colspan="5" class="loading"><div class="spinner"></div> Chargement…</td></tr>';
+
+  const { data } = await sb.from('peptides').select('*').order('name');
+  if (!data?.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun peptide — Ajoutez-en avec le bouton +</td></tr>';
+    return;
+  }
+  tbody.innerHTML = (data||[]).map(p => `
+    <tr>
+      <td><strong>${p.name}</strong></td>
+      <td>${p.category || '—'}</td>
+      <td>${p.typical_dose_mcg || '—'}</td>
+      <td>${p.unit || 'mg'}</td>
+      <td style="display:flex;gap:6px">
+        <button class="action-btn" onclick="editPeptide(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="action-btn danger" onclick="deletePeptide('${p.id}')">🗑</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openPeptideModal(p) {
+  document.getElementById('pEditId').value     = '';
+  document.getElementById('pName').value       = '';
+  document.getElementById('pCategory').value   = '';
+  document.getElementById('pDose').value       = '';
+  document.getElementById('pUnit').value       = 'mg';
+  document.getElementById('pDescFr').value     = '';
+  document.getElementById('peptideModalTitle').textContent = 'Ajouter un peptide';
+  document.getElementById('peptideModal').classList.add('open');
+}
+
+function editPeptide(p) {
+  document.getElementById('pEditId').value     = p.id;
+  document.getElementById('pName').value       = p.name || '';
+  document.getElementById('pCategory').value   = p.category || '';
+  document.getElementById('pDose').value       = p.typical_dose_mcg || '';
+  document.getElementById('pUnit').value       = p.unit || 'mg';
+  document.getElementById('pDescFr').value     = p.description_fr || '';
+  document.getElementById('peptideModalTitle').textContent = 'Modifier le peptide';
+  document.getElementById('peptideModal').classList.add('open');
+}
+
+function closePeptideModal() { document.getElementById('peptideModal').classList.remove('open'); }
+
+async function savePeptide() {
+  const id       = document.getElementById('pEditId').value;
+  const name     = document.getElementById('pName').value.trim();
+  const category = document.getElementById('pCategory').value.trim();
+  const dose     = parseFloat(document.getElementById('pDose').value) || null;
+  const unit     = document.getElementById('pUnit').value;
+  const descFr   = document.getElementById('pDescFr').value.trim();
+
+  if (!name) { showToast('⚠️ Nom requis'); return; }
+
+  const payload = { name, category: category||null, typical_dose_mcg: dose, unit, description_fr: descFr||null };
+
+  const { error } = id
+    ? await sb.from('peptides').update(payload).eq('id', id)
+    : await sb.from('peptides').insert(payload);
+
+  if (error) { showToast('⚠️ Erreur : ' + error.message); return; }
+  showToast(id ? '✓ Peptide mis à jour' : '✓ Peptide ajouté');
+  closePeptideModal();
+  loadPeptides();
+}
+
+async function deletePeptide(id) {
+  if (!confirm('Supprimer ce peptide de la bibliothèque ?')) return;
+  const { error } = await sb.from('peptides').delete().eq('id', id);
+  if (error) { showToast('⚠️ Erreur : ' + error.message); return; }
+  showToast('🗑 Peptide supprimé');
+  loadPeptides();
+}
+
+// ── CONFIG ───────────────────────────────────────────────────────
+async function promoteAdmin() {
+  const email = document.getElementById('newAdminEmail').value.trim();
+  if (!email) { showToast('⚠️ Email requis'); return; }
+  const { data: user } = await sb.from('profiles').select('id').eq('email', email).single();
+  if (!user) { showToast('⚠️ Utilisateur introuvable'); return; }
+  const { error } = await sb.from('profiles').update({ is_admin: true }).eq('id', user.id);
+  if (error) { showToast('⚠️ Erreur : ' + error.message); return; }
+  showToast('✓ Admin promu : ' + email);
+  document.getElementById('newAdminEmail').value = '';
+}
+
+function toggleIA(enabled) {
+  showToast(enabled
+    ? '⚠️ Modifier ia.html : IA_ENABLED = true puis git push'
+    : '⚠️ Modifier ia.html : IA_ENABLED = false puis git push'
+  );
+  setTimeout(() => { document.getElementById('iaEnabledToggle').checked = !enabled; }, 100);
+}
+
+// ── NOTIFICATIONS ────────────────────────────────────────────────
+async function sendGlobalNotif() {
+  const title   = document.getElementById('notifTitle').value.trim();
+  const message = document.getElementById('notifMessage').value.trim();
+  const type    = document.getElementById('notifType').value;
+  const target  = document.getElementById('notifTarget').value;
+
+  if (!title || !message) { showToast('⚠️ Titre et message requis'); return; }
+
+  // Récupérer les users ciblés
+  let query = sb.from('profiles').select('id');
+  if (target === 'premium') query = query.eq('premium', true);
+  if (target === 'free')    query = query.eq('premium', false);
+  const { data: users } = await query;
+
+  if (!users?.length) { showToast('⚠️ Aucun utilisateur ciblé'); return; }
+
+  // Insérer une alerte pour chaque user
+  const alerts = users.map(u => ({
+    user_id:      u.id,
+    type:         type,
+    title:        title,
+    message:      message,
+    scheduled_at: new Date().toISOString(),
+    is_read:      false,
+  }));
+
+  const { error } = await sb.from('alerts').insert(alerts);
+  if (error) { showToast('⚠️ Erreur : ' + error.message); return; }
+  showToast(`✓ Notification envoyée à ${users.length} utilisateur(s)`);
+  document.getElementById('notifTitle').value   = '';
+  document.getElementById('notifMessage').value = '';
+}
+
+// ── UTILS ────────────────────────────────────────────────────────
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+function showToast(msg, duration=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = '/login.html';
+}
+
+// Fermer modals en cliquant l'overlay
+document.getElementById('peptideModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('peptideModal')) closePeptideModal();
+});
+document.getElementById('premiumModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('premiumModal')) closePremiumModal();
+});
+
+init();
+</script>
+</body>
+</html>

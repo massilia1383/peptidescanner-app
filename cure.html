@@ -217,15 +217,7 @@
     <div class="sheet-title" id="modalTitle">Nouvelle cure</div>
     <div class="form-group">
       <label class="form-label">Peptide</label>
-      <select class="form-input" id="newCurePeptide">
-        <option value="">Choisir…</option>
-        <option>BPC-157</option><option>TB-500</option><option>CJC-1295</option>
-        <option>Ipamorelin</option><option>GHRP-6</option><option>GHRP-2</option>
-        <option>Sermorelin</option><option>Semaglutide</option><option>Tirzepatide</option>
-        <option>Epithalon</option><option>Semax</option><option>Selank</option>
-        <option>PT-141</option><option>AOD-9604</option><option>Thymosin Alpha-1</option>
-        <option>GHK-Cu</option><option>TB-500 + BPC-157</option><option>Autre</option>
-      </select>
+      <select class="form-input" id="newCurePeptide"><option value="">Choisir…</option></select>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -627,21 +619,70 @@ function saveNote(ds) {
 function selectCure(id) { currentCureId=id; calMonth=TODAY.getMonth(); calYear=TODAY.getFullYear(); render(); }
 
 // ── CRUD CURES ─────────────────────────────────────────────────
-function openAddCure() {
+const PEPTIDES_BIBLIO = [
+  'BPC-157','TB-500','CJC-1295','Ipamorelin','GHRP-6','GHRP-2',
+  'Sermorelin','Semaglutide','Tirzepatide','Epithalon','Semax','Selank',
+  'PT-141','AOD-9604','Thymosin Alpha-1','GHK-Cu','TB-500 + BPC-157','Autre'
+];
+
+async function openAddCure() {
   editCureId = null;
   document.getElementById('modalTitle').textContent  = 'Nouvelle cure';
   document.getElementById('modalSubmit').textContent = 'Démarrer la cure';
   document.getElementById('modalDelete').style.display = 'none';
-  ['newCurePeptide','newCureDosage','newCureNotes'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  ['newCureDosage','newCureNotes'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
   document.getElementById('newCureAdmin').value    = 'SC';
   document.getElementById('newCureStart').value    = todayStr;
   document.getElementById('newCureDuration').value = '';
   document.getElementById('newCureFreq').value     = '1';
+
+  // Charger les flacons du stock pour les proposer en premier
+  await populatePeptideSelect('');
+
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
-function openEditCure(id) {
+async function populatePeptideSelect(currentVal) {
+  const sel = document.getElementById('newCurePeptide');
+  sel.innerHTML = '<option value="">Choisir…</option>';
+
+  // Flacons du stock (actifs ou scellés)
+  try {
+    const { data: stock } = await sb.from('inventory')
+      .select('peptide_name, vial_qty_mg, remaining_units, notes')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    const stockItems = (stock || []).filter(f => !(f.notes||'').includes('finished'));
+    if (stockItems.length > 0) {
+      const grpStock = document.createElement('optgroup');
+      grpStock.label = '🧪 Mon stock';
+      stockItems.forEach(f => {
+        const opt = document.createElement('option');
+        const rem = f.remaining_units ?? f.vial_qty_mg ?? 0;
+        opt.value = f.peptide_name;
+        opt.textContent = `${f.peptide_name} (${rem} mg restants)`;
+        if (currentVal === f.peptide_name) opt.selected = true;
+        grpStock.appendChild(opt);
+      });
+      sel.appendChild(grpStock);
+    }
+  } catch(_) {}
+
+  // Bibliothèque standard
+  const grpBiblio = document.createElement('optgroup');
+  grpBiblio.label = '📚 Bibliothèque';
+  PEPTIDES_BIBLIO.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    if (currentVal === name) opt.selected = true;
+    grpBiblio.appendChild(opt);
+  });
+  sel.appendChild(grpBiblio);
+}
+
+async function openEditCure(id) {
   const cure = allCures.find(x => x.id === id);
   if (!cure) return;
   editCureId = id;
@@ -649,7 +690,7 @@ function openEditCure(id) {
   document.getElementById('modalSubmit').textContent = 'Enregistrer';
   document.getElementById('modalDelete').style.display = 'block';
   const admin = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
-  document.getElementById('newCurePeptide').value  = cure.peptide_name||cure.name;
+  await populatePeptideSelect(cure.peptide_name||cure.name);
   document.getElementById('newCureDosage').value   = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mcg'}` : '';
   document.getElementById('newCureAdmin').value    = admin;
   document.getElementById('newCureStart').value    = cure.start_date;

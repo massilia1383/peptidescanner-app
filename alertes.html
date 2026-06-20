@@ -412,16 +412,34 @@ function updateNotifBanner() {
   const banner = document.getElementById('notifBanner');
   if (!btn || !banner) return;
   if (!('Notification' in window)) { banner.style.display='none'; return; }
-  if (Notification.permission==='granted') { btn.textContent='✓ Activées'; btn.classList.add('granted'); }
-  else if (Notification.permission==='denied') { btn.textContent='Bloquées'; btn.style.color='var(--danger)'; }
+  if (Notification.permission === 'granted') {
+    btn.textContent = '✓ Activées'; btn.classList.add('granted'); btn.onclick = null; return;
+  }
+  if (Notification.permission === 'denied') {
+    btn.textContent = 'Bloquées ⚠️'; btn.style.color = 'var(--danger)'; btn.classList.add('granted'); return;
+  }
+  // Permission "default" mais l'user avait déjà cliqué
+  if (localStorage.getItem('ps_notif_choice') === 'requested') {
+    btn.textContent = '✓ Activées'; btn.classList.add('granted');
+  }
 }
 
 function requestNotifPermission() {
-  if (!('Notification' in window)) { showToast('Non supporté'); return; }
+  if (!('Notification' in window)) { showToast('Non supporté sur ce navigateur'); return; }
+  // Sauvegarder que l'user a cliqué
+  localStorage.setItem('ps_notif_choice', 'requested');
+  // Mettre le bouton en état activé immédiatement
+  const btn = document.getElementById('notifEnableBtn');
+  if (btn) { btn.textContent = '✓ Activées'; btn.classList.add('granted'); btn.onclick = null; }
   Notification.requestPermission().then(p => {
-    updateNotifBanner();
-    if (p==='granted') { showToast('✓ Notifications activées !'); scheduleAllReminders(); }
-    else showToast('Notifications refusées');
+    if (p === 'granted') {
+      showToast('✓ Notifications activées !');
+      scheduleAllReminders();
+    } else if (p === 'denied') {
+      localStorage.removeItem('ps_notif_choice');
+      if (btn) { btn.textContent = 'Bloquées ⚠️'; btn.style.color = 'var(--danger)'; }
+      showToast('Notifications refusées — vérifiez les réglages Safari');
+    }
   });
 }
 

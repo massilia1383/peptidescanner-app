@@ -264,7 +264,7 @@ function renderSchedule() {
     const e = new Date(c.start_date); e.setDate(e.getDate()+(c.duration_days||30)); e.setHours(0,0,0,0);
     return s<=TODAY && e>=TODAY && parseFloat(c.frequency||1)>=1;
   });
-  if (active.length === 0) { list.innerHTML='<div class="empty-state"><span>✅</span>Aucune injection aujourd\'hui</div>'; return; }
+  if (active.length === 0) { list.innerHTML='<div class="empty-state"><span>✅</span>'+t('alerts_no_today')+'</div>'; return; }
   let items = [];
   active.forEach(c => {
     const freq = parseFloat(c.frequency||1);
@@ -302,7 +302,7 @@ function renderAutoAlerts() {
       if ([14,21,30].includes(dayNum)) alerts.push({icon:'🩸',cls:'ai-purple',title:t('alerts_blood_test'),sub:`J${dayNum} — ${cure.peptide_name||cure.name}`});
     }
   });
-  if (alerts.length===0) { c.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">Aucune alerte automatique 🎉</div>'; return; }
+  if (alerts.length===0) { c.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">'+t('alerts_no_auto')+'</div>'; return; }
   c.innerHTML = '<div class="alert-card">'+alerts.map(a=>`
     <div class="alert-row">
       <div class="alert-icon ${a.cls}">${a.icon}</div>
@@ -317,7 +317,7 @@ function renderCustomAlerts() {
   const clsMap = {high:'ai-red',medium:'ai-amber',low:'ai-green'};
   const iconMap = {high:'🔴',medium:'🟡',low:'🟢'};
   const dotMap  = {high:'dot-red',medium:'dot-amber',low:'dot-green'};
-  if (alerts.length===0) { c.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">Aucun rappel — ajoutez-en un ci-dessus</div>'; return; }
+  if (alerts.length===0) { c.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">'+t('alerts_no_custom')+'</div>'; return; }
   const sorted = [...alerts].sort((a,b)=>{
     const da=new Date(a.date+'T'+a.time), db=new Date(b.date+'T'+b.time);
     return (isNaN(da)?0:da)-(isNaN(db)?0:db);
@@ -374,7 +374,7 @@ function renderInjReminders() {
     return s<=TODAY && e>=TODAY && parseFloat(c.frequency||1)>=1;
   });
   if (active.length===0) {
-    container.innerHTML='<div class="inj-reminder-card"><div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">Aucune cure active</div></div></div></div>';
+    container.innerHTML='<div class="inj-reminder-card"><div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">'+t('alerts_no_active')+'</div></div></div></div>';
     return;
   }
   container.innerHTML = active.map(cure => {

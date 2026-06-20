@@ -342,13 +342,13 @@
   <div class="cure-card" id="cureCard">
     <div class="cure-header">
       <div>
-        <div class="cure-label">Protocole en cours</div>
+        <div class="cure-label"><span data-i18n="dash_protocol">Protocole en cours</span></div>
         <div class="cure-name" id="cureName">—</div>
         <div class="cure-sub" id="cureSub">—</div>
       </div>
       <div class="cure-day-badge">
         <div class="cure-day-num" id="cureDay">—</div>
-        <div class="cure-day-label">/ <span id="cureDuration">—</span> jours</div>
+        <div class="cure-day-label"><span data-i18n="dash_day_label">/ </span><span id="cureDuration">—</span> jours</div>
       </div>
     </div>
     <div class="progress-section">
@@ -362,16 +362,16 @@
       </div>
       <div class="progress-info">
         <div class="prog-row">
-          <span class="prog-key">Injections faites</span>
+          <span class="prog-key"><span data-i18n="dash_inj_done">Injections faites</span></span>
           <span class="prog-val" id="injDone">0 / 0</span>
         </div>
         <div class="prog-bar"><div class="prog-fill" id="injBar" style="width:0%"></div></div>
         <div class="prog-row" style="margin-top:8px">
-          <span class="prog-key">Jours restants</span>
+          <span class="prog-key"><span data-i18n="dash_days_left">Jours restants</span></span>
           <span class="prog-val" id="daysLeft">—</span>
         </div>
         <div class="prog-row">
-          <span class="prog-key">Fin estimée</span>
+          <span class="prog-key"><span data-i18n="dash_end_date">Fin estimée</span></span>
           <span class="prog-val" id="endDate">—</span>
         </div>
       </div>
@@ -668,7 +668,7 @@ function renderStats() {
       const diff = (latest.weight_kg - allWeights[0].weight_kg).toFixed(1);
       const sign = diff > 0 ? '+' : '';
       const cls  = diff > 0 ? 'trend-up' : 'trend-down';
-      document.getElementById('weightDiff').innerHTML = `<span class="${cls}">${sign}${diff} kg</span> depuis J1`;
+      document.getElementById('weightDiff').innerHTML = `<span class="${cls}">${sign}${diff} kg</span> ${t('dash_since_start')}`;
     } else {
       document.getElementById('weightDiff').textContent = t('dash_first_measure');
     }
@@ -797,7 +797,7 @@ function openInjConfirm(cureId, slot, time, peptideName, dose, site, done) {
   const mm  = String(now.getMinutes()).padStart(2,'0');
   document.getElementById('injConfirmTime').value = `${hh}:${mm}`;
   document.getElementById('injConfirmTitle').textContent = `💉 ${peptideName}`;
-  document.getElementById('injConfirmSub').textContent   = `${dose} · Site : ${site}`;
+  document.getElementById('injConfirmSub').textContent   = `${dose} · ${t('dash_injection_day')} : ${site}`;
 
   document.getElementById('injConfirmOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -876,7 +876,7 @@ function renderAlerts() {
     const start = new Date(c.start_date); start.setHours(0,0,0,0);
     if (start <= TODAY && end >= TODAY) {
       const daysLeft = Math.ceil((end - TODAY) / 86400000);
-      if (daysLeft <= 5) autoAlerts.push({ icon:'⚠️', type:'amber', title:`Fin de cure dans ${daysLeft}j`, sub: c.peptide_name||c.name, time:'Auto' });
+      if (daysLeft <= 5) autoAlerts.push({ icon:'⚠️', type:'amber', title:`${t('dash_cure_ended')} ${daysLeft}${t('dash_days_suffix')}`, sub: c.peptide_name||c.name, time:'Auto' });
     }
   });
   document.getElementById('notifBadge').style.display = autoAlerts.length > 0 ? 'block' : 'none';

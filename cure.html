@@ -555,7 +555,7 @@ function selectDay(ds, clickable) {
       </div>
     </div>
     ${slotsHtml}
-    <textarea class="note-area" id="dayNote" rows="2" placeholder="Note pour ce jour…">${localStorage.getItem('ps_note_'+currentCureId+'_'+ds)||''}</textarea>
+    <textarea class="note-area" id="dayNote" rows="2" placeholder="${t('cure_note_ph')}">${localStorage.getItem('ps_note_'+currentCureId+'_'+ds)||''}</textarea>
     <button class="save-note-btn" onclick="saveNote('${ds}')">Enregistrer la note</button>`;
 
   dd.classList.add('show');
@@ -751,7 +751,7 @@ async function populatePeptideSelect(currentVal) {
           const opt = document.createElement('option');
           const rem = f.remaining_units ?? f.vial_qty_mg ?? 0;
           opt.value = f.peptide_name;
-          opt.textContent = `${f.peptide_name} (${rem} mg restants)`;
+          opt.textContent = `${f.peptide_name} (${rem} mg ${t('cure_remaining').toLowerCase()})`;
           if (currentVal === f.peptide_name) opt.selected = true;
           grpStock.appendChild(opt);
         });

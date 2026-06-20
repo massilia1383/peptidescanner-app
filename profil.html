@@ -328,11 +328,11 @@ function renderPremium(isPremium) {
   const c = document.getElementById('premiumCard');
   if (!c) return;
   if (isPremium) {
-    c.innerHTML = `<h3>⭐ Premium actif</h3><p>Vous bénéficiez de toutes les fonctionnalités premium.</p>
-    <ul class="features-list"><li>Cures & calendrier illimités</li><li>Suivi du poids complet</li><li>Alertes & rappels push</li><li>Conseiller IA illimité</li></ul>`;
+    c.innerHTML = `<h3>${t('profil_prem_active')}</h3><p>${t('profil_prem_active_sub')}</p>
+    <ul class="features-list"><li>${t('profil_feat5')}</li><li>${t('profil_feat6')}</li><li>${t('profil_feat3')}</li><li>${t('profil_feat7')}</li></ul>`;
   } else {
-    c.innerHTML = `<h3>Passer Premium</h3><p>Débloquez le suivi complet, les alertes intelligentes et le conseiller IA.</p>
-    <ul class="features-list"><li>Calendrier de cure illimité</li><li>Suivi du poids + graphiques</li><li>Alertes & rappels push</li><li>Conseiller IA spécialisé</li></ul>
+    c.innerHTML = `<h3>${t('profil_upgrade')}</h3><p>${t('profil_upgrade_sub')}</p>
+    <ul class="features-list"><li>${t('profil_feat1')}</li><li>${t('profil_feat2')}</li><li>Alertes & rappels push</li><li>${t('profil_feat4')}</li></ul>
     <button class="premium-btn" onclick="activatePremium()">⭐ S'abonner — 59 € / an</button>`;
   }
 }
@@ -341,7 +341,7 @@ function renderPremium(isPremium) {
 const FIELD_MAP = {
   'prenom':  { db: 'full_name',   label: 'Prénom / Pseudo' },
   'age':     { db: 'experience',  label: 'Âge' },
-  'taille':  { db: null,          label: 'Taille (cm)' },   // stocké en localStorage + profiles
+  'taille':  { db: null,          label: t('profil_height') },   // stocké en localStorage + profiles
   'objectif':{ db: 'goal',        label: 'Objectif' },
 };
 

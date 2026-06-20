@@ -210,7 +210,7 @@
 <div class="modal-overlay" id="flaconModal" onclick="closeIfOverlay(event)">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modalTitle" data-i18n="inv_modal_add">Ajouter un flacon</div>
+    <div class="modal-title" id="modalTitle" data-i18n="inv_modal_add">${t('inv_add')}</div>
     <div class="form-group">
       <label class="form-label" data-i18n="inv_peptide">Peptide</label>
       <input class="form-input" id="fPeptide" type="text" data-i18n-ph="inv_peptide_ph" placeholder="Ex: BPC-157, HGH…" oninput="autoFillStorage(this.value)">
@@ -438,7 +438,7 @@ function render() {
   if (allInventory.length === 0) {
     container.innerHTML = `<div class="empty-state" style="text-align:center;padding:60px 20px">
       ${vialSVG(0,'#0D9488',true)}
-      <p style="margin-top:16px;color:var(--muted);font-size:.9rem">Aucun flacon enregistré.<br>Ajoutez votre premier flacon.</p>
+      <p style="margin-top:16px;color:var(--muted);font-size:.9rem">${t('inv_empty').replace('\n','<br>')}</p>
       <button onclick="openModal()" style="margin-top:16px;padding:12px 24px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer">+ Ajouter un flacon</button>
     </div>`;
     return;
@@ -494,12 +494,12 @@ function render() {
             const cls      = injLeft <= 3 ? 'critical' : injLeft <= 10 ? 'warn' : '';
             return `<div style="background:${cls==='critical'?'rgba(220,38,38,.08)':cls==='warn'?'rgba(249,115,22,.08)':'rgba(13,148,136,.06)'};border:1px solid ${cls==='critical'?'rgba(220,38,38,.2)':cls==='warn'?'rgba(249,115,22,.2)':'rgba(13,148,136,.18)'};border-radius:8px;padding:6px 8px;width:100%;text-align:center;margin-top:2px">
               <div style="font-family:'Space Mono',monospace;font-size:.78rem;font-weight:700;color:${cls==='critical'?'var(--danger)':cls==='warn'?'var(--accent3)':'var(--accent)'}">${injLeft} inj. restantes</div>
-              <div style="font-size:.62rem;color:var(--muted);margin-top:1px">~${daysLeft} jour${daysLeft>1?'s':''}</div>
+              <div style="font-size:.62rem;color:var(--muted);margin-top:1px">~${daysLeft} t('day')+(daysLeft>1?'s':'')</div>
             </div>`;
           }
           return '';
         })()}
-        <button onclick="event.stopPropagation();confirmDelete('${f.id}')" style="margin-top:6px;padding:4px 12px;background:rgba(220,38,38,.08);color:var(--danger);border:1px solid rgba(220,38,38,.2);border-radius:8px;font-family:inherit;font-size:.68rem;font-weight:600;cursor:pointer">🗑 Supprimer</button>
+        <button onclick="event.stopPropagation();confirmDelete('${f.id}')" style="margin-top:6px;padding:4px 12px;background:rgba(220,38,38,.08);color:var(--danger);border:1px solid rgba(220,38,38,.2);border-radius:8px;font-family:inherit;font-size:.68rem;font-weight:600;cursor:pointer">${t('delete')}</button>
       </div>`;
     }).join('')}
     <!-- Bouton ajouter -->

@@ -1206,7 +1206,7 @@ function calculateReconstitution() {
   const totalMcg = mgValue * 1000;
   const avgDailyMcg = 500; // 2 injections de 250mcg
   const days = Math.floor(totalMcg / avgDailyMcg);
-  document.getElementById('vial-duration').textContent = `environ ${days} jours à 500mcg/jour (2×250mcg)`;
+  document.getElementById('vial-duration').textContent = `${t('calc_approx')} ${days} ${t('days')} ${t('calc_at_500')}`;
 
   document.getElementById('recon-result').classList.add('show');
 
@@ -1360,7 +1360,7 @@ function initSyringeSelect() {
     { id:'U30',  val:30,  label:'U-30 (0.3 mL — 30 unités)' },
     { id:'U50',  val:50,  label:'U-50 (0.5 mL — 50 unités)' },
     { id:'U100', val:100, label:'U-100 (1 mL — 100 unités) — Standard' },
-    { id:'U200', val:200, label:'2 mL (200 unités) — Grandes doses' },
+    { id:'U200', val:200, label:t('syringe_u200_label')+' (2 mL)' },
   ];
   const available = ALL.filter(s => owned.includes(s.id));
   // Si rien configuré, tout afficher
@@ -1681,78 +1681,80 @@ function highlightNearestGrad(units) {
 })();
 
 // ── TITRATION ─────────────────────────────────────────────────
-const TITRATIONS = {
+function getTitrations() {
+return {
   semaglutide: {
     name: 'Semaglutide',
     steps: [
-      { weeks:'S1–4', dose:'0.25 mg', freq:'1×/semaine', label:'Phase d\'adaptation', expect:'Légères nausées possibles, ↓ appétit début', color:'#0D9488', warn:null },
-      { weeks:'S5–8', dose:'0.5 mg', freq:'1×/semaine', label:'Augmentation progressive', expect:'Réduction de l\'appétit marquée, premières pertes de poids', color:'#0D9488', warn:'Si nausées persistantes — rester à 0.25mg' },
-      { weeks:'S9–12', dose:'1 mg', freq:'1×/semaine', label:'Dose efficace', expect:'Perte de poids régulière, ↓ glycémie', color:'#2B6CB0', warn:null },
-      { weeks:'S13–16', dose:'1.7 mg', freq:'1×/semaine', label:'Dose avancée', expect:'Perte de poids accélérée, effets métaboliques marqués', color:'#2B6CB0', warn:'Uniquement si 1mg bien toléré' },
-      { weeks:'S17+', dose:'2.4 mg', freq:'1×/semaine', label:'Dose maximale', expect:'Effet maximal — dose approuvée FDA pour l\'obésité', color:'#F97316', warn:'⚠️ Dose max approuvée — Ne pas dépasser' },
+      { weeks:'S1–4', dose:'0.25 mg', freq:'1×/'+t('week'), label:t('calc_phase_adapt'), expect:t('calc_sem_s1_exp'), color:'#0D9488', warn:null },
+      { weeks:'S5–8', dose:'0.5 mg', freq:'1×/'+t('week'), label:t('calc_increase'), expect:t('calc_sem_s2_exp'), color:'#0D9488', warn:t('calc_warn_semlow') },
+      { weeks:'S9–12', dose:'1 mg', freq:'1×/'+t('week'), label:t('calc_eff_dose'), expect:t('calc_sem_s3_exp'), color:'#2B6CB0', warn:null },
+      { weeks:'S13–16', dose:'1.7 mg', freq:'1×/'+t('week'), label:t('calc_adv_dose'), expect:t('calc_sem_s4_exp'), color:'#2B6CB0', warn:t('calc_warn_sem1mg') },
+      { weeks:'S17+', dose:'2.4 mg', freq:'1×/'+t('week'), label:t('calc_max_dose'), expect:t('calc_sem_s5_exp'), color:'#F97316', warn:t('calc_warn_maxdose') },
     ]
   },
   tirzepatide: {
     name: 'Tirzepatide',
     steps: [
-      { weeks:'S1–4', dose:'2.5 mg', freq:'1×/semaine', label:'Phase d\'adaptation', expect:'Nausées légères, prise en main du protocole', color:'#0D9488', warn:null },
-      { weeks:'S5–8', dose:'5 mg', freq:'1×/semaine', label:'Montée progressive', expect:'↓ Appétit significatif, perte de poids visible', color:'#0D9488', warn:null },
-      { weeks:'S9–12', dose:'7.5 mg', freq:'1×/semaine', label:'Dose efficace', expect:'Perte de poids rapide, amélioration glycémie', color:'#2B6CB0', warn:'Évaluer la tolérance avant d\'augmenter' },
-      { weeks:'S13–16', dose:'10 mg', freq:'1×/semaine', label:'Dose avancée', expect:'Effets maximaux sur la composition corporelle', color:'#2B6CB0', warn:null },
-      { weeks:'S17–20', dose:'12.5 mg', freq:'1×/semaine', label:'Dose haute', expect:'Résultats optimaux pour la plupart des patients', color:'#F97316', warn:'⚠️ Uniquement si doses précédentes bien tolérées' },
-      { weeks:'S21+', dose:'15 mg', freq:'1×/semaine', label:'Dose maximale', expect:'Dose maximale approuvée — maintenir si bien toléré', color:'#DC2626', warn:'⚠️ Dose maximale — Ne jamais dépasser' },
+      { weeks:'S1–4', dose:'2.5 mg', freq:'1×/'+t('week'), label:t('calc_phase_adapt'), expect:t('calc_tir_s1_exp'), color:'#0D9488', warn:null },
+      { weeks:'S5–8', dose:'5 mg', freq:'1×/'+t('week'), label:t('calc_prog_rise'), expect:t('calc_tir_s2_exp'), color:'#0D9488', warn:null },
+      { weeks:'S9–12', dose:'7.5 mg', freq:'1×/'+t('week'), label:t('calc_eff_dose'), expect:t('calc_tir_s3_exp'), color:'#2B6CB0', warn:t('calc_warn_tol') },
+      { weeks:'S13–16', dose:'10 mg', freq:'1×/'+t('week'), label:t('calc_adv_dose'), expect:t('calc_tir_s4_exp'), color:'#2B6CB0', warn:null },
+      { weeks:'S17–20', dose:'12.5 mg', freq:'1×/'+t('week'), label:t('calc_high_dose_label'), expect:t('calc_tir_s5_exp'), color:'#F97316', warn:t('calc_warn_prev_tol') },
+      { weeks:'S21+', dose:'15 mg', freq:'1×/'+t('week'), label:t('calc_max_dose'), expect:t('calc_tir_s6_exp'), color:'#DC2626', warn:t('calc_warn_absmax') },
     ]
   },
   retatrutide: {
     name: 'Retatrutide',
     steps: [
-      { weeks:'S1–4', dose:'1 mg', freq:'1×/semaine', label:'Adaptation', expect:'Nausées légères, habituation du corps', color:'#0D9488', warn:'Peptide expérimental — phase 3 clinique' },
-      { weeks:'S5–8', dose:'2 mg', freq:'1×/semaine', label:'↓ Appétit', expect:'Réduction de l\'appétit nette, perte de poids début', color:'#0D9488', warn:null },
-      { weeks:'S9–12', dose:'4 mg', freq:'1×/semaine', label:'Perte de graisse', expect:'Perte de graisse viscérale visible, énergie améliorée', color:'#2B6CB0', warn:null },
-      { weeks:'S13–16', dose:'8 mg', freq:'1×/semaine', label:'Perte majeure', expect:'Perte de poids significative, remodelage corporel', color:'#F97316', warn:'Surveiller fréquence cardiaque (max 100 bpm repos)' },
-      { weeks:'S17+', dose:'12 mg', freq:'1×/semaine', label:'Effet maximal', expect:'Résultats maximaux des études cliniques de phase 2', color:'#DC2626', warn:'⚠️ Non approuvé — Recherche uniquement. Suivi médical obligatoire' },
+      { weeks:'S1–4', dose:'1 mg', freq:'1×/'+t('week'), label:t('calc_adapt'), expect:t('calc_ret_s1_exp'), color:'#0D9488', warn:t('calc_warn_exp_p3') },
+      { weeks:'S5–8', dose:'2 mg', freq:'1×/'+t('week'), label:t('calc_appetite_down'), expect:t('calc_ret_s2_exp'), color:'#0D9488', warn:null },
+      { weeks:'S9–12', dose:'4 mg', freq:'1×/'+t('week'), label:t('calc_fat_loss'), expect:t('calc_ret_s3_exp'), color:'#2B6CB0', warn:null },
+      { weeks:'S13–16', dose:'8 mg', freq:'1×/'+t('week'), label:t('calc_major_loss'), expect:t('calc_ret_s4_exp'), color:'#F97316', warn:t('calc_warn_hr') },
+      { weeks:'S17+', dose:'12 mg', freq:'1×/'+t('week'), label:t('calc_max_effect'), expect:t('calc_ret_s5_exp'), color:'#DC2626', warn:t('calc_warn_exp_only') },
     ]
   },
   cjc_ipa: {
     name: 'CJC-1295 + Ipamorelin',
     steps: [
-      { weeks:'S1–2', dose:'100mcg + 100mcg', freq:'2×/jour', label:'Introduction', expect:'Adaptation, flush léger possible, meilleur sommeil dès J3-5', color:'#0D9488', warn:null },
-      { weeks:'S3–8', dose:'100mcg + 200mcg', freq:'2-3×/jour', label:'Phase efficace', expect:'↑ GH nocturne, récupération améliorée, composition corporelle', color:'#0D9488', warn:'Respecter 2h de jeun avant injection' },
-      { weeks:'S9–12', dose:'100mcg + 300mcg', freq:'3×/jour', label:'Dose optimale', expect:'Effets maximaux GH, lipolyse, sommeil profond', color:'#2B6CB0', warn:'Vérifier IGF-1 à J30' },
-      { weeks:'S13+', dose:'Pause 4 semaines', freq:'OFF', label:'Cycle OFF obligatoire', expect:'Permettre la récupération de l\'axe GH naturel', color:'#F97316', warn:'⚠️ Ne pas utiliser en continu sans pause' },
+      { weeks:'S1–2', dose:'100mcg + 100mcg', freq:'2×/'+t('day'), label:t('calc_intro'), expect:t('calc_cjc_s1_exp'), color:'#0D9488', warn:null },
+      { weeks:'S3–8', dose:'100mcg + 200mcg', freq:'2-3×/'+t('day'), label:t('calc_eff_phase'), expect:t('calc_cjc_s2_exp'), color:'#0D9488', warn:t('calc_warn_fast') },
+      { weeks:'S9–12', dose:'100mcg + 300mcg', freq:'3×/'+t('day'), label:t('calc_opt_dose'), expect:t('calc_cjc_s3_exp'), color:'#2B6CB0', warn:t('calc_warn_igf1') },
+      { weeks:'S13+', dose:t('calc_break_4w'), freq:'OFF', label:t('calc_cycle_off'), expect:t('calc_cjc_s4_exp'), color:'#F97316', warn:t('calc_warn_no_continuous') },
     ]
   },
   bpc157: {
     name: 'BPC-157',
     steps: [
-      { weeks:'S1–2', dose:'250 mcg', freq:'2×/jour', label:'Introduction', expect:'Premiers effets anti-inflammatoires, réduction douleur J5-10', color:'#0D9488', warn:null },
-      { weeks:'S3–8', dose:'250–500 mcg', freq:'2×/jour', label:'Phase thérapeutique', expect:'Régénération tissulaire, cicatrisation, protection gastrique', color:'#0D9488', warn:'Injecter près de la zone à traiter' },
-      { weeks:'S9–12', dose:'250 mcg', freq:'1×/jour', label:'Entretien', expect:'Maintien des effets, consolidation de la guérison', color:'#2B6CB0', warn:null },
+      { weeks:'S1–2', dose:'250 mcg', freq:'2×/'+t('day'), label:t('calc_intro'), expect:t('calc_bpc_intro_exp'), color:'#0D9488', warn:null },
+      { weeks:'S3–8', dose:'250–500 mcg', freq:'2×/'+t('day'), label:t('calc_therap_phase'), expect:t('calc_bpc_therap_exp'), color:'#0D9488', warn:t('calc_warn_inject_near') },
+      { weeks:'S9–12', dose:'250 mcg', freq:'1×/'+t('day'), label:t('calc_maint_phase'), expect:t('calc_bpc_maint_exp'), color:'#2B6CB0', warn:null },
     ]
   },
   tb500: {
     name: 'TB-500',
     steps: [
-      { weeks:'S1–6', dose:'2–2.5 mg', freq:'2×/semaine', label:'Phase de charge', expect:'Régénération systémique, flexibilité améliorée, réduction fibrose', color:'#0D9488', warn:null },
-      { weeks:'S7–12', dose:'1–1.5 mg', freq:'1×/semaine', label:'Phase entretien', expect:'Maintien des effets, prévention blessures récurrentes', color:'#2B6CB0', warn:'Stack avec BPC-157 pour synergie optimale' },
+      { weeks:'S1–6', dose:'2–2.5 mg', freq:'2×/'+t('week'), label:t('calc_load_phase'), expect:t('calc_tb_s1_exp'), color:'#0D9488', warn:null },
+      { weeks:'S7–12', dose:'1–1.5 mg', freq:'1×/'+t('week'), label:t('calc_maint_phase'), expect:t('calc_bpc_s2_exp'), color:'#2B6CB0', warn:t('calc_warn_bpc_stack') },
     ]
   },
   epithalon: {
     name: 'Epithalon',
     steps: [
-      { weeks:'J1–10', dose:'5–10 mg', freq:'1×/jour · 10 jours', label:'Cure intensive', expect:'Allongement des télomères, amélioration sommeil, énergie', color:'#0D9488', warn:null },
-      { weeks:'Pause 6 mois', dose:'—', freq:'OFF', label:'Pause obligatoire', expect:'Laisser le temps aux télomères de se consolider', color:'#F97316', warn:'Ne pas répéter avant 6 mois' },
-      { weeks:'2ème cure', dose:'5–10 mg', freq:'1×/jour · 10 jours', label:'2ème cure annuelle', expect:'Renforcement des effets anti-âge cumulatifs', color:'#2B6CB0', warn:'Maximum 2 cures par an' },
+      { weeks:'J1–10', dose:'5–10 mg', freq:'1×/'+t('day')+' · 10 '+t('days'), label:t('calc_intensive'), expect:t('calc_epi_s1_exp'), color:'#0D9488', warn:null },
+      { weeks:t('calc_break_6m'), dose:'—', freq:'OFF', label:t('calc_mandatory_break'), expect:t('calc_epi_s2_exp'), color:'#F97316', warn:t('calc_warn_6months') },
+      { weeks:t('calc_2nd_cycle'), dose:'5–10 mg', freq:'1×/'+t('day')+' · 10 '+t('days'), label:t('calc_second_cycle'), expect:t('calc_epi_s3_exp'), color:'#2B6CB0', warn:t('calc_warn_2year') },
     ]
   }
 };
+}
 
 function showTitration() {
   const peptide = document.getElementById('titrationPeptide').value;
   const content = document.getElementById('titration-content');
   if (!peptide) { content.style.display = 'none'; return; }
 
-  const data = TITRATIONS[peptide];
+  const data = getTitrations()[peptide];
   if (!data) return;
 
   const stepsHtml = data.steps.map((step, i) => `

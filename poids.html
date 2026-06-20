@@ -387,7 +387,7 @@ function renderChart(weights) {
 function renderHistory(all) {
   const list=document.getElementById('historyList');
   const sorted=[...all].sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
-  if(sorted.length===0){list.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">Aucune donnée</div>';return;}
+  if(sorted.length===0){list.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">'+t('weight_no_data')+'</div>';return;}
   list.innerHTML=sorted.slice(0,30).map((w,i)=>{
     const prev=sorted[i+1];
     let diffHtml='';

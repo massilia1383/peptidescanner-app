@@ -709,12 +709,18 @@ async function loadPeptides() {
   const tbody = document.getElementById('peptidesTable');
   tbody.innerHTML = '<tr><td colspan="5" class="loading"><div class="spinner"></div> Chargement…</td></tr>';
 
-  const { data } = await sb.from('peptides').select('id, name, category, typical_dose_mcg, unit, description_fr, research_phase').order('name');
+  const { data, error } = await sb.from('peptides').select('*').order('name');
+
+  if (error) {
+    console.error('Peptides error:', error);
+    tbody.innerHTML = `<tr><td colspan="5" class="empty">⚠️ Erreur : ${error.message}</td></tr>`;
+    return;
+  }
   if (!data?.length) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun peptide — Ajoutez-en avec le bouton +</td></tr>';
     return;
   }
-  tbody.innerHTML = (data||[]).map(p => `
+  tbody.innerHTML = data.map(p => `
     <tr>
       <td><strong>${p.name}</strong></td>
       <td>${p.category || '—'}</td>

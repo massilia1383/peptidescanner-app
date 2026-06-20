@@ -245,8 +245,10 @@ async function init() {
   renderAutoAlerts();
   renderCustomAlerts();
   renderInjReminders();
-  updateNotifBanner();
-  if (Notification.permission === 'granted') scheduleAllReminders();
+  setTimeout(() => {
+    updateNotifBanner();
+    if (Notification.permission === 'granted') scheduleAllReminders();
+  }, 100);
 }
 
 // ── PROGRAMME DU JOUR ──────────────────────────────────────────

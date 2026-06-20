@@ -82,9 +82,15 @@
   .cal-day.missed { background:rgba(239,68,68,.08); color:var(--danger); border-color:rgba(239,68,68,.15); }
   .cal-day.rest { background:var(--surface2); color:var(--muted); }
   .cal-day.today { border-color:var(--accent) !important; box-shadow:0 0 0 1px rgba(0,201,167,.5); }
-  .cal-day.future-day { color:var(--muted); background:var(--surface2); opacity:.4; cursor:default; }
-  .cal-day.future-inj { color:var(--accent2); background:rgba(43,108,176,.08); border:1px dashed rgba(43,108,176,.3); cursor:default; }
-  .day-dot.blue { background:var(--accent2); }
+  .cal-day.future-day { color:var(--muted); background:var(--surface2); opacity:.3; cursor:default; }
+  .cal-day.future-inj { 
+    color:#2B6CB0; 
+    background:rgba(43,108,176,.15); 
+    border:1.5px solid rgba(43,108,176,.4);
+    font-weight:700;
+    cursor:default; 
+  }
+  .day-dot.blue { background:#2B6CB0; width:5px; height:5px; }
   .day-dot { width:4px; height:4px; border-radius:50%; position:absolute; bottom:4px; }
   .day-dot.green { background:var(--accent); }
   .day-dot.amber { background:var(--accent3); }

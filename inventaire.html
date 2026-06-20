@@ -149,6 +149,19 @@
 
   @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
   .flacon-card { animation:fadeIn .3s ease both; }
+
+  /* INJECTIONS RESTANTES */
+  .inj-remaining {
+    background:linear-gradient(135deg, rgba(13,148,136,.06), rgba(43,108,176,.04));
+    border:1px solid rgba(13,148,136,.18); border-radius:10px;
+    padding:8px 10px; margin-top:6px;
+    display:flex; align-items:center; justify-content:space-between; gap:6px;
+  }
+  .inj-remaining-label { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; }
+  .inj-remaining-val { font-family:'Space Mono',monospace; font-size:.82rem; font-weight:700; color:var(--accent); white-space:nowrap; }
+  .inj-remaining-days { font-size:.65rem; color:var(--muted); text-align:right; }
+  .inj-remaining.warn .inj-remaining-val { color:var(--accent3); }
+  .inj-remaining.critical .inj-remaining-val { color:var(--danger); }
 </style>
 </head>
 <body>
@@ -377,6 +390,22 @@ function render() {
         <div style="font-family:'Space Mono',monospace;font-size:.8rem;color:${color};font-weight:700">${pct}%</div>
         <div style="font-size:.68rem;color:var(--muted);text-align:center">${remaining} / ${total} ${f.vial_qty_mg?'mg':''}</div>
         ${f.expiry_date?`<div style="font-size:.65rem;color:var(--muted)">exp. ${fmt(f.expiry_date)}</div>`:''}
+        ${(() => {
+          const dosePerInj = f.bac_water_ml;
+          const freqPerDay = f.vial_count ? f.vial_count / 10 : null;
+          const remaining2 = f.remaining_units ?? f.vial_qty_mg ?? 0;
+          const isSealed2  = (f.notes||'').includes('sealed') || !f.reconstituted_at;
+          if (!isSealed2 && dosePerInj && freqPerDay && remaining2 > 0) {
+            const injLeft  = Math.floor(remaining2 / dosePerInj);
+            const daysLeft = Math.round(injLeft / freqPerDay);
+            const cls      = injLeft <= 3 ? 'critical' : injLeft <= 10 ? 'warn' : '';
+            return `<div style="background:${cls==='critical'?'rgba(220,38,38,.08)':cls==='warn'?'rgba(249,115,22,.08)':'rgba(13,148,136,.06)'};border:1px solid ${cls==='critical'?'rgba(220,38,38,.2)':cls==='warn'?'rgba(249,115,22,.2)':'rgba(13,148,136,.18)'};border-radius:8px;padding:6px 8px;width:100%;text-align:center;margin-top:2px">
+              <div style="font-family:'Space Mono',monospace;font-size:.78rem;font-weight:700;color:${cls==='critical'?'var(--danger)':cls==='warn'?'var(--accent3)':'var(--accent)'}">${injLeft} inj. restantes</div>
+              <div style="font-size:.62rem;color:var(--muted);margin-top:1px">~${daysLeft} jour${daysLeft>1?'s':''}</div>
+            </div>`;
+          }
+          return '';
+        })()}
         <button onclick="event.stopPropagation();confirmDelete('${f.id}')" style="margin-top:6px;padding:4px 12px;background:rgba(220,38,38,.08);color:var(--danger);border:1px solid rgba(220,38,38,.2);border-radius:8px;font-family:inherit;font-size:.68rem;font-weight:600;cursor:pointer">🗑 Supprimer</button>
       </div>`;
     }).join('')}
@@ -394,8 +423,8 @@ function openModal() {
   document.getElementById('fEditId').value = '';
   ['fPeptide','fNote'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
   document.getElementById('fQty').value        = '';
-  document.getElementById('fDosePerInj').value = '';
-  document.getElementById('fFreqPerDay').value = '';
+  document.getElementById('fDosePerInj').value = f.bac_water_ml || '';
+  document.getElementById('fFreqPerDay').value = f.vial_count ? (f.vial_count / 10) : '';
   document.getElementById('fUnit').value       = 'mg';
   document.getElementById('fStatus').value     = 'active';
   document.getElementById('fReconDate').value  = new Date().toISOString().split('T')[0];
@@ -410,8 +439,8 @@ function openEditModal(id) {
   document.getElementById('fEditId').value     = id;
   document.getElementById('fPeptide').value    = f.peptide_name||'';
   document.getElementById('fQty').value        = f.vial_qty_mg||'';
-  document.getElementById('fDosePerInj').value = '';
-  document.getElementById('fFreqPerDay').value = '';
+  document.getElementById('fDosePerInj').value = f.bac_water_ml || '';
+  document.getElementById('fFreqPerDay').value = f.vial_count ? (f.vial_count / 10) : '';
   document.getElementById('fUnit').value       = 'mg';
   document.getElementById('fReconDate').value  = f.reconstituted_at||'';
   document.getElementById('fNote').value       = f.notes||'';
@@ -444,6 +473,8 @@ async function saveFlacon() {
     peptide_name:    peptide,
     vial_qty_mg:     qty,
     remaining_units: editId ? undefined : qty,
+    bac_water_ml:    dose,   // on réutilise bac_water_ml pour stocker dose/inj
+    vial_count:      freq ? Math.round(freq * 10) : null, // freq*10 pour garder décimales (ex: 0.5 → 5)
     reconstituted_at:recon,
     notes:           status + (note ? ' | '+note : ''),
   };

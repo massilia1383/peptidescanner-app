@@ -285,7 +285,7 @@ function renderSchedule() {
 
 // ── AUTO ALERTES ───────────────────────────────────────────────
 function renderAutoAlerts() {
-  const c = document.getElementById('autoAlerts');
+  const c = document.getElementById('autoAlertsList');
   const alerts = [];
   allCures.forEach(cure => {
     if (!cure.start_date || !cure.duration_days) return;
@@ -308,7 +308,7 @@ function renderAutoAlerts() {
 
 // ── RAPPELS PERSONNALISÉS (localStorage) ───────────────────────
 function renderCustomAlerts() {
-  const c = document.getElementById('customAlerts');
+  const c = document.getElementById('customAlertsList');
   const alerts = JSON.parse(localStorage.getItem('ps_custom_alerts')||'[]');
   const clsMap = {high:'ai-red',medium:'ai-amber',low:'ai-green'};
   const iconMap = {high:'🔴',medium:'🟡',low:'🟢'};

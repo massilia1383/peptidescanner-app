@@ -400,7 +400,7 @@ function render() {
         ${f.expiry_date?`<div style="font-size:.65rem;color:var(--muted)">exp. ${fmt(f.expiry_date)}</div>`:''}
         ${(() => {
           const dosePerInj = f.bac_water_ml;
-          const freqPerDay = f.vial_count ? f.vial_count / 10 : null;
+          const freqPerDay = f.lot_number ? parseFloat(f.lot_number) : null;
           const remaining2 = f.remaining_units ?? f.vial_qty_mg ?? 0;
           const isSealed2  = (f.notes||'').includes('sealed') || !f.reconstituted_at;
           if (!isSealed2 && dosePerInj && freqPerDay && remaining2 > 0) {
@@ -448,7 +448,7 @@ function openEditModal(id) {
   document.getElementById('fPeptide').value    = f.peptide_name||'';
   document.getElementById('fQty').value        = f.vial_qty_mg||'';
   document.getElementById('fDosePerInj').value = f.bac_water_ml || '';
-  document.getElementById('fFreqPerDay').value = f.vial_count ? String(f.vial_count / 10) : '';
+  document.getElementById('fFreqPerDay').value = f.lot_number || '';
   document.getElementById('fUnit').value       = 'mg';
   document.getElementById('fReconDate').value  = f.reconstituted_at||'';
   document.getElementById('fNote').value       = f.notes||'';
@@ -481,8 +481,8 @@ async function saveFlacon() {
     peptide_name:    peptide,
     vial_qty_mg:     qty,
     remaining_units: editId ? undefined : qty,
-    bac_water_ml:    dose,   // on réutilise bac_water_ml pour stocker dose/inj
-    vial_count:      freq ? Math.round(freq * 10) : null, // freq*10 pour garder décimales (ex: 0.5 → 5)
+    bac_water_ml:    dose,      // dose par injection (mg)
+    lot_number:      freq ? String(freq) : null, // fréquence exacte stockée en texte
     reconstituted_at:recon,
     notes:           status + (note ? ' | '+note : ''),
   };

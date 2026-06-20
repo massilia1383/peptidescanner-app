@@ -162,6 +162,24 @@
   .access-denied .icon { font-size:3rem; margin-bottom:16px; }
   .access-denied h1 { font-size:1.2rem; font-weight:700; margin-bottom:8px; color:var(--danger); }
   .access-denied p { font-size:.85rem; color:var(--muted); }
+
+  /* DISCLAIMER JURIDIQUE */
+  .legal-disclaimer {
+    background:rgba(249,115,22,.06); border:1px solid rgba(249,115,22,.2);
+    border-radius:12px; padding:12px 16px; margin:12px 0;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .legal-disclaimer.compact { padding:8px 12px; margin:8px 0; border-radius:8px; }
+  .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
+  .legal-disclaimer-text { font-size:.72rem; color:#92400E; line-height:1.5; }
+  .legal-disclaimer-text strong { color:#78350F; }
+  .phase-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700; }
+  .phase-established  { background:rgba(13,148,136,.1);  color:#065F46; border:1px solid rgba(13,148,136,.2); }
+  .phase-preclinical  { background:rgba(43,108,176,.1);  color:#1E3A5F; border:1px solid rgba(43,108,176,.2); }
+  .phase-phase1       { background:rgba(245,158,11,.1);  color:#78350F; border:1px solid rgba(245,158,11,.2); }
+  .phase-phase2       { background:rgba(249,115,22,.1);  color:#7C2D12; border:1px solid rgba(249,115,22,.2); }
+  .phase-phase3       { background:rgba(139,92,246,.1);  color:#4C1D95; border:1px solid rgba(139,92,246,.2); }
+  .phase-experimental { background:rgba(220,38,38,.08);  color:#7F1D1D; border:1px solid rgba(220,38,38,.15); }
 </style>
 </head>
 <body>
@@ -303,7 +321,7 @@
           </div>
           <table>
             <thead><tr>
-              <th>Nom</th><th>Catégorie</th><th>Dose typique</th><th>Unité</th><th>Actions</th>
+              <th>Nom</th><th>Catégorie</th><th>Phase</th><th>Dose</th><th>Actions</th>
             </tr></thead>
             <tbody id="peptidesTable"></tbody>
           </table>
@@ -407,6 +425,15 @@
         </select>
       </div>
     </div>
+    <div class="form-group"><label class="form-label">Phase de recherche</label>
+    <select class="form-select" id="pPhase">
+      <option value="established">✅ Usage établi (communauté)</option>
+      <option value="preclinical">🔬 Préclinique (animaux)</option>
+      <option value="phase1">🧪 Essai clinique Phase I</option>
+      <option value="phase2">🧪 Essai clinique Phase II</option>
+      <option value="phase3">🧪 Essai clinique Phase III</option>
+      <option value="experimental">❓ Expérimental</option>
+    </select></div>
     <div class="form-group"><label class="form-label">Description FR</label><textarea class="form-input" id="pDescFr" rows="3" placeholder="Description en français…" style="resize:vertical"></textarea></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
       <button class="action-btn" onclick="closePeptideModal()">Annuler</button>
@@ -431,7 +458,20 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js">
+function phaseBadge(phase) {
+  const phases = {
+    'established':  ['✅', 'Usage établi (communauté)',  'established'],
+    'preclinical':  ['🔬', 'Préclinique (animaux)',       'preclinical'],
+    'phase1':       ['🧪', 'Essai clinique Phase I',      'phase1'],
+    'phase2':       ['🧪', 'Essai clinique Phase II',     'phase2'],
+    'phase3':       ['🧪', 'Essai clinique Phase III',    'phase3'],
+    'experimental': ['❓', 'Expérimental / données limitées', 'experimental'],
+  };
+  const p = phases[phase] || phases['experimental'];
+  return '<span class="phase-badge phase-'+p[2]+'">'+p[0]+' '+p[1]+'</span>';
+}
+</script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
@@ -669,7 +709,7 @@ async function loadPeptides() {
   const tbody = document.getElementById('peptidesTable');
   tbody.innerHTML = '<tr><td colspan="5" class="loading"><div class="spinner"></div> Chargement…</td></tr>';
 
-  const { data } = await sb.from('peptides').select('*').order('name');
+  const { data } = await sb.from('peptides').select('id, name, category, typical_dose_mcg, unit, description_fr, research_phase').order('name');
   if (!data?.length) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun peptide — Ajoutez-en avec le bouton +</td></tr>';
     return;
@@ -678,8 +718,8 @@ async function loadPeptides() {
     <tr>
       <td><strong>${p.name}</strong></td>
       <td>${p.category || '—'}</td>
-      <td>${p.typical_dose_mcg || '—'}</td>
-      <td>${p.unit || 'mg'}</td>
+      <td>${phaseBadge(p.research_phase||'experimental')}</td>
+      <td>${p.typical_dose_mcg || '—'} ${p.unit || 'mg'}</td>
       <td style="display:flex;gap:6px">
         <button class="action-btn" onclick="editPeptide(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏️</button>
         <button class="action-btn danger" onclick="deletePeptide('${p.id}')">🗑</button>
@@ -695,6 +735,7 @@ function openPeptideModal(p) {
   document.getElementById('pDose').value       = '';
   document.getElementById('pUnit').value       = 'mg';
   document.getElementById('pDescFr').value     = '';
+  document.getElementById('pPhase').value      = 'experimental';
   document.getElementById('peptideModalTitle').textContent = 'Ajouter un peptide';
   document.getElementById('peptideModal').classList.add('open');
 }
@@ -706,6 +747,7 @@ function editPeptide(p) {
   document.getElementById('pDose').value       = p.typical_dose_mcg || '';
   document.getElementById('pUnit').value       = p.unit || 'mg';
   document.getElementById('pDescFr').value     = p.description_fr || '';
+  document.getElementById('pPhase').value      = p.research_phase || 'experimental';
   document.getElementById('peptideModalTitle').textContent = 'Modifier le peptide';
   document.getElementById('peptideModal').classList.add('open');
 }
@@ -719,10 +761,11 @@ async function savePeptide() {
   const dose     = parseFloat(document.getElementById('pDose').value) || null;
   const unit     = document.getElementById('pUnit').value;
   const descFr   = document.getElementById('pDescFr').value.trim();
+  const phase    = document.getElementById('pPhase').value;
 
   if (!name) { showToast('⚠️ Nom requis'); return; }
 
-  const payload = { name, category: category||null, typical_dose_mcg: dose, unit, description_fr: descFr||null };
+  const payload = { name, category: category||null, typical_dose_mcg: dose, unit, description_fr: descFr||null, research_phase: phase };
 
   const { error } = id
     ? await sb.from('peptides').update(payload).eq('id', id)

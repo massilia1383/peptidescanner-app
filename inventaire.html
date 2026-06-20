@@ -372,7 +372,7 @@ function render() {
       const pct       = total > 0 ? Math.min(100, Math.round((remaining/total)*100)) : 0;
       const isExpired = f.expiry_date && new Date(f.expiry_date) < TODAY;
       const isLow     = pct < 20 && pct > 0;
-      const isSealed  = (f.notes||'').includes('sealed') || (!f.reconstituted_at);
+      const isSealed  = (f.notes||'').includes('sealed');
 
       const color = isExpired ? '#DC2626' : isLow ? '#F97316' : '#0D9488';
       const badgeHtml = isExpired
@@ -504,6 +504,13 @@ function closeModal()      { document.getElementById('flaconModal').classList.re
 function closeIfOverlay(e) { if(e.target===document.getElementById('flaconModal')) closeModal(); }
 
 init();
+
+// Auto-refresh quand on revient sur la page (depuis cure.html par exemple)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && userId) {
+    loadData();
+  }
+});
 </script>
 </body>
 </html>

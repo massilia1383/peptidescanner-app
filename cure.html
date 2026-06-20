@@ -629,7 +629,7 @@ async function updateStockAfterInjection(cure, direction) {
     const peptideName = cure.peptide_name || cure.name;
     if (!peptideName) return;
     const { data: flacons } = await sb.from('inventory')
-      .select('id, notes')
+      .select('id, peptide_name, notes')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
     const match = (flacons||[]).find(f => {

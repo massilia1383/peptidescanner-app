@@ -618,11 +618,11 @@ async function toggleInj(ds, slot, time) {
 // Met à jour remaining_units dans inventory après une injection
 // direction : -1 = déduire, +1 = remettre (annulation)
 async function updateStockAfterInjection(cure, direction) {
-  if (!cure?.dose_mcg) return; // pas de dose définie → on skip
+  if (!cure?.dose_mcg) return;
   const peptideName = cure.peptide_name || cure.name;
   const doseUnit    = (cure.unit || 'mcg').toLowerCase();
 
-  // Chercher le flacon actif correspondant à ce peptide
+  // Chercher tous les flacons correspondant à ce peptide (actifs ET scellés)
   const { data: flacons } = await sb.from('inventory')
     .select('id, remaining_units, vial_qty_mg, notes')
     .eq('user_id', userId)
@@ -631,10 +631,8 @@ async function updateStockAfterInjection(cure, direction) {
 
   if (!flacons || flacons.length === 0) return;
 
-  // Prendre le premier flacon actif non terminé
-  const flacon = flacons.find(f =>
-    !(f.notes||'').includes('finished') && !(f.notes||'').includes('sealed')
-  );
+  // Prendre le premier flacon non terminé (actif OU scellé)
+  const flacon = flacons.find(f => !(f.notes||'').includes('finished'));
   if (!flacon) return;
 
   // Convertir la dose en mg si nécessaire
@@ -644,8 +642,20 @@ async function updateStockAfterInjection(cure, direction) {
   const currentRemaining = parseFloat(flacon.remaining_units ?? flacon.vial_qty_mg ?? 0);
   const newRemaining     = Math.max(0, currentRemaining + direction * doseMg);
 
+  // Si le flacon était scellé → le passer en active à la première injection
+  let newNotes = flacon.notes || '';
+  if (direction === -1 && newNotes.includes('sealed')) {
+    newNotes = newNotes.replace('sealed', 'active');
+  }
+
   await sb.from('inventory')
-    .update({ remaining_units: Math.round(newRemaining * 1000) / 1000 })
+    .update({
+      remaining_units: Math.round(newRemaining * 1000) / 1000,
+      notes: newNotes,
+      reconstituted_at: (!flacon.notes || flacon.notes.includes('sealed'))
+        ? new Date().toISOString().split('T')[0]
+        : undefined
+    })
     .eq('id', flacon.id);
 }
 

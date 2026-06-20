@@ -618,62 +618,63 @@ async function toggleInj(ds, slot, time) {
 // Met à jour remaining_units dans inventory après une injection
 // direction : -1 = déduire, +1 = remettre (annulation)
 async function updateStockAfterInjection(cure, direction) {
-  const peptideName = cure?.peptide_name || cure?.name;
-  if (!peptideName) { console.warn('[Stock] Pas de nom peptide'); return; }
+  if (!cure) return;
 
-  console.log('[Stock] updateStock →', peptideName, 'direction:', direction, 'dose_mcg:', cure?.dose_mcg);
+  // Extraire l'inventory_id depuis les notes de la cure (inv:UUID)
+  const invMatch = (cure.notes||'').match(/inv:([a-f0-9-]{36})/);
+  let flaconId   = invMatch ? invMatch[1] : null;
 
-  // Chercher tous les flacons de ce peptide non terminés
-  const { data: flacons, error } = await sb.from('inventory')
+  // Fallback : chercher par nom de peptide si pas d'inventoryId
+  if (!flaconId) {
+    const peptideName = cure.peptide_name || cure.name;
+    if (!peptideName) return;
+    const { data: flacons } = await sb.from('inventory')
+      .select('id, notes')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    const match = (flacons||[]).find(f => {
+      const fn = (f.peptide_name||'').toLowerCase();
+      const pn = peptideName.toLowerCase();
+      return (fn === pn || fn.includes(pn) || pn.includes(fn)) && !(f.notes||'').includes('finished');
+    });
+    if (match) flaconId = match.id;
+  }
+
+  if (!flaconId) { console.warn('[Stock] Aucun flacon trouvé'); return; }
+
+  // Récupérer le flacon
+  const { data: flacon } = await sb.from('inventory')
     .select('id, remaining_units, vial_qty_mg, notes, reconstituted_at')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .eq('id', flaconId)
+    .single();
 
-  console.log('[Stock] Flacons trouvés:', flacons?.length, error);
+  if (!flacon) return;
 
-  if (!flacons || flacons.length === 0) { console.warn('[Stock] Aucun flacon'); return; }
-
-  // Chercher par nom (insensible à la casse, partiel)
-  const flacon = flacons.find(f => {
-    const fn = (f.peptide_name||'').toLowerCase();
-    const pn = peptideName.toLowerCase();
-    return fn.includes(pn) || pn.includes(fn);
-  });
-
-  if (!flacon) { console.warn('[Stock] Aucun flacon correspondant pour:', peptideName); return; }
-  if ((flacon.notes||'').includes('finished')) { console.warn('[Stock] Flacon terminé'); return; }
-
-  console.log('[Stock] Flacon trouvé:', flacon.id, 'notes:', flacon.notes);
-
-  // Calculer la nouvelle quantité restante
+  // Calculer nouvelle quantité
   let newRemaining = parseFloat(flacon.remaining_units ?? flacon.vial_qty_mg ?? 0);
-  if (cure?.dose_mcg) {
+  if (cure.dose_mcg) {
     const doseUnit = (cure.unit || 'mcg').toLowerCase();
     let doseMg = parseFloat(cure.dose_mcg) || 0;
     if (doseUnit === 'mcg') doseMg = doseMg / 1000;
     newRemaining = Math.max(0, newRemaining + direction * doseMg);
   }
 
-  // Toujours passer en active si c'était sealed et c'est une injection (direction = -1)
-  let newNotes = (flacon.notes || '').replace('sealed', 'active');
-  if (!newNotes.includes('active')) newNotes = 'active' + (newNotes ? ' | ' + newNotes : '');
+  // Passer en active si scellé (première injection)
+  let newNotes = (flacon.notes || '');
+  if (direction === -1 && newNotes.includes('sealed')) {
+    newNotes = newNotes.replace('sealed', 'active');
+  }
 
-  const updatePayload = {
+  const { error } = await sb.from('inventory').update({
     remaining_units:  Math.round(newRemaining * 1000) / 1000,
     notes:            direction === -1 ? newNotes : flacon.notes,
     reconstituted_at: (direction === -1 && !flacon.reconstituted_at)
       ? new Date().toISOString().split('T')[0]
       : flacon.reconstituted_at,
-  };
+  }).eq('id', flaconId);
 
-  console.log('[Stock] Update payload:', updatePayload);
-
-  const { error: updErr } = await sb.from('inventory')
-    .update(updatePayload)
-    .eq('id', flacon.id);
-
-  if (updErr) console.error('[Stock] Erreur update:', updErr);
-  else console.log('[Stock] ✓ Stock mis à jour');
+  if (error) console.error('[Stock] Erreur update:', error);
+  else console.log('[Stock] ✓ Stock mis à jour, restant:', newRemaining);
 }
 
 function saveNote(ds) {
@@ -712,28 +713,30 @@ async function populatePeptideSelect(currentVal) {
   const sel = document.getElementById('newCurePeptide');
   sel.innerHTML = '<option value="">Choisir…</option>';
 
-  // Flacons du stock (actifs ou scellés)
-  try {
-    const { data: stock } = await sb.from('inventory')
-      .select('peptide_name, vial_qty_mg, remaining_units, notes')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+  // Flacons du stock (actifs ou scellés) — seulement si userId disponible
+  if (userId) {
+    try {
+      const { data: stock } = await sb.from('inventory')
+        .select('peptide_name, vial_qty_mg, remaining_units, notes')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-    const stockItems = (stock || []).filter(f => !(f.notes||'').includes('finished'));
-    if (stockItems.length > 0) {
-      const grpStock = document.createElement('optgroup');
-      grpStock.label = '🧪 Mon stock';
-      stockItems.forEach(f => {
-        const opt = document.createElement('option');
-        const rem = f.remaining_units ?? f.vial_qty_mg ?? 0;
-        opt.value = f.peptide_name;
-        opt.textContent = `${f.peptide_name} (${rem} mg restants)`;
-        if (currentVal === f.peptide_name) opt.selected = true;
-        grpStock.appendChild(opt);
-      });
-      sel.appendChild(grpStock);
-    }
-  } catch(_) {}
+      const stockItems = (stock || []).filter(f => !(f.notes||'').includes('finished'));
+      if (stockItems.length > 0) {
+        const grpStock = document.createElement('optgroup');
+        grpStock.label = '🧪 Mon stock';
+        stockItems.forEach(f => {
+          const opt = document.createElement('option');
+          const rem = f.remaining_units ?? f.vial_qty_mg ?? 0;
+          opt.value = f.peptide_name;
+          opt.textContent = `${f.peptide_name} (${rem} mg restants)`;
+          if (currentVal === f.peptide_name) opt.selected = true;
+          grpStock.appendChild(opt);
+        });
+        sel.appendChild(grpStock);
+      }
+    } catch(e) { console.warn('Stock load error:', e); }
+  }
 
   // Bibliothèque standard
   const grpBiblio = document.createElement('optgroup');
@@ -777,9 +780,28 @@ async function saveCure() {
   if (!peptide||!dosage||!startDate||!duration) { showToast('⚠️ Remplir tous les champs'); return; }
   const doseNum = parseFloat(dosage);
   const unit    = dosage.toLowerCase().includes('mg')?'mg':dosage.toLowerCase().includes('iu')?'IU':'mcg';
+
+  // Chercher si ce peptide correspond à un flacon du stock → stocker l'inventory_id
+  let inventoryId = null;
+  if (userId) {
+    const { data: stock } = await sb.from('inventory')
+      .select('id, peptide_name, notes')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    const match = (stock||[]).find(f => {
+      const fn = (f.peptide_name||'').toLowerCase();
+      const pn = peptide.toLowerCase();
+      return fn === pn || fn.includes(pn) || pn.includes(fn);
+    });
+    if (match && !(match.notes||'').includes('finished')) {
+      inventoryId = match.id;
+    }
+  }
+
+  const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(notes?' | '+notes:'');
   const payload = { name:peptide, peptide_name:peptide, dose_mcg:doseNum||null, unit, frequency:freq,
-    duration_days:parseInt(duration), start_date:startDate, status:'active',
-    notes:'admin:'+admin+(notes?' | '+notes:'') };
+    duration_days:parseInt(duration), start_date:startDate, status:'active', notes:notesStr };
+
   if (editCureId) {
     await sb.from('cures').update(payload).eq('id', editCureId);
     showToast('✓ Cure mise à jour');

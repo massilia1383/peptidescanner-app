@@ -423,8 +423,8 @@ function openModal() {
   document.getElementById('fEditId').value = '';
   ['fPeptide','fNote'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
   document.getElementById('fQty').value        = '';
-  document.getElementById('fDosePerInj').value = f.bac_water_ml || '';
-  document.getElementById('fFreqPerDay').value = f.vial_count ? (f.vial_count / 10) : '';
+  document.getElementById('fDosePerInj').value = '';
+  document.getElementById('fFreqPerDay').value = '';
   document.getElementById('fUnit').value       = 'mg';
   document.getElementById('fStatus').value     = 'active';
   document.getElementById('fReconDate').value  = new Date().toISOString().split('T')[0];

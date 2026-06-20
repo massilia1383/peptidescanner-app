@@ -221,17 +221,18 @@
   <div class="topbar-left">
     <div class="ai-avatar">🧬<div class="ai-online"></div></div>
     <div class="ai-info">
-      <strong>Conseiller IA</strong>
-      <span>● En ligne · Spécialiste peptides</span>
+      <strong data-i18n="ia_title">Conseiller IA</strong>
+      <span data-i18n="ia_online">● En ligne · Spécialiste peptides</span>
     </div>
   </div>
+  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
   <div class="topbar-logo">PeptideScanner</div>
-  <button class="clear-btn" onclick="clearChat()">Effacer</button>
+  <button class="clear-btn" onclick="clearChat()"><span data-i18n="ia_clear">Effacer</span></button>
 </div>
 
 <!-- CONTEXT BANNER -->
 <div class="context-banner" id="contextBanner">
-  <span class="ctx-label">Contexte :</span>
+  <span class="ctx-label"><span data-i18n="ia_context">Contexte :</span></span>
   <!-- Généré par JS -->
 </div>
 
@@ -245,7 +246,7 @@
   <div class="suggestions-wrap" id="suggestionsWrap"></div>
 
   <!-- DISCLAIMER -->
-  <div class="disclaimer-msg">⚠️ Usage éducatif — Consultez un professionnel de santé avant tout protocole</div>
+  <div class="disclaimer-msg"><span data-i18n="ia_disclaimer">⚠️ Usage éducatif — Consultez un professionnel de santé avant tout protocole</span></div>
 
   <!-- INPUT -->
   <div class="input-area">
@@ -274,11 +275,12 @@
   <a class="nav-item active" href="ia.html"><span class="nav-icon">🤖</span><span class="nav-label">IA</span><div class="nav-dot"></div></a>
   <a class="nav-item" href="inventaire.html">
     <span class="nav-icon">🧪</span>
-    <span class="nav-label">Stock</span>
+    <span class="nav-label" data-i18n="nav_stock">Stock</span>
   </a>
   <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
 </nav>
 
+<script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
@@ -1228,7 +1230,14 @@ function getActiveCure() {
 }
 
 // ── LANCER ────────────────────────────────────────────────────
-init();
+init().then(()=>{
+  PS_applyI18n();
+  const lb=document.getElementById('langToggleBtn');
+  if(lb) lb.textContent=PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+  // Update placeholder
+  const ci=document.getElementById('chatInput');
+  if(ci) ci.placeholder=t('ia_placeholder');
+});
 
 </script>
 </body>

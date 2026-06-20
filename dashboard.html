@@ -318,10 +318,11 @@
 <!-- TOP BAR -->
 <div class="topbar">
   <div class="topbar-left">
-    <span class="topbar-greeting">Bonjour 👋</span>
+    <span class="topbar-greeting" data-i18n="dash_greeting">Bonjour 👋</span>
     <span class="topbar-name" id="userName">Chargement…</span>
   </div>
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
+  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
   <div class="notif-btn" onclick="window.location='alertes.html'">
     🔔<div class="notif-badge" id="notifBadge"></div>
   </div>
@@ -333,7 +334,7 @@
   <!-- CURE ACTIVE -->
   <div style="margin-bottom:8px">
     <div class="section-head">
-      <h2>Cure active</h2>
+      <h2 data-i18n="dash_active_cure">Cure active</h2>
       <a href="cure.html">Voir tout →</a>
     </div>
   </div>
@@ -376,44 +377,44 @@
       </div>
     </div>
     <div class="cure-actions">
-      <button class="cure-btn primary" onclick="window.location='cure.html'">📅 Calendrier</button>
-      <button class="cure-btn secondary" onclick="openAddCure()">＋ Nouvelle cure</button>
+      <button class="cure-btn primary" onclick="window.location='cure.html'"><span data-i18n="dash_calendar">📅 Calendrier</span></button>
+      <button class="cure-btn secondary" onclick="openAddCure()"><span data-i18n="dash_new_cure">＋ Nouvelle cure</span></button>
     </div>
   </div>
 
   <!-- STATS -->
   <div class="section-head">
-    <h2>Résumé</h2>
-    <a href="poids.html">Poids →</a>
+    <h2 data-i18n="dash_summary">Résumé</h2>
+    <a href="poids.html" data-i18n="dash_weight_go">Poids →</a>
   </div>
   <div class="stats-row">
     <div class="stat-card">
-      <div class="stat-card-label">Poids actuel</div>
+      <div class="stat-card-label" data-i18n="dash_current_weight">Poids actuel</div>
       <div class="stat-card-val green" id="currentWeight">—</div>
       <div class="stat-card-sub" id="weightDiff">—</div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-label">Cures complétées</div>
+      <div class="stat-card-label" data-i18n="dash_cures_done">Cures complétées</div>
       <div class="stat-card-val amber" id="curesCount">0</div>
-      <div class="stat-card-sub">depuis le début</div>
+      <div class="stat-card-sub" data-i18n="dash_since_start">depuis le début</div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-label">Injections totales</div>
+      <div class="stat-card-label" data-i18n="dash_total_inj">Injections totales</div>
       <div class="stat-card-val purple" id="totalInj">0</div>
       <div class="stat-card-sub">toutes cures</div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-label">Compliance</div>
+      <div class="stat-card-label" data-i18n="dash_compliance">Compliance</div>
       <div class="stat-card-val green" id="compliance">—</div>
-      <div class="stat-card-sub">injections faites</div>
+      <div class="stat-card-sub" data-i18n="dash_inj_done">injections faites</div>
     </div>
   </div>
 
   <!-- MINI WEIGHT CHART -->
   <div class="weight-card">
     <div class="card-head">
-      <h3>Évolution du poids</h3>
-      <a href="poids.html">Détail →</a>
+      <h3 data-i18n="dash_weight_title">Évolution du poids</h3>
+      <a href="poids.html" data-i18n="details">Détail →</a>
     </div>
     <div class="mini-chart">
       <svg id="miniChart" viewBox="0 0 400 80" preserveAspectRatio="none">
@@ -432,15 +433,15 @@
 
   <!-- TODAY VIEW -->
   <div class="section-head">
-    <h2>Aujourd'hui</h2>
-    <a href="cure.html">Calendrier →</a>
+    <h2 data-i18n="dash_today_section">Aujourd'hui</h2>
+    <a href="cure.html" data-i18n="dash_calendar_link">Calendrier →</a>
   </div>
   <div id="todayViewContainer"></div>
 
   <!-- ALERTES -->
   <div class="section-head" style="margin-top:4px">
-    <h2>Alertes récentes</h2>
-    <a href="alertes.html">Toutes →</a>
+    <h2 data-i18n="dash_alerts_section">Alertes récentes</h2>
+    <a href="alertes.html" data-i18n="dash_alerts_all">Toutes →</a>
   </div>
   <div class="alerts-card" id="alertsCard">
     <div style="text-align:center;padding:16px 0;color:var(--muted);font-size:.85rem">
@@ -454,28 +455,28 @@
 <nav class="bottom-nav">
   <a class="nav-item active" href="dashboard.html">
     <span class="nav-icon">🏠</span>
-    <span class="nav-label">Accueil</span>
+    <span class="nav-label" data-i18n="nav_home">Accueil</span>
     <div class="nav-dot"></div>
   </a>
   <a class="nav-item" href="cure.html">
     <span class="nav-icon">📅</span>
-    <span class="nav-label">Cure</span>
+    <span class="nav-label" data-i18n="nav_cure">Cure</span>
   </a>
   <a class="nav-item" href="poids.html">
     <span class="nav-icon">⚖️</span>
-    <span class="nav-label">Poids</span>
+    <span class="nav-label" data-i18n="nav_weight">Poids</span>
   </a>
   <a class="nav-item" href="alertes.html">
     <span class="nav-icon">🔔</span>
-    <span class="nav-label">Alertes</span>
+    <span class="nav-label" data-i18n="nav_alerts">Alertes</span>
   </a>
   <a class="nav-item" href="inventaire.html">
     <span class="nav-icon">🧪</span>
-    <span class="nav-label">Stock</span>
+    <span class="nav-label" data-i18n="nav_stock">Stock</span>
   </a>
   <a class="nav-item" href="profil.html">
     <span class="nav-icon">👤</span>
-    <span class="nav-label">Profil</span>
+    <span class="nav-label" data-i18n="nav_profile">Profil</span>
   </a>
 </nav>
 
@@ -483,11 +484,11 @@
 <div class="modal-overlay" id="addCureModal" onclick="closeIfOverlay(event)">
   <div class="modal-sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Nouvelle cure</div>
+    <div class="sheet-title" data-i18n="dash_new_cure_title">Nouvelle cure</div>
     <div class="form-group">
-      <label class="form-label">Peptide</label>
+      <label class="form-label" data-i18n="dash_peptide">Peptide</label>
       <select class="form-input" id="newCurePeptide">
-        <option value="">Choisir un peptide…</option>
+        <option value="" data-i18n="dash_choose_peptide">Choisir un peptide…</option>
         <option>BPC-157</option><option>TB-500</option><option>CJC-1295</option>
         <option>Ipamorelin</option><option>GHRP-6</option><option>Semaglutide</option>
         <option>Epithalon</option><option>Semax</option><option>PT-141</option>
@@ -497,11 +498,11 @@
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Dosage</label>
+        <label class="form-label" data-i18n="dash_dosage">Dosage</label>
         <input class="form-input" id="newCureDosage" placeholder="ex: 250 mcg">
       </div>
       <div class="form-group">
-        <label class="form-label">Administration</label>
+        <label class="form-label" data-i18n="dash_admin">Administration</label>
         <select class="form-input" id="newCureAdmin">
           <option>SC</option><option>IM</option><option>Oral</option><option>Nasal</option><option>IV</option>
         </select>
@@ -509,16 +510,16 @@
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Date de début</label>
+        <label class="form-label" data-i18n="dash_start_date">Date de début</label>
         <input class="form-input" id="newCureStart" type="date">
       </div>
       <div class="form-group">
-        <label class="form-label">Durée (jours)</label>
+        <label class="form-label" data-i18n="dash_duration">Durée (jours)</label>
         <input class="form-input" id="newCureDuration" type="number" placeholder="30" min="1" max="365">
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">Fréquence d'injection</label>
+      <label class="form-label"><span data-i18n="dash_frequency">Fréquence d'injection</span></label>
       <select class="form-input" id="newCureFreq">
         <option value="1">1× par jour</option>
         <option value="2">2× par jour</option>
@@ -528,7 +529,7 @@
         <option value="0.14">1× par semaine</option>
       </select>
     </div>
-    <button class="submit-btn" onclick="saveCure()">Démarrer la cure</button>
+    <button class="submit-btn" onclick="saveCure()"><span data-i18n="dash_start_cure">Démarrer la cure</span></button>
   </div>
 </div>
 
@@ -539,12 +540,12 @@
     <div class="inj-confirm-title" id="injConfirmTitle">Confirmer l'injection</div>
     <div class="inj-confirm-sub" id="injConfirmSub">Vérifiez l'heure avant de valider</div>
     <div class="inj-time-row">
-      <span class="inj-time-label">⏰ Heure d'injection</span>
+      <span class="inj-time-label" data-i18n="dash_inj_time">⏰ Heure d'injection</span>
       <input type="time" class="inj-time-picker" id="injConfirmTime">
     </div>
     <div class="inj-confirm-btns">
-      <button class="inj-confirm-btn-cancel" onclick="closeInjConfirmModal()">Annuler</button>
-      <button class="inj-confirm-btn-ok" onclick="confirmInjection()">✓ Valider l'injection</button>
+      <button class="inj-confirm-btn-cancel" onclick="closeInjConfirmModal()"><span data-i18n="cancel">Annuler</span></button>
+      <button class="inj-confirm-btn-ok" onclick="confirmInjection()"><span data-i18n="dash_validate">✓ Valider l'injection</span></button>
     </div>
   </div>
 </div>
@@ -552,6 +553,7 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ── INIT SUPABASE ──────────────────────────────────────────────
@@ -582,6 +584,7 @@ async function init() {
 
   // Profil
   const { data: profil } = await sb.from('profiles').select('*').eq('id', userId).single();
+  PS_loadLangFromProfile(sb, userId, profil?.lang);
   document.getElementById('userName').textContent =
     profil?.full_name || data.session.user.email?.split('@')[0] || 'Utilisateur';
 
@@ -615,8 +618,8 @@ function renderCureActive() {
   });
 
   if (!active) {
-    document.getElementById('cureName').textContent   = 'Aucune cure active';
-    document.getElementById('cureSub').textContent    = 'Appuyez sur "+ Nouvelle cure" pour commencer';
+    document.getElementById('cureName').textContent   = t('dash_no_cure');
+    document.getElementById('cureSub').textContent    = t('dash_no_cure_sub');
     document.getElementById('cureDay').textContent    = '—';
     document.getElementById('cureDuration').textContent = '—';
     document.getElementById('ringPct').textContent    = '0%';
@@ -645,7 +648,7 @@ function renderCureActive() {
   document.getElementById('cureDay').textContent      = dayNum;
   document.getElementById('cureDuration').textContent = dur;
   document.getElementById('ringPct').textContent      = pct + '%';
-  document.getElementById('daysLeft').textContent     = daysLeft + ' j';
+  document.getElementById('daysLeft').textContent     = daysLeft + ' ' + t('dash_days_suffix');
   document.getElementById('endDate').textContent      = formatDate(endDate);
   document.getElementById('injDone').textContent      = done + ' / ' + totalExp;
   document.getElementById('injBar').style.width       = injPct + '%';
@@ -667,12 +670,12 @@ function renderStats() {
       const cls  = diff > 0 ? 'trend-up' : 'trend-down';
       document.getElementById('weightDiff').innerHTML = `<span class="${cls}">${sign}${diff} kg</span> depuis J1`;
     } else {
-      document.getElementById('weightDiff').textContent = 'Première mesure';
+      document.getElementById('weightDiff').textContent = t('dash_first_measure');
     }
     renderMiniChart(allWeights);
   } else {
     document.getElementById('currentWeight').textContent = '— kg';
-    document.getElementById('weightDiff').textContent    = 'Aucune donnée';
+    document.getElementById('weightDiff').textContent    = t('no_data');
   }
   const completed = allCures.filter(c => {
     if (!c.start_date || !c.duration_days) return false;
@@ -731,7 +734,7 @@ function renderTodayView() {
     </div>
     <div class="today-score">
       <div class="today-score-val">${doneDoses}/${totalDoses}</div>
-      <div class="today-score-label">${allDone ? '✅ Complété' : 'doses faites'}</div>
+      <div class="today-score-label">${allDone ? t('dash_score_done') : t('dash_score_label')}</div>
     </div>
   </div>`;
 
@@ -766,7 +769,7 @@ function renderTodayView() {
       html += `<div class="injection-item ${done?'done-item':''}" onclick="openInjConfirm('${cure.id}',${i},'${time}','${peptideName}','${doseLabel}','${nextSite}',${done})">
         <div class="inj-check ${done?'done':isDue?'due':'pending'}">${done?'✓':isDue?'!':''}</div>
         <div class="inj-info">
-          <div class="inj-name">${injPerDay>1?'Injection '+(i+1):'Injection du jour'}</div>
+          <div class="inj-name">${injPerDay>1?t('dash_injection_num')+' '+(i+1):t('dash_injection_day')}</div>
           <div class="inj-detail">SC <span class="inj-site">📍 ${nextSite}</span></div>
         </div>
         <div class="inj-time ${done?'done-time':isDue?'due':''}">${done?'✓ Fait':isDue?'⏰ Dû':time}</div>
@@ -844,7 +847,7 @@ async function quickToggleInj(cureId, slot, time, peptideName, dose, site) {
   );
   if (existing) {
     await sb.from('injections').delete().eq('id', existing.id);
-    showToast('Injection annulée');
+    showToast(t('dash_inj_cancelled'));
   } else {
     const siteKey = 'ps_site_' + cureId;
     const SITES   = ['Abdomen G','Abdomen D','Cuisse G','Cuisse D','Fesse G','Fesse D'];
@@ -908,7 +911,7 @@ async function saveCure() {
   const startDate = document.getElementById('newCureStart').value;
   const duration  = document.getElementById('newCureDuration').value;
   const freq      = document.getElementById('newCureFreq').value;
-  if (!peptide || !dosage || !startDate || !duration) { showToast('⚠️ Remplir tous les champs'); return; }
+  if (!peptide || !dosage || !startDate || !duration) { showToast(t('alerts_fill_all')); return; }
   const doseNum = parseFloat(dosage);
   const unit    = dosage.toLowerCase().includes('mg') ? 'mg' : dosage.toLowerCase().includes('iu') ? 'IU' : 'mcg';
   const { error } = await sb.from('cures').insert({
@@ -920,12 +923,15 @@ async function saveCure() {
   if (error) { showToast('Erreur : ' + error.message); return; }
   document.getElementById('addCureModal').classList.remove('open');
   document.body.style.overflow = '';
-  showToast('✓ Cure démarrée !');
+  showToast(t('cure_started'));
   await loadAll();
 }
 
 // ── LANCER ─────────────────────────────────────────────────────
 init();
+// Apply translations
+PS_applyI18n();
+const _lt = document.getElementById('langToggleBtn'); if(_lt) _lt.textContent = PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
 </script>
 
 <div style="padding:0 16px 8px"><div class="legal-disclaimer compact">

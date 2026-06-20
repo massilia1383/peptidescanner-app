@@ -137,8 +137,8 @@
 <body>
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <h1>Alertes</h1>
-  <div style="width:36px"></div>
+  <h1 data-i18n="alerts_title">Alertes</h1>
+  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
 </div>
 <div class="content">
 
@@ -146,57 +146,57 @@
   <div class="notif-banner" id="notifBanner">
     <div class="notif-banner-icon">🔔</div>
     <div class="notif-banner-text">
-      <strong>Notifications intelligentes</strong>
-      <span>Recevez vos rappels d'injection même quand l'app est fermée</span>
+      <strong data-i18n="alerts_notif_title">Notifications intelligentes</strong>
+      <span data-i18n="alerts_notif_sub">Recevez vos rappels d'injection même quand l'app est fermée</span>
     </div>
     <button class="notif-enable-btn" id="notifEnableBtn" onclick="requestNotifPermission()">Activer</button>
   </div>
 
   <!-- RAPPELS D'INJECTION PAR CURE -->
-  <div class="section-title">Rappels d'injection</div>
+  <div class="section-title"><span data-i18n="alerts_reminders">Rappels d'injection</span></div>
   <div id="injReminders"></div>
 
   <!-- SCHEDULE DU JOUR -->
-  <div class="section-title">Planning du jour</div>
+  <div class="section-title"><span data-i18n="alerts_schedule">Planning du jour</span></div>
   <div class="schedule-card">
     <h3 id="todayDate">Aujourd'hui</h3>
     <div id="scheduleList"></div>
   </div>
 
   <!-- ALERTES AUTO -->
-  <div class="section-title">Alertes actives</div>
+  <div class="section-title"><span data-i18n="alerts_auto">Alertes actives</span></div>
   <div id="autoAlertsList"></div>
 
   <!-- ALERTES PERSO -->
-  <div class="section-title" style="margin-top:8px">Mes rappels</div>
+  <div class="section-title" style="margin-top:8px"><span data-i18n="alerts_custom">Mes rappels</span></div>
   <div id="customAlertsList"></div>
 
   <!-- AJOUTER ALERTE -->
   <div class="add-alert-card">
-    <h3>+ Nouveau rappel</h3>
+    <h3 data-i18n="alerts_add_title">+ Nouveau rappel</h3>
     <div class="form-group">
-      <label class="form-label">Message</label>
-      <input class="form-input" id="alertMsg" placeholder="ex: Prise de sang IGF-1">
+      <label class="form-label"><span data-i18n="alerts_msg_label">Message</span></label>
+      <input class="form-input" id="alertMsg" data-i18n-ph="alerts_msg_ph" placeholder="ex: Prise de sang IGF-1">
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Date</label>
+        <label class="form-label"><span data-i18n="alerts_date">Date</span></label>
         <input class="form-input" id="alertDate" type="date">
       </div>
       <div class="form-group">
-        <label class="form-label">Heure</label>
+        <label class="form-label"><span data-i18n="alerts_time">Heure</span></label>
         <input class="form-input" id="alertTime" type="time">
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">Priorité</label>
+      <label class="form-label"><span data-i18n="alerts_priority">Priorité</span></label>
       <select class="form-input" id="alertPriority">
-        <option value="green">Normale</option>
-        <option value="amber">Importante</option>
-        <option value="red">Urgente</option>
+        <option value="green"><span data-i18n="alerts_prio_normal">Normale</span></option>
+        <option value="amber"><span data-i18n="alerts_prio_high">Importante</span></option>
+        <option value="red"><span data-i18n="alerts_prio_urgent">Urgente</span></option>
       </select>
     </div>
-    <button class="submit-btn" onclick="addAlert()">Enregistrer le rappel</button>
+    <button class="submit-btn" onclick="addAlert()"><span data-i18n="alerts_save_btn">Enregistrer le rappel</span></button>
   </div>
 
 </div>
@@ -209,6 +209,7 @@
   <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
 </nav>
 <div class="toast" id="toast"></div>
+<script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
@@ -233,8 +234,10 @@ async function init() {
   const todayLbl = document.getElementById('todayDate');
   if (dateEl) dateEl.value = todayStr;
   if (timeEl) timeEl.value = `${String(now.getHours()).padStart(2,'0')}:00`;
-  if (todayLbl) todayLbl.textContent = 'Aujourd\'hui — ' + TODAY.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  if (todayLbl) todayLbl.textContent = t('today') + ' — ' + TODAY.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'long',day:'numeric',month:'long'});
 
+  const { data: _profil } = await sb.from('profiles').select('lang').eq('id', userId).single();
+  if(_profil) PS_loadLangFromProfile(sb, userId, _profil.lang);
   const [cRes, iRes] = await Promise.all([
     sb.from('cures').select('*').eq('user_id', userId),
     sb.from('injections').select('*').eq('user_id', userId).limit(200)
@@ -280,7 +283,7 @@ function renderSchedule() {
     <div class="sched-item">
       <div class="sched-time">${it.time}</div>
       <div class="sched-info"><div class="sched-name">${it.name}</div><div class="sched-detail">${it.detail}</div></div>
-      <div class="sched-status ${it.done?'ss-done':it.isDue?'ss-due':'ss-upcoming'}">${it.done?'✓ Fait':it.isDue?'⏰ À faire':'À venir'}</div>
+      <div class="sched-status ${it.done?'ss-done':it.isDue?'ss-due':'ss-upcoming'}">${it.done?t('alerts_done'):it.isDue?t('alerts_due'):t('alerts_upcoming')}</div>
     </div>`).join('');
 }
 
@@ -294,9 +297,9 @@ function renderAutoAlerts() {
     const e = new Date(cure.start_date); e.setDate(e.getDate()+cure.duration_days); e.setHours(0,0,0,0);
     if (s<=TODAY && e>=TODAY) {
       const daysLeft = Math.ceil((e-TODAY)/86400000);
-      if (daysLeft<=5) alerts.push({icon:'⚠️',cls:'ai-amber',title:`Fin de cure dans ${daysLeft}j`,sub:cure.peptide_name||cure.name});
+      if (daysLeft<=5) alerts.push({icon:'⚠️',cls:'ai-amber',title:`${t('alerts_cure_end')} ${daysLeft}j`,sub:cure.peptide_name||cure.name});
       const dayNum = Math.floor((TODAY-s)/86400000)+1;
-      if ([14,21,30].includes(dayNum)) alerts.push({icon:'🩸',cls:'ai-purple',title:'Bilan sanguin recommandé',sub:`J${dayNum} — ${cure.peptide_name||cure.name}`});
+      if ([14,21,30].includes(dayNum)) alerts.push({icon:'🩸',cls:'ai-purple',title:t('alerts_blood_test'),sub:`J${dayNum} — ${cure.peptide_name||cure.name}`});
     }
   });
   if (alerts.length===0) { c.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">Aucune alerte automatique 🎉</div>'; return; }
@@ -322,7 +325,7 @@ function renderCustomAlerts() {
   c.innerHTML = '<div class="alert-card">'+sorted.map(a=>`
     <div class="alert-row">
       <div class="alert-icon ${clsMap[a.priority]||'ai-green'}">${iconMap[a.priority]||'🟢'}</div>
-      <div class="alert-body"><div class="alert-title">${a.msg}</div><div class="alert-sub">${new Date(a.date+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})} à ${a.time}</div></div>
+      <div class="alert-body"><div class="alert-title">${a.msg}</div><div class="alert-sub">${new Date(a.date+'T12:00').toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'short',day:'numeric',month:'short'})} à ${a.time}</div></div>
       <div class="alert-right"><div class="alert-time">${a.date===todayStr?'Aujourd\'hui':''}</div><button class="alert-del" onclick="deleteAlert(${a.id})">🗑</button><div class="priority-dot ${dotMap[a.priority]||'dot-green'}"></div></div>
     </div>`).join('')+'</div>';
 }
@@ -332,12 +335,12 @@ function addAlert() {
   const date     = document.getElementById('alertDate').value;
   const time     = document.getElementById('alertTime').value;
   const priority = document.getElementById('alertPriority').value;
-  if (!msg||!date||!time) { showToast('⚠️ Remplir tous les champs'); return; }
+  if (!msg||!date||!time) { showToast(t('alerts_fill_all')); return; }
   const alerts = JSON.parse(localStorage.getItem('ps_custom_alerts')||'[]');
   alerts.push({id:Date.now(),msg,date,time,priority});
   localStorage.setItem('ps_custom_alerts', JSON.stringify(alerts));
   document.getElementById('alertMsg').value = '';
-  showToast('✓ Rappel ajouté !');
+  showToast(t('alerts_added'));
   renderCustomAlerts();
 }
 
@@ -345,7 +348,7 @@ function deleteAlert(id) {
   let alerts = JSON.parse(localStorage.getItem('ps_custom_alerts')||'[]');
   alerts = alerts.filter(a=>a.id!==id);
   localStorage.setItem('ps_custom_alerts', JSON.stringify(alerts));
-  showToast('Rappel supprimé');
+  showToast(t('alerts_deleted'));
   renderCustomAlerts();
 }
 
@@ -405,7 +408,7 @@ function toggleReminder(cureId, enabled) {
   r[cureId] = { ...(r[cureId] || {}), enabled: enabled === true };
   saveReminders(r);
   renderInjReminders();
-  showToast(enabled ? '🔔 Rappel activé' : '🔕 Rappel désactivé');
+  showToast(enabled ? t('alerts_notif_on') : t('alerts_notif_off'));
 }
 
 function updateReminderTime(cureId, idx, newTime) {
@@ -418,7 +421,7 @@ function updateReminderTime(cureId, idx, newTime) {
   cur[idx] = newTime;
   r[cureId] = { ...(r[cureId] || {}), times: cur };
   saveReminders(r);
-  showToast('✓ Heure mise à jour — ' + newTime);
+  showToast(t('alerts_time_saved') + newTime);
 }
 
 // ── NOTIFICATIONS ──────────────────────────────────────────────
@@ -431,17 +434,17 @@ function updateNotifBanner() {
   const choice = localStorage.getItem('ps_notif_choice'); // 'on' | 'off' | null
 
   if (Notification.permission === 'denied') {
-    btn.textContent = 'Bloquées ⚠️'; btn.style.color = 'var(--danger)';
+    btn.textContent = t('alerts_blocked'); btn.style.color = 'var(--danger)';
     btn.onclick = null; return;
   }
   if (choice === 'off') {
-    btn.textContent = 'Activer';
+    btn.textContent = t('alerts_enable');
     btn.classList.remove('granted'); btn.classList.remove('disabled-notif');
     btn.onclick = requestNotifPermission;
     return;
   }
   if (Notification.permission === 'granted' || choice === 'on') {
-    btn.textContent = '✓ Activées — Désactiver';
+    btn.textContent = t('alerts_enabled');
     btn.classList.add('granted');
     btn.onclick = disableNotifications;
     return;
@@ -452,18 +455,18 @@ function updateNotifBanner() {
 }
 
 function requestNotifPermission() {
-  if (!('Notification' in window)) { showToast('Non supporté sur ce navigateur'); return; }
+  if (!('Notification' in window)) { showToast(t('alerts_notif_unsupported')); return; }
   localStorage.setItem('ps_notif_choice', 'on');
   const btn = document.getElementById('notifEnableBtn');
   if (btn) { btn.textContent = '✓ Activées — Désactiver'; btn.classList.add('granted'); btn.onclick = disableNotifications; }
   Notification.requestPermission().then(p => {
     if (p === 'granted') {
-      showToast('✓ Notifications activées !');
+      showToast(t('alerts_notif_activated'));
       scheduleAllReminders();
     } else if (p === 'denied') {
       localStorage.removeItem('ps_notif_choice');
       if (btn) { btn.textContent = 'Bloquées ⚠️'; btn.style.color = 'var(--danger)'; btn.onclick = null; }
-      showToast('Notifications refusées — vérifiez les réglages Safari');
+      showToast(t('alerts_notif_refused'));
     }
   });
 }
@@ -472,7 +475,7 @@ function disableNotifications() {
   localStorage.setItem('ps_notif_choice', 'off');
   const btn = document.getElementById('notifEnableBtn');
   if (btn) { btn.textContent = 'Activer'; btn.classList.remove('granted'); btn.onclick = requestNotifPermission; }
-  showToast('🔕 Notifications désactivées');
+  showToast(t('alerts_notif_disabled'));
 }
 
 function scheduleAllReminders() {
@@ -500,7 +503,11 @@ function scheduleAllReminders() {
   });
 }
 
-init();
+init().then(()=>{
+  PS_applyI18n();
+  const lb=document.getElementById('langToggleBtn');
+  if(lb) lb.textContent=PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+});
 </script>
 </body>
 </html>

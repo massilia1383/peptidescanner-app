@@ -186,7 +186,8 @@
 
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <h1>Stock</h1>
+  <h1 data-i18n="inv_title">Stock</h1>
+  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
   <button class="add-btn" onclick="openModal()" title="Ajouter un flacon">+</button>
 </div>
 
@@ -209,18 +210,18 @@
 <div class="modal-overlay" id="flaconModal" onclick="closeIfOverlay(event)">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modalTitle">Ajouter un flacon</div>
+    <div class="modal-title" id="modalTitle" data-i18n="inv_modal_add">Ajouter un flacon</div>
     <div class="form-group">
-      <label class="form-label">Peptide</label>
-      <input class="form-input" id="fPeptide" type="text" placeholder="Ex: BPC-157, HGH…" oninput="autoFillStorage(this.value)">
+      <label class="form-label" data-i18n="inv_peptide">Peptide</label>
+      <input class="form-input" id="fPeptide" type="text" data-i18n-ph="inv_peptide_ph" placeholder="Ex: BPC-157, HGH…" oninput="autoFillStorage(this.value)">
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Quantité totale</label>
+        <label class="form-label" data-i18n="inv_qty">Quantité totale</label>
         <input class="form-input" id="fQty" type="number" placeholder="10" min="0.1" step="0.1">
       </div>
       <div class="form-group">
-        <label class="form-label">Unité</label>
+        <label class="form-label" data-i18n="inv_unit">Unité</label>
         <select class="form-select" id="fUnit">
           <option value="mg" selected>mg</option>
           <option value="mcg">mcg</option>
@@ -230,13 +231,13 @@
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Dose / injection</label>
+        <label class="form-label" data-i18n="inv_dose_inj">Dose / injection</label>
         <input class="form-input" id="fDosePerInj" type="number" placeholder="0.25 mg" min="0.001" step="0.001">
       </div>
       <div class="form-group">
-        <label class="form-label">Fréquence</label>
+        <label class="form-label" data-i18n="inv_frequency">Fréquence</label>
         <select class="form-select" id="fFreqPerDay">
-          <option value="">-- Choisir --</option>
+          <option value="" data-i18n="inv_choose_freq">-- Choisir --</option>
           <option value="3">3× par jour</option>
           <option value="2">2× par jour</option>
           <option value="1">1× par jour</option>
@@ -248,44 +249,45 @@
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Date reconstitution</label>
+        <label class="form-label" data-i18n="inv_recon_date">Date reconstitution</label>
         <input class="form-input" id="fReconDate" type="date">
       </div>
       <div class="form-group">
-        <label class="form-label">Statut</label>
+        <label class="form-label" data-i18n="inv_status">Statut</label>
         <select class="form-select" id="fStatus">
-          <option value="active">En cours</option>
-          <option value="sealed">Scellé</option>
-          <option value="finished">Terminé</option>
+          <option value="active"><span data-i18n="inv_status_active">En cours</span></option>
+          <option value="sealed"><span data-i18n="inv_status_sealed">Scellé</span></option>
+          <option value="finished"><span data-i18n="inv_status_done">Terminé</span></option>
         </select>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">🌡 Temp. conservation</label>
-        <input class="form-input" id="fStorageTemp" type="text" placeholder="ex: 2-8°C">
+        <label class="form-label" data-i18n="inv_temp">🌡 Temp. conservation</label>
+        <input class="form-input" id="fStorageTemp" type="text" data-i18n-ph="inv_temp_ph" placeholder="ex: 2-8°C">
       </div>
       <div class="form-group">
-        <label class="form-label">📅 Durée max (jours)</label>
+        <label class="form-label" data-i18n="inv_max_days">📅 Durée max (jours)</label>
         <input class="form-input" id="fStorageDays" type="number" placeholder="30" min="1">
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">Note conservation</label>
+      <label class="form-label" data-i18n="inv_storage_note">Note conservation</label>
       <input class="form-input" id="fStorageNote" type="text" placeholder="ex: Éviter la lumière">
     </div>
     <div class="form-group">
-      <label class="form-label">Note (optionnel)</label>
+      <label class="form-label" data-i18n="inv_note">Note (optionnel)</label>
       <input class="form-input" id="fNote" type="text" placeholder="Ex: Lot 2025, cure récupération…">
     </div>
     <input type="hidden" id="fEditId">
-    <button class="save-btn" onclick="saveFlacon()">Enregistrer le flacon</button>
-    <button class="cancel-btn" onclick="closeModal()">Annuler</button>
+    <button class="save-btn" onclick="saveFlacon()"><span data-i18n="inv_save">Enregistrer le flacon</span></button>
+    <button class="cancel-btn" onclick="closeModal()"><span data-i18n="inv_cancel">Annuler</span></button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
@@ -329,7 +331,7 @@ function getStorageInfo(peptideName) {
 
 
 function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
-function fmt(d) { return d?new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}):'—'; }
+function fmt(d) { return d?new Date(d).toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'}):'—'; }
 
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 let userId=null, allInventory=[];
@@ -338,6 +340,8 @@ async function init() {
   const { data } = await sb.auth.getSession();
   if (!data?.session) { window.location.href='/login.html'; return; }
   userId = data.session.user.id;
+  const { data: _lp } = await sb.from('profiles').select('lang').eq('id', userId).single();
+  if(_lp) PS_loadLangFromProfile(sb, userId, _lp.lang);
   await loadData();
 }
 
@@ -520,7 +524,7 @@ function autoFillStorage(peptideName) {
 }
 
 function openModal() {
-  document.getElementById('modalTitle').textContent = 'Ajouter un flacon';
+  document.getElementById('modalTitle').textContent = t('inv_add');
   document.getElementById('fEditId').value = '';
   ['fPeptide','fNote','fStorageTemp','fStorageDays','fStorageNote'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
   document.getElementById('fQty').value        = '';
@@ -536,7 +540,7 @@ function openModal() {
 function openEditModal(id) {
   const f = allInventory.find(x=>x.id===id);
   if (!f) return;
-  document.getElementById('modalTitle').textContent = 'Modifier le flacon';
+  document.getElementById('modalTitle').textContent = t('inv_modal_edit');
   document.getElementById('fEditId').value     = id;
   document.getElementById('fPeptide').value    = f.peptide_name||'';
   document.getElementById('fQty').value        = f.vial_qty_mg||'';
@@ -564,7 +568,7 @@ function openEditModal(id) {
 
 async function saveFlacon() {
   const peptide = document.getElementById('fPeptide')?.value.trim();
-  if (!peptide) { showToast('⚠️ Nom du peptide requis'); return; }
+  if (!peptide) { showToast(t('inv_name_required')); return; }
   const qty    = parseFloat(document.getElementById('fQty')?.value)||null;
   const dose   = parseFloat(document.getElementById('fDosePerInj')?.value)||null;
   const freq   = parseFloat(document.getElementById('fFreqPerDay')?.value)||null;
@@ -604,10 +608,10 @@ async function saveFlacon() {
 
   if (editId) {
     await sb.from('inventory').update(payload).eq('id',editId);
-    showToast('✓ Flacon mis à jour');
+    showToast(t('inv_updated'));
   } else {
     await sb.from('inventory').insert({...payload, user_id:userId});
-    showToast('✓ Flacon ajouté');
+    showToast(t('inv_added'));
   }
   closeModal();
   await loadData();
@@ -617,16 +621,20 @@ function editFlacon(id)  { openEditModal(id); }
 function deleteFlacon(id){ confirmDelete(id); }
 
 async function confirmDelete(id) {
-  if (!confirm('Supprimer ce flacon ?')) return;
+  if (!confirm(t('inv_delete_confirm'))) return;
   await sb.from('inventory').delete().eq('id',id);
-  showToast('Flacon supprimé');
+  showToast(t('inv_deleted'));
   await loadData();
 }
 
 function closeModal()      { document.getElementById('flaconModal').classList.remove('show'); document.body.style.overflow=''; }
 function closeIfOverlay(e) { if(e.target===document.getElementById('flaconModal')) closeModal(); }
 
-init();
+init().then(()=>{
+  PS_applyI18n();
+  const lb=document.getElementById('langToggleBtn');
+  if(lb) lb.textContent=PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+});
 
 // Auto-refresh quand on revient sur la page (depuis cure.html par exemple)
 document.addEventListener('visibilitychange', () => {

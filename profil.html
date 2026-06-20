@@ -94,8 +94,8 @@
 <body>
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <h1>Mon profil</h1>
-  <div style="width:36px"></div>
+  <h1 data-i18n="profil_title">Mon profil</h1>
+  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
 </div>
 
 <div class="content">
@@ -107,50 +107,50 @@
   </div>
 
   <!-- INFOS PERSO -->
-  <div class="section-label">Informations personnelles</div>
+  <div class="section-label"><span data-i18n="profil_info">Informations personnelles</span></div>
   <div class="settings-card">
     <div class="settings-row" onclick="editField('prenom','Prénom')">
       <div class="row-icon">👤</div>
-      <div class="row-info"><div class="row-label">Prénom</div><div class="row-val" id="val-prenom">—</div></div>
+      <div class="row-info"><div class="row-label" data-i18n="profil_name">Prénom</div><div class="row-val" id="val-prenom">—</div></div>
       <div class="row-arrow">›</div>
     </div>
     <div class="settings-row" onclick="editField('age','Âge')">
       <div class="row-icon">🎂</div>
-      <div class="row-info"><div class="row-label">Âge</div><div class="row-val" id="val-age">—</div></div>
+      <div class="row-info"><div class="row-label" data-i18n="profil_age">Âge</div><div class="row-val" id="val-age">—</div></div>
       <div class="row-arrow">›</div>
     </div>
     <div class="settings-row" onclick="editField('taille','Taille (cm)')">
       <div class="row-icon">📏</div>
-      <div class="row-info"><div class="row-label">Taille</div><div class="row-val" id="val-taille">—</div></div>
+      <div class="row-info"><div class="row-label" data-i18n="profil_height">Taille</div><div class="row-val" id="val-taille">—</div></div>
       <div class="row-arrow">›</div>
     </div>
     <div class="settings-row" onclick="editField('objectif','Objectif principal')">
       <div class="row-icon">🎯</div>
-      <div class="row-info"><div class="row-label">Objectif</div><div class="row-val" id="val-objectif">—</div></div>
+      <div class="row-info"><div class="row-label" data-i18n="profil_goal">Objectif</div><div class="row-val" id="val-objectif">—</div></div>
       <div class="row-arrow">›</div>
     </div>
   </div>
 
   <!-- MES STATS -->
-  <div class="section-label">Mes statistiques</div>
+  <div class="section-label"><span data-i18n="profil_stats">Mes statistiques</span></div>
   <div class="stats-card">
     <div class="stats-grid" id="statsGrid"></div>
   </div>
 
   <!-- ABONNEMENT -->
-  <div class="section-label">Abonnement</div>
+  <div class="section-label"><span data-i18n="profil_subscription">Abonnement</span></div>
   <div class="premium-card" id="premiumCard"></div>
 
   <!-- ÉQUIPEMENT -->
-  <div class="section-label">Mon équipement</div>
+  <div class="section-label"><span data-i18n="profil_equipment">Mon équipement</span></div>
   <div class="settings-card" id="equipmentCard">
     <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
-      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">💉 Mes seringues</div>
-      <div style="font-size:.74rem;color:var(--muted);margin-bottom:12px;line-height:1.5">Sélectionnez les seringues que vous possédez. Le calculateur s'adaptera automatiquement.</div>
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px"><span data-i18n="profil_syringes">💉 Mes seringues</span></div>
+      <div style="font-size:.74rem;color:var(--muted);margin-bottom:12px;line-height:1.5"><span data-i18n="profil_syringes_sub">Sélectionnez les seringues que vous possédez. Le calculateur s'adaptera automatiquement.</span></div>
       <div id="syringeToggles" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
     <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
-      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">🧪 Type d'aiguille préféré</div>
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px"><span data-i18n="profil_needle_type">🧪 Type d'aiguille préféré</span></div>
       <select class="form-select" id="needlePreference" onchange="saveEquipment()" style="margin-top:8px">
         <option value="4mm">4 mm — Très mince (SC abdominal)</option>
         <option value="6mm">6 mm — Standard SC</option>
@@ -160,7 +160,7 @@
       </select>
     </div>
     <div style="padding:14px 16px">
-      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">💧 Solvant de reconstitution préféré</div>
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px"><span data-i18n="profil_solvent">💧 Solvant de reconstitution préféré</span></div>
       <select class="form-select" id="solventPreference" onchange="saveEquipment()" style="margin-top:8px">
         <option value="bac">Eau bactériostatique (BAC) — Recommandé</option>
         <option value="water">Eau stérile pour injection</option>
@@ -170,32 +170,37 @@
   </div>
 
   <!-- PARAMÈTRES -->
-  <div class="section-label">Paramètres</div>
+  <div class="section-label"><span data-i18n="profil_settings">Paramètres</span></div>
   <div class="settings-card">
     <div class="settings-row" onclick="window.location='peptide-database.html'">
       <div class="row-icon">🧬</div>
-      <div class="row-info"><div class="row-label">Bibliothèque peptides</div><div class="row-val">52 peptides référencés</div></div>
+      <div class="row-info"><div class="row-label"><span data-i18n="profil_biblio_link">Bibliothèque peptides</span></div><div class="row-val"><span data-i18n="profil_biblio_count">52 peptides référencés</span></div></div>
+      <div class="row-arrow">›</div>
+    </div>
+    <div class="settings-row" onclick="toggleLang()">
+      <div class="row-icon">🌐</div>
+      <div class="row-info"><div class="row-label" data-i18n="profil_lang">Langue</div><div class="row-val" id="langVal">Français</div></div>
       <div class="row-arrow">›</div>
     </div>
     <div class="settings-row" onclick="exportData()">
       <div class="row-icon">📤</div>
-      <div class="row-info"><div class="row-label">Exporter mes données</div><div class="row-val">JSON — toutes mes cures et mesures</div></div>
+      <div class="row-info"><div class="row-label"><span data-i18n="profil_export">Exporter mes données</span></div><div class="row-val"><span data-i18n="profil_export_sub">JSON — toutes mes cures et mesures</span></div></div>
       <div class="row-arrow">›</div>
     </div>
     <div class="settings-row" onclick="window.location='index.html'">
       <div class="row-icon">🏠</div>
-      <div class="row-info"><div class="row-label">Page d'accueil</div><div class="row-val">Retour à la landing page</div></div>
+      <div class="row-info"><div class="row-label"><span data-i18n="profil_home_link">Page d'accueil</span></div><div class="row-val"><span data-i18n="profil_home_sub">Retour à la landing page</span></div></div>
       <div class="row-arrow">›</div>
     </div>
   </div>
 
   <!-- DANGER -->
-  <div class="section-label">Zone de danger</div>
-  <button class="danger-btn" onclick="logout()" style="border-color:rgba(43,108,176,.3);background:rgba(43,108,176,.06);color:#2B6CB0">🚪 Se déconnecter</button>
-  <button class="danger-btn" onclick="resetData()">🗑 Supprimer toutes mes données</button>
+  <div class="section-label"><span data-i18n="profil_danger">Zone de danger</span></div>
+  <button class="danger-btn" onclick="logout()" style="border-color:rgba(43,108,176,.3);background:rgba(43,108,176,.06);color:#2B6CB0"><span data-i18n="profil_logout">🚪 Se déconnecter</span></button>
+  <button class="danger-btn" onclick="resetData()"><span data-i18n="profil_reset">🗑 Supprimer toutes mes données</span></button>
 
   <div style="text-align:center;padding:20px 0;color:var(--muted);font-size:.72rem;font-family:'Space Mono',monospace">
-    PeptideScanner v1.0 · Usage éducatif uniquement
+    <span data-i18n="profil_version">PeptideScanner v1.0 · Usage éducatif uniquement</span>
   </div>
 </div>
 
@@ -209,6 +214,7 @@
 </nav>
 <div class="toast" id="toast"></div>
 
+<script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
@@ -268,7 +274,7 @@ async function savePseudo() {
   await sb.from('profiles').update({ full_name: val }).eq('id', userId);
   profil.full_name = val;
   document.getElementById('pseudoBanner')?.remove();
-  showToast('✓ Pseudo enregistré !');
+  showToast(t('profil_pseudo_saved'));
   render();
   // Mettre à jour le dashboard aussi
   localStorage.setItem('ps_display_name', val);
@@ -282,7 +288,7 @@ function render() {
   if (nameEl)   nameEl.textContent   = name;
   if (avatarEl) avatarEl.textContent = profil.full_name ? profil.full_name[0].toUpperCase() : '👤';
 
-  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val||'Non renseigné'; };
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val||t('profil_not_filled'); };
   set('val-prenom',  profil.full_name);
   set('val-age',     profil.experience ? profil.experience + ' ans' : null);
   set('val-taille',  profil.weight_kg ? null : (profil.goal || null)); // taille stockée dans goal temporairement
@@ -293,7 +299,7 @@ function render() {
 
   const badge = document.getElementById('planBadge');
   if (badge) {
-    badge.textContent = profil.premium ? '⭐ Premium' : 'Plan Gratuit';
+    badge.textContent = profil.premium ? t('profil_plan_prem') : t('profil_plan_free');
     badge.className   = 'avatar-plan ' + (profil.premium ? 'plan-premium' : 'plan-free');
   }
   renderStats();
@@ -375,23 +381,23 @@ async function saveField(key) {
     if (key==='prenom') localStorage.setItem('ps_display_name', val);
   }
   editingField=null;
-  showToast('✓ ' + map.label + ' mis à jour');
+  showToast(t('profil_updated') + ' ' + map.label);
   render();
 }
 
 async function activatePremium() {
   await sb.from('profiles').update({premium:true}).eq('id',userId);
   profil.premium=true;
-  showToast('⭐ Premium activé !');
+  showToast(t('profil_prem_activated'));
   render();
 }
 
 // ── ÉQUIPEMENT ─────────────────────────────────────────────────
 const SYRINGES = [
-  { id:'U30',  label:'U-30',  sub:'0.3 mL — 30 unités · Mini doses' },
-  { id:'U50',  label:'U-50',  sub:'0.5 mL — 50 unités · Doses moyennes' },
-  { id:'U100', label:'U-100', sub:'1.0 mL — 100 unités · Standard' },
-  { id:'U200', label:'2 mL',  sub:'2.0 mL — Grandes doses / split-dose' },
+  { id:'U30',  label:t('syringe_u30_label'),  sub:t('syringe_u30_sub') },
+  { id:'U50',  label:t('syringe_u50_label'),  sub:t('syringe_u50_sub') },
+  { id:'U100', label:t('syringe_u100_label'), sub:t('syringe_u100_sub') },
+  { id:'U200', label:t('syringe_u200_label'), sub:t('syringe_u200_sub') },
 ];
 
 function renderEquipment() {
@@ -416,11 +422,11 @@ function toggleSyringe(id, enabled) {
   let syringes=eq.syringes||['U50','U100'];
   if(enabled){if(!syringes.includes(id))syringes.push(id);}
   else{syringes=syringes.filter(s=>s!==id);}
-  if(syringes.length===0){showToast('⚠️ Gardez au moins une seringue');return;}
+  if(syringes.length===0){showToast('⚠️');return;}
   eq.syringes=syringes;
   localStorage.setItem('ps_equipment',JSON.stringify(eq));
   document.getElementById('st_'+id)?.classList.toggle('active',enabled);
-  showToast('✓ Équipement mis à jour');
+  showToast(t('save')+' ✓');
 }
 
 function saveEquipment() {
@@ -428,7 +434,7 @@ function saveEquipment() {
   const n=document.getElementById('needlePreference'); if(n) eq.needle=n.value;
   const s=document.getElementById('solventPreference'); if(s) eq.solvent=s.value;
   localStorage.setItem('ps_equipment',JSON.stringify(eq));
-  showToast('✓ Préférences enregistrées');
+  showToast(t('save')+' ✓');
 }
 
 // ── EXPORT / LOGOUT / RESET ────────────────────────────────────
@@ -444,33 +450,42 @@ async function exportData() {
   a.href=URL.createObjectURL(blob);
   a.download='peptidescanner-export-'+new Date().toISOString().split('T')[0]+'.json';
   a.click();
-  showToast('✓ Données exportées');
+  showToast(t('profil_export_done'));
 }
 
 async function logout() {
-  if(!confirm('Se déconnecter ?')) return;
+  if(!confirm(t('profil_logout_confirm'))) return;
   await sb.auth.signOut();
   window.location.href='login.html';
 }
 
 async function resetData() {
-  if(!confirm('⚠️ Supprimer TOUTES les données ? Irréversible.')) return;
-  if(!confirm('Vraiment supprimer tout ?')) return;
+  if(!confirm(t('profil_reset_confirm1'))) return;
+  if(!confirm(t('profil_reset_confirm2'))) return;
   await Promise.all([
     sb.from('injections').delete().eq('user_id',userId),
     sb.from('cures').delete().eq('user_id',userId),
     sb.from('weight_logs').delete().eq('user_id',userId),
     sb.from('inventory').delete().eq('user_id',userId),
   ]);
-  showToast('Données supprimées');
+  showToast(t('profil_reset_done'));
   setTimeout(()=>window.location='dashboard.html',1500);
 }
 
+function toggleLang() {
+  PS_setLang(PS_getLang()==='fr' ? 'en' : 'fr');
+}
 document.addEventListener('click',e=>{
   if(editingField&&!e.target.closest('.settings-row')&&!e.target.closest('.row-edit-input'))cancelEdit();
 });
 
-init();
+init().then(() => {
+  PS_applyI18n();
+  const lb = document.getElementById('langToggleBtn');
+  if(lb) lb.textContent = PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+  const lv = document.getElementById('langVal');
+  if(lv) lv.textContent = PS_getLang()==='fr'?'Français':'English';
+});
 </script>
 </body>
 </html>

@@ -209,7 +209,7 @@
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
   <h1 data-i18n="cure_title">Calendrier de cure</h1>
-  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap"></button>
+  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
   <button class="add-btn" onclick="openAddCure()">＋</button>
 </div>
 
@@ -786,14 +786,7 @@ async function openEditCure(id) {
   document.getElementById('newCureStart').value    = cure.start_date;
   document.getElementById('newCureDuration').value = cure.duration_days;
   document.getElementById('newCureFreq').value     = cure.frequency||'1';
-  // Extraire uniquement la note libre (sans tags techniques admin:/inv:)
-  const _userNote = (cure.notes||'')
-    .replace(/admin:[^|]+[|]?/g, '')
-    .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
-    .replace(/^\s*[|]\s*/, '')
-    .replace(/\s*[|]\s*$/, '')
-    .trim();
-  document.getElementById('newCureNotes').value = _userNote;
+  document.getElementById('newCureNotes').value    = cure.notes||'';
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -827,14 +820,7 @@ async function saveCure() {
     }
   }
 
-  // Nettoyer la note libre de tout résidu technique
-  const _cleanNote = notes
-    .replace(/admin:[^|]+[|]?/g, '')
-    .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
-    .replace(/^\s*[|]\s*/, '')
-    .replace(/\s*[|]\s*$/, '')
-    .trim();
-  const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(_cleanNote?' | '+_cleanNote:'');
+  const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(notes?' | '+notes:'');
   const payload = { name:peptide, peptide_name:peptide, dose_mcg:doseNum||null, unit, frequency:freq,
     duration_days:parseInt(duration), start_date:startDate, status:'active', notes:notesStr };
 

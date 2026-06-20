@@ -586,15 +586,17 @@ async function toggleInj(ds, slot, time) {
   const existing = allInjections.find(i =>
     i.cure_id===currentCureId && (i.injected_at||'').startsWith(ds) && (i.notes||'').includes('slot:'+slot)
   );
+  const cure = allCures.find(x => x.id === currentCureId);
+
   if (existing) {
     await sb.from('injections').delete().eq('id', existing.id);
+    // Remettre la dose dans le flacon correspondant
+    await updateStockAfterInjection(cure, +1);
     showToast('Injection annulée');
   } else {
-    const cure  = allCures.find(x => x.id === currentCureId);
     const admin = (cure?.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
     const { site, idx } = getNextSite(currentCureId, admin);
     localStorage.setItem('ps_site_'+currentCureId, idx);
-    // Lire l'heure depuis l'input time si l'utilisateur l'a modifiée
     const timeInput = document.querySelector(`.slot-time-input[data-ds="${ds}"][data-slot="${slot}"]`);
     const actualTime = timeInput ? timeInput.value : time;
     await sb.from('injections').insert({
@@ -605,10 +607,46 @@ async function toggleInj(ds, slot, time) {
       injected_at: new Date(`${ds}T${actualTime}`).toISOString(),
       notes: 'slot:'+slot
     });
+    // Déduire la dose du flacon correspondant
+    await updateStockAfterInjection(cure, -1);
     showToast('✓ Injection — '+site.label);
   }
   await loadData();
   setTimeout(() => selectDay(ds, true), 100);
+}
+
+// Met à jour remaining_units dans inventory après une injection
+// direction : -1 = déduire, +1 = remettre (annulation)
+async function updateStockAfterInjection(cure, direction) {
+  if (!cure?.dose_mcg) return; // pas de dose définie → on skip
+  const peptideName = cure.peptide_name || cure.name;
+  const doseUnit    = (cure.unit || 'mcg').toLowerCase();
+
+  // Chercher le flacon actif correspondant à ce peptide
+  const { data: flacons } = await sb.from('inventory')
+    .select('id, remaining_units, vial_qty_mg, notes')
+    .eq('user_id', userId)
+    .ilike('peptide_name', peptideName)
+    .order('created_at', { ascending: false });
+
+  if (!flacons || flacons.length === 0) return;
+
+  // Prendre le premier flacon actif non terminé
+  const flacon = flacons.find(f =>
+    !(f.notes||'').includes('finished') && !(f.notes||'').includes('sealed')
+  );
+  if (!flacon) return;
+
+  // Convertir la dose en mg si nécessaire
+  let doseMg = parseFloat(cure.dose_mcg) || 0;
+  if (doseUnit === 'mcg') doseMg = doseMg / 1000;
+
+  const currentRemaining = parseFloat(flacon.remaining_units ?? flacon.vial_qty_mg ?? 0);
+  const newRemaining     = Math.max(0, currentRemaining + direction * doseMg);
+
+  await sb.from('inventory')
+    .update({ remaining_units: Math.round(newRemaining * 1000) / 1000 })
+    .eq('id', flacon.id);
 }
 
 function saveNote(ds) {

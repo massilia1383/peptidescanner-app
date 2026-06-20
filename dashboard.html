@@ -234,6 +234,35 @@
   }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
+  /* MODAL CONFIRMATION INJECTION */
+  .inj-confirm-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:500;
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity .2s; backdrop-filter:blur(4px);
+  }
+  .inj-confirm-overlay.open { opacity:1; pointer-events:all; }
+  .inj-confirm-sheet {
+    width:100%; max-width:480px; background:var(--surface);
+    border-radius:24px 24px 0 0; padding:20px 20px 36px;
+    transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1);
+    box-shadow:0 -8px 40px rgba(0,0,0,.15);
+  }
+  .inj-confirm-overlay.open .inj-confirm-sheet { transform:translateY(0); }
+  .inj-confirm-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 18px; }
+  .inj-confirm-title { font-size:1rem; font-weight:700; margin-bottom:4px; }
+  .inj-confirm-sub { font-size:.78rem; color:var(--muted); margin-bottom:18px; }
+  .inj-time-row { display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:12px 16px; margin-bottom:16px; }
+  .inj-time-label { font-size:.8rem; color:var(--muted); flex:1; }
+  .inj-time-picker {
+    font-family:'Space Mono',monospace; font-size:1.1rem; font-weight:700;
+    color:var(--accent); border:none; background:transparent; outline:none;
+    cursor:pointer; -webkit-appearance:none; padding:0;
+  }
+  .inj-confirm-btns { display:flex; gap:10px; }
+  .inj-confirm-btn-cancel { flex:1; padding:13px; border-radius:12px; border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer; }
+  .inj-confirm-btn-ok { flex:2; padding:13px; border-radius:12px; border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; }
+  .inj-confirm-btn-ok:hover { opacity:.85; }
+
   /* ADD CURE MODAL */
   .modal-overlay {
     position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:400;
@@ -485,6 +514,23 @@
   </div>
 </div>
 
+<!-- MODAL CONFIRMATION INJECTION -->
+<div class="inj-confirm-overlay" id="injConfirmOverlay" onclick="closeInjConfirm(event)">
+  <div class="inj-confirm-sheet">
+    <div class="inj-confirm-handle"></div>
+    <div class="inj-confirm-title" id="injConfirmTitle">Confirmer l'injection</div>
+    <div class="inj-confirm-sub" id="injConfirmSub">Vérifiez l'heure avant de valider</div>
+    <div class="inj-time-row">
+      <span class="inj-time-label">⏰ Heure d'injection</span>
+      <input type="time" class="inj-time-picker" id="injConfirmTime">
+    </div>
+    <div class="inj-confirm-btns">
+      <button class="inj-confirm-btn-cancel" onclick="closeInjConfirmModal()">Annuler</button>
+      <button class="inj-confirm-btn-ok" onclick="confirmInjection()">✓ Valider l'injection</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -699,7 +745,7 @@ function renderTodayView() {
       const done = cureToday.some(l => (l.notes||'').includes('slot:'+i));
       const [h, m] = time.split(':').map(Number);
       const isDue  = !done && (now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m));
-      html += `<div class="injection-item ${done?'done-item':''}" onclick="quickToggleInj('${cure.id}',${i},'${time}','${peptideName}','${doseLabel}','${nextSite}')">
+      html += `<div class="injection-item ${done?'done-item':''}" onclick="openInjConfirm('${cure.id}',${i},'${time}','${peptideName}','${doseLabel}','${nextSite}',${done})">
         <div class="inj-check ${done?'done':isDue?'due':'pending'}">${done?'✓':isDue?'!':''}</div>
         <div class="inj-info">
           <div class="inj-name">${injPerDay>1?'Injection '+(i+1):'Injection du jour'}</div>
@@ -713,7 +759,67 @@ function renderTodayView() {
   container.innerHTML = html;
 }
 
-// ── QUICK LOG INJECTION ────────────────────────────────────────
+// ── MODAL CONFIRMATION INJECTION ───────────────────────────────
+let _pendingInj = null;
+
+function openInjConfirm(cureId, slot, time, peptideName, dose, site, done) {
+  if (done) {
+    // Si déjà fait → annulation directe sans modal
+    quickToggleInj(cureId, slot, time, peptideName, dose, site);
+    return;
+  }
+  _pendingInj = { cureId, slot, time, peptideName, dose, site };
+
+  // Pré-remplir avec l'heure actuelle
+  const now = new Date();
+  const hh  = String(now.getHours()).padStart(2,'0');
+  const mm  = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('injConfirmTime').value = `${hh}:${mm}`;
+  document.getElementById('injConfirmTitle').textContent = `💉 ${peptideName}`;
+  document.getElementById('injConfirmSub').textContent   = `${dose} · Site : ${site}`;
+
+  document.getElementById('injConfirmOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeInjConfirmModal() {
+  document.getElementById('injConfirmOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  _pendingInj = null;
+}
+
+function closeInjConfirm(e) {
+  if (e.target === document.getElementById('injConfirmOverlay')) closeInjConfirmModal();
+}
+
+async function confirmInjection() {
+  if (!_pendingInj) return;
+  const { cureId, slot, peptideName, dose, site } = _pendingInj;
+  const chosenTime = document.getElementById('injConfirmTime').value; // "HH:MM"
+
+  closeInjConfirmModal();
+
+  const siteKey  = 'ps_site_' + cureId;
+  const SITES    = ['Abdomen G','Abdomen D','Cuisse G','Cuisse D','Fesse G','Fesse D'];
+  const lastIdx  = parseInt(localStorage.getItem(siteKey)||'-1');
+  const nextIdx  = (lastIdx + 1) % SITES.length;
+  localStorage.setItem(siteKey, nextIdx);
+
+  // Construire un ISO avec la date du jour + l'heure choisie
+  const injectedAt = new Date(`${todayStr}T${chosenTime}:00`).toISOString();
+
+  await sb.from('injections').insert({
+    user_id: userId, cure_id: cureId,
+    peptide_name: peptideName, dose_mcg: parseFloat(dose)||null,
+    injection_site: SITES[nextIdx],
+    injected_at: injectedAt,
+    notes: 'slot:'+slot
+  });
+  showToast(`✓ ${SITES[nextIdx]} · ${chosenTime}`);
+  await loadAll();
+}
+
+// ── QUICK LOG INJECTION (pour annulation directe) ──────────────
 async function quickToggleInj(cureId, slot, time, peptideName, dose, site) {
   const existing = allInjections.find(i =>
     i.cure_id === cureId && (i.injected_at||'').startsWith(todayStr) && (i.notes||'').includes('slot:'+slot)

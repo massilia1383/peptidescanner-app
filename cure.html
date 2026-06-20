@@ -129,6 +129,15 @@
   .slot-name { font-size:.86rem; font-weight:600; }
   .slot-detail { font-size:.72rem; color:var(--muted); margin-top:2px; }
   .slot-time { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); }
+  .slot-time-input {
+    font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted);
+    border:1px solid transparent; border-radius:6px; padding:3px 6px;
+    background:transparent; cursor:pointer; transition:all .2s; width:82px;
+    -webkit-appearance:none;
+  }
+  .slot-time-input:hover { border-color:var(--border); background:var(--surface); }
+  .slot-time-input:focus { outline:none; border-color:var(--accent); background:var(--surface); color:var(--accent); box-shadow:0 0 0 2px rgba(13,148,136,.12); }
+  .slot-time-input.saved { border-color:rgba(13,148,136,.4); color:var(--accent); }
 
   /* NOTES */
   .note-area { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-family:inherit; font-size:.84rem; resize:none; outline:none; margin-top:10px; transition:border-color .2s; }
@@ -497,18 +506,22 @@ function selectDay(ds, clickable) {
       slotsHtml = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:.84rem">Jour de repos 😴</div>';
     } else {
       const done = dayInjs.length > 0;
-      slotsHtml = `<div class="inj-slot ${done?'done':''}" onclick="toggleInj('${ds}',0,'${times[0]}')">
+      const existInj0 = dayInjs.find(l => (l.notes||'').includes('slot:0'));
+      const displayTime0 = existInj0 ? (existInj0.injected_at||'').slice(11,16) : times[0];
+      slotsHtml = `<div class="inj-slot ${done?'done':''}" onclick="handleSlotClick(event,'${ds}',0,'${times[0]}')">
         <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
         <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name}</div><div class="slot-detail">${cure.dose_mcg||''} ${cure.unit||'mcg'} · ${admin}</div></div>
-        <div class="slot-time">${times[0]}</div></div>`;
+        <input type="time" class="slot-time-input ${existInj0?'saved':''}" value="${displayTime0}" data-inj-id="${existInj0?.id||''}" data-ds="${ds}" data-slot="0" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;
     }
   } else {
     times.forEach((t, i) => {
-      const done = dayInjs.some(l => (l.notes||'').includes('slot:'+i));
-      slotsHtml += `<div class="inj-slot ${done?'done':''}" onclick="toggleInj('${ds}',${i},'${t}')">
+      const done    = dayInjs.some(l => (l.notes||'').includes('slot:'+i));
+      const existInj= dayInjs.find(l => (l.notes||'').includes('slot:'+i));
+      const displayT= existInj ? (existInj.injected_at||'').slice(11,16) : t;
+      slotsHtml += `<div class="inj-slot ${done?'done':''}" onclick="handleSlotClick(event,'${ds}',${i},'${t}')">
         <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
         <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name} · #${i+1}</div><div class="slot-detail">${cure.dose_mcg||''} ${cure.unit||'mcg'} · ${admin}</div></div>
-        <div class="slot-time">${t}</div></div>`;
+        <input type="time" class="slot-time-input ${existInj?'saved':''}" value="${displayT}" data-inj-id="${existInj?.id||''}" data-ds="${ds}" data-slot="${i}" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;
     });
   }
 
@@ -544,6 +557,39 @@ function cycleSite(ds) {
   selectDay(ds, true);
 }
 
+// Clic sur le slot : ignorer si l'event vient de l'input time
+function handleSlotClick(event, ds, slot, time) {
+  if (event.target.matches('.slot-time-input')) return;
+  toggleInj(ds, slot, time);
+}
+
+// Mise à jour de l'heure d'une injection déjà loggée
+async function updateInjTime(input) {
+  const injId = input.dataset.injId;
+  const ds    = input.dataset.ds;
+  const newTime = input.value; // "HH:MM"
+  if (!newTime) return;
+
+  const newISOTime = `${ds}T${newTime}:00`;
+
+  if (injId) {
+    // Injection existante → update
+    const { error } = await sb.from('injections').update({ injected_at: newISOTime }).eq('id', injId);
+    if (error) {
+      showToast('⚠️ Erreur sauvegarde'); input.style.borderColor='#EF4444';
+      setTimeout(() => input.style.borderColor='', 1500);
+    } else {
+      input.classList.add('saved');
+      showToast('✓ Heure mise à jour : ' + newTime);
+      // Mettre à jour localement sans reload complet
+      const inj = allInjections.find(i => i.id === injId);
+      if (inj) inj.injected_at = newISOTime;
+    }
+  }
+  // Si pas d'injId (injection non encore loggée), l'heure sera utilisée au prochain toggleInj
+  // via data-ds + value de l'input
+}
+
 async function toggleInj(ds, slot, time) {
   const existing = allInjections.find(i =>
     i.cure_id===currentCureId && (i.injected_at||'').startsWith(ds) && (i.notes||'').includes('slot:'+slot)
@@ -556,12 +602,15 @@ async function toggleInj(ds, slot, time) {
     const admin = (cure?.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
     const { site, idx } = getNextSite(currentCureId, admin);
     localStorage.setItem('ps_site_'+currentCureId, idx);
+    // Lire l'heure depuis l'input time si l'utilisateur l'a modifiée
+    const timeInput = document.querySelector(`.slot-time-input[data-ds="${ds}"][data-slot="${slot}"]`);
+    const actualTime = timeInput ? timeInput.value : time;
     await sb.from('injections').insert({
       user_id: userId, cure_id: currentCureId,
       peptide_name: cure?.peptide_name||cure?.name,
       dose_mcg: cure?.dose_mcg||null,
       injection_site: site.label,
-      injected_at: new Date(`${ds}T${time}`).toISOString(),
+      injected_at: new Date(`${ds}T${actualTime}`).toISOString(),
       notes: 'slot:'+slot
     });
     showToast('✓ Injection — '+site.label);

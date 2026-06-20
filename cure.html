@@ -208,7 +208,8 @@
 
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <h1>Calendrier de cure</h1>
+  <h1 data-i18n="cure_title">Calendrier de cure</h1>
+  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap"></button>
   <button class="add-btn" onclick="openAddCure()">＋</button>
 </div>
 
@@ -224,7 +225,7 @@
   <a class="nav-item" href="alertes.html"><span class="nav-icon">🔔</span><span class="nav-label">Alertes</span></a>
   <a class="nav-item" href="inventaire.html">
     <span class="nav-icon">🧪</span>
-    <span class="nav-label">Stock</span>
+    <span class="nav-label" data-i18n="nav_stock">Stock</span>
   </a>
   <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
 </nav>
@@ -234,16 +235,16 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="modalTitle">Nouvelle cure</div>
     <div class="form-group">
-      <label class="form-label">Peptide</label>
+      <label class="form-label" data-i18n="dash_peptide">Peptide</label>
       <select class="form-input" id="newCurePeptide"><option value="">Choisir…</option></select>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Dosage</label>
+        <label class="form-label" data-i18n="cure_dosage">Dosage</label>
         <input class="form-input" id="newCureDosage" placeholder="ex: 0.25 mg">
       </div>
       <div class="form-group">
-        <label class="form-label">Admin.</label>
+        <label class="form-label" data-i18n="dash_admin">Admin.</label>
         <select class="form-input" id="newCureAdmin">
           <option>SC</option><option>IM</option><option>Oral</option><option>Nasal</option><option>IV</option>
         </select>
@@ -251,16 +252,16 @@
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Date de début</label>
+        <label class="form-label" data-i18n="cure_start">Date de début</label>
         <input class="form-input" id="newCureStart" type="date">
       </div>
       <div class="form-group">
-        <label class="form-label">Durée (jours)</label>
+        <label class="form-label" data-i18n="cure_duration">Durée (jours)</label>
         <input class="form-input" id="newCureDuration" type="number" placeholder="30" min="1" max="365">
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">Fréquence</label>
+      <label class="form-label" data-i18n="cure_frequency">Fréquence</label>
       <select class="form-input" id="newCureFreq">
         <option value="1">1× par jour</option>
         <option value="2">2× par jour</option>
@@ -271,7 +272,7 @@
       </select>
     </div>
     <div class="form-group">
-      <label class="form-label">Notes (optionnel)</label>
+      <label class="form-label" data-i18n="cure_notes">Notes (optionnel)</label>
       <input class="form-input" id="newCureNotes" placeholder="Objectif, remarques…">
     </div>
     <button class="submit-btn" id="modalSubmit" onclick="saveCure()">Démarrer la cure</button>
@@ -281,6 +282,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
@@ -295,8 +297,8 @@ function showToast(m) {
 
 const TODAY    = new Date(); TODAY.setHours(0,0,0,0);
 const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
-const MONTHS     = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-const DAYS_SHORT = ['L','M','M','J','V','S','D'];
+const MONTHS     = () => t('months') instanceof Array ? t('months') : PS_LANG[PS_getLang()].months;
+const DAYS_SHORT = () => PS_LANG[PS_getLang()].days_short;
 
 let userId = null, currentCureId = null, editCureId = null;
 let calYear = TODAY.getFullYear(), calMonth = TODAY.getMonth();
@@ -328,6 +330,8 @@ async function init() {
   const { data } = await sb.auth.getSession();
   if (!data?.session) { window.location.href = '/login.html'; return; }
   userId = data.session.user.id;
+  const { data: _lp } = await sb.from('profiles').select('lang').eq('id', userId).single();
+  if(_lp) PS_loadLangFromProfile(sb, userId, _lp.lang);
   await loadData();
 }
 
@@ -364,15 +368,15 @@ function render() {
   const freqLabel = freq >= 1 ? freq+'×/j' : '1×/'+Math.round(1/freq)+'j';
   const doseLabel = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mg'}` : '—';
 
-  let status = 'active', statusLabel = 'En cours';
-  if (endD < TODAY)   { status = 'ended';  statusLabel = 'Terminée'; }
-  if (startD > TODAY) { status = 'future'; statusLabel = 'À venir';  }
+  let status = 'active', statusLabel = t('cure_status_active');
+  if (endD < TODAY)   { status = 'ended';  statusLabel = t('cure_status_ended'); }
+  if (startD > TODAY) { status = 'future'; statusLabel = t('cure_status_future');  }
 
   const tabs = allCures.map(cu =>
     `<div class="cure-tab ${cu.id===currentCureId?'active':''}" onclick="selectCure('${cu.id}')">${cu.peptide_name||cu.name}</div>`
   ).join('');
 
-  function fmtD(d) { return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}); }
+  function fmtD(d) { return d.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'}); }
 
   c.innerHTML = `
     <div class="cure-tabs">${tabs}</div>
@@ -470,10 +474,10 @@ function renderCalendar() {
   cal.innerHTML = `
     <div class="cal-nav">
       <button onclick="changeMonth(-1)">‹</button>
-      <div class="cal-month">${MONTHS[calMonth]} ${calYear}</div>
+      <div class="cal-month">${MONTHS()[calMonth]} ${calYear}</div>
       <button onclick="changeMonth(1)">›</button>
     </div>
-    <div class="cal-days-header">${DAYS_SHORT.map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>
+    <div class="cal-days-header">${DAYS_SHORT().map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>
     <div class="cal-grid">${daysHtml}</div>
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:rgba(0,201,167,.25)"></div>Fait</div>
@@ -502,7 +506,7 @@ function selectDay(ds, clickable) {
   const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
   const times     = injPerDay===1?['08:00']:injPerDay===2?['08:00','20:00']:['07:00','13:00','20:00'];
   const date      = new Date(ds);
-  const dateLabel = date.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const dateLabel = date.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'long',day:'numeric',month:'long'});
   const dayInjs   = allInjections.filter(i => i.cure_id===currentCureId && (i.injected_at||'').startsWith(ds));
   const admin     = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
   const sites     = getSites(admin);
@@ -590,7 +594,7 @@ async function updateInjTime(input) {
       setTimeout(() => input.style.borderColor='', 1500);
     } else {
       input.classList.add('saved');
-      showToast('✓ Heure mise à jour : ' + newTime);
+      showToast(t('cure_time_updated') + newTime);
       // Mettre à jour localement sans reload complet
       const inj = allInjections.find(i => i.id === injId);
       if (inj) inj.injected_at = newISOTime;
@@ -610,7 +614,7 @@ async function toggleInj(ds, slot, time) {
     await sb.from('injections').delete().eq('id', existing.id);
     // Remettre la dose dans le flacon correspondant
     await updateStockAfterInjection(cure, +1);
-    showToast('Injection annulée');
+    showToast(t('cure_inj_cancelled'));
   } else {
     const admin = (cure?.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
     const { site, idx } = getNextSite(currentCureId, admin);
@@ -627,7 +631,7 @@ async function toggleInj(ds, slot, time) {
     });
     // Déduire la dose du flacon correspondant
     await updateStockAfterInjection(cure, -1);
-    showToast('✓ Injection — '+site.label);
+    showToast(t('cure_inj_done_msg')+site.label);
   }
   await loadData();
   setTimeout(() => selectDay(ds, true), 100);
@@ -697,7 +701,7 @@ async function updateStockAfterInjection(cure, direction) {
 
 function saveNote(ds) {
   localStorage.setItem('ps_note_'+currentCureId+'_'+ds, document.getElementById('dayNote').value);
-  showToast('✓ Note enregistrée');
+  showToast(t('cure_note_saved'));
 }
 
 function selectCure(id) { currentCureId=id; calMonth=TODAY.getMonth(); calYear=TODAY.getFullYear(); render(); }
@@ -711,8 +715,8 @@ const PEPTIDES_BIBLIO = [
 
 async function openAddCure() {
   editCureId = null;
-  document.getElementById('modalTitle').textContent  = 'Nouvelle cure';
-  document.getElementById('modalSubmit').textContent = 'Démarrer la cure';
+  document.getElementById('modalTitle').textContent  = t('cure_new');
+  document.getElementById('modalSubmit').textContent = t('cure_start_btn');
   document.getElementById('modalDelete').style.display = 'none';
   ['newCureDosage','newCureNotes'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
   document.getElementById('newCureAdmin').value    = 'SC';
@@ -742,7 +746,7 @@ async function populatePeptideSelect(currentVal) {
       const stockItems = (stock || []).filter(f => !(f.notes||'').includes('finished'));
       if (stockItems.length > 0) {
         const grpStock = document.createElement('optgroup');
-        grpStock.label = '🧪 Mon stock';
+        grpStock.label = t('cure_my_stock');
         stockItems.forEach(f => {
           const opt = document.createElement('option');
           const rem = f.remaining_units ?? f.vial_qty_mg ?? 0;
@@ -758,7 +762,7 @@ async function populatePeptideSelect(currentVal) {
 
   // Bibliothèque standard
   const grpBiblio = document.createElement('optgroup');
-  grpBiblio.label = '📚 Bibliothèque';
+  grpBiblio.label = t('cure_library');
   PEPTIDES_BIBLIO.forEach(name => {
     const opt = document.createElement('option');
     opt.value = name; opt.textContent = name;
@@ -772,8 +776,8 @@ async function openEditCure(id) {
   const cure = allCures.find(x => x.id === id);
   if (!cure) return;
   editCureId = id;
-  document.getElementById('modalTitle').textContent  = 'Modifier la cure';
-  document.getElementById('modalSubmit').textContent = 'Enregistrer';
+  document.getElementById('modalTitle').textContent  = t('cure_modal_edit');
+  document.getElementById('modalSubmit').textContent = t('cure_save_btn');
   document.getElementById('modalDelete').style.display = 'block';
   const admin = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
   await populatePeptideSelect(cure.peptide_name||cure.name);
@@ -782,7 +786,14 @@ async function openEditCure(id) {
   document.getElementById('newCureStart').value    = cure.start_date;
   document.getElementById('newCureDuration').value = cure.duration_days;
   document.getElementById('newCureFreq').value     = cure.frequency||'1';
-  document.getElementById('newCureNotes').value    = cure.notes||'';
+  // Extraire uniquement la note libre (sans tags techniques admin:/inv:)
+  const _userNote = (cure.notes||'')
+    .replace(/admin:[^|]+[|]?/g, '')
+    .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
+    .replace(/^\s*[|]\s*/, '')
+    .replace(/\s*[|]\s*$/, '')
+    .trim();
+  document.getElementById('newCureNotes').value = _userNote;
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -795,7 +806,7 @@ async function saveCure() {
   const duration = document.getElementById('newCureDuration').value;
   const freq     = document.getElementById('newCureFreq').value;
   const notes    = document.getElementById('newCureNotes').value;
-  if (!peptide||!dosage||!startDate||!duration) { showToast('⚠️ Remplir tous les champs'); return; }
+  if (!peptide||!dosage||!startDate||!duration) { showToast(t('alerts_fill_all')); return; }
   const doseNum = parseFloat(dosage);
   const unit    = dosage.toLowerCase().includes('iu')?'IU':'mg'; // mg par défaut
 
@@ -816,17 +827,24 @@ async function saveCure() {
     }
   }
 
-  const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(notes?' | '+notes:'');
+  // Nettoyer la note libre de tout résidu technique
+  const _cleanNote = notes
+    .replace(/admin:[^|]+[|]?/g, '')
+    .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
+    .replace(/^\s*[|]\s*/, '')
+    .replace(/\s*[|]\s*$/, '')
+    .trim();
+  const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(_cleanNote?' | '+_cleanNote:'');
   const payload = { name:peptide, peptide_name:peptide, dose_mcg:doseNum||null, unit, frequency:freq,
     duration_days:parseInt(duration), start_date:startDate, status:'active', notes:notesStr };
 
   if (editCureId) {
     await sb.from('cures').update(payload).eq('id', editCureId);
-    showToast('✓ Cure mise à jour');
+    showToast(t('cure_updated'));
   } else {
     const { data } = await sb.from('cures').insert({...payload, user_id:userId}).select().single();
     if (data) currentCureId = data.id;
-    showToast('✓ Cure démarrée !');
+    showToast(t('cure_started'));
   }
   closeModal();
   await loadData();
@@ -834,19 +852,23 @@ async function saveCure() {
 
 async function deleteCure() {
   if (!editCureId) return;
-  if (!confirm('Supprimer cette cure ?')) return;
+  if (!confirm(t('cure_confirm_delete'))) return;
   await sb.from('injections').delete().eq('cure_id', editCureId);
   await sb.from('cures').delete().eq('id', editCureId);
   currentCureId = null;
   closeModal();
-  showToast('Cure supprimée');
+  showToast(t('cure_deleted'));
   await loadData();
 }
 
 function closeModal()      { document.getElementById('addCureModal').classList.remove('open'); document.body.style.overflow=''; }
 function closeIfOverlay(e) { if(e.target===document.getElementById('addCureModal')) closeModal(); }
 
-init();
+init().then(()=>{
+  PS_applyI18n();
+  const lb=document.getElementById('langToggleBtn');
+  if(lb) lb.textContent=PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+});
 </script>
 </body>
 </html>

@@ -785,19 +785,25 @@ async function openEditCure(id) {
   document.getElementById('modalTitle').textContent  = t('cure_modal_edit');
   document.getElementById('modalSubmit').textContent = t('cure_save_btn');
   document.getElementById('modalDelete').style.display = 'block';
-  const admin = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
+  // Extraire la valeur admin depuis les notes (SC, IM, Oral, Nasal, IV)
+  const _adminMatch = (cure.notes||'').match(/admin:([^|\n]+)/);
+  const admin = (_adminMatch ? _adminMatch[1].trim() : '') || 'SC';
   await populatePeptideSelect(cure.peptide_name||cure.name);
   document.getElementById('newCureDosage').value   = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mg'}` : '';
-  document.getElementById('newCureAdmin').value    = admin;
+  // Forcer la sélection de la bonne option ROUTE
+  const adminSelect = document.getElementById('newCureAdmin');
+  adminSelect.value = admin;
+  if (!adminSelect.value) adminSelect.value = 'SC'; // fallback
   document.getElementById('newCureStart').value    = cure.start_date;
   document.getElementById('newCureDuration').value = cure.duration_days;
   document.getElementById('newCureFreq').value     = cure.frequency||'1';
   // Extraire uniquement la note libre (sans tags techniques admin:/inv:)
   const _userNote = (cure.notes||'')
-    .replace(/admin:[^|]+[|]?/g, '')
+    .replace(/admin:[^|]*/g, '')
     .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
-    .replace(/^\s*[|]\s*/, '')
-    .replace(/\s*[|]\s*$/, '')
+    .replace(/^\s*[|]+\s*/g, '')
+    .replace(/\s*[|]+\s*$/g, '')
+    .replace(/\s*[|]+\s*/g, ' | ')
     .trim();
   document.getElementById('newCureNotes').value = _userNote;
   document.getElementById('addCureModal').classList.add('open');
@@ -834,10 +840,11 @@ async function saveCure() {
   }
 
   const _cleanNote = notes
-    .replace(/admin:[^|]+[|]?/g, '')
+    .replace(/admin:[^|]*/g, '')
     .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
-    .replace(/^\s*[|]\s*/, '')
-    .replace(/\s*[|]\s*$/, '')
+    .replace(/^\s*[|]+\s*/g, '')
+    .replace(/\s*[|]+\s*$/g, '')
+    .replace(/\s*[|]+\s*/g, ' | ')
     .trim();
   const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(_cleanNote?' | '+_cleanNote:'');
   const payload = { name:peptide, peptide_name:peptide, dose_mcg:doseNum||null, unit, frequency:freq,

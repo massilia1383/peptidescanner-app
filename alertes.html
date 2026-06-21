@@ -458,7 +458,7 @@ function requestNotifPermission() {
   if (!('Notification' in window)) { showToast(t('alerts_notif_unsupported')); return; }
   localStorage.setItem('ps_notif_choice', 'on');
   const btn = document.getElementById('notifEnableBtn');
-  if (btn) { btn.textContent = '✓ Activées — Désactiver'; btn.classList.add('granted'); btn.onclick = disableNotifications; }
+  if (btn) { btn.textContent = t('alerts_enabled'); btn.classList.add('granted'); btn.onclick = disableNotifications; }
   Notification.requestPermission().then(p => {
     if (p === 'granted') {
       showToast(t('alerts_notif_activated'));
@@ -508,13 +508,18 @@ init().then(()=>{
   // Initialiser le bouton notif
 const _nb = document.getElementById('notifEnableBtn');
 if (_nb) {
-  if (Notification.permission === 'granted') {
+  const _choice = localStorage.getItem('ps_notif_choice');
+  if (Notification.permission === 'granted' && _choice !== 'off') {
     _nb.textContent = t('alerts_enabled');
+    _nb.classList.add('granted');
+    _nb.onclick = disableNotifications;
   } else if (Notification.permission === 'denied') {
     _nb.textContent = t('alerts_blocked');
     _nb.style.color = 'var(--danger)';
+    _nb.onclick = null;
   } else {
     _nb.textContent = t('alerts_enable');
+    _nb.onclick = requestNotifPermission;
   }
 }
   PS_renderLangSwitcher();

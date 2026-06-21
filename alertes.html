@@ -426,57 +426,58 @@ function updateReminderTime(cureId, idx, newTime) {
 
 // ── NOTIFICATIONS ──────────────────────────────────────────────
 function updateNotifBanner() {
-  const btn  = document.getElementById('notifEnableBtn');
-  const banner = document.getElementById('notifBanner');
-  if (!btn || !banner) return;
-  if (!('Notification' in window)) { banner.style.display='none'; return; }
-
-  const choice = localStorage.getItem('ps_notif_choice'); // 'on' | 'off' | null
-
-  if (Notification.permission === 'denied') {
-    btn.textContent = t('alerts_blocked'); btn.style.color = 'var(--danger)';
-    btn.onclick = null; return;
-  }
-  if (choice === 'off') {
-    btn.textContent = t('alerts_enable');
-    btn.classList.remove('granted'); btn.classList.remove('disabled-notif');
-    btn.onclick = requestNotifPermission;
+  if (!('Notification' in window)) {
+    const banner = document.getElementById('notifBanner');
+    if (banner) banner.style.display = 'none';
     return;
   }
-  if (Notification.permission === 'granted' || choice === 'on') {
-    btn.textContent = t('alerts_enabled');
-    btn.classList.add('granted');
-    btn.onclick = disableNotifications;
-    return;
+  const perm   = Notification.permission;
+  const choice = localStorage.getItem('ps_notif_choice');
+  if (perm === 'denied') {
+    setNotifBtn('denied');
+  } else if (perm === 'granted' && choice !== 'off') {
+    setNotifBtn('granted');
+  } else {
+    setNotifBtn('default');
   }
-  // État par défaut
-  btn.textContent = t('alerts_enable');
-  btn.onclick = requestNotifPermission;
+}
+
+function setNotifBtn(state) {
+  const btn = document.getElementById('notifEnableBtn');
+  if (!btn) return;
+  // Supprimer tous les anciens listeners via clonage
+  const fresh = btn.cloneNode(false);
+  btn.parentNode.replaceChild(fresh, btn);
+  const b = document.getElementById('notifEnableBtn');
+  if (state === 'granted') {
+    b.textContent = t('alerts_enabled');
+    b.className = 'notif-enable-btn granted';
+    b.style.color = '';
+    b.addEventListener('click', disableNotifications);
+  } else if (state === 'denied') {
+    b.textContent = t('alerts_blocked');
+    b.className = 'notif-enable-btn';
+    b.style.color = 'var(--danger)';
+    b.addEventListener('click', () => showToast(t('alerts_blocked_help')));
+  } else {
+    b.textContent = t('alerts_enable');
+    b.className = 'notif-enable-btn';
+    b.style.color = '';
+    b.addEventListener('click', requestNotifPermission);
+  }
 }
 
 function requestNotifPermission() {
   if (!('Notification' in window)) { showToast(t('alerts_notif_unsupported')); return; }
-  localStorage.setItem('ps_notif_choice', 'on');
-  const btn = document.getElementById('notifEnableBtn');
-  if (btn) {
-    btn.textContent = t('alerts_enabled');
-    btn.classList.add('granted');
-    const nb2 = btn.cloneNode(true);
-    btn.parentNode.replaceChild(nb2, btn);
-    document.getElementById('notifEnableBtn').addEventListener('click', disableNotifications);
-  }
   Notification.requestPermission().then(p => {
     if (p === 'granted') {
+      localStorage.setItem('ps_notif_choice', 'on');
+      setNotifBtn('granted');
       showToast(t('alerts_notif_activated'));
       scheduleAllReminders();
     } else if (p === 'denied') {
       localStorage.removeItem('ps_notif_choice');
-      if (btn) {
-    btn.textContent = t('alerts_blocked');
-    btn.style.color = 'var(--danger)';
-    const nb4 = btn.cloneNode(true);
-    btn.parentNode.replaceChild(nb4, btn);
-  }
+      setNotifBtn('denied');
       showToast(t('alerts_notif_refused'));
     }
   });
@@ -484,14 +485,7 @@ function requestNotifPermission() {
 
 function disableNotifications() {
   localStorage.setItem('ps_notif_choice', 'off');
-  const btn = document.getElementById('notifEnableBtn');
-  if (btn) {
-    btn.textContent = t('alerts_enable');
-    btn.classList.remove('granted');
-    const nb3 = btn.cloneNode(true);
-    btn.parentNode.replaceChild(nb3, btn);
-    document.getElementById('notifEnableBtn').addEventListener('click', requestNotifPermission);
-  }
+  setNotifBtn('default');
   showToast(t('alerts_notif_disabled'));
 }
 
@@ -523,29 +517,15 @@ function scheduleAllReminders() {
 init().then(()=>{
   PS_applyI18n();
   // Initialiser le bouton notif
-const _nb = document.getElementById('notifEnableBtn');
-if (_nb) {
-  // Toujours priorité à la permission réelle du navigateur
-  const _perm = ('Notification' in window) ? Notification.permission : 'default';
-  // Utiliser addEventListener (plus fiable que .onclick sur Safari)
-  const _newNb = _nb.cloneNode(true); // cloner pour supprimer tous les listeners
-  _nb.parentNode.replaceChild(_newNb, _nb);
-  const _btn = document.getElementById('notifEnableBtn');
-  
-  if (_perm === 'granted') {
-    _btn.textContent = t('alerts_enabled');
-    _btn.classList.add('granted');
-    _btn.addEventListener('click', disableNotifications);
-  } else if (_perm === 'denied') {
-    _btn.textContent = t('alerts_blocked');
-    _btn.style.color = 'var(--danger)';
-    _btn.classList.remove('granted');
-    _btn.addEventListener('click', () => showToast(t('alerts_blocked_help')));
-  } else {
-    _btn.textContent = t('alerts_enable');
-    _btn.classList.remove('granted');
-    _btn.addEventListener('click', requestNotifPermission);
-  }
+// Initialiser le bouton notif
+const _perm = ('Notification' in window) ? Notification.permission : 'default';
+const _choice = localStorage.getItem('ps_notif_choice');
+if (_perm === 'granted' && _choice !== 'off') {
+  setNotifBtn('granted');
+} else if (_perm === 'denied') {
+  setNotifBtn('denied');
+} else {
+  setNotifBtn('default');
 }
   PS_renderLangSwitcher();
 });

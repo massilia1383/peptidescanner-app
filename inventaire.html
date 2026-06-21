@@ -238,12 +238,12 @@
         <label class="form-label" data-i18n="inv_frequency">Fréquence</label>
         <select class="form-select" id="fFreqPerDay">
           <option value="" data-i18n="inv_choose_freq">-- Choisir --</option>
-          <option value="3">3× par jour</option>
-          <option value="2">2× par jour</option>
-          <option value="1">1× par jour</option>
+          <option value="3" data-i18n="freq_3x">3× par jour</option>
+          <option value="2" data-i18n="freq_2x">2× par jour</option>
+          <option value="1" data-i18n="freq_1x">1× par jour</option>
           <option value="0.5">1× tous les 2 jours</option>
-          <option value="0.28">2× par semaine</option>
-          <option value="0.14">1× par semaine</option>
+          <option value="0.28" data-i18n="freq_2x_w">2× par semaine</option>
+          <option value="0.14" data-i18n="freq_1x_w">1× par semaine</option>
         </select>
       </div>
     </div>
@@ -255,16 +255,16 @@
       <div class="form-group">
         <label class="form-label" data-i18n="inv_status">Statut</label>
         <select class="form-select" id="fStatus">
-          <option value="active"><span data-i18n="inv_status_active">En cours</span></option>
-          <option value="sealed"><span data-i18n="inv_status_sealed">Scellé</span></option>
-          <option value="finished"><span data-i18n="inv_status_done">Terminé</span></option>
+          <option value="active" data-i18n="inv_status_active">En cours</option>
+          <option value="sealed" data-i18n="inv_status_sealed">Scellé</option>
+          <option value="finished" data-i18n="inv_status_done">Terminé</option>
         </select>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label" data-i18n="inv_temp">🌡 Temp. conservation</label>
-        <input class="form-input" id="fStorageTemp" type="text" data-i18n-ph="inv_temp_ph" placeholder="ex: 2-8°C">
+        <input class="form-input" id="fStorageTemp" type="text" data-i18n-ph="inv_temp_ph" data-i18n-ph="inv_temp_ph" placeholder="ex: 2-8°C">
       </div>
       <div class="form-group">
         <label class="form-label" data-i18n="inv_max_days">📅 Durée max (jours)</label>
@@ -273,11 +273,11 @@
     </div>
     <div class="form-group">
       <label class="form-label" data-i18n="inv_storage_note">Note conservation</label>
-      <input class="form-input" id="fStorageNote" type="text" placeholder="ex: Éviter la lumière">
+      <input class="form-input" id="fStorageNote" type="text" data-i18n-ph="inv_storage_note_ph" placeholder="ex: Éviter la lumière">
     </div>
     <div class="form-group">
       <label class="form-label" data-i18n="inv_note">Note (optionnel)</label>
-      <input class="form-input" id="fNote" type="text" placeholder="Ex: Lot 2025, cure récupération…">
+      <input class="form-input" id="fNote" type="text" data-i18n-ph="inv_note_ph" placeholder="Ex: Lot 2025, cure récupération…">
     </div>
     <input type="hidden" id="fEditId">
     <button class="save-btn" onclick="saveFlacon()"><span data-i18n="inv_save">Enregistrer le flacon</span></button>
@@ -312,7 +312,7 @@ const PEPTIDE_STORAGE = {
   'aod-9604':         { temp:'2-8°C', days:30,  note:'Stable après reconstitution' },
   'thymosin alpha-1': { temp:'2-8°C', days:30,  note:'Éviter la lumière' },
   'ghk-cu':           { temp:'2-8°C', days:90,  note:'Très stable' },
-  'hgh':              { temp:'2-8°C', days:21,  note:'Ne pas agiter, éviter la chaleur' },
+  'hgh':              { temp:'2-8°C', days:21,  note:t('tip_hgh') },
   'igf-1':            { temp:'2-8°C', days:30,  note:'Ajouter acide acétique 0.1%' },
   'mgf':              { temp:'2-8°C', days:14,  note:'Instable — utiliser rapidement' },
   'dsip':             { temp:'2-8°C', days:30,  note:'Stable après reconstitution' },
@@ -424,22 +424,22 @@ function render() {
   statsBar.innerHTML = `
     <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
       <div style="font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--accent)">${allInventory.length}</div>
-      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">flacons</div>
+      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px" data-i18n="inv_vials">flacons</div>
     </div>
     <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
       <div style="font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--accent3)">${low.length}</div>
-      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">stock bas</div>
+      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px" data-i18n="inv_low_stock">stock bas</div>
     </div>
     <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
       <div style="font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--accent2)">${allInventory.filter(f=>f.expiry_date&&new Date(f.expiry_date)<TODAY).length}</div>
-      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">expirés</div>
+      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px" data-i18n="inv_expired">expirés</div>
     </div>`;
 
   if (allInventory.length === 0) {
     container.innerHTML = `<div class="empty-state" style="text-align:center;padding:60px 20px">
       ${vialSVG(0,'#0D9488',true)}
       <p style="margin-top:16px;color:var(--muted);font-size:.9rem">${t('inv_empty').replace('\n','<br>')}</p>
-      <button onclick="openModal()" style="margin-top:16px;padding:12px 24px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer">+ Ajouter un flacon</button>
+      <button onclick="openModal()" style="margin-top:16px;padding:12px 24px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer">${t("inv_add")}</button>
     </div>`;
     return;
   }
@@ -458,9 +458,9 @@ function render() {
       const badgeHtml = isExpired
         ? `<div style="background:#FEF2F2;color:#DC2626;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;margin-bottom:6px">⚠️ EXPIRÉ</div>`
         : isLow
-        ? `<div style="background:#FFF7ED;color:#F97316;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;margin-bottom:6px">⚠️ STOCK BAS</div>`
+        ? `<div style="background:#FFF7ED;color:#F97316;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;margin-bottom:6px">${t("inv_low_badge")}</div>`
         : isSealed
-        ? `<div style="background:rgba(100,116,139,.1);color:#64748B;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;margin-bottom:6px">🔒 SCELLÉ</div>`
+        ? `<div style="background:rgba(100,116,139,.1);color:#64748B;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;margin-bottom:6px">${t("inv_sealed_badge")}</div>`
         : '';
 
       return `<div style="background:var(--surface);border:1.5px solid ${isExpired?'rgba(220,38,38,.2)':isLow?'rgba(249,115,22,.2)':'var(--border)'};border-radius:18px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .15s,box-shadow .15s" onclick="openEditModal('${f.id}')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
@@ -646,7 +646,7 @@ document.addEventListener('visibilitychange', () => {
 <div style="padding:0 16px 8px"><div class="legal-disclaimer compact">
   <span class="legal-disclaimer-icon">⚠️</span>
   <div class="legal-disclaimer-text">
-    <strong>${t('disclaimer_title')}</strong> — ${t('disclaimer_short')}
+    <strong data-i18n="disclaimer_title">Usage éducatif uniquement</strong> — <span data-i18n="disclaimer_short">Peptides de recherche non approuvés à usage humain.</span>
   </div>
 </div></div>
 </body>

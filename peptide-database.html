@@ -1239,12 +1239,28 @@ function phaseVisualFull(phase) {
     + '</div>';
 }
 
-// Render immédiat sans attendre Supabase + reload après chargement phases
-renderCards();
+// Render immédiat + traductions
 document.getElementById('shownCount').textContent = PEPTIDES.length;
-loadPhases().then(() => { renderCards(); PS_applyI18n(); PS_renderLangSwitcher(); });
-PS_applyI18n();
-PS_renderLangSwitcher();
+document.getElementById('totalCount').textContent = PEPTIDES.length;
+
+function initPage() {
+  renderCards();
+  PS_applyI18n();
+  PS_renderLangSwitcher();
+  // Traduire les filtres dynamiquement
+  document.querySelectorAll('.filter-btn[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  // Traduire le guide phases
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = t(key);
+    if (val && val !== key) el.textContent = val;
+  });
+}
+
+initPage();
+loadPhases().then(() => initPage());
 </script>
 </body>
 </html>

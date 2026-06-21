@@ -149,7 +149,7 @@
       <strong data-i18n="alerts_notif_title">Notifications intelligentes</strong>
       <span data-i18n="alerts_notif_sub">Recevez vos rappels d'injection même quand l'app est fermée</span>
     </div>
-    <button class="notif-enable-btn" id="notifEnableBtn" onclick="requestNotifPermission()">Activer</button>
+    <button class="notif-enable-btn" id="notifEnableBtn" onclick="requestNotifPermission()"></button>
   </div>
 
   <!-- RAPPELS D'INJECTION PAR CURE -->
@@ -450,7 +450,7 @@ function updateNotifBanner() {
     return;
   }
   // État par défaut
-  btn.textContent = 'Activer';
+  btn.textContent = t('alerts_enable');
   btn.onclick = requestNotifPermission;
 }
 
@@ -465,7 +465,7 @@ function requestNotifPermission() {
       scheduleAllReminders();
     } else if (p === 'denied') {
       localStorage.removeItem('ps_notif_choice');
-      if (btn) { btn.textContent = 'Bloquées ⚠️'; btn.style.color = 'var(--danger)'; btn.onclick = null; }
+      if (btn) { btn.textContent = t('alerts_blocked'); btn.style.color = 'var(--danger)'; btn.onclick = null; }
       showToast(t('alerts_notif_refused'));
     }
   });
@@ -474,7 +474,7 @@ function requestNotifPermission() {
 function disableNotifications() {
   localStorage.setItem('ps_notif_choice', 'off');
   const btn = document.getElementById('notifEnableBtn');
-  if (btn) { btn.textContent = 'Activer'; btn.classList.remove('granted'); btn.onclick = requestNotifPermission; }
+  if (btn) { btn.textContent = t('alerts_enable'); btn.classList.remove('granted'); btn.onclick = requestNotifPermission; }
   showToast(t('alerts_notif_disabled'));
 }
 
@@ -505,7 +505,18 @@ function scheduleAllReminders() {
 
 init().then(()=>{
   PS_applyI18n();
-  const nb=document.getElementById('notifBtn'); if(nb && !nb.textContent) nb.textContent=t('alerts_enable');
+  // Initialiser le bouton notif
+const _nb = document.getElementById('notifEnableBtn');
+if (_nb) {
+  if (Notification.permission === 'granted') {
+    _nb.textContent = t('alerts_enabled');
+  } else if (Notification.permission === 'denied') {
+    _nb.textContent = t('alerts_blocked');
+    _nb.style.color = 'var(--danger)';
+  } else {
+    _nb.textContent = t('alerts_enable');
+  }
+}
   PS_renderLangSwitcher();
 });
 </script>

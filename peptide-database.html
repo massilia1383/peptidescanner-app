@@ -1072,7 +1072,7 @@ function renderCards() {
         </div>
         <div class="info-row">
           <span class="info-label">${t('db_duration')}</span>
-          <span class="info-val" style="font-size:.82rem">${p.duree}</span>
+          <span class="info-val" style="font-size:.82rem">${translateDuration(p.duree)}</span>
         </div>
         <div class="effects-list">
           ${p.effets.slice(0,4).map(e => `<span class="effect-tag">${e}</span>`).join('')}
@@ -1205,23 +1205,35 @@ document.addEventListener('keydown', e => {
 // Init — charger les phases depuis Supabase puis render
 document.getElementById('totalCount').textContent = PEPTIDES.length;
 
-const PHASE_DATA_LOCAL = {
-  'experimental': { emoji:'⚪', label:t('phase_exp_label'),               desc:t('phase_exp_desc_dot'), color:'#9CA3AF', steps:0 },
-  'preclinical':  { emoji:'🔴', label:t('phase_pre_label'),              desc:t('phase_pre_desc_dot'), color:'#EF4444', steps:1 },
-  'phase1':       { emoji:'🟠', label:t('phase_p1_label'),         desc:t('phase_p1_desc_dot'), color:'#F97316', steps:2 },
-  'phase2':       { emoji:'🟡', label:t('phase_p2_label'),  desc:t('phase_p2_desc_dot'), color:'#EAB308', steps:3 },
-  'phase3':       { emoji:'🟢', label:t('phase_p3_label'),                desc:t('phase_p3_desc_dot'), color:'#22C55E', steps:4 },
-  'established':  { emoji:'✅', label:t('phase_est_label'),              desc:t('phase_est_desc_dot'), color:'#0D9488', steps:5 },
-};
+function translateDuration(str) {
+  if (PS_getLang() !== 'en') return str;
+  return str
+    .replace(/semaines?/g, 'weeks')
+    .replace(/semaine/g, 'week')
+    .replace(/mois/g, 'months')
+    .replace(/jours?/g, 'days')
+    .replace(/jour/g, 'day')
+    .replace(/Continu/g, 'Ongoing')
+    .replace(/À la demande/g, 'On demand');
+}
+
+function getPhaseData() { return {
+  'experimental': { emoji:'⚪', label:t('phase_exp_label'), desc:t('phase_exp_desc_dot'), color:'#9CA3AF', steps:0 },
+  'preclinical':  { emoji:'🔴', label:t('phase_pre_label'), desc:t('phase_pre_desc_dot'), color:'#EF4444', steps:1 },
+  'phase1':       { emoji:'🟠', label:t('phase_p1_label'),  desc:t('phase_p1_desc_dot'),  color:'#F97316', steps:2 },
+  'phase2':       { emoji:'🟡', label:t('phase_p2_label'),  desc:t('phase_p2_desc_dot'),  color:'#EAB308', steps:3 },
+  'phase3':       { emoji:'🟢', label:t('phase_p3_label'),  desc:t('phase_p3_desc_dot'),  color:'#22C55E', steps:4 },
+  'established':  { emoji:'✅', label:t('phase_est_label'), desc:t('phase_est_desc_dot'), color:'#0D9488', steps:5 },
+}; }
 const PHASE_STEPS = () => [t('phase_step1'),t('phase_step2'),t('phase_step3'),t('phase_step4'),t('phase_step5')];
 
 function phaseMiniBadge(phase) {
-  const d = PHASE_DATA_LOCAL[phase] || PHASE_DATA_LOCAL['experimental'];
+  const d = getPhaseData()[phase] || getPhaseData()['experimental'];
   return '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:.6rem;font-weight:700;background:'+d.color+'22;color:'+d.color+';border:1px solid '+d.color+'44;margin-left:4px">'+d.emoji+' '+d.label+'</span>';
 }
 
 function phaseVisualFull(phase) {
-  const d = PHASE_DATA_LOCAL[phase] || PHASE_DATA_LOCAL['experimental'];
+  const d = getPhaseData()[phase] || getPhaseData()['experimental'];
   const steps = PHASE_STEPS().map((lbl, i) => {
     const active = i < d.steps;
     return '<div style="flex:1;text-align:center">'

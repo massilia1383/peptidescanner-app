@@ -47,7 +47,8 @@ window.PS_LANG = {
     no_data:        'Aucune donnée',
 
     // ── DISCLAIMER ───────────────────────────────────────────
-    disclaimer_short: 'Usage éducatif uniquement — Peptides de recherche non approuvés à usage humain. Consultez un professionnel de santé. PeptideScanner décline toute responsabilité.',
+    disclaimer_title: 'Usage éducatif uniquement',
+    disclaimer_short: 'Peptides de recherche non approuvés à usage humain. Consultez un professionnel de santé. PeptideScanner décline toute responsabilité.',
     disclaimer_icon:  '⚠️',
 
     // ── DASHBOARD ────────────────────────────────────────────
@@ -608,7 +609,8 @@ window.PS_LANG = {
     no_data:        'No data',
 
     // ── DISCLAIMER ───────────────────────────────────────────
-    disclaimer_short: 'Educational use only — Research peptides not approved for human use. Consult a healthcare professional. PeptideScanner disclaims all liability.',
+    disclaimer_title: 'Educational use only',
+    disclaimer_short: 'Research peptides not approved for human use. Consult a healthcare professional. PeptideScanner disclaims all liability.',
     disclaimer_icon:  '⚠️',
 
     // ── DASHBOARD ────────────────────────────────────────────

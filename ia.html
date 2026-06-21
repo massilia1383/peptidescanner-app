@@ -693,7 +693,7 @@ function renderWelcome() {
     welcome += `Je peux vous aider avec :\n- Choisir le bon peptide selon vos objectifs\n- Établir un protocole de cure complet\n- Comprendre les dosages et voies d'administration\n- Créer des stacks synergiques\n\nQuelle est votre question ?`;
   }
 
-  welcome += '\n\n⚠️ Usage éducatif uniquement — Consultez un médecin avant tout protocole.';
+  welcome += '\n\n' + t('ia_disclaimer');
   addMessage('ai', welcome);
 }
 

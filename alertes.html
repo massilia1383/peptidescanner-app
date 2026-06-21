@@ -508,17 +508,20 @@ init().then(()=>{
   // Initialiser le bouton notif
 const _nb = document.getElementById('notifEnableBtn');
 if (_nb) {
-  const _choice = localStorage.getItem('ps_notif_choice');
-  if (Notification.permission === 'granted' && _choice !== 'off') {
+  // Toujours priorité à la permission réelle du navigateur
+  const _perm = ('Notification' in window) ? Notification.permission : 'default';
+  if (_perm === 'granted') {
     _nb.textContent = t('alerts_enabled');
     _nb.classList.add('granted');
     _nb.onclick = disableNotifications;
-  } else if (Notification.permission === 'denied') {
+  } else if (_perm === 'denied') {
     _nb.textContent = t('alerts_blocked');
     _nb.style.color = 'var(--danger)';
-    _nb.onclick = null;
+    _nb.classList.remove('granted');
+    _nb.onclick = () => showToast(t('alerts_blocked_help'));
   } else {
     _nb.textContent = t('alerts_enable');
+    _nb.classList.remove('granted');
     _nb.onclick = requestNotifPermission;
   }
 }

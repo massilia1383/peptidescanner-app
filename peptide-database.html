@@ -269,47 +269,47 @@
 
 <nav>
   <div class="logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <a href="dashboard.html" class="nav-back">← Retour à l'app</a>
+  <div style="display:flex;align-items:center;gap:12px"><div id="langToggleBtn"></div><a href="dashboard.html" class="nav-back" data-i18n="back">← Retour</a></div>
 </nav>
 
 <div class="page-header">
-  <div class="page-eyebrow">Bibliothèque · Base de données</div>
-  <div class="page-title">Référentiel peptidique complet</div>
-  <div class="page-sub">Chaque peptide référencé avec ses dosages, protocoles, effets et stacks recommandés.</div>
+  <div class="page-eyebrow" data-i18n="db_eyebrow">Bibliothèque · Base de données</div>
+  <div class="page-title" data-i18n="db_title">Référentiel peptidique complet</div>
+  <div class="page-sub" data-i18n="db_sub">Chaque peptide référencé avec ses dosages, protocoles, effets et stacks recommandés.</div>
   <div class="stats-row">
-    <div class="stat"><span class="stat-val" id="totalCount">52</span><span class="stat-label">Peptides référencés</span></div>
-    <div class="stat"><span class="stat-val">9</span><span class="stat-label">Catégories</span></div>
-    <div class="stat"><span class="stat-val" id="shownCount">52</span><span class="stat-label">Affichés</span></div>
+    <div class="stat"><span class="stat-val" id="totalCount">52</span><span class="stat-label" data-i18n="db_stat_peptides">Peptides référencés</span></div>
+    <div class="stat"><span class="stat-val">9</span><span class="stat-label" data-i18n="db_stat_categories">Catégories</span></div>
+    <div class="stat"><span class="stat-val" id="shownCount">52</span><span class="stat-label" data-i18n="db_stat_shown">Affichés</span></div>
   </div>
 </div>
 
 <div class="controls">
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
-    <input class="search-input" id="searchInput" placeholder="Rechercher un peptide, effet, catégorie…" oninput="filterPeptides()">
+    <input class="search-input" id="searchInput" data-i18n-ph="db_search_ph" placeholder="Rechercher un peptide, effet, catégorie…" oninput="filterPeptides()">
   </div>
-  <button class="filter-btn active" onclick="filterCat('all', this)">Tous</button>
+  <button class="filter-btn active" onclick="filterCat('all', this)" data-i18n="db_all">Tous</button>
   <button class="filter-btn" onclick="filterCat('GH / IGF-1', this)">GH</button>
-  <button class="filter-btn" onclick="filterCat('Récupération', this)">Récupération</button>
-  <button class="filter-btn" onclick="filterCat('Anti-âge', this)">Anti-âge</button>
-  <button class="filter-btn" onclick="filterCat('Nootropique', this)">Neuro</button>
-  <button class="filter-btn" onclick="filterCat('Perte de poids', this)">Poids</button>
-  <button class="filter-btn" onclick="filterCat('Sexuel', this)">Sexuel</button>
-  <button class="filter-btn" onclick="filterCat('Immunité', this)">Immunité</button>
-  <button class="filter-btn" onclick="filterCat('Cardio', this)">Cardio</button>
-  <button class="filter-btn" onclick="filterCat('Peau', this)">Peau</button>
+  <button class="filter-btn" onclick="filterCat('Récupération', this)" data-i18n="db_cat_recov">Récupération</button>
+  <button class="filter-btn" onclick="filterCat('Anti-âge', this)" data-i18n="db_cat_anti">Anti-âge</button>
+  <button class="filter-btn" onclick="filterCat('Nootropique', this)" data-i18n="db_cat_neuro">Neuro</button>
+  <button class="filter-btn" onclick="filterCat('Perte de poids', this)" data-i18n="db_cat_fat">Poids</button>
+  <button class="filter-btn" onclick="filterCat('Sexuel', this)" data-i18n="db_cat_sex">Sexuel</button>
+  <button class="filter-btn" onclick="filterCat('Immunité', this)" data-i18n="db_cat_immun">Immunité</button>
+  <button class="filter-btn" onclick="filterCat('Cardio', this)" data-i18n="db_cat_cardio">Cardio</button>
+  <button class="filter-btn" onclick="filterCat('Peau', this)" data-i18n="db_cat_skin">Peau</button>
 </div>
 
 <div style="max-width:1300px;margin:0 auto;padding:0 28px 16px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-    <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">📊 Guide — Avancement de la recherche</div>
+    <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px"><span data-i18n="db_guide_title">📊 Guide — Avancement de la recherche</span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#6B7280">⚪ Données limitées</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Très peu d'études disponibles</div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EF4444;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EF4444">🔴 Recherche animale</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Testé uniquement sur des animaux</div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#F97316;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#F97316">🟠 Premiers tests humains</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Sécurité vérifiée sur quelques personnes</div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EAB308;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EAB308">🟡 Études en cours</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Efficacité testée sur des centaines de personnes</div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#22C55E;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#22C55E">🟢 Études avancées</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Testé sur des milliers — proche du marché</div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#0D9488;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#0D9488">✅ Largement utilisé</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Retours abondants, profil bien documenté</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#6B7280"><span data-i18n="phase_exp_label">⚪ Données limitées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_exp_desc">Très peu d'études disponibles</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EF4444;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EF4444"><span data-i18n="phase_pre_label">🔴 Recherche animale</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_pre_desc">Testé uniquement sur des animaux</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#F97316;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#F97316"><span data-i18n="phase_p1_label">🟠 Premiers tests humains</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p1_desc">Sécurité vérifiée sur quelques personnes</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EAB308;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EAB308"><span data-i18n="phase_p2_label">🟡 Études en cours</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p2_desc">Efficacité testée sur des centaines de personnes</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#22C55E;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#22C55E"><span data-i18n="phase_p3_label">🟢 Études avancées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p3_desc">Testé sur des milliers — proche du marché</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#0D9488;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#0D9488"><span data-i18n="phase_est_label">✅ Largement utilisé</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_est_desc">Retours abondants, profil bien documenté</span></div></div></div>
     </div>
   </div>
 </div>
@@ -319,17 +319,17 @@
 <!-- LEGENDE + DISCLAIMER -->
 <div style="max-width:1300px;margin:0 auto;padding:0 28px 20px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px;margin-bottom:16px">
-    <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">📊 Guide — Avancement de la recherche</div>
+    <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px"><span data-i18n="db_guide_title">📊 Guide — Avancement de la recherche</span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#6B7280">⚪ Données limitées</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Très peu d'études disponibles</div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EF4444;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EF4444">🔴 Recherche animale</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Testé uniquement sur des animaux</div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#F97316;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#F97316">🟠 Premiers tests humains</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Sécurité vérifiée sur quelques personnes</div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EAB308;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EAB308">🟡 Études en cours</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Efficacité testée sur des centaines de personnes</div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#22C55E;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#22C55E">🟢 Études avancées</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Testé sur des milliers — proche du marché</div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#0D9488;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#0D9488">✅ Largement utilisé</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">Retours abondants, profil bien documenté</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#6B7280"><span data-i18n="phase_exp_label">⚪ Données limitées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_exp_desc">Très peu d'études disponibles</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EF4444;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EF4444"><span data-i18n="phase_pre_label">🔴 Recherche animale</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_pre_desc">Testé uniquement sur des animaux</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#F97316;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#F97316"><span data-i18n="phase_p1_label">🟠 Premiers tests humains</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p1_desc">Sécurité vérifiée sur quelques personnes</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EAB308;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EAB308"><span data-i18n="phase_p2_label">🟡 Études en cours</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p2_desc">Efficacité testée sur des centaines de personnes</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#22C55E;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#22C55E"><span data-i18n="phase_p3_label">🟢 Études avancées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p3_desc">Testé sur des milliers — proche du marché</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#0D9488;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#0D9488"><span data-i18n="phase_est_label">✅ Largement utilisé</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_est_desc">Retours abondants, profil bien documenté</span></div></div></div>
     </div>
   </div>
-  <div class="legal-disclaimer"><span class="legal-disclaimer-icon">⚠️</span><div class="legal-disclaimer-text"><strong>Avertissement légal — Usage éducatif et informatif uniquement.</strong> Les peptides présentés sont des peptides de recherche. Leur acquisition, détention ou usage à des fins autres que la recherche scientifique peut être illégal dans votre pays. Les informations fournies ne constituent pas un avis médical ni une prescription. Consultez un professionnel de santé qualifié avant tout protocole. PeptideScanner décline toute responsabilité quant aux conséquences liées à l'usage des informations disponibles sur cette application.</div></div>
+  <div class="legal-disclaimer"><span class="legal-disclaimer-icon">⚠️</span><div class="legal-disclaimer-text"><strong data-i18n="db_disclaimer_title">Avertissement légal — Usage éducatif et informatif uniquement.</strong> <span data-i18n="db_disclaimer_body">Les peptides présentés sont des peptides de recherche. Leur acquisition, détention ou usage à des fins autres que la recherche scientifique peut être illégal dans votre pays. Les informations fournies ne constituent pas un avis médical ni une prescription. Consultez un professionnel de santé qualifié avant tout protocole. PeptideScanner décline toute responsabilité quant aux conséquences liées à l'usage des informations disponibles sur cette application.</span></div></div>
 </div>
 
 <!-- MODAL -->
@@ -337,6 +337,7 @@
   <div class="modal" id="modalContent"></div>
 </div>
 
+<script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
@@ -1066,11 +1067,11 @@ function renderCards() {
       </div>
       <div class="card-body">
         <div class="info-row">
-          <span class="info-label">Dosage</span>
+          <span class="info-label">${t('db_dosage')}</span>
           <span class="info-val mono">${p.dosage}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">Durée</span>
+          <span class="info-label">${t('db_duration')}</span>
           <span class="info-val" style="font-size:.82rem">${p.duree}</span>
         </div>
         <div class="effects-list">
@@ -1080,17 +1081,17 @@ function renderCards() {
       </div>
       <div class="card-footer">
         <div>
-          <div class="stack-label">Stack avec</div>
+          <div class="stack-label">${t('db_stack_with')}</div>
           <div class="stack-val">${p.stacks.slice(0,2).join(' · ')}</div>
         </div>
-        <a class="shop-btn" href="boutiques.html" onclick="event.stopPropagation()">Acheter →</a>
+        <a class="shop-btn" href="boutiques.html" onclick="event.stopPropagation()">${t('db_buy')}</a>
       </div>
     `;
     grid.appendChild(card);
   });
 
   if (shown === 0) {
-    grid.innerHTML = `<div class="no-results"><span>🔬</span>Aucun peptide trouvé pour "${currentSearch}".<br>Essayez un autre mot-clé.</div>`;
+    grid.innerHTML = `<div class="no-results"><span>🔬</span>Aucun peptide trouvé pour "${currentSearch}".<br>${t("db_no_results_sub")}</div>`;
   }
 
   document.getElementById('shownCount').textContent = shown;
@@ -1126,60 +1127,60 @@ function openModal(id) {
     <div class="modal-body">
       <div class="modal-grid">
         <div class="modal-info-box">
-          <div class="lbl">Dosage typique</div>
+          <div class="lbl">${t('db_modal_dosage')}</div>
           <div class="val green">${p.dosage}</div>
         </div>
         <div class="modal-info-box">
-          <div class="lbl">Administration</div>
+          <div class="lbl">${t('db_modal_admin')}</div>
           <div class="val">${p.admin}</div>
         </div>
         <div class="modal-info-box">
-          <div class="lbl">Durée de cure</div>
+          <div class="lbl">${t('db_modal_duration')}</div>
           <div class="val">${p.duree}</div>
         </div>
         <div class="modal-info-box">
-          <div class="lbl">Fréquence</div>
+          <div class="lbl">${t('db_modal_freq')}</div>
           <div class="val">${p.frequence}</div>
         </div>
       </div>
 
       <div class="modal-section">
-        <h4>Protocole détaillé</h4>
+        <h4>${t('db_modal_protocol')}</h4>
         <p>${p.protocole}</p>
       </div>
 
       <div class="modal-section">
-        <h4>Effets principaux</h4>
+        <h4>${t('db_modal_effects')}</h4>
         <ul>${p.effets.map(e => `<li class="pos">${e}</li>`).join('')}</ul>
       </div>
 
       <div class="modal-section">
-        <h4>Effets secondaires</h4>
+        <h4>${t('db_modal_side_effects')}</h4>
         <ul>${p.secondaires.map(e => `<li class="neg">${e}</li>`).join('')}</ul>
       </div>
 
       <div class="modal-section">
-        <h4>Stacks recommandés</h4>
+        <h4>${t('db_modal_stacks')}</h4>
         <ul>${p.stacks.map(s => `<li class="stack">${s}</li>`).join('')}</ul>
       </div>
 
       <div class="modal-section">
-        <h4>Contre-indications</h4>
+        <h4>${t('db_modal_contra')}</h4>
         <ul><li class="warn">${p.contreindications}</li></ul>
       </div>
 
       <div class="modal-section">
-        <h4>Note experte</h4>
+        <h4>${t('db_modal_note')}</h4>
         <p style="color:var(--muted);font-style:italic">${p.note}</p>
       </div>
 
       <div class="modal-cta">
-        <p>Trouver <strong>${p.name}</strong> chez un fournisseur vérifié</p>
-        <a href="boutiques.html">Voir les boutiques →</a>
+        <p>${t('db_modal_find').replace('{name}', p.name)}</p>
+        <a href="boutiques.html">${t('db_modal_shops')}</a>
       </div>
 
       <div class="disclaimer">
-        ⚠️ Usage éducatif uniquement. Ces peptides sont à usage de recherche. Consultez impérativement un professionnel de santé avant tout usage. PeptideScanner n'est pas responsable d'un usage inapproprié.
+        ${t('db_modal_disclaimer')}
       </div>
     </div>
   `;
@@ -1205,14 +1206,14 @@ document.addEventListener('keydown', e => {
 document.getElementById('totalCount').textContent = PEPTIDES.length;
 
 const PHASE_DATA_LOCAL = {
-  'experimental': { emoji:'⚪', label:'Données limitées',               desc:'Très peu d\'études disponibles.', color:'#9CA3AF', steps:0 },
-  'preclinical':  { emoji:'🔴', label:'Recherche animale',              desc:'Testé uniquement sur des animaux.', color:'#EF4444', steps:1 },
-  'phase1':       { emoji:'🟠', label:'Premiers tests humains',         desc:'Sécurité vérifiée sur quelques volontaires.', color:'#F97316', steps:2 },
-  'phase2':       { emoji:'🟡', label:'Études d\'efficacité en cours',  desc:'Testé sur des centaines de personnes.', color:'#EAB308', steps:3 },
-  'phase3':       { emoji:'🟢', label:'Études avancées',                desc:'Testé sur des milliers — approbation proche.', color:'#22C55E', steps:4 },
-  'established':  { emoji:'✅', label:'Largement utilisé',              desc:'Retours abondants, profil bien documenté.', color:'#0D9488', steps:5 },
+  'experimental': { emoji:'⚪', label:t('phase_exp_label'),               desc:t('phase_exp_desc_dot'), color:'#9CA3AF', steps:0 },
+  'preclinical':  { emoji:'🔴', label:t('phase_pre_label'),              desc:t('phase_pre_desc_dot'), color:'#EF4444', steps:1 },
+  'phase1':       { emoji:'🟠', label:t('phase_p1_label'),         desc:t('phase_p1_desc_dot'), color:'#F97316', steps:2 },
+  'phase2':       { emoji:'🟡', label:t('phase_p2_label'),  desc:t('phase_p2_desc_dot'), color:'#EAB308', steps:3 },
+  'phase3':       { emoji:'🟢', label:t('phase_p3_label'),                desc:t('phase_p3_desc_dot'), color:'#22C55E', steps:4 },
+  'established':  { emoji:'✅', label:t('phase_est_label'),              desc:t('phase_est_desc_dot'), color:'#0D9488', steps:5 },
 };
-const PHASE_STEPS = ['Recherche','Tests','Études','Avancé','Établi'];
+const PHASE_STEPS = () => [t('phase_step1'),t('phase_step2'),t('phase_step3'),t('phase_step4'),t('phase_step5')];
 
 function phaseMiniBadge(phase) {
   const d = PHASE_DATA_LOCAL[phase] || PHASE_DATA_LOCAL['experimental'];
@@ -1221,7 +1222,7 @@ function phaseMiniBadge(phase) {
 
 function phaseVisualFull(phase) {
   const d = PHASE_DATA_LOCAL[phase] || PHASE_DATA_LOCAL['experimental'];
-  const steps = PHASE_STEPS.map((lbl, i) => {
+  const steps = PHASE_STEPS().map((lbl, i) => {
     const active = i < d.steps;
     return '<div style="flex:1;text-align:center">'
       + '<div style="height:5px;border-radius:3px;margin-bottom:3px;background:'+(active?d.color:'#E2E8F0')+'"></div>'
@@ -1241,7 +1242,9 @@ function phaseVisualFull(phase) {
 // Render immédiat sans attendre Supabase + reload après chargement phases
 renderCards();
 document.getElementById('shownCount').textContent = PEPTIDES.length;
-loadPhases().then(() => renderCards()); // re-render avec phases
+loadPhases().then(() => { renderCards(); PS_applyI18n(); PS_renderLangSwitcher(); });
+PS_applyI18n();
+PS_renderLangSwitcher();
 </script>
 </body>
 </html>

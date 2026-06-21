@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<script src="/lang.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>PeptideScanner — Analyse</title>
 <style>
@@ -213,13 +214,14 @@
 <body>
 
 <div class="topbar">
+  <div id="langToggleBtn"></div>
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <h1>Analyse</h1>
+  <h1 data-i18n="analytics_title">Analyse</h1>
   <select class="period-select" id="periodSelect" onchange="render()">
-    <option value="30">30 jours</option>
-    <option value="60">60 jours</option>
-    <option value="90">90 jours</option>
-    <option value="0">Tout</option>
+    <option value="30" data-i18n="analytics_30d">30 jours</option>
+    <option value="60" data-i18n="analytics_60d">60 jours</option>
+    <option value="90" data-i18n="analytics_90d">90 jours</option>
+    <option value="0" data-i18n="analytics_all">Tout</option>
   </select>
 </div>
 
@@ -298,21 +300,21 @@ function computeCorrelations(data) {
     if (compliancePct >= 90) {
       insights.push({
         type: 'positive', icon: '🎯',
-        title: `Compliance excellente — ${compliancePct}%`,
+        title: `${t('analytics_compliance_excellent')} — ${compliancePct}%`,
         text: `Tu as fait ${done} injections sur ${totalExpected} prévues. Une régularité pareille maximise l'efficacité du protocole.`,
         badge: { text: `+${compliancePct}%`, cls: 'badge-green' }
       });
     } else if (compliancePct >= 70) {
       insights.push({
         type: 'warning', icon: '⚠️',
-        title: `Compliance correcte — ${compliancePct}%`,
+        title: `${t('analytics_compliance_good')} — ${compliancePct}%`,
         text: `${totalExpected - done} injection${totalExpected-done>1?'s':''} manquée${totalExpected-done>1?'s':''}. Configure des rappels pour améliorer ta régularité.`,
         badge: { text: compliancePct+'%', cls: 'badge-amber' }
       });
     } else {
       insights.push({
         type: 'negative', icon: '❌',
-        title: `Compliance faible — ${compliancePct}%`,
+        title: `${t('analytics_compliance_weak')} — ${compliancePct}%`,
         text: `${totalExpected - done} injections manquées. Un taux aussi bas réduit significativement l'efficacité du protocole. Active les alertes !`,
         badge: { text: compliancePct+'%', cls: 'badge-red' }
       });
@@ -334,9 +336,9 @@ function computeCorrelations(data) {
     if (weekendRate < weekdayRate * 0.7 && weekendDays >= 2) {
       insights.push({
         type: 'warning', icon: '📅',
-        title: 'Compliance chute le weekend',
-        text: `Tu es ${Math.round((1-weekendRate/weekdayRate)*100)}% moins régulier le weekend. Configure un rappel spécial samedi et dimanche.`,
-        badge: { text: 'Weekend -'+Math.round((1-weekendRate/weekdayRate)*100)+'%', cls: 'badge-amber' }
+        title: t('analytics_weekend_drop'),
+        text: `${t('analytics_weekend_text').replace('{pct}', Math.round((1-weekendRate/weekdayRate)*100))}`,
+        badge: { text: t('analytics_weekend')+' -'+Math.round((1-weekendRate/weekdayRate)*100)+'%', cls: 'badge-amber' }
       });
     }
   }
@@ -367,8 +369,8 @@ function computeCorrelations(data) {
 
         insights.push({
           type: cureDiff < 0 ? 'positive' : 'info', icon: '⚖️',
-          title: `Depuis ${activeCure.peptide} — ${cureDiff > 0 ? '+' : ''}${cureDiff.toFixed(1)} kg`,
-          text: `En ${cureDays} jours de cure, ton poids a ${cureDiff < 0 ? 'diminué' : 'augmenté'} de ${Math.abs(cureDiff).toFixed(1)} kg. Rythme : ${Math.abs(ratePerWeek)} kg/semaine.`,
+          title: `${t('analytics_since')} ${activeCure.peptide} — ${cureDiff > 0 ? '+' : ''}${cureDiff.toFixed(1)} kg`,
+          text: `En ${cureDays} ${t('analytics_cure_days_weight')} ${cureDiff < 0 ? 'diminué' : 'augmenté'} de ${Math.abs(cureDiff).toFixed(1)} kg. ${t('analytics_pace')} : ${Math.abs(ratePerWeek)} kg/${t('week')}.`,
           badge: { text: (cureDiff > 0 ? '+' : '') + cureDiff.toFixed(1)+' kg', cls: cureDiff < 0 ? 'badge-green' : 'badge-blue' }
         });
         progressionScore = cureDiff <= 0 ? 80 : 50;
@@ -377,7 +379,7 @@ function computeCorrelations(data) {
       insights.push({
         type: diffKg < 0 ? 'positive' : 'info', icon: '📉',
         title: `Évolution poids — ${diffKg > 0 ? '+' : ''}${diffKg.toFixed(1)} kg`,
-        text: `Sur ${days} jours, tu as ${diffKg < 0 ? 'perdu' : 'pris'} ${Math.abs(diffKg).toFixed(1)} kg (${diffPct}%). Rythme : ${Math.abs(ratePerWeek)} kg/semaine.`,
+        text: `${t('analytics_over')} ${days} ${t('days')}, ${diffKg < 0 ? t('analytics_lost') : t('analytics_gained')} ${Math.abs(diffKg).toFixed(1)} kg (${diffPct}%). ${t('analytics_pace')} : ${Math.abs(ratePerWeek)} kg/${t('week')}.`,
         badge: { text: (diffKg > 0 ? '+' : '') + diffKg.toFixed(1)+' kg', cls: diffKg < 0 ? 'badge-green' : 'badge-amber' }
       });
     }
@@ -397,24 +399,24 @@ function computeCorrelations(data) {
     if (maxGap > 14) {
       insights.push({
         type: 'warning', icon: '⏳',
-        title: `Gap de ${Math.round(maxGap)} jours sans pesée`,
-        text: `Tu as été absent ${Math.round(maxGap)} jours. Pour une corrélation précise, pèse-toi au minimum 2 fois par semaine.`,
+        title: `${t('analytics_gap').replace('{n}', Math.round(maxGap))}`,
+        text: `${t('analytics_gap_text').replace('{n}', Math.round(maxGap))}` Pour une corrélation précise, pèse-toi au minimum 2 fois par semaine.`,
         badge: { text: Math.round(maxGap)+' jours', cls: 'badge-amber' }
       });
     } else {
       regularityScore = 90;
       insights.push({
         type: 'positive', icon: '✅',
-        title: 'Pesées régulières',
+        title: t('analytics_regular_weighing'),
         text: `Moyenne de ${avgGap.toFixed(1)} jours entre chaque pesée. Continue ainsi — tes données permettent une corrélation fiable.`,
-        badge: { text: 'Régulier', cls: 'badge-green' }
+        badge: { text: t('analytics_regular'), cls: 'badge-green' }
       });
     }
   } else if (weights.length > 0) {
     regularityScore = 30;
     insights.push({
       type: 'info', icon: '💡',
-      title: 'Ajoute plus de pesées',
+      title: t('analytics_add_weighing'),
       text: `Tu as seulement ${weights.length} mesure${weights.length > 1 ? 's' : ''}. Plus tu enregistres, plus les corrélations sont précises. Objectif : 2 pesées par semaine.`,
       badge: { text: weights.length+' mesure'+(weights.length>1?'s':''), cls: 'badge-blue' }
     });
@@ -465,15 +467,15 @@ function render() {
   if (data.weights.length === 0 && !data.activeCure) {
     c.innerHTML = `<div class="empty-state">
       <span>📊</span>
-      <p>Pas encore assez de données pour analyser.<br>Commence une cure et enregistre ton poids régulièrement.</p>
-      <button class="empty-btn" onclick="window.location.href='cure.html'">Démarrer une cure →</button>
+      <p>${t('analytics_empty_text')}</p>
+      <button class="empty-btn" onclick="window.location.href='cure.html'">${t('analytics_start_cure')}</button>
     </div>`;
     return;
   }
 
   // Score color
   const scoreColor = score >= 80 ? 'var(--accent)' : score >= 60 ? 'var(--accent3)' : 'var(--danger)';
-  const scoreLabel = score >= 80 ? 'Excellent' : score >= 60 ? 'Bon' : score >= 40 ? 'À améliorer' : 'Faible';
+  const scoreLabel = score >= 80 ? t('analytics_excellent') : score >= 60 ? t('analytics_good') : score >= 40 ? t('analytics_improve') : t('analytics_weak');
   const circumference = 2 * Math.PI * 30;
   const offset = circumference * (1 - score / 100);
 
@@ -482,8 +484,8 @@ function render() {
     <div class="scan-score-card">
       <div class="score-header">
         <div>
-          <div class="score-label">Scan Score</div>
-          <div class="score-title">Analyse de votre protocole</div>
+          <div class="score-label">${t('analytics_scan_score')}</div>
+          <div class="score-title">${t('analytics_protocol_analysis')}</div>
         </div>
         <div class="score-ring-wrap">
           <svg viewBox="0 0 68 68" width="68" height="68">
@@ -502,15 +504,15 @@ function render() {
       <div class="score-breakdown">
         <div class="score-item">
           <div class="score-item-val" style="color:${scoreBreakdown.compliance >= 70 ? 'var(--accent)' : 'var(--accent3)'}">${scoreBreakdown.compliance}%</div>
-          <div class="score-item-label">Compliance</div>
+          <div class="score-item-label">${t('cure_compliance')}</div>
         </div>
         <div class="score-item">
           <div class="score-item-val" style="color:${scoreBreakdown.progression >= 60 ? 'var(--accent)' : 'var(--accent3)'}">${scoreBreakdown.progression}%</div>
-          <div class="score-item-label">Progression</div>
+          <div class="score-item-label">${t('analytics_progression')}</div>
         </div>
         <div class="score-item">
           <div class="score-item-val" style="color:${scoreBreakdown.regularity >= 60 ? 'var(--accent)' : 'var(--accent3)'}">${scoreBreakdown.regularity}%</div>
-          <div class="score-item-label">Régularité</div>
+          <div class="score-item-label">${t('analytics_regularity')}</div>
         </div>
       </div>
     </div>
@@ -521,7 +523,7 @@ function render() {
     </div>
 
     <!-- INSIGHTS -->
-    <div class="section-label">Insights automatiques</div>
+    <div class="section-label">${t('analytics_insights')}</div>
     <div class="insights-wrap" id="insightsWrap">
       ${insights.length > 0
         ? insights.map(ins => `
@@ -533,7 +535,7 @@ function render() {
               ${ins.badge ? `<span class="insight-badge ${ins.badge.cls}">${ins.badge.text}</span>` : ''}
             </div>
           </div>`).join('')
-        : '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">Pas encore assez de données pour générer des insights.</div>'
+        : '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">${t('analytics_no_data')}</div>'
       }
     </div>
 
@@ -561,18 +563,18 @@ function renderStatBox(data) {
     const dayNum = Math.max(1, Math.floor((TODAY - startD) / 86400000) + 1);
     const expected = Math.round(Math.min(dayNum, parseInt(activeCure.duration)) * freq);
     const pct = expected > 0 ? Math.min(100, Math.round(logs.length / expected * 100)) : 0;
-    stats.push(`<div class="stat-box"><div class="stat-box-label">Injections</div><div class="stat-box-val" style="color:var(--accent)">${logs.length}</div><div class="stat-box-sub">/ ${expected} prévues</div><div class="stat-box-trend ${pct>=80?'trend-up':pct>=60?'trend-neutral':'trend-down'}">${pct}% compliance</div></div>`);
-    stats.push(`<div class="stat-box"><div class="stat-box-label">Jour de cure</div><div class="stat-box-val" style="color:var(--accent2)">J${Math.min(dayNum, parseInt(activeCure.duration))}</div><div class="stat-box-sub">/ ${activeCure.duration} jours</div><div class="stat-box-trend trend-neutral">${Math.max(0,parseInt(activeCure.duration)-dayNum)} restants</div></div>`);
+    stats.push(`<div class="stat-box"><div class="stat-box-label">${t('profil_injections')}</div><div class="stat-box-val" style="color:var(--accent)">${logs.length}</div><div class="stat-box-sub">/ ${expected} ${t('analytics_expected')}</div><div class="stat-box-trend ${pct>=80?'trend-up':pct>=60?'trend-neutral':'trend-down'}">${pct}% ${t('cure_compliance').toLowerCase()}</div></div>`);
+    stats.push(`<div class="stat-box"><div class="stat-box-label">${t('analytics_cure_day')}</div><div class="stat-box-val" style="color:var(--accent2)">J${Math.min(dayNum, parseInt(activeCure.duration))}</div><div class="stat-box-sub">/ ${activeCure.duration} ${t('days')}</div><div class="stat-box-trend trend-neutral">${Math.max(0,parseInt(activeCure.duration)-dayNum)} ${t('cure_remaining').toLowerCase()}</div></div>`);
   }
 
   if (weights.length >= 2) {
     const first = parseFloat(weights[0].kg || weights[0].weight_kg);
     const last = parseFloat(weights[weights.length-1].kg || weights[weights.length-1].weight_kg);
     const diff = (last - first).toFixed(1);
-    stats.push(`<div class="stat-box"><div class="stat-box-label">Poids actuel</div><div class="stat-box-val" style="color:var(--accent)">${last} kg</div><div class="stat-box-sub">${weights.length} mesures</div><div class="stat-box-trend ${diff<=0?'trend-up':'trend-down'}">${diff>0?'+':''}${diff} kg total</div></div>`);
+    stats.push(`<div class="stat-box"><div class="stat-box-label">${t('dash_current_weight')}</div><div class="stat-box-val" style="color:var(--accent)">${last} kg</div><div class="stat-box-sub">${weights.length} ${t('weight_measures')}</div><div class="stat-box-trend ${diff<=0?'trend-up':'trend-down'}">${diff>0?'+':''}${diff} kg total</div></div>`);
     const days = Math.ceil((new Date(weights[weights.length-1].date) - new Date(weights[0].date)) / 86400000);
     const rate = days > 0 ? Math.abs((last-first)/days*7).toFixed(2) : 0;
-    stats.push(`<div class="stat-box"><div class="stat-box-label">Rythme</div><div class="stat-box-val" style="color:var(--accent3)">${rate}</div><div class="stat-box-sub">kg / semaine</div><div class="stat-box-trend trend-neutral">sur ${days} jours</div></div>`);
+    stats.push(`<div class="stat-box"><div class="stat-box-label">${t('analytics_pace')}</div><div class="stat-box-val" style="color:var(--accent3)">${rate}</div><div class="stat-box-sub">${t('analytics_kg_week')}</div><div class="stat-box-trend trend-neutral">${t('analytics_over')} ${days} ${t('days')}</div></div>`);
   }
 
   return stats.join('');
@@ -611,7 +613,7 @@ function renderCorrelationChart(data) {
   // Labels X
   const step = Math.max(1, Math.floor(weights.length / 4));
   const xLabels = pts.filter((_,i) => i%step===0 || i===pts.length-1)
-    .map(p => `<span>${new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</span>`).join('');
+    .map(p => `<span>${new Date(p.date).toLocaleDateString(PS_getLang()==='en'?'en-US':PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'})}</span>`).join('');
 
   // Trend line (régression linéaire simple)
   const n = pts.length;
@@ -626,13 +628,13 @@ function renderCorrelationChart(data) {
   const trendColor = slope < 0 ? 'var(--accent)' : 'var(--danger)';
 
   return `
-    <div class="section-label">Corrélation poids × temps</div>
+    <div class="section-label">${t('analytics_correlation')}</div>
     <div class="chart-card">
       <div class="chart-header">
-        <h3>Évolution du poids</h3>
+        <h3>${t('dash_weight_title')}</h3>
         <div class="chart-legend">
           <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Poids</div>
-          <div class="legend-item"><div class="legend-dot" style="background:${trendColor};opacity:.7"></div>Tendance</div>
+          <div class="legend-item"><div class="legend-dot" style="background:${trendColor};opacity:.7"></div>${t('analytics_trend')}</div>
           ${activeCure ? '<div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>Début cure</div>' : ''}
         </div>
       </div>
@@ -705,7 +707,7 @@ function renderHeatmap(data) {
   }
 
   return `
-    <div class="section-label">Heatmap des injections</div>
+    <div class="section-label">${t('analytics_heatmap')}</div>
     <div class="heatmap-card">
       <h3>${activeCure.peptide} — ${displayDays} derniers jours</h3>
       <div class="heatmap-grid">${cells}</div>
@@ -760,9 +762,9 @@ function renderWeeklyBars(data) {
   }).join('');
 
   return `
-    <div class="section-label">Compliance par semaine</div>
+    <div class="section-label">${t('analytics_weekly_compliance')}</div>
     <div class="weekly-card">
-      <h3>Régularité — ${activeCure.peptide}</h3>
+      <h3>${t('analytics_regularity')} — ${activeCure.peptide}</h3>
       <div class="weekly-bars">${barsHtml}</div>
     </div>`;
 }
@@ -780,7 +782,7 @@ function renderProjection(data) {
   const done = logs.length;
   const remaining = Math.max(0, totalExpected - done);
 
-  // Projection poids
+  // ${t('analytics_weight_proj')}
   let weightProjection = '—';
   let weightDiff = '—';
   if (weights.length >= 2) {
@@ -804,7 +806,7 @@ function renderProjection(data) {
   return `
     <div class="section-label">Projections fin de cure</div>
     <div class="projection-card">
-      <h3>🔮 Fin de cure — ${endDate.toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</h3>
+      <h3>🔮 Fin de cure — ${endDate.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'long'})}</h3>
       <div class="proj-row">
         <span class="proj-label">Jours restants</span>
         <span class="proj-val ${daysLeft<=7?'amber':'green'}">${daysLeft} jours</span>
@@ -856,6 +858,14 @@ function initDemo() {
 
 initDemo();
 render();
+document.addEventListener('DOMContentLoaded', () => {
+  PS_applyI18n();
+  PS_renderLangSwitcher();
+});
+if (document.readyState !== 'loading') {
+  PS_applyI18n();
+  PS_renderLangSwitcher();
+}
 </script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<script src="/lang.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PeptideScanner — Bibliothèque complète</title>
 <style>
@@ -337,7 +338,6 @@
   <div class="modal" id="modalContent"></div>
 </div>
 
-<script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
@@ -1245,22 +1245,27 @@ document.getElementById('totalCount').textContent = PEPTIDES.length;
 
 function initPage() {
   renderCards();
-  PS_applyI18n();
-  PS_renderLangSwitcher();
-  // Traduire les filtres dynamiquement
-  document.querySelectorAll('.filter-btn[data-i18n]').forEach(el => {
-    el.textContent = t(el.getAttribute('data-i18n'));
-  });
-  // Traduire le guide phases
+  // Appliquer toutes les traductions data-i18n
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     const val = t(key);
     if (val && val !== key) el.textContent = val;
   });
+  // Placeholders
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    const val = t(key);
+    if (val && val !== key) el.placeholder = val;
+  });
+  PS_renderLangSwitcher();
+  document.getElementById('shownCount').textContent =
+    document.querySelectorAll('.pep-card:not(.hidden)').length || PEPTIDES.length;
 }
 
-initPage();
-loadPhases().then(() => initPage());
+document.addEventListener('DOMContentLoaded', () => {
+  initPage();
+  loadPhases().then(() => initPage());
+});
 </script>
 </body>
 </html>

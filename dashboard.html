@@ -424,7 +424,7 @@
             <stop offset="100%" stop-color="#00C9A7" stop-opacity="0"/>
           </linearGradient>
         </defs>
-        <text x="200" y="44" fill="#6B7A99" font-size="12" font-family="Space Grotesk" text-anchor="middle" id="chartEmpty">${t ? t('dash_no_weight_data') : 'Aucune donnée'}</text>
+        <text x="200" y="44" fill="#6B7A99" font-size="12" font-family="Space Grotesk" text-anchor="middle" id="chartEmpty">—</text>
         <path id="chartArea" d="" fill="url(#wGrad)"/>
         <path id="chartLine" d="" fill="none" stroke="#00C9A7" stroke-width="2" stroke-linecap="round"/>
       </svg>
@@ -568,7 +568,7 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 function formatDate(d) {
-  return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
+  return new Date(d).toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR', { day:'2-digit', month:'short' });
 }
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
@@ -641,7 +641,7 @@ function renderCureActive() {
   const totalExp = Math.round(dayNum * freq);
   const done     = cureInjs.length;
   const injPct   = totalExp > 0 ? Math.min(100, Math.round((done / totalExp) * 100)) : 0;
-  const freqLabel= freq >= 1 ? freq + '×/' + t('day') : '1×/' + Math.round(1/freq) + t('days_suffix');
+  const freqLabel= freq >= 1 ? freq + '×/' + t('days_suffix') : '1×/' + Math.round(1/freq) + t('days_suffix');
 
   document.getElementById('cureName').textContent     = active.peptide_name || active.name;
   document.getElementById('cureSub').textContent      = `${active.dose_mcg || ''} ${active.unit || 'mcg'} · ${freqLabel}`;
@@ -688,7 +688,7 @@ function renderStats() {
 
 function renderMiniChart(weights) {
   if (weights.length < 2) return;
-  document.getElementById('chartEmpty').style.display = 'none';
+  const _ce = document.getElementById('chartEmpty'); if(_ce) _ce.style.display = 'none';
   const vals = weights.map(w => parseFloat(w.weight_kg));
   const mn = Math.min(...vals) - 1, mx = Math.max(...vals) + 1;
   const W = 400, H = 80;
@@ -743,7 +743,7 @@ function renderTodayView() {
     container.innerHTML = html; return;
   }
 
-  const SITES = PS_getLang()==='en' ? ['Left Abd','Right Abd','Left Thigh','Right Thigh','Left Glute','Right Glute'] : ['Abdomen G','Abdomen D','Cuisse G','Cuisse D','Fesse G','Fesse D'];
+  const SITES = [t('site_abd_g'),t('site_abd_d'),t('site_thigh_g'),t('site_thigh_d'),t('site_glute_g'),t('site_glute_d')];
   activeCures.forEach(cure => {
     const freq = parseFloat(cure.frequency) || 1;
     const start = new Date(cure.start_date); start.setHours(0,0,0,0);
@@ -821,7 +821,7 @@ async function confirmInjection() {
   closeInjConfirmModal();
 
   const siteKey  = 'ps_site_' + cureId;
-  const SITES    = ['Abdomen G','Abdomen D','Cuisse G','Cuisse D','Fesse G','Fesse D'];
+  const SITES    = [t('site_abd_g'),t('site_abd_d'),t('site_thigh_g'),t('site_thigh_d'),t('site_glute_g'),t('site_glute_d')];
   const lastIdx  = parseInt(localStorage.getItem(siteKey)||'-1');
   const nextIdx  = (lastIdx + 1) % SITES.length;
   localStorage.setItem(siteKey, nextIdx);
@@ -850,7 +850,7 @@ async function quickToggleInj(cureId, slot, time, peptideName, dose, site) {
     showToast(t('dash_inj_cancelled'));
   } else {
     const siteKey = 'ps_site_' + cureId;
-    const SITES   = ['Abdomen G','Abdomen D','Cuisse G','Cuisse D','Fesse G','Fesse D'];
+    const SITES   = [t('site_abd_g'),t('site_abd_d'),t('site_thigh_g'),t('site_thigh_d'),t('site_glute_g'),t('site_glute_d')];
     const lastIdx = parseInt(localStorage.getItem(siteKey)||'-1');
     const nextIdx = (lastIdx + 1) % SITES.length;
     localStorage.setItem(siteKey, nextIdx);
@@ -928,17 +928,18 @@ async function saveCure() {
 }
 
 // ── LANCER ─────────────────────────────────────────────────────
-init();
-// Apply translations
-PS_applyI18n();
+init().then(() => {
+  PS_applyI18n();
   PS_renderLangSwitcher();
-const _lt = document.getElementById('langToggleBtn'); if(_lt) _lt.textContent = PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+  const _ce = document.getElementById('chartEmpty');
+  if (_ce) _ce.textContent = t('dash_no_weight_data');
+}).catch(console.error);
 </script>
 
 <div style="padding:0 16px 8px"><div class="legal-disclaimer compact">
   <span class="legal-disclaimer-icon">⚠️</span>
   <div class="legal-disclaimer-text">
-    <strong>${t('disclaimer_title')}</strong> — ${t('disclaimer_short')}
+    <strong data-i18n="disclaimer_title">Usage éducatif uniquement</strong> — <span data-i18n="disclaimer_short">Peptides de recherche non approuvés à usage humain. Consultez un professionnel de santé. PeptideScanner décline toute responsabilité.</span>
   </div>
 </div></div>
 </body>

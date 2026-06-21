@@ -1103,29 +1103,46 @@ window.PS_loadLangFromProfile = function(sb, userId, profileLang) {
 window.PS_injectLangToggle = function(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  const current = window.PS_getLang();
-  const btn = document.createElement('button');
-  btn.id = 'langToggleBtn';
-  btn.innerHTML = current === 'fr' ? '🇬🇧 EN' : '🇫🇷 FR';
-  btn.style.cssText = [
-    'background:transparent',
-    'border:1px solid var(--border)',
-    'color:var(--muted)',
-    'border-radius:8px',
-    'padding:5px 10px',
-    'font-family:inherit',
-    'font-size:.72rem',
-    'font-weight:700',
-    'cursor:pointer',
-    'transition:all .2s',
-    'white-space:nowrap',
-    'flex-shrink:0',
-  ].join(';');
-  btn.onmouseover = () => { btn.style.borderColor = 'var(--accent)'; btn.style.color = 'var(--accent)'; };
-  btn.onmouseout  = () => { btn.style.borderColor = 'var(--border)'; btn.style.color = 'var(--muted)';  };
-  btn.onclick = () => window.PS_setLang(current === 'fr' ? 'en' : 'fr');
-  container.appendChild(btn);
+  window.PS_renderLangSwitcher();
 };
+/**
+ * Crée ou met à jour le sélecteur de langue FR | EN dans tous les #langToggleBtn
+ */
+window.PS_renderLangSwitcher = function() {
+  const current = window.PS_getLang();
+  document.querySelectorAll('#langToggleBtn').forEach(el => {
+    el.innerHTML = '';
+    el.style.cssText = 'display:flex;align-items:center;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--border);flex-shrink:0;';
+    el.removeAttribute('onclick');
+
+    ['fr','en'].forEach((lang, i) => {
+      const btn = document.createElement('button');
+      const isActive = current === lang;
+      btn.textContent = lang === 'fr' ? '🇫🇷 FR' : '🇬🇧 EN';
+      btn.style.cssText = [
+        'padding:5px 10px',
+        'font-family:inherit',
+        'font-size:.72rem',
+        'font-weight:700',
+        'cursor:pointer',
+        'border:none',
+        'outline:none',
+        'transition:all .15s',
+        isActive
+          ? 'background:var(--accent);color:#fff;'
+          : 'background:var(--surface);color:var(--muted);',
+        i === 0 ? 'border-right:1px solid var(--border);' : '',
+      ].join(';');
+      if (!isActive) {
+        btn.onmouseover = () => { btn.style.background='var(--surface2)'; btn.style.color='var(--text)'; };
+        btn.onmouseout  = () => { btn.style.background='var(--surface)';  btn.style.color='var(--muted)'; };
+      }
+      btn.onclick = (e) => { e.stopPropagation(); if(!isActive) window.PS_setLang(lang); };
+      el.appendChild(btn);
+    });
+  });
+};
+
 
 /**
  * Applique toutes les traductions data-i18n sur la page

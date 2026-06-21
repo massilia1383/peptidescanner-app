@@ -95,7 +95,7 @@
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
   <h1 data-i18n="profil_title">Mon profil</h1>
-  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
+  <div id="langToggleBtn"></div>
 </div>
 
 <div class="content">
@@ -481,8 +481,7 @@ document.addEventListener('click',e=>{
 
 init().then(() => {
   PS_applyI18n();
-  const lb = document.getElementById('langToggleBtn');
-  if(lb) lb.textContent = PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+  PS_renderLangSwitcher();
   const lv = document.getElementById('langVal');
   if(lv) lv.textContent = PS_getLang()==='fr'?'Français':'English';
 });

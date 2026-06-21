@@ -187,7 +187,7 @@
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
   <h1 data-i18n="inv_title">Stock</h1>
-  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
+  <div id="langToggleBtn"></div>
   <button class="add-btn" onclick="openModal()" title="Ajouter un flacon">+</button>
 </div>
 
@@ -632,8 +632,7 @@ function closeIfOverlay(e) { if(e.target===document.getElementById('flaconModal'
 
 init().then(()=>{
   PS_applyI18n();
-  const lb=document.getElementById('langToggleBtn');
-  if(lb) lb.textContent=PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+  PS_renderLangSwitcher();
 });
 
 // Auto-refresh quand on revient sur la page (depuis cure.html par exemple)

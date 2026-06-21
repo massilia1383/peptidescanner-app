@@ -225,7 +225,7 @@
       <span data-i18n="ia_online">${t('ia_online')}</span>
     </div>
   </div>
-  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
+  <div id="langToggleBtn"></div>
   <div class="topbar-logo">PeptideScanner</div>
   <button class="clear-btn" onclick="clearChat()"><span data-i18n="ia_clear">Effacer</span></button>
 </div>
@@ -1232,8 +1232,7 @@ function getActiveCure() {
 // ── LANCER ────────────────────────────────────────────────────
 init().then(()=>{
   PS_applyI18n();
-  const lb=document.getElementById('langToggleBtn');
-  if(lb) lb.textContent=PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+  PS_renderLangSwitcher();
   // Update placeholder
   const ci=document.getElementById('chatInput');
   if(ci) ci.placeholder=t('ia_placeholder');

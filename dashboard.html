@@ -322,7 +322,7 @@
     <span class="topbar-name" id="userName">Chargement…</span>
   </div>
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
+  <div id="langToggleBtn"></div>
   <div class="notif-btn" onclick="window.location='alertes.html'">
     🔔<div class="notif-badge" id="notifBadge"></div>
   </div>
@@ -931,6 +931,7 @@ async function saveCure() {
 init();
 // Apply translations
 PS_applyI18n();
+  PS_renderLangSwitcher();
 const _lt = document.getElementById('langToggleBtn'); if(_lt) _lt.textContent = PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
 </script>
 

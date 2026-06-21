@@ -418,7 +418,7 @@
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
   <h1 data-i18n="calc_title">Calculateur</h1>
-  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
+  <div id="langToggleBtn"></div>
   <a href="dashboard.html" class="back-btn">← Retour</a>
 </div>
 
@@ -1779,8 +1779,7 @@ function showTitration() {
 document.getElementById('peptideMg').value = '10';
 calculateReconstitution();
 PS_applyI18n();
-const _lb=document.getElementById('langToggleBtn');
-if(_lb) _lb.textContent=PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+PS_renderLangSwitcher();
 </script>
 </body>
 </html>

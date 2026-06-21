@@ -218,16 +218,16 @@
 </div>
 
 <nav class="bottom-nav">
-  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
-  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label">Biblio</span></a>
-  <a class="nav-item active" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span><div class="nav-dot"></div></a>
-  <a class="nav-item" href="poids.html"><span class="nav-icon">⚖️</span><span class="nav-label">Poids</span></a>
-  <a class="nav-item" href="alertes.html"><span class="nav-icon">🔔</span><span class="nav-label">Alertes</span></a>
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label" data-i18n="nav_biblio">Biblio</span></a>
+  <a class="nav-item active" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label" data-i18n="nav_cure">Cure</span><div class="nav-dot"></div></a>
+  <a class="nav-item" href="poids.html"><span class="nav-icon">⚖️</span><span class="nav-label" data-i18n="nav_weight">Poids</span></a>
+  <a class="nav-item" href="alertes.html"><span class="nav-icon">🔔</span><span class="nav-label" data-i18n="nav_alerts">Alertes</span></a>
   <a class="nav-item" href="inventaire.html">
     <span class="nav-icon">🧪</span>
     <span class="nav-label" data-i18n="nav_stock">Stock</span>
   </a>
-  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
+  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label" data-i18n="nav_profile">Profil</span></a>
 </nav>
 
 <div class="modal-overlay" id="addCureModal" onclick="closeIfOverlay(event)">
@@ -280,7 +280,7 @@
       <input class="form-input" id="newCureNotes" placeholder="Objectif, remarques…">
     </div>
     <button class="submit-btn" id="modalSubmit" onclick="saveCure()">Démarrer la cure</button>
-    <button class="delete-btn" id="modalDelete" style="display:none" onclick="deleteCure()">${t('cure_delete_btn')}</button>
+    <button class="delete-btn" id="modalDelete" style="display:none" onclick="deleteCure()" data-i18n="cure_delete_btn">Supprimer cette cure</button>
   </div>
 </div>
 
@@ -735,6 +735,8 @@ async function openAddCure() {
 
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  PS_applyI18n();
+  PS_renderLangSwitcher();
 }
 
 async function populatePeptideSelect(currentVal) {
@@ -808,6 +810,8 @@ async function openEditCure(id) {
   document.getElementById('newCureNotes').value = _userNote;
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  PS_applyI18n();
+  PS_renderLangSwitcher();
 }
 
 async function saveCure() {

@@ -396,7 +396,7 @@ function render() {
       <div class="compliance-row"><span>Compliance</span><strong>${compPct}%</strong></div>
       <div class="comp-bar"><div class="comp-fill" style="width:${compPct}%"></div></div>
       <div style="display:flex;gap:8px;margin-top:14px">
-        <button style="flex:1;padding:9px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:inherit;font-size:.78rem;cursor:pointer;" onclick="openEditCure('${cure.id}')">✏️ Modifier</button>
+        <button style="flex:1;padding:9px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:inherit;font-size:.78rem;cursor:pointer;" onclick="openEditCure('${cure.id}')">${t('cure_edit')}</button>
       </div>
     </div>
     <div class="cal-section" id="calSection"></div>

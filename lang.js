@@ -403,6 +403,54 @@ window.PS_LANG = {
     calc_high_dose_confirm: 'J\'ai vérifié — continuer quand même',
     calc_high_dose_cancel:  '← Recalculer ma dose',
     calc_dose_table_dose: 'Dose',
+    // ── IA CONTEXT ───────────────────────────────────────────
+    ia_ctx_user:     'User',
+    ia_ctx_goal:     'Goal',
+    ia_ctx_weight:   'Last weight',
+    ia_q1:           '⚖️ Best weight loss protocol?',
+    ia_q2:           '💪 Optimal stack for muscle gain?',
+    ia_q3:           '⚡ CJC-1295 with or without DAC?',
+    ia_q4:           '❄️ How to store peptides?',
+    // ── GOALS ────────────────────────────────────────────────
+    goal_fat_loss:   'Fat loss',
+    goal_muscle:     'Muscle gain',
+    goal_performance:'Performance',
+    goal_anti_age:   'Anti-aging',
+    goal_recovery:   'Recovery',
+    goal_health:     'General health',
+    // ── DASHBOARD EXTRA ──────────────────────────────────────
+    dash_all_cures:  'all cycles',
+    // ── INVENTAIRE EXTRA ─────────────────────────────────────
+    inv_add_vial:    'Add a vial',
+    // ── CALCULATEUR EXTRA ────────────────────────────────────
+    calc_other_volume:       'Other volume:',
+    calc_why_water:          '💡 Why water volume matters',
+    calc_understand_syringe: '🔬 Understanding U-100 insulin syringe',
+
+    // ── IA CONTEXT ───────────────────────────────────────────
+    ia_ctx_user:     'Utilisateur',
+    ia_ctx_goal:     'Objectif',
+    ia_ctx_weight:   'Dernier poids',
+    ia_q1:           '⚖️ Meilleur protocole perte de poids ?',
+    ia_q2:           '💪 Stack optimal pour prise de masse ?',
+    ia_q3:           '⚡ CJC-1295 avec ou sans DAC ?',
+    ia_q4:           '❄️ Comment conserver les peptides ?',
+    // ── GOALS ────────────────────────────────────────────────
+    goal_fat_loss:   'Perte de graisse',
+    goal_muscle:     'Prise de masse',
+    goal_performance:'Performance',
+    goal_anti_age:   'Anti-âge',
+    goal_recovery:   'Récupération',
+    goal_health:     'Santé générale',
+    // ── DASHBOARD EXTRA ──────────────────────────────────────
+    dash_all_cures:  'toutes cures',
+    // ── INVENTAIRE EXTRA ─────────────────────────────────────
+    inv_add_vial:    'Ajouter un flacon',
+    // ── CALCULATEUR EXTRA ────────────────────────────────────
+    calc_other_volume:       'Autre volume :',
+    calc_why_water:          '💡 Pourquoi le volume d\'eau est crucial',
+    calc_understand_syringe: '🔬 Comprendre la seringue insuline U-100',
+
     // ── INJECTION SITES ──────────────────────────────────────
     site_abd_g:      'Left abdomen',
     site_abd_d:      'Right abdomen',

@@ -345,9 +345,9 @@ function renderStats(all,filtered) {
   const sign=diff>0?'+':'';
   const cls=diff>0?'red':diff<0?'green':'amber';
   c.innerHTML=`
-    <div class="ws-card"><div class="ws-val green">${latest.weight_kg}</div><div class="ws-label">kg actuel</div></div>
-    <div class="ws-card"><div class="ws-val ${cls}">${diff!==null?sign+diff:'—'}</div><div class="ws-label">variation</div></div>
-    <div class="ws-card"><div class="ws-val amber">${filtered.length}</div><div class="ws-label">mesures</div></div>`;
+    <div class="ws-card"><div class="ws-val green">${latest.weight_kg}</div><div class="ws-label">${t('weight_current')}</div></div>
+    <div class="ws-card"><div class="ws-val ${cls}">${diff!==null?sign+diff:'—'}</div><div class="ws-label">${t('weight_variation')}</div></div>
+    <div class="ws-card"><div class="ws-val amber">${filtered.length}</div><div class="ws-label">${t('weight_measures')}</div></div>`;
 }
 
 function renderChart(weights) {
@@ -381,7 +381,7 @@ function renderChart(weights) {
   ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="#0D9488"/>`).join('')}`;
   const step=Math.max(1,Math.floor(weights.length/5));
   labels.innerHTML=pts.filter((_,i)=>i%step===0||i===pts.length-1)
-    .map(p=>`<span>${new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</span>`).join('');
+    .map(p=>`<span>${new Date(p.date).toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'})}</span>`).join('');
 }
 
 function renderHistory(all) {
@@ -393,7 +393,7 @@ function renderHistory(all) {
     let diffHtml='';
     if(prev){const d=(w.weight_kg-prev.weight_kg).toFixed(1);const s=d>0?'+':'';const c=d>0?'up':'down';diffHtml=`<span class="hist-diff ${c}">${s}${d}</span>`;}
     return `<div class="hist-item" data-id="${w.id}">
-      <span class="hist-date">${new Date(w.logged_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</span>
+      <span class="hist-date">${new Date(w.logged_at).toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'})}</span>
       <span class="hist-val">${w.weight_kg} kg${diffHtml}</span>
       ${w.notes?`<span class="hist-note">${w.notes}</span>`:'<span class="hist-note"></span>'}
       <div style="display:flex;gap:4px">
@@ -432,4 +432,3 @@ init().then(()=>{
 </script>
 </body>
 </html>
-

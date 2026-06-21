@@ -335,7 +335,7 @@
   <div style="margin-bottom:8px">
     <div class="section-head">
       <h2 data-i18n="dash_active_cure">Cure active</h2>
-      <a href="cure.html">Voir tout →</a>
+      <a href="cure.html"><span data-i18n="see_all">Voir tout →</span></a>
     </div>
   </div>
 
@@ -348,7 +348,7 @@
       </div>
       <div class="cure-day-badge">
         <div class="cure-day-num" id="cureDay">—</div>
-        <div class="cure-day-label"><span data-i18n="dash_day_label">/ </span><span id="cureDuration">—</span> jours</div>
+        <div class="cure-day-label">/ <span id="cureDuration">—</span> <span data-i18n="days">jours</span></div>
       </div>
     </div>
     <div class="progress-section">
@@ -401,7 +401,7 @@
     <div class="stat-card">
       <div class="stat-card-label" data-i18n="dash_total_inj">Injections totales</div>
       <div class="stat-card-val purple" id="totalInj">0</div>
-      <div class="stat-card-sub">toutes cures</div>
+      <div class="stat-card-sub" data-i18n="dash_all_cures">toutes cures</div>
     </div>
     <div class="stat-card">
       <div class="stat-card-label" data-i18n="dash_compliance">Compliance</div>
@@ -424,7 +424,7 @@
             <stop offset="100%" stop-color="#00C9A7" stop-opacity="0"/>
           </linearGradient>
         </defs>
-        <text x="200" y="44" fill="#6B7A99" font-size="12" font-family="Space Grotesk" text-anchor="middle" id="chartEmpty">Aucune donnée — Ajouter votre poids</text>
+        <text x="200" y="44" fill="#6B7A99" font-size="12" font-family="Space Grotesk" text-anchor="middle" id="chartEmpty">${t ? t('dash_no_weight_data') : 'Aucune donnée'}</text>
         <path id="chartArea" d="" fill="url(#wGrad)"/>
         <path id="chartLine" d="" fill="none" stroke="#00C9A7" stroke-width="2" stroke-linecap="round"/>
       </svg>
@@ -705,7 +705,7 @@ function renderTodayView() {
   const container = document.getElementById('todayViewContainer');
   if (!container) return;
   const now = new Date();
-  const dayNames   = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const dayNames = PS_getLang()==='en' ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'] : ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
   const monthNames = PS_LANG[PS_getLang()].months.map(m => m.toLowerCase());
   const dateLabel  = `${dayNames[now.getDay()]} ${now.getDate()} ${monthNames[now.getMonth()]}`;
   const activeCures = allCures.filter(c => {
@@ -728,7 +728,7 @@ function renderTodayView() {
 
   let html = `<div class="today-view-header">
     <div>
-      <div class="today-date-label">Programme du jour</div>
+      <div class="today-date-label">${t('dash_today_program')}</div>
       <div class="today-date-val">${dateLabel}</div>
       <div class="today-progress-bar"><div class="today-progress-fill" style="width:${scorePct}%"></div></div>
     </div>
@@ -743,7 +743,7 @@ function renderTodayView() {
     container.innerHTML = html; return;
   }
 
-  const SITES = ['Abdomen G','Abdomen D','Cuisse G','Cuisse D','Fesse G','Fesse D'];
+  const SITES = PS_getLang()==='en' ? ['Left Abd','Right Abd','Left Thigh','Right Thigh','Left Glute','Right Glute'] : ['Abdomen G','Abdomen D','Cuisse G','Cuisse D','Fesse G','Fesse D'];
   activeCures.forEach(cure => {
     const freq = parseFloat(cure.frequency) || 1;
     const start = new Date(cure.start_date); start.setHours(0,0,0,0);

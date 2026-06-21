@@ -505,10 +505,10 @@ function scheduleAllReminders() {
 
 init().then(()=>{
   PS_applyI18n();
+  const nb=document.getElementById('notifBtn'); if(nb && !nb.textContent) nb.textContent=t('alerts_enable');
   const lb=document.getElementById('langToggleBtn');
   if(lb) lb.textContent=PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
 });
 </script>
 </body>
 </html>
-

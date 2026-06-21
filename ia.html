@@ -222,7 +222,7 @@
     <div class="ai-avatar">🧬<div class="ai-online"></div></div>
     <div class="ai-info">
       <strong data-i18n="ia_title">Conseiller IA</strong>
-      <span data-i18n="ia_online">● En ligne · Spécialiste peptides</span>
+      <span data-i18n="ia_online">${t('ia_online')}</span>
     </div>
   </div>
   <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
@@ -250,7 +250,7 @@
 
   <!-- INPUT -->
   <div class="input-area">
-    <textarea class="chat-input" id="chatInput" placeholder="Posez votre question sur les peptides…" rows="1"
+    <textarea class="chat-input" id="chatInput" placeholder="" rows="1"
       onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
     <button class="send-btn" id="sendBtn" onclick="sendMessage()">↑</button>
   </div>
@@ -390,8 +390,8 @@ function checkAccess(monthUsed, monthKey) {
 function buildContext() {
   const parts = [];
   const TODAY = new Date(); TODAY.setHours(0,0,0,0);
-  if (profil.full_name) parts.push(`Utilisateur: ${profil.full_name}`);
-  if (profil.goal)      parts.push(`Objectif: ${profil.goal}`);
+  if (profil.full_name) parts.push(`${t('ia_ctx_user')}: ${profil.full_name}`);
+  if (profil.goal)      parts.push(`${t('ia_ctx_goal')}: ${profil.goal}`);
   if (profil.weight_kg) parts.push(`Poids: ${profil.weight_kg} kg`);
 
   const active = allCures.find(c => {
@@ -405,7 +405,7 @@ function buildContext() {
     parts.push(`Cure active: ${active.peptide_name||active.name} J${dayNum}/${active.duration_days}`);
     parts.push(`Dosage: ${active.dose_mcg||''} ${active.unit||'mcg'} ${active.frequency||''}×/j`);
   }
-  if (allWeights.length > 0) parts.push(`Dernier poids: ${allWeights[0].weight_kg} kg`);
+  if (allWeights.length > 0) parts.push(`${t('ia_ctx_weight')}: ${allWeights[0].weight_kg} kg`);
   return parts;
 }
 
@@ -586,15 +586,15 @@ function getActiveCure() {
 // ── SUGGESTIONS ───────────────────────────────────────────────
 const SUGGESTIONS_POOL = [
   '🔬 Quel peptide pour la récupération tendon ?',
-  '💪 Stack optimal pour prise de masse ?',
-  '⚖️ Meilleur protocole perte de poids ?',
+  t('ia_q2'),
+  t('ia_q1'),
   '🧠 Peptides nootropiques pour la concentration ?',
   '💉 Comment reconstituer le BPC-157 ?',
   '🔄 Peut-on combiner BPC-157 et TB-500 ?',
   '📅 Quelle durée pour une cure Epithalon ?',
   '🩸 Quels bilans sanguins surveiller ?',
-  '❄️ Comment conserver les peptides ?',
-  '⚡ CJC-1295 avec ou sans DAC ?',
+  t('ia_q4'),
+  t('ia_q3'),
   '🛡️ Quels effets secondaires surveiller ?',
   '💊 Semaglutide : comment démarrer ?',
 ];
@@ -1242,4 +1242,3 @@ init().then(()=>{
 </script>
 </body>
 </html>
-

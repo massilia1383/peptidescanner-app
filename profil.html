@@ -162,9 +162,9 @@
     <div style="padding:14px 16px">
       <div style="font-size:.8rem;font-weight:700;margin-bottom:4px"><span data-i18n="profil_solvent">💧 Solvant de reconstitution préféré</span></div>
       <select class="form-select" id="solventPreference" onchange="saveEquipment()" style="margin-top:8px">
-        <option value="bac">Eau bactériostatique (BAC) — Recommandé</option>
-        <option value="water">Eau stérile pour injection</option>
-        <option value="saline">Sérum physiologique 0.9%</option>
+        <option value="bac">${t('solvent_bac')}</option>
+        <option value="water">${t('solvent_water')}</option>
+        <option value="saline">${t('solvent_saline')}</option>
       </select>
     </div>
   </div>
@@ -489,4 +489,3 @@ init().then(() => {
 </script>
 </body>
 </html>
-

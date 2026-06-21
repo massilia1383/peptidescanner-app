@@ -494,7 +494,7 @@ function render() {
             const cls      = injLeft <= 3 ? 'critical' : injLeft <= 10 ? 'warn' : '';
             return `<div style="background:${cls==='critical'?'rgba(220,38,38,.08)':cls==='warn'?'rgba(249,115,22,.08)':'rgba(13,148,136,.06)'};border:1px solid ${cls==='critical'?'rgba(220,38,38,.2)':cls==='warn'?'rgba(249,115,22,.2)':'rgba(13,148,136,.18)'};border-radius:8px;padding:6px 8px;width:100%;text-align:center;margin-top:2px">
               <div style="font-family:'Space Mono',monospace;font-size:.78rem;font-weight:700;color:${cls==='critical'?'var(--danger)':cls==='warn'?'var(--accent3)':'var(--accent)'}">${injLeft} inj. restantes</div>
-              <div style="font-size:.62rem;color:var(--muted);margin-top:1px">~${daysLeft} t('day')+(daysLeft>1?'s':'')</div>
+              <div style="font-size:.62rem;color:var(--muted);margin-top:1px">~${daysLeft} ${t('day')+(daysLeft>1?'s':'')}</div>
             </div>`;
           }
           return '';
@@ -505,7 +505,7 @@ function render() {
     <!-- Bouton ajouter -->
     <div onclick="openModal()" style="background:var(--surface);border:1.5px dashed var(--border);border-radius:18px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;min-height:180px;transition:border-color .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="font-size:2rem;color:var(--border)">+</div>
-      <div style="font-size:.75rem;color:var(--muted);text-align:center">Ajouter un flacon</div>
+      <div style="font-size:.75rem;color:var(--muted);text-align:center">${t('inv_add_vial')}</div>
     </div>
   </div>`;
 }
@@ -652,4 +652,3 @@ document.addEventListener('visibilitychange', () => {
 </div></div>
 </body>
 </html>
-

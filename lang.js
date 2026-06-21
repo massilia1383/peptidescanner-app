@@ -244,6 +244,7 @@ window.PS_LANG = {
     alerts_notif_activated: '✓ Notifications activées !',
     alerts_notif_refused: 'Notifications refusées — vérifiez les réglages Safari',
     alerts_notif_disabled: '🔕 Notifications désactivées',
+    alerts_blocked_help:   '⚙️ Autorisez les notifications dans Réglages Safari → Sites web → Notifications',
 
     // ── PROFIL ───────────────────────────────────────────────
     profil_title:       'Mon profil',
@@ -854,6 +855,7 @@ window.PS_LANG = {
     alerts_notif_activated: '✓ Notifications enabled!',
     alerts_notif_refused: 'Notifications denied — check Safari settings',
     alerts_notif_disabled: '🔕 Notifications disabled',
+    alerts_blocked_help:   '⚙️ Allow notifications in Safari Settings → Websites → Notifications',
 
     // ── PROFIL ───────────────────────────────────────────────
     profil_title:       'My profile',

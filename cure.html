@@ -209,7 +209,7 @@
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
   <h1 data-i18n="cure_title">Calendrier de cure</h1>
-  <button id="langToggleBtn" onclick="PS_setLang(PS_getLang()=='fr'?'en':'fr')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🇬🇧 EN</button>
+  <div id="langToggleBtn"></div>
   <button class="add-btn" onclick="openAddCure()">＋</button>
 </div>
 
@@ -246,7 +246,7 @@
       <div class="form-group">
         <label class="form-label" data-i18n="dash_admin">Admin.</label>
         <select class="form-input" id="newCureAdmin">
-          <option>SC</option><option>IM</option><option>Oral</option><option>Nasal</option><option>IV</option>
+          <option>${t('admin_sc')}</option><option>${t('admin_im')}</option><option>${t('admin_oral')}</option><option>${t('admin_nasal')}</option><option>${t('admin_iv')}</option>
         </select>
       </div>
     </div>
@@ -263,12 +263,12 @@
     <div class="form-group">
       <label class="form-label" data-i18n="cure_frequency">Fréquence</label>
       <select class="form-input" id="newCureFreq">
-        <option value="1">1× par jour</option>
-        <option value="2">2× par jour</option>
-        <option value="3">3× par jour</option>
-        <option value="0.5">1× tous les 2 jours</option>
-        <option value="0.28">2× par semaine</option>
-        <option value="0.14">1× par semaine</option>
+        <option value="1" data-i18n="freq_1x">1× par jour</option>
+        <option value="2" data-i18n="freq_2x">2× par jour</option>
+        <option value="3" data-i18n="freq_3x">3× par jour</option>
+        <option value="0.5" data-i18n="freq_1_2d">1× tous les 2 jours</option>
+        <option value="0.28" data-i18n="freq_2x_w">2× par semaine</option>
+        <option value="0.14" data-i18n="freq_1x_w">1× par semaine</option>
       </select>
     </div>
     <div class="form-group">
@@ -365,7 +365,7 @@ function render() {
   const done    = cureInjs.length;
   const compPct = totalExp > 0 ? Math.min(100, Math.round(done/totalExp*100)) : 0;
   const admin   = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
-  const freqLabel = freq >= 1 ? freq+'×/j' : '1×/'+Math.round(1/freq)+'j';
+  const freqLabel = freq >= 1 ? freq+'×/'+t('days_suffix') : '1×/'+Math.round(1/freq)+t('days_suffix');
   const doseLabel = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mg'}` : '—';
 
   let status = 'active', statusLabel = t('cure_status_active');
@@ -386,12 +386,12 @@ function render() {
         <div class="ci-status ${status}">${statusLabel}</div>
       </div>
       <div class="ci-grid">
-        <div class="ci-box"><div class="ci-box-label">Dosage</div><div class="ci-box-val">${doseLabel}</div></div>
-        <div class="ci-box"><div class="ci-box-label">Fréquence</div><div class="ci-box-val">${freqLabel}</div></div>
-        <div class="ci-box"><div class="ci-box-label">Durée</div><div class="ci-box-val">${cure.duration_days||'—'}j</div></div>
-        <div class="ci-box"><div class="ci-box-label">Début</div><div class="ci-box-val">${fmtD(startD)}</div></div>
-        <div class="ci-box"><div class="ci-box-label">Fin</div><div class="ci-box-val">${fmtD(endD)}</div></div>
-        <div class="ci-box"><div class="ci-box-label">Restant</div><div class="ci-box-val" style="color:${daysLeft<=5?'var(--danger)':'var(--accent)'}">${daysLeft}j</div></div>
+        <div class="ci-box"><div class="ci-box-label">${t('cure_dosage')}</div><div class="ci-box-val">${doseLabel}</div></div>
+        <div class="ci-box"><div class="ci-box-label">${t('cure_frequency')}</div><div class="ci-box-val">${freqLabel}</div></div>
+        <div class="ci-box"><div class="ci-box-label">${t('cure_duration')}</div><div class="ci-box-val">${cure.duration_days||'—'}${t('days_suffix')}</div></div>
+        <div class="ci-box"><div class="ci-box-label">${t('cure_start')}</div><div class="ci-box-val">${fmtD(startD)}</div></div>
+        <div class="ci-box"><div class="ci-box-label">${t('cure_end')}</div><div class="ci-box-val">${fmtD(endD)}</div></div>
+        <div class="ci-box"><div class="ci-box-label">${t('cure_remaining')}</div><div class="ci-box-val" style="color:${daysLeft<=5?'var(--danger)':'var(--accent)'}">${daysLeft}${t('days_suffix')}</div></div>
       </div>
       <div class="compliance-row"><span>Compliance</span><strong>${compPct}%</strong></div>
       <div class="comp-bar"><div class="comp-fill" style="width:${compPct}%"></div></div>
@@ -402,12 +402,12 @@ function render() {
     <div class="cal-section" id="calSection"></div>
     <div class="day-detail" id="dayDetail"></div>
     <div class="stats-section">
-      <h3>Statistiques</h3>
-      <div class="stat-row"><span class="stat-row-key">Injections faites</span><span class="stat-row-val" style="color:var(--accent)">${done}</span></div>
-      <div class="stat-row"><span class="stat-row-key">Injections attendues</span><span class="stat-row-val">${totalExp}</span></div>
-      <div class="stat-row"><span class="stat-row-key">Manquées</span><span class="stat-row-val" style="color:var(--danger)">${Math.max(0,totalExp-done)}</span></div>
-      <div class="stat-row"><span class="stat-row-key">Jour actuel</span><span class="stat-row-val">J${Math.min(dayNum,cure.duration_days||30)}</span></div>
-      <div class="stat-row"><span class="stat-row-key">Fréquence</span><span class="stat-row-val">${freqLabel}</span></div>
+      <h3>${t('cure_stats')}</h3>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_done')}</span><span class="stat-row-val" style="color:var(--accent)">${done}</span></div>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_expected')}</span><span class="stat-row-val">${totalExp}</span></div>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_missed')}</span><span class="stat-row-val" style="color:var(--danger)">${Math.max(0,totalExp-done)}</span></div>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_current_day')}</span><span class="stat-row-val">J${Math.min(dayNum,cure.duration_days||30)}</span></div>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_frequency')}</span><span class="stat-row-val">${freqLabel}</span></div>
     </div>`;
 
   renderCalendar();
@@ -480,11 +480,11 @@ function renderCalendar() {
     <div class="cal-days-header">${DAYS_SHORT().map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>
     <div class="cal-grid">${daysHtml}</div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(0,201,167,.25)"></div>Fait</div>
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,.2)"></div>Partiel</div>
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(239,68,68,.15)"></div>Manqué</div>
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(43,108,176,.15);border:1px dashed rgba(43,108,176,.4)"></div>Prévu</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--surface2)"></div>Repos</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(0,201,167,.25)"></div><span data-i18n="cure_legend_done">Fait</span>${t('cure_legend_done')}</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,.2)"></div><span data-i18n="cure_legend_partial">Partiel</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(239,68,68,.15)"></div><span data-i18n="cure_legend_missed">Manqué</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(43,108,176,.15);border:1px dashed rgba(43,108,176,.4)"></div><span data-i18n="cure_legend_planned">Prévu</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--surface2)"></div><span data-i18n="cure_legend_rest">Repos</span></div>
     </div>`;
 }
 
@@ -786,7 +786,14 @@ async function openEditCure(id) {
   document.getElementById('newCureStart').value    = cure.start_date;
   document.getElementById('newCureDuration').value = cure.duration_days;
   document.getElementById('newCureFreq').value     = cure.frequency||'1';
-  document.getElementById('newCureNotes').value    = cure.notes||'';
+  // Extraire uniquement la note libre (sans tags techniques admin:/inv:)
+  const _userNote = (cure.notes||'')
+    .replace(/admin:[^|]+[|]?/g, '')
+    .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
+    .replace(/^\s*[|]\s*/, '')
+    .replace(/\s*[|]\s*$/, '')
+    .trim();
+  document.getElementById('newCureNotes').value = _userNote;
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -820,7 +827,13 @@ async function saveCure() {
     }
   }
 
-  const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(notes?' | '+notes:'');
+  const _cleanNote = notes
+    .replace(/admin:[^|]+[|]?/g, '')
+    .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
+    .replace(/^\s*[|]\s*/, '')
+    .replace(/\s*[|]\s*$/, '')
+    .trim();
+  const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(_cleanNote?' | '+_cleanNote:'');
   const payload = { name:peptide, peptide_name:peptide, dose_mcg:doseNum||null, unit, frequency:freq,
     duration_days:parseInt(duration), start_date:startDate, status:'active', notes:notesStr };
 
@@ -852,8 +865,7 @@ function closeIfOverlay(e) { if(e.target===document.getElementById('addCureModal
 
 init().then(()=>{
   PS_applyI18n();
-  const lb=document.getElementById('langToggleBtn');
-  if(lb) lb.textContent=PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
+  PS_renderLangSwitcher();
 });
 </script>
 </body>

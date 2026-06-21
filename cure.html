@@ -305,18 +305,18 @@ let calYear = TODAY.getFullYear(), calMonth = TODAY.getMonth();
 let allCures = [], allInjections = [];
 
 const SITES_SC = [
-  { id:'abd_g',    label:'Abdomen gauche',   icon:'🫃', zone:'Abdomen' },
-  { id:'abd_d',    label:'Abdomen droit',    icon:'🫃', zone:'Abdomen' },
-  { id:'cuisse_g', label:'Cuisse gauche',    icon:'🦵', zone:'Cuisse' },
-  { id:'cuisse_d', label:'Cuisse droite',    icon:'🦵', zone:'Cuisse' },
-  { id:'fesse_g',  label:'Fesse gauche',     icon:'🍑', zone:'Fesse' },
-  { id:'fesse_d',  label:'Fesse droite',     icon:'🍑', zone:'Fesse' },
+  { id:'abd_g',    label:t('site_abd_g'),   icon:'🫃', zone:t('zone_abdomen') },
+  { id:'abd_d',    label:t('site_abd_d'),    icon:'🫃', zone:t('zone_abdomen') },
+  { id:'cuisse_g', label:t('site_thigh_g'),    icon:'🦵', zone:t('zone_thigh') },
+  { id:'cuisse_d', label:t('site_thigh_d'),    icon:'🦵', zone:t('zone_thigh') },
+  { id:'fesse_g',  label:t('site_glute_g'),     icon:'🍑', zone:'Fesse' },
+  { id:'fesse_d',  label:t('site_glute_d'),     icon:'🍑', zone:'Fesse' },
 ];
 const SITES_IM = [
-  { id:'deltoid_g', label:'Deltoïde gauche',   icon:'💪', zone:'Épaule' },
-  { id:'deltoid_d', label:'Deltoïde droit',    icon:'💪', zone:'Épaule' },
-  { id:'quad_g',    label:'Quadriceps gauche', icon:'🦵', zone:'Cuisse' },
-  { id:'quad_d',    label:'Quadriceps droit',  icon:'🦵', zone:'Cuisse' },
+  { id:'deltoid_g', label:t('site_deltoid_g'), icon:'💪', zone:t('zone_shoulder') },
+  { id:'deltoid_d', label:t('site_deltoid_d'), icon:'💪', zone:t('zone_shoulder') },
+  { id:'quad_g',    label:'Quadriceps gauche', icon:'🦵', zone:t('zone_thigh') },
+  { id:'quad_d',    label:'Quadriceps droit',  icon:'🦵', zone:t('zone_thigh') },
 ];
 function getSites(admin) { return (admin||'').toUpperCase() === 'IM' ? SITES_IM : SITES_SC; }
 function getNextSite(cureId, admin) {
@@ -349,7 +349,7 @@ async function loadData() {
 function render() {
   const c = document.getElementById('mainContent');
   if (allCures.length === 0) {
-    c.innerHTML = `<div class="empty-state"><span>📅</span><p>Aucune cure enregistrée.<br>Commencez par ajouter votre premier protocole.</p><button class="empty-btn" onclick="openAddCure()">+ Nouvelle cure</button></div>`;
+    c.innerHTML = `<div class="empty-state"><span>📅</span><p>${t('cure_empty').replace('\n','<br>')}</p><button class="empty-btn" onclick="openAddCure()">+ Nouvelle cure</button></div>`;
     return;
   }
   if (!currentCureId || !allCures.find(x => x.id === currentCureId)) currentCureId = allCures[0].id;
@@ -517,7 +517,7 @@ function selectDay(ds, clickable) {
     const startD   = new Date(cure.start_date); startD.setHours(0,0,0,0);
     const dayIndex = Math.floor((date - startD) / 86400000);
     if (dayIndex % Math.round(1/freq) !== 0) {
-      slotsHtml = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:.84rem">Jour de repos 😴</div>';
+      slotsHtml = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:.84rem">'+t('cure_rest_day')+'</div>';
     } else {
       const done = dayInjs.length > 0;
       const existInj0 = dayInjs.find(l => (l.notes||'').includes('slot:0'));
@@ -556,7 +556,7 @@ function selectDay(ds, clickable) {
     </div>
     ${slotsHtml}
     <textarea class="note-area" id="dayNote" rows="2" placeholder="${t('cure_note_ph')}">${localStorage.getItem('ps_note_'+currentCureId+'_'+ds)||''}</textarea>
-    <button class="save-note-btn" onclick="saveNote('${ds}')">Enregistrer la note</button>`;
+    <button class="save-note-btn" onclick="saveNote('${ds}')">${t('cure_save_note')}</button>`;
 
   dd.classList.add('show');
   dd.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -858,4 +858,3 @@ init().then(()=>{
 </script>
 </body>
 </html>
-

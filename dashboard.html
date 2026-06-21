@@ -641,7 +641,7 @@ function renderCureActive() {
   const totalExp = Math.round(dayNum * freq);
   const done     = cureInjs.length;
   const injPct   = totalExp > 0 ? Math.min(100, Math.round((done / totalExp) * 100)) : 0;
-  const freqLabel= freq >= 1 ? freq + '×/jour' : '1×/' + Math.round(1/freq) + 'j';
+  const freqLabel= freq >= 1 ? freq + '×/' + t('day') : '1×/' + Math.round(1/freq) + t('days_suffix');
 
   document.getElementById('cureName').textContent     = active.peptide_name || active.name;
   document.getElementById('cureSub').textContent      = `${active.dose_mcg || ''} ${active.unit || 'mcg'} · ${freqLabel}`;
@@ -706,7 +706,7 @@ function renderTodayView() {
   if (!container) return;
   const now = new Date();
   const dayNames   = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-  const monthNames = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const monthNames = PS_LANG[PS_getLang()].months.map(m => m.toLowerCase());
   const dateLabel  = `${dayNames[now.getDay()]} ${now.getDate()} ${monthNames[now.getMonth()]}`;
   const activeCures = allCures.filter(c => {
     if (c.status !== 'active') return false;
@@ -739,7 +739,7 @@ function renderTodayView() {
   </div>`;
 
   if (activeCures.length === 0) {
-    html += `<div class="today-card"><div class="today-empty"><span>🎉</span><p>Aucune injection prévue aujourd'hui.</p></div></div>`;
+    html += `<div class="today-card"><div class="today-empty"><span>🎉</span><p>${t('dash_no_injection')}</p></div></div>`;
     container.innerHTML = html; return;
   }
 
@@ -881,7 +881,7 @@ function renderAlerts() {
   });
   document.getElementById('notifBadge').style.display = autoAlerts.length > 0 ? 'block' : 'none';
   if (autoAlerts.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:16px 0;color:var(--muted);font-size:.85rem">Aucune alerte active 🎉</div>';
+    container.innerHTML = '<div style="text-align:center;padding:16px 0;color:var(--muted);font-size:.85rem">'+t('dash_no_alerts')+'</div>';
     return;
   }
   container.innerHTML = autoAlerts.slice(0,4).map(a => `
@@ -942,4 +942,3 @@ const _lt = document.getElementById('langToggleBtn'); if(_lt) _lt.textContent = 
 </div></div>
 </body>
 </html>
-

@@ -1198,7 +1198,7 @@ function calculateReconstitution() {
   document.getElementById('concentration-val').textContent = concentration.toFixed(2);
   document.getElementById('concentration-formula').innerHTML =
     `<strong>${mgValue} mg</strong> ÷ <strong>${bacVolume} mL</strong> = ${concentration.toFixed(2)} mg/mL`;
-  document.getElementById('units-per-mg').textContent = unitsPerMg.toFixed(1) + ' unités';
+  document.getElementById('units-per-mg').textContent = unitsPerMg.toFixed(1) + ' ' + t('calc_units');
   document.getElementById('ml-per-mg').textContent = mlPerMg.toFixed(3) + ' mL';
   document.getElementById('mcg-per-unit').textContent = mcgPerUnit.toFixed(1) + ' mcg';
 
@@ -1359,7 +1359,7 @@ function initSyringeSelect() {
   const ALL = [
     { id:'U30',  val:30,  label:'U-30 (0.3 mL — 30 unités)' },
     { id:'U50',  val:50,  label:'U-50 (0.5 mL — 50 unités)' },
-    { id:'U100', val:100, label:'U-100 (1 mL — 100 unités) — Standard' },
+    { id:'U100', val:100, label:'U-100 (1 mL — 100 '+t('calc_units')+') — Standard' },
     { id:'U200', val:200, label:t('syringe_u200_label')+' (2 mL)' },
   ];
   const available = ALL.filter(s => owned.includes(s.id));
@@ -1489,10 +1489,10 @@ function applyDosageResult({ units, syringeMax, volumeMl, doseMg, doseRaw, doseU
   // Vérification adaptée selon le mode
   if (doseUnit === 'IU') {
     document.getElementById('syringe-verify').innerHTML =
-      `<strong style="color:var(--accent)">Vérification :</strong> ${doseRaw} IU ÷ ${concRaw} IU/mL = <strong>${volumeMl.toFixed(3)} mL</strong> = <strong>${units.toFixed(1)} unités</strong>`;
+      `<strong style="color:var(--accent)">${t('calc_verification')} :</strong> ${doseRaw} IU ÷ ${concRaw} IU/mL = <strong>${volumeMl.toFixed(3)} mL</strong> = <strong>${units.toFixed(1)} ${t('calc_units')}</strong>`;
   } else {
     document.getElementById('syringe-verify').innerHTML =
-      `<strong style="color:var(--accent)">Vérification :</strong> ${doseMg < 1 ? (doseMg*1000).toFixed(0)+'mcg' : doseMg+'mg'} ÷ ${concRaw} mg/mL × 100 = <strong>${units.toFixed(1)} unités</strong>`;
+      `<strong style="color:var(--accent)">${t('calc_verification')} :</strong> ${doseMg < 1 ? (doseMg*1000).toFixed(0)+'mcg' : doseMg+'mg'} ÷ ${concRaw} mg/mL × 100 = <strong>${units.toFixed(1)} ${t('calc_units')}</strong>`;
   }
 
   document.getElementById('syringe-instruction').innerHTML =
@@ -1784,4 +1784,3 @@ if(_lb) _lb.textContent=PS_getLang()==='fr'?'🇬🇧 EN':'🇫🇷 FR';
 </script>
 </body>
 </html>
-

@@ -458,14 +458,25 @@ function requestNotifPermission() {
   if (!('Notification' in window)) { showToast(t('alerts_notif_unsupported')); return; }
   localStorage.setItem('ps_notif_choice', 'on');
   const btn = document.getElementById('notifEnableBtn');
-  if (btn) { btn.textContent = t('alerts_enabled'); btn.classList.add('granted'); btn.onclick = disableNotifications; }
+  if (btn) {
+    btn.textContent = t('alerts_enabled');
+    btn.classList.add('granted');
+    const nb2 = btn.cloneNode(true);
+    btn.parentNode.replaceChild(nb2, btn);
+    document.getElementById('notifEnableBtn').addEventListener('click', disableNotifications);
+  }
   Notification.requestPermission().then(p => {
     if (p === 'granted') {
       showToast(t('alerts_notif_activated'));
       scheduleAllReminders();
     } else if (p === 'denied') {
       localStorage.removeItem('ps_notif_choice');
-      if (btn) { btn.textContent = t('alerts_blocked'); btn.style.color = 'var(--danger)'; btn.onclick = null; }
+      if (btn) {
+    btn.textContent = t('alerts_blocked');
+    btn.style.color = 'var(--danger)';
+    const nb4 = btn.cloneNode(true);
+    btn.parentNode.replaceChild(nb4, btn);
+  }
       showToast(t('alerts_notif_refused'));
     }
   });
@@ -474,7 +485,13 @@ function requestNotifPermission() {
 function disableNotifications() {
   localStorage.setItem('ps_notif_choice', 'off');
   const btn = document.getElementById('notifEnableBtn');
-  if (btn) { btn.textContent = t('alerts_enable'); btn.classList.remove('granted'); btn.onclick = requestNotifPermission; }
+  if (btn) {
+    btn.textContent = t('alerts_enable');
+    btn.classList.remove('granted');
+    const nb3 = btn.cloneNode(true);
+    btn.parentNode.replaceChild(nb3, btn);
+    document.getElementById('notifEnableBtn').addEventListener('click', requestNotifPermission);
+  }
   showToast(t('alerts_notif_disabled'));
 }
 
@@ -510,19 +527,24 @@ const _nb = document.getElementById('notifEnableBtn');
 if (_nb) {
   // Toujours priorité à la permission réelle du navigateur
   const _perm = ('Notification' in window) ? Notification.permission : 'default';
+  // Utiliser addEventListener (plus fiable que .onclick sur Safari)
+  const _newNb = _nb.cloneNode(true); // cloner pour supprimer tous les listeners
+  _nb.parentNode.replaceChild(_newNb, _nb);
+  const _btn = document.getElementById('notifEnableBtn');
+  
   if (_perm === 'granted') {
-    _nb.textContent = t('alerts_enabled');
-    _nb.classList.add('granted');
-    _nb.onclick = disableNotifications;
+    _btn.textContent = t('alerts_enabled');
+    _btn.classList.add('granted');
+    _btn.addEventListener('click', disableNotifications);
   } else if (_perm === 'denied') {
-    _nb.textContent = t('alerts_blocked');
-    _nb.style.color = 'var(--danger)';
-    _nb.classList.remove('granted');
-    _nb.onclick = () => showToast(t('alerts_blocked_help'));
+    _btn.textContent = t('alerts_blocked');
+    _btn.style.color = 'var(--danger)';
+    _btn.classList.remove('granted');
+    _btn.addEventListener('click', () => showToast(t('alerts_blocked_help')));
   } else {
-    _nb.textContent = t('alerts_enable');
-    _nb.classList.remove('granted');
-    _nb.onclick = requestNotifPermission;
+    _btn.textContent = t('alerts_enable');
+    _btn.classList.remove('granted');
+    _btn.addEventListener('click', requestNotifPermission);
   }
 }
   PS_renderLangSwitcher();

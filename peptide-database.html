@@ -1262,7 +1262,19 @@ function initPage() {
     document.querySelectorAll('.pep-card:not(.hidden)').length || PEPTIDES.length;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Charger la langue depuis le profil Supabase si connecté
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      const { data: profil } = await sb.from('profiles')
+        .select('lang').eq('id', session.user.id).single();
+      if (profil?.lang) {
+        PS_loadLangFromProfile(sb, session.user.id, profil.lang);
+      }
+    }
+  } catch(e) { /* silencieux */ }
+
   initPage();
   loadPhases().then(() => initPage());
 });

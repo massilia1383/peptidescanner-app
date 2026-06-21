@@ -1,1298 +1,529 @@
-// ============================================================
-// lang.js — Système de traduction PeptideScanner
-// FR + EN · Objet global window.PS_LANG
-// Usage : <script src="/lang.js"></script>
-// ============================================================
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PeptideScanner — Alertes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  :root { --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0; --accent:#0D9488; --accent2:#2B6CB0; --accent3:#F97316; --text:#1F2937; --muted:#6B7280; --danger:#DC2626; --nav-h:64px; }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:120px; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:rgba(248,249,250,.97); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; backdrop-filter:blur(12px); }
+  .topbar h1 { font-size:1.1rem; font-weight:700; }
+  .topbar-logo { font-family:'Space Mono',monospace; font-size:.85rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
+  .logo-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
+  .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
+  .section-title { font-size:.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:12px; }
+  .alert-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:10px; }
+  .alert-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); transition:background .15s; }
+  .alert-row:last-child { border-bottom:none; }
+  .alert-row:hover { background:rgba(255,255,255,.02); }
+  .alert-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+  .ai-green { background:rgba(0,201,167,.12); }
+  .ai-amber { background:rgba(245,158,11,.12); }
+  .ai-red { background:rgba(239,68,68,.12); }
+  .ai-purple { background:rgba(99,102,241,.12); }
+  .ai-blue { background:rgba(59,130,246,.12); }
+  .alert-body { flex:1; }
+  .alert-title { font-size:.86rem; font-weight:600; margin-bottom:2px; }
+  .alert-sub { font-size:.72rem; color:var(--muted); line-height:1.4; }
+  .alert-right { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+  .alert-time { font-family:'Space Mono',monospace; font-size:.65rem; color:var(--muted); }
+  .alert-del { background:transparent; border:none; color:var(--border); cursor:pointer; font-size:.85rem; padding:2px; transition:color .2s; }
+  .alert-del:hover { color:var(--danger); }
+  .priority-dot { width:7px; height:7px; border-radius:50%; }
+  .dot-green { background:var(--accent); }
+  .dot-amber { background:var(--accent3); }
+  .dot-red { background:var(--danger); }
 
-window.PS_LANG = {
+  /* ADD ALERT */
+  .add-alert-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; }
+  .add-alert-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
+  .form-group { margin-bottom:12px; }
+  .form-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; display:block; }
+  .form-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:inherit; font-size:.86rem; outline:none; transition:border-color .2s; }
+  .form-input:focus { border-color:var(--accent); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .submit-btn { width:100%; padding:12px; border-radius:10px; border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; margin-top:4px; }
 
-  fr: {
-    // ── NAV ──────────────────────────────────────────────────
-    nav_home:       'Accueil',
-    nav_cure:       'Cure',
-    nav_calc:       'Calcul',
-    nav_stock:      'Stock',
-    nav_alerts:     'Alertes',
-    nav_profile:    'Profil',
-    nav_biblio:     'Biblio',
-    nav_weight:     'Poids',
-    nav_ia:         'IA',
-    nav_analyse:    'Analyse',
-
-    // ── COMMON ───────────────────────────────────────────────
-    save:           'Enregistrer',
-    cancel:         'Annuler',
-    delete:         'Supprimer',
-    edit:           'Modifier',
-    add:            'Ajouter',
-    confirm:        'Confirmer',
-    close:          'Fermer',
-    loading:        'Chargement…',
-    error:          'Erreur',
-    success:        'Succès',
-    optional:       'optionnel',
-    all:            'Tout',
-    none:           'Aucun',
-    days:           'jours',
-    day:            'jour',
-    today:          "Aujourd'hui",
-    week:           'semaine',
-    month:          'mois',
-    yes:            'Oui',
-    no:             'Non',
-    back:           'Retour',
-    next:           'Suivant',
-    see_all:        'Voir tout →',
-    details:        'Détail →',
-    no_data:        'Aucune donnée',
-
-    // ── DISCLAIMER ───────────────────────────────────────────
-    disclaimer_title: 'Usage éducatif uniquement',
-    disclaimer_short: 'Peptides de recherche non approuvés à usage humain. Consultez un professionnel de santé. PeptideScanner décline toute responsabilité.',
-    disclaimer_icon:  '⚠️',
-
-    // ── DASHBOARD ────────────────────────────────────────────
-    dash_greeting:        'Bonjour 👋',
-    dash_active_cure:     'Cure active',
-    dash_protocol:        'Protocole en cours',
-    dash_no_cure:         'Aucune cure active',
-    dash_no_cure_sub:     'Appuyez sur "+ Nouvelle cure" pour commencer',
-    dash_day_label:       '/ jours',
-    dash_calendar:        '📅 Calendrier',
-    dash_new_cure:        '＋ Nouvelle cure',
-    dash_summary:         'Résumé',
-    dash_weight_title:    'Évolution du poids',
-    dash_today_section:   "Aujourd'hui",
-    dash_calendar_link:   'Calendrier →',
-    dash_alerts_section:  'Alertes récentes',
-    dash_alerts_all:      'Toutes →',
-    dash_no_alerts:       'Aucune alerte active 🎉',
-    dash_weight_go:       'Poids →',
-    dash_inj_done:        'Injections faites',
-    dash_days_left:       'Jours restants',
-    dash_end_date:        'Fin estimée',
-    dash_compliance:      'Compliance',
-    dash_cures_done:      'Cures complétées',
-    dash_total_inj:       'Injections totales',
-    dash_current_weight:  'Poids actuel',
-    dash_since_start:     'depuis le début',
-    dash_first_measure:   'Première mesure',
-    dash_no_weight_data:  'Aucune donnée — Ajouter votre poids',
-    dash_score_label:     'doses faites',
-    dash_score_done:      '✅ Complété',
-    dash_today_program:   'Programme du jour',
-    dash_no_injection:    'Aucune injection prévue aujourd\'hui.',
-    dash_injection_day:   'Injection du jour',
-    dash_injection_num:   'Injection',
-    dash_confirm_inj:     'Confirmer l\'injection',
-    dash_check_time:      'Vérifiez l\'heure avant de valider',
-    dash_inj_time:        '⏰ Heure d\'injection',
-    dash_validate:        '✓ Valider l\'injection',
-    dash_new_cure_title:  'Nouvelle cure',
-    dash_peptide:         'Peptide',
-    dash_choose_peptide:  'Choisir un peptide…',
-    dash_dosage:          'Dosage',
-    dash_admin:           'Administration',
-    dash_start_date:      'Date de début',
-    dash_duration:        'Durée (jours)',
-    dash_frequency:       'Fréquence d\'injection',
-    dash_start_cure:      'Démarrer la cure',
-    dash_cure_ended:      'Fin de cure dans',
-    dash_days_suffix:     'j',
-    dash_inj_cancelled:   'Injection annulée',
-    dash_inj_saved:       '— enregistré !',
-    freq_1x:    '1× par jour',
-    freq_2x:    '2× par jour',
-    freq_3x:    '3× par jour',
-    freq_1_2d:  '1× tous les 2 jours',
-    freq_2x_w:  '2× par semaine',
-    freq_1x_w:  '1× par semaine',
-    admin_sc:   'SC',
-    admin_im:   'IM',
-    admin_oral: 'Oral',
-    admin_nasal:'Nasal',
-    admin_iv:   'IV',
-
-    // ── CURE ─────────────────────────────────────────────────
-    cure_title:         'Calendrier de cure',
-    cure_status_active: 'En cours',
-    cure_status_ended:  'Terminée',
-    cure_status_future: 'À venir',
-    cure_dosage:        'Dosage',
-    cure_frequency:     'Fréquence',
-    cure_duration:      'Durée',
-    cure_start:         'Début',
-    cure_end:           'Fin',
-    cure_remaining:     'Restant',
-    cure_compliance:    'Compliance',
-    cure_edit:          '✏️ Modifier',
-    cure_stats:         'Statistiques',
-    cure_inj_done:      'Injections faites',
-    cure_inj_expected:  'Injections attendues',
-    cure_inj_missed:    'Manquées',
-    cure_current_day:   'Jour actuel',
-    cure_new:           'Nouvelle cure',
-    cure_start_btn:     'Démarrer la cure',
-    cure_save_btn:      'Enregistrer',
-    cure_delete_btn:    'Supprimer cette cure',
-    cure_empty:         'Aucune cure enregistrée.\nCommencez par ajouter votre premier protocole.',
-    cure_add_first:     '+ Nouvelle cure',
-    cure_notes:         'Notes (optionnel)',
-    cure_notes_ph:      'Objectif, remarques…',
-    cure_modal_edit:    'Modifier la cure',
-    cure_suggested_site:'Site suggéré',
-    cure_change_site:   'Changer →',
-    cure_zone:          'Zone :',
-    cure_rest_day:      'Jour de repos 😴',
-    cure_save_note:     'Enregistrer la note',
-    cure_note_ph:       'Note pour ce jour…',
-    cure_note_saved:    '✓ Note enregistrée',
-    cure_legend_done:   'Fait',
-    cure_legend_partial:'Partiel',
-    cure_legend_missed: 'Manqué',
-    cure_legend_planned:'Prévu',
-    cure_legend_rest:   'Repos',
-    cure_time_updated:  '✓ Heure mise à jour : ',
-    cure_inj_done_msg:  '✓ Injection — ',
-    cure_inj_cancelled: 'Injection annulée',
-    cure_deleted:       'Cure supprimée',
-    cure_updated:       '✓ Cure mise à jour',
-    cure_started:       '✓ Cure démarrée !',
-    cure_confirm_delete:'Supprimer cette cure ?',
-    cure_choose:        'Choisir…',
-    cure_my_stock:      '🧪 Mon stock',
-    cure_library:       '📚 Bibliothèque',
-    days_short:         ['L','M','M','J','V','S','D'],
-    months:             ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
-
-    // ── POIDS ────────────────────────────────────────────────
-    weight_title:       'Suivi du poids',
-    weight_period_7:    '7j',
-    weight_period_30:   '30j',
-    weight_period_90:   '3 mois',
-    weight_period_all:  'Tout',
-    weight_current:     'kg actuel',
-    weight_variation:   'variation',
-    weight_measures:    'mesures',
-    weight_chart_title: 'Évolution',
-    weight_add_title:   'Enregistrer mon poids',
-    weight_add_btn:     'Ajouter',
-    weight_note_ph:     'Note (optionnel)',
-    weight_date:        'Date',
-    weight_bmi_title:   'IMC',
-    weight_history:     'Historique',
-    weight_no_data:     'Aucune donnée',
-    weight_add_first:   'Ajoutez votre premier poids',
-    weight_saved:       '✓ Poids enregistré : ',
-    weight_deleted:     'Entrée supprimée',
-    weight_modified:    '✓ Poids modifié',
-    weight_invalid:     '⚠️ Poids invalide',
-    weight_date_req:    '⚠️ Date requise',
-    weight_height_title:'📏 Votre taille ?',
-    weight_height_sub:  'Nécessaire pour calculer votre IMC correctement.',
-    weight_height_ph:   '178',
-    weight_height_ok:   'OK',
-    weight_height_saved:'✓ Taille enregistrée',
-    weight_height_first:'📏 Indiquez votre taille d\'abord',
-    weight_height_inv:  '⚠️ Taille invalide',
-    weight_bmi_under:   'Insuffisance pondérale',
-    weight_bmi_normal:  'Poids normal ✓',
-    weight_bmi_over:    'Surpoids',
-    weight_bmi_obese:   'Obésité',
-    weight_bmi_unit:    'cm · Poids :',
-    weight_bmi_height:  'Taille :',
-
-    // ── ALERTES ──────────────────────────────────────────────
-    alerts_title:       'Alertes',
-    alerts_notif_title: 'Notifications intelligentes',
-    alerts_notif_sub:   'Recevez vos rappels d\'injection même quand l\'app est fermée',
-    alerts_enable:      'Activer',
-    alerts_enabled:     '✓ Activées — Désactiver',
-    alerts_blocked:     'Bloquées ⚠️',
-    alerts_reminders:   'Rappels d\'injection',
-    alerts_no_active:   'Aucune cure active',
-    alerts_schedule:    'Planning du jour',
-    alerts_auto:        'Alertes actives',
-    alerts_custom:      'Mes rappels',
-    alerts_add_title:   '+ Nouveau rappel',
-    alerts_msg_label:   'Message',
-    alerts_msg_ph:      'ex: Prise de sang IGF-1',
-    alerts_date:        'Date',
-    alerts_time:        'Heure',
-    alerts_priority:    'Priorité',
-    alerts_prio_normal: 'Normale',
-    alerts_prio_high:   'Importante',
-    alerts_prio_urgent: 'Urgente',
-    alerts_save_btn:    'Enregistrer le rappel',
-    alerts_no_auto:     'Aucune alerte automatique 🎉',
-    alerts_no_custom:   'Aucun rappel — ajoutez-en un ci-dessus',
-    alerts_no_today:    'Aucune injection aujourd\'hui',
-    alerts_done:        '✓ Fait',
-    alerts_due:         '⏰ À faire',
-    alerts_upcoming:    'À venir',
-    alerts_added:       '✓ Rappel ajouté !',
-    alerts_deleted:     'Rappel supprimé',
-    alerts_notif_on:    '🔔 Rappel activé',
-    alerts_notif_off:   '🔕 Rappel désactivé',
-    alerts_time_saved:  '✓ Heure mise à jour — ',
-    alerts_cure_end:    'Fin de cure dans',
-    alerts_blood_test:  'Bilan sanguin recommandé',
-    alerts_inj_label:   'Injection',
-    alerts_inj_day:     'du jour',
-    alerts_fill_all:    '⚠️ Remplir tous les champs',
-    alerts_notif_unsupported: 'Non supporté sur ce navigateur',
-    alerts_notif_activated: '✓ Notifications activées !',
-    alerts_notif_refused: 'Notifications refusées — vérifiez les réglages Safari',
-    alerts_notif_disabled: '🔕 Notifications désactivées',
-    alerts_blocked_help:   '⚙️ Autorisez les notifications dans Réglages Safari → Sites web → Notifications',
-
-    // ── PROFIL ───────────────────────────────────────────────
-    profil_title:       'Mon profil',
-    profil_plan_free:   'Plan Gratuit',
-    profil_plan_prem:   '⭐ Premium',
-    profil_info:        'Informations personnelles',
-    profil_name:        'Prénom',
-    profil_age:         'Âge',
-    profil_height:      'Taille',
-    profil_goal:        'Objectif',
-    profil_stats:       'Mes statistiques',
-    profil_subscription:'Abonnement',
-    profil_equipment:   'Mon équipement',
-    profil_syringes:    '💉 Mes seringues',
-    profil_syringes_sub:'Sélectionnez les seringues que vous possédez. Le calculateur s\'adaptera automatiquement.',
-    profil_needle_type: '🧪 Type d\'aiguille préféré',
-    profil_solvent:     '💧 Solvant de reconstitution préféré',
-    profil_settings:    'Paramètres',
-    profil_biblio_link: 'Bibliothèque peptides',
-    profil_export:      'Exporter mes données',
-    profil_export_sub:  'JSON — toutes mes cures et mesures',
-    profil_home_link:   "Page d'accueil",
-    profil_home_sub:    'Retour à la landing page',
-    profil_danger:      'Zone de danger',
-    profil_logout:      '🚪 Se déconnecter',
-    profil_reset:       '🗑 Supprimer toutes mes données',
-    profil_version:     'PeptideScanner v1.0 · Usage éducatif uniquement',
-    profil_total_cures: 'Cures totales',
-    profil_injections:  'Injections',
-    profil_done_cures:  'Cures finies',
-    profil_weight_var:  'Variation poids',
-    profil_prem_active: '⭐ Premium actif',
-    profil_prem_active_sub: 'Vous bénéficiez de toutes les fonctionnalités premium.',
-    profil_upgrade:     'Passer Premium',
-    profil_upgrade_sub: 'Débloquez le suivi complet, les alertes intelligentes et le conseiller IA.',
-    profil_upgrade_btn: '⭐ S\'abonner — 59 € / an',
-    profil_feat1:       'Calendrier de cure illimité',
-    profil_feat2:       'Suivi du poids + graphiques',
-    profil_feat3:       'Alertes & rappels push',
-    profil_feat4:       'Conseiller IA spécialisé',
-    profil_feat5:       'Cures & calendrier illimités',
-    profil_feat6:       'Suivi du poids complet',
-    profil_feat7:       'Conseiller IA illimité',
-    profil_logout_confirm: 'Se déconnecter ?',
-    profil_reset_confirm1: '⚠️ Supprimer TOUTES les données ? Irréversible.',
-    profil_reset_confirm2: 'Vraiment supprimer tout ?',
-    profil_reset_done:  'Données supprimées',
-    profil_export_done: '✓ Données exportées',
-    profil_pseudo_title:'Choisissez votre pseudo',
-    profil_pseudo_ph:   'Ex: James',
-    profil_pseudo_saved:'✓ Pseudo enregistré !',
-    profil_updated:     '✓ mis à jour',
-    profil_not_filled:  'Non renseigné',
-    profil_biblio_count:'52 peptides référencés',
-    profil_prem_activated: '⭐ Premium activé !',
-    profil_lang:        'Langue',
-    profil_lang_sub:    'Français / English',
-    needle_4mm:  '4 mm — Très mince (SC abdominal)',
-    needle_6mm:  '6 mm — Standard SC',
-    needle_8mm:  '8 mm — SC/IM superficiel',
-    needle_12mm: '12 mm — IM profond',
-    needle_25mm: '25 mm — IM deltoid',
-    solvent_bac:   'Eau bactériostatique (BAC) — Recommandé',
-    solvent_water: 'Eau stérile pour injection',
-    solvent_saline:'Sérum physiologique 0.9%',
-    syringe_u30_label: 'U-30',
-    syringe_u30_sub:   '0.3 mL — 30 unités · Mini doses',
-    syringe_u50_label: 'U-50',
-    syringe_u50_sub:   '0.5 mL — 50 unités · Doses moyennes',
-    syringe_u100_label:'U-100',
-    syringe_u100_sub:  '1.0 mL — 100 unités · Standard',
-    syringe_u200_label:'2 mL',
-    syringe_u200_sub:  '2.0 mL — Grandes doses / split-dose',
-
-    // ── INVENTAIRE ───────────────────────────────────────────
-    inv_title:         'Stock',
-    inv_add:           '+ Ajouter un flacon',
-    inv_vials:         'flacons',
-    inv_low_stock:     'stock bas',
-    inv_expired:       'expirés',
-    inv_expired_badge: '⚠️ EXPIRÉ',
-    inv_low_badge:     '⚠️ STOCK BAS',
-    inv_sealed_badge:  '🔒 SCELLÉ',
-    inv_modal_add:     'Ajouter un flacon',
-    inv_modal_edit:    'Modifier le flacon',
-    inv_peptide:       'Peptide',
-    inv_peptide_ph:    'Ex: BPC-157, HGH…',
-    inv_qty:           'Quantité totale',
-    inv_unit:          'Unité',
-    inv_dose_inj:      'Dose / injection',
-    inv_frequency:     'Fréquence',
-    inv_choose_freq:   '-- Choisir --',
-    inv_recon_date:    'Date reconstitution',
-    inv_status:        'Statut',
-    inv_status_active: 'En cours',
-    inv_status_sealed: 'Scellé',
-    inv_status_done:   'Terminé',
-    inv_temp:          '🌡 Temp. conservation',
-    inv_temp_ph:       'ex: 2-8°C',
-    inv_max_days:      '📅 Durée max (jours)',
-    inv_storage_note:  'Note conservation',
-    inv_storage_note_ph:'ex: Éviter la lumière',
-    inv_note:          'Note (optionnel)',
-    inv_note_ph:       'Ex: Lot 2025, cure récupération…',
-    inv_save:          'Enregistrer le flacon',
-    inv_cancel:        'Annuler',
-    inv_inj_left:      'inj. restantes',
-    inv_added:         '✓ Flacon ajouté',
-    inv_updated:       '✓ Flacon mis à jour',
-    inv_deleted:       'Flacon supprimé',
-    inv_delete_confirm:'Supprimer ce flacon ?',
-    inv_name_required: '⚠️ Nom du peptide requis',
-    inv_empty:         'Aucun flacon enregistré.\nAjoutez votre premier flacon.',
-
-    // ── IA ───────────────────────────────────────────────────
-    ia_title:          'Conseiller IA',
-    ia_online:         '● En ligne · Spécialiste peptides',
-    ia_clear:          'Effacer',
-    ia_context:        'Contexte :',
-    ia_disclaimer:     '⚠️ Usage éducatif — Consultez un professionnel de santé avant tout protocole',
-    ia_placeholder:    'Posez votre question sur les peptides…',
-    ia_premium_title:  'Fonctionnalité Premium',
-    ia_premium_sub:    'Le Conseiller IA est réservé aux membres Premium. Passez au plan Premium pour accéder aux conseils personnalisés.',
-    ia_premium_btn:    '⭐ Passer Premium',
-    ia_demo:           'Tester en mode démo',
-    ia_error:          '⚠️ Erreur de connexion. Réessayez.',
-    ia_quota:          'Quota mensuel atteint.',
-
-    // ── CALCULATEUR ──────────────────────────────────────────
-    calc_title:        'Calculateur',
-    calc_warning:      'Outil d\'information uniquement',
-    calc_warning_sub:  'Ce calculateur est un outil d\'information. Vérifiez toujours vos calculs avant toute injection. Consultez un professionnel de santé avant tout protocole. PeptideScanner décline toute responsabilité en cas d\'erreur de dosage.',
-    calc_tab_recon:    '🧪 Reconstitution',
-    calc_tab_dosage:   '💉 Dosage',
-    calc_tab_titration:'📈 Titration',
-    calc_tab_guide:    '📋 Guide injection',
-    calc_recon_section:'Étape 1 — Calculer la concentration',
-    calc_recon_title:  '🧪 Reconstitution du flacon',
-    calc_peptide_qty:  'Quantité de peptide dans le flacon',
-    calc_bac_volume:   'Volume d\'eau bactériostatique à ajouter',
-    calc_recon_result: '✓ Résultat de la reconstitution',
-    calc_dosage_section:'Calculer précisément votre dose',
-    calc_dosage_title: '💉 Calculateur de dose précise',
-    calc_dosage_sub:   'Entrez votre concentration (calculée dans l\'onglet Reconstitution) et la dose souhaitée.',
-    calc_unit:         'Unité du peptide',
-    calc_concentration:'Concentration du flacon reconstitué',
-    calc_desired_dose: 'Dose souhaitée',
-    calc_syringe:      'Type de seringue',
-    calc_auto_syringe: '✓ Auto-sélectionnée',
-    calc_dosage_result:'✓ Résultat du dosage',
-    calc_titration_section:'Plan de titration progressive',
-    calc_guide_section:'Guide d\'injection pas à pas',
-    calc_guide_recon:  'Étapes de reconstitution',
-    calc_guide_sc:     'Guide d\'injection sous-cutanée',
-    calc_guide_warning_title: 'Avertissement médical',
-    calc_guide_warning_sub: 'Ce guide est à titre éducatif uniquement. Toute injection doit être validée par un professionnel de santé. En cas de doute, ne pas procéder. PeptideScanner n\'est pas responsable des erreurs de manipulation ou de dosage.',
-    calc_high_dose_title: 'Dose élevée détectée',
-    calc_high_dose_confirm: 'J\'ai vérifié — continuer quand même',
-    calc_high_dose_cancel:  '← Recalculer ma dose',
-    calc_dose_table_dose: 'Dose',
-
-    // ── PEPTIDE DATABASE ─────────────────────────────────────
-    db_eyebrow:          'Bibliothèque · Base de données',
-    db_title:            'Référentiel peptidique complet',
-    db_sub:              'Chaque peptide référencé avec ses dosages, protocoles, effets et stacks recommandés.',
-    db_stat_peptides:    'Peptides référencés',
-    db_stat_categories:  'Catégories',
-    db_stat_shown:       'Affichés',
-    db_search_ph:        'Rechercher un peptide, effet, catégorie…',
-    db_all:              'Tous',
-    db_cat_recov:        'Récupération',
-    db_cat_anti:         'Anti-âge',
-    db_cat_neuro:        'Neuro',
-    db_cat_fat:          'Poids',
-    db_cat_sex:          'Sexuel',
-    db_cat_immun:        'Immunité',
-    db_cat_cardio:       'Cardio',
-    db_cat_skin:         'Peau',
-    db_guide_title:      '📊 Guide — Avancement de la recherche',
-    db_dosage:           'Dosage',
-    db_duration:         'Durée',
-    db_stack_with:       'Stack avec',
-    db_buy:              'Acheter →',
-    db_no_results_msg:   'Aucun peptide trouvé pour "{q}".',
-    db_no_results_sub:   'Essayez un autre mot-clé.',
-    db_modal_dosage:     'Dosage typique',
-    db_modal_admin:      'Administration',
-    db_modal_duration:   'Durée de cure',
-    db_modal_freq:       'Fréquence',
-    db_modal_protocol:   'Protocole détaillé',
-    db_modal_effects:    'Effets principaux',
-    db_modal_side_effects:'Effets secondaires',
-    db_modal_stacks:     'Stacks recommandés',
-    db_modal_contra:     'Contre-indications',
-    db_modal_note:       'Note experte',
-    db_modal_find:       'Trouver {name} chez un fournisseur vérifié',
-    db_modal_shops:      'Voir les boutiques →',
-    db_modal_disclaimer: '⚠️ Usage éducatif uniquement. Ces peptides sont à usage de recherche. Consultez impérativement un professionnel de santé avant tout usage.',
-    db_disclaimer_title: 'Avertissement légal — Usage éducatif et informatif uniquement.',
-    db_disclaimer_body:  'Les peptides présentés sont des peptides de recherche. Leur acquisition, détention ou usage peut être illégal dans votre pays. Les informations ne constituent pas un avis médical. Consultez un professionnel de santé avant tout protocole.',
-    // ── PHASES DE RECHERCHE ──────────────────────────────────
-    phase_exp_label:     'Données limitées',
-    phase_pre_label:     'Recherche animale',
-    phase_p1_label:      'Premiers tests humains',
-    phase_p2_label:      'Études en cours',
-    phase_p3_label:      'Études avancées',
-    phase_est_label:     'Largement utilisé',
-    phase_exp_desc:      'Très peu d\'études disponibles',
-    phase_pre_desc:      'Testé uniquement sur des animaux',
-    phase_p1_desc:       'Sécurité vérifiée sur quelques personnes',
-    phase_p2_desc:       'Efficacité testée sur des centaines de personnes',
-    phase_p3_desc:       'Testé sur des milliers — proche du marché',
-    phase_est_desc:      'Retours abondants, profil bien documenté',
-    phase_exp_desc_dot:  'Très peu d\'études disponibles.',
-    phase_pre_desc_dot:  'Testé uniquement sur des animaux.',
-    phase_p1_desc_dot:   'Sécurité vérifiée sur quelques volontaires.',
-    phase_p2_desc_dot:   'Testé sur des centaines de personnes.',
-    phase_p3_desc_dot:   'Testé sur des milliers — approbation proche.',
-    phase_est_desc_dot:  'Retours abondants, profil bien documenté.',
-    phase_step1:         'Recherche',
-    phase_step2:         'Tests',
-    phase_step3:         'Études',
-    phase_step4:         'Avancé',
-    phase_step5:         'Établi',
-    // ── IA CONTEXT ───────────────────────────────────────────
-    ia_ctx_user:     'User',
-    ia_ctx_goal:     'Goal',
-    ia_ctx_weight:   'Last weight',
-    ia_q1:           '⚖️ Best weight loss protocol?',
-    ia_q2:           '💪 Optimal stack for muscle gain?',
-    ia_q3:           '⚡ CJC-1295 with or without DAC?',
-    ia_q4:           '❄️ How to store peptides?',
-    // ── GOALS ────────────────────────────────────────────────
-    goal_fat_loss:   'Fat loss',
-    goal_muscle:     'Muscle gain',
-    goal_performance:'Performance',
-    goal_anti_age:   'Anti-aging',
-    goal_recovery:   'Recovery',
-    goal_health:     'General health',
-    // ── DASHBOARD EXTRA ──────────────────────────────────────
-    dash_all_cures:  'all cycles',
-    // ── INVENTAIRE EXTRA ─────────────────────────────────────
-    inv_add_vial:    'Add a vial',
-    // ── CALCULATEUR EXTRA ────────────────────────────────────
-    calc_other_volume:       'Other volume:',
-    calc_why_water:          '💡 Why water volume matters',
-    calc_understand_syringe: '🔬 Understanding U-100 insulin syringe',
-
-    // ── IA CONTEXT ───────────────────────────────────────────
-    ia_ctx_user:     'Utilisateur',
-    ia_ctx_goal:     'Objectif',
-    ia_ctx_weight:   'Dernier poids',
-    ia_q1:           '⚖️ Meilleur protocole perte de poids ?',
-    ia_q2:           '💪 Stack optimal pour prise de masse ?',
-    ia_q3:           '⚡ CJC-1295 avec ou sans DAC ?',
-    ia_q4:           '❄️ Comment conserver les peptides ?',
-    // ── GOALS ────────────────────────────────────────────────
-    goal_fat_loss:   'Perte de graisse',
-    goal_muscle:     'Prise de masse',
-    goal_performance:'Performance',
-    goal_anti_age:   'Anti-âge',
-    goal_recovery:   'Récupération',
-    goal_health:     'Santé générale',
-    // ── DASHBOARD EXTRA ──────────────────────────────────────
-    dash_all_cures:  'toutes cures',
-    // ── INVENTAIRE EXTRA ─────────────────────────────────────
-    inv_add_vial:    'Ajouter un flacon',
-    // ── CALCULATEUR EXTRA ────────────────────────────────────
-    calc_other_volume:       'Autre volume :',
-    calc_why_water:          '💡 Pourquoi le volume d\'eau est crucial',
-    calc_understand_syringe: '🔬 Comprendre la seringue insuline U-100',
-
-
-    // ── SITES D'INJECTION ────────────────────────────────────
-    site_abd_g:      'Abdomen gauche',
-    site_abd_d:      'Abdomen droit',
-    site_thigh_g:    'Cuisse gauche',
-    site_thigh_d:    'Cuisse droite',
-    site_glute_g:    'Fesse gauche',
-    site_glute_d:    'Fesse droite',
-    site_deltoid_g:  'Deltoïde gauche',
-    site_deltoid_d:  'Deltoïde droit',
-    zone_abdomen:    'Abdomen',
-    zone_thigh:      'Cuisse',
-    zone_glute:      'Fessier',
-    zone_shoulder:   'Épaule',
-    zone_arm:        'Bras',
-    site_quad_g:     'Quadriceps gauche',
-    site_quad_d:     'Quadriceps droit',
-    // ── CALCULATEUR EXTRA ────────────────────────────────────
-    calc_units:      'unités',
-    calc_verification: 'Vérification',
-    days_suffix:     'j',
-
-    // ── CALCULATEUR TITRATION ────────────────────────────────
-    calc_phase_adapt:    'Phase d\'adaptation',
-    calc_increase:       'Augmentation progressive',
-    calc_eff_dose:       'Dose efficace',
-    calc_adv_dose:       'Dose avancée',
-    calc_max_dose:       'Dose maximale',
-    calc_prog_rise:      'Montée progressive',
-    calc_load_phase:     'Phase de charge',
-    calc_maint_phase:    'Phase entretien',
-    calc_intensive:      'Cure intensive',
-    calc_mandatory_break:'Pause obligatoire',
-    calc_second_cycle:   '2ème cure annuelle',
-    calc_adapt:          'Adaptation',
-    calc_high_dose_label:'Dose haute',
-    calc_warn_bpc_stack: 'Stack avec BPC-157 pour synergie optimale',
-    calc_warn_6months:   'Ne pas répéter avant 6 mois',
-    calc_warn_2year:     'Maximum 2 cures par an',
-    calc_warn_titration: 'Titration obligatoire — ne jamais sauter d\'étapes',
-    calc_warn_maxdose:   'Ne pas dépasser 2.4 mg/semaine sans suivi médical',
-    calc_approx:         'environ',
-    calc_at_500:         'à 500mcg/jour (2×250mcg)',
-    calc_sem_s1_exp:     'Légères nausées possibles, évaluation tolérance',
-    calc_sem_s2_exp:     'Réduction notable de l\'appétit',
-    calc_sem_s3_exp:     'Perte de poids régulière 0.5–1 kg/semaine',
-    calc_sem_s4_exp:     'Perte de poids accélérée',
-    calc_sem_s5_exp:     'Effet maximal — dose approuvée FDA',
-    calc_tir_s1_exp:     'Nausées légères, habituation GIP+GLP1',
-    calc_tir_s2_exp:     '↓ Appétit significatif',
-    calc_bpc_s1_exp:     'Régénération systémique, flexibilité améliorée, réduction fibrose',
-    calc_bpc_s2_exp:     'Maintien des effets, prévention blessures récurrentes',
-    calc_tb_s1_exp:      'Régénération systémique',
-    calc_epi_s1_exp:     'Allongement des télomères, amélioration sommeil, énergie',
-    calc_epi_s2_exp:     'Laisser le temps aux télomères de se consolider',
-    calc_epi_s3_exp:     'Renforcement des effets anti-âge cumulatifs',
-    calc_week:           '1×/semaine',
-    calc_warn_semlow:    'Si nausées persistantes — rester à 0.25mg',
-    calc_warn_sem1mg:    'Uniquement si 1mg bien toléré',
-    calc_warn_tol:       'Évaluer la tolérance avant d\'augmenter',
-    calc_warn_prev_tol:  '⚠️ Uniquement si doses précédentes bien tolérées',
-    calc_warn_absmax:    '⚠️ Dose maximale — Ne jamais dépasser',
-    calc_warn_exp_p3:    'Peptide expérimental — phase 3 clinique',
-    calc_warn_hr:        'Surveiller fréquence cardiaque (max 100 bpm repos)',
-    calc_warn_exp_only:  '⚠️ Non approuvé — Recherche uniquement. Suivi médical obligatoire',
-    calc_warn_fast:      'Respecter 2h de jeûn avant injection',
-    calc_warn_igf1:      'Vérifier IGF-1 à J30',
-    calc_warn_no_continuous: '⚠️ Ne pas utiliser en continu sans pause',
-    calc_warn_inject_near:   'Injecter près de la zone à traiter',
-    calc_appetite_down:  '↓ Appétit',
-    calc_fat_loss:       'Perte de graisse',
-    calc_major_loss:     'Perte majeure',
-    calc_max_effect:     'Effet maximal',
-    calc_intro:          'Introduction',
-    calc_eff_phase:      'Phase efficace',
-    calc_opt_dose:       'Dose optimale',
-    calc_cycle_off:      'Cycle OFF obligatoire',
-    calc_break_4w:       'Pause 4 semaines',
-    calc_break_6m:       'Pause 6 mois',
-    calc_2nd_cycle:      '2ème cure',
-    calc_therap_phase:   'Phase thérapeutique',
-    calc_tir_s3_exp:     'Perte de poids rapide, amélioration glycémie',
-    calc_tir_s4_exp:     'Effets maximaux sur la composition corporelle',
-    calc_tir_s5_exp:     'Résultats optimaux pour la plupart des patients',
-    calc_tir_s6_exp:     'Dose maximale approuvée — maintenir si bien toléré',
-    calc_ret_s1_exp:     'Nausées légères, habituation du corps',
-    calc_ret_s2_exp:     'Réduction de l\'appétit nette, perte de poids début',
-    calc_ret_s3_exp:     'Perte de graisse viscérale visible, énergie améliorée',
-    calc_ret_s4_exp:     'Perte de poids significative, remodelage corporel',
-    calc_ret_s5_exp:     'Résultats maximaux des études cliniques de phase 2',
-    calc_cjc_s1_exp:     'Adaptation, flush léger possible, meilleur sommeil dès J3-5',
-    calc_cjc_s2_exp:     '↑ GH nocturne, récupération améliorée, composition corporelle',
-    calc_cjc_s3_exp:     'Effets maximaux GH, lipolyse, sommeil profond',
-    calc_cjc_s4_exp:     'Permettre la récupération de l\'axe GH naturel',
-    calc_bpc_intro_exp:  'Premiers effets anti-inflammatoires, réduction douleur J5-10',
-    calc_bpc_therap_exp: 'Régénération tissulaire, cicatrisation, protection gastrique',
-    calc_bpc_maint_exp:  'Maintien des effets, consolidation de la guérison',
-  },
-
-  // ══════════════════════════════════════════════════════════
-  en: {
-    // ── NAV ──────────────────────────────────────────────────
-    nav_home:       'Home',
-    nav_cure:       'Cycle',
-    nav_calc:       'Calc',
-    nav_stock:      'Stock',
-    nav_alerts:     'Alerts',
-    nav_profile:    'Profile',
-    nav_biblio:     'Library',
-    nav_weight:     'Weight',
-    nav_ia:         'AI',
-    nav_analyse:    'Analytics',
-
-    // ── COMMON ───────────────────────────────────────────────
-    save:           'Save',
-    cancel:         'Cancel',
-    delete:         'Delete',
-    edit:           'Edit',
-    add:            'Add',
-    confirm:        'Confirm',
-    close:          'Close',
-    loading:        'Loading…',
-    error:          'Error',
-    success:        'Success',
-    optional:       'optional',
-    all:            'All',
-    none:           'None',
-    days:           'days',
-    day:            'day',
-    today:          'Today',
-    week:           'week',
-    month:          'month',
-    yes:            'Yes',
-    no:             'No',
-    back:           'Back',
-    next:           'Next',
-    see_all:        'See all →',
-    details:        'Detail →',
-    no_data:        'No data',
-
-    // ── DISCLAIMER ───────────────────────────────────────────
-    disclaimer_title: 'Educational use only',
-    disclaimer_short: 'Research peptides not approved for human use. Consult a healthcare professional. PeptideScanner disclaims all liability.',
-    disclaimer_icon:  '⚠️',
-
-    // ── DASHBOARD ────────────────────────────────────────────
-    dash_greeting:        'Hello 👋',
-    dash_active_cure:     'Active cycle',
-    dash_protocol:        'Current protocol',
-    dash_no_cure:         'No active cycle',
-    dash_no_cure_sub:     'Tap "+ New cycle" to get started',
-    dash_day_label:       '/ days',
-    dash_calendar:        '📅 Calendar',
-    dash_new_cure:        '＋ New cycle',
-    dash_summary:         'Summary',
-    dash_weight_title:    'Weight progress',
-    dash_today_section:   'Today',
-    dash_calendar_link:   'Calendar →',
-    dash_alerts_section:  'Recent alerts',
-    dash_alerts_all:      'All →',
-    dash_no_alerts:       'No active alerts 🎉',
-    dash_weight_go:       'Weight →',
-    dash_inj_done:        'Injections done',
-    dash_days_left:       'Days remaining',
-    dash_end_date:        'Estimated end',
-    dash_compliance:      'Compliance',
-    dash_cures_done:      'Completed cycles',
-    dash_total_inj:       'Total injections',
-    dash_current_weight:  'Current weight',
-    dash_since_start:     'since start',
-    dash_first_measure:   'First measure',
-    dash_no_weight_data:  'No data — Add your weight',
-    dash_score_label:     'doses done',
-    dash_score_done:      '✅ Complete',
-    dash_today_program:   "Today's schedule",
-    dash_no_injection:    'No injection scheduled today.',
-    dash_injection_day:   'Daily injection',
-    dash_injection_num:   'Injection',
-    dash_confirm_inj:     'Confirm injection',
-    dash_check_time:      'Check the time before confirming',
-    dash_inj_time:        '⏰ Injection time',
-    dash_validate:        '✓ Confirm injection',
-    dash_new_cure_title:  'New cycle',
-    dash_peptide:         'Peptide',
-    dash_choose_peptide:  'Choose a peptide…',
-    dash_dosage:          'Dosage',
-    dash_admin:           'Route',
-    dash_start_date:      'Start date',
-    dash_duration:        'Duration (days)',
-    dash_frequency:       'Injection frequency',
-    dash_start_cure:      'Start cycle',
-    dash_cure_ended:      'Cycle ends in',
-    dash_days_suffix:     'd',
-    dash_inj_cancelled:   'Injection cancelled',
-    dash_inj_saved:       '— saved!',
-    freq_1x:    '1× per day',
-    freq_2x:    '2× per day',
-    freq_3x:    '3× per day',
-    freq_1_2d:  'Every 2 days',
-    freq_2x_w:  '2× per week',
-    freq_1x_w:  '1× per week',
-    admin_sc:   'SC',
-    admin_im:   'IM',
-    admin_oral: 'Oral',
-    admin_nasal:'Nasal',
-    admin_iv:   'IV',
-
-    // ── CURE ─────────────────────────────────────────────────
-    cure_title:         'Cycle calendar',
-    cure_status_active: 'Active',
-    cure_status_ended:  'Completed',
-    cure_status_future: 'Upcoming',
-    cure_dosage:        'Dosage',
-    cure_frequency:     'Frequency',
-    cure_duration:      'Duration',
-    cure_start:         'Start',
-    cure_end:           'End',
-    cure_remaining:     'Remaining',
-    cure_compliance:    'Compliance',
-    cure_edit:          '✏️ Edit',
-    cure_stats:         'Statistics',
-    cure_inj_done:      'Injections done',
-    cure_inj_expected:  'Expected injections',
-    cure_inj_missed:    'Missed',
-    cure_current_day:   'Current day',
-    cure_new:           'New cycle',
-    cure_start_btn:     'Start cycle',
-    cure_save_btn:      'Save',
-    cure_delete_btn:    'Delete this cycle',
-    cure_empty:         'No cycle recorded.\nStart by adding your first protocol.',
-    cure_add_first:     '+ New cycle',
-    cure_notes:         'Notes (optional)',
-    cure_notes_ph:      'Goal, remarks…',
-    cure_modal_edit:    'Edit cycle',
-    cure_suggested_site:'Suggested site',
-    cure_change_site:   'Change →',
-    cure_zone:          'Zone:',
-    cure_rest_day:      'Rest day 😴',
-    cure_save_note:     'Save note',
-    cure_note_ph:       'Note for this day…',
-    cure_note_saved:    '✓ Note saved',
-    cure_legend_done:   'Done',
-    cure_legend_partial:'Partial',
-    cure_legend_missed: 'Missed',
-    cure_legend_planned:'Planned',
-    cure_legend_rest:   'Rest',
-    cure_time_updated:  '✓ Time updated: ',
-    cure_inj_done_msg:  '✓ Injection — ',
-    cure_inj_cancelled: 'Injection cancelled',
-    cure_deleted:       'Cycle deleted',
-    cure_updated:       '✓ Cycle updated',
-    cure_started:       '✓ Cycle started!',
-    cure_confirm_delete:'Delete this cycle?',
-    cure_choose:        'Choose…',
-    cure_my_stock:      '🧪 My stock',
-    cure_library:       '📚 Library',
-    days_short:         ['M','T','W','T','F','S','S'],
-    months:             ['January','February','March','April','May','June','July','August','September','October','November','December'],
-
-    // ── POIDS ────────────────────────────────────────────────
-    weight_title:       'Weight tracking',
-    weight_period_7:    '7d',
-    weight_period_30:   '30d',
-    weight_period_90:   '3 months',
-    weight_period_all:  'All',
-    weight_current:     'current kg',
-    weight_variation:   'change',
-    weight_measures:    'entries',
-    weight_chart_title: 'Progress',
-    weight_add_title:   'Log my weight',
-    weight_add_btn:     'Add',
-    weight_note_ph:     'Note (optional)',
-    weight_date:        'Date',
-    weight_bmi_title:   'BMI',
-    weight_history:     'History',
-    weight_no_data:     'No data',
-    weight_add_first:   'Add your first weight',
-    weight_saved:       '✓ Weight saved: ',
-    weight_deleted:     'Entry deleted',
-    weight_modified:    '✓ Weight updated',
-    weight_invalid:     '⚠️ Invalid weight',
-    weight_date_req:    '⚠️ Date required',
-    weight_height_title:'📏 Your height?',
-    weight_height_sub:  'Required to calculate your BMI correctly.',
-    weight_height_ph:   '178',
-    weight_height_ok:   'OK',
-    weight_height_saved:'✓ Height saved',
-    weight_height_first:'📏 Enter your height first',
-    weight_height_inv:  '⚠️ Invalid height',
-    weight_bmi_under:   'Underweight',
-    weight_bmi_normal:  'Normal weight ✓',
-    weight_bmi_over:    'Overweight',
-    weight_bmi_obese:   'Obesity',
-    weight_bmi_unit:    'cm · Weight:',
-    weight_bmi_height:  'Height:',
-
-    // ── ALERTES ──────────────────────────────────────────────
-    alerts_title:       'Alerts',
-    alerts_notif_title: 'Smart notifications',
-    alerts_notif_sub:   'Receive injection reminders even when the app is closed',
-    alerts_enable:      'Enable',
-    alerts_enabled:     '✓ Enabled — Disable',
-    alerts_blocked:     'Blocked ⚠️',
-    alerts_reminders:   'Injection reminders',
-    alerts_no_active:   'No active cycle',
-    alerts_schedule:    "Today's schedule",
-    alerts_auto:        'Active alerts',
-    alerts_custom:      'My reminders',
-    alerts_add_title:   '+ New reminder',
-    alerts_msg_label:   'Message',
-    alerts_msg_ph:      'e.g.: IGF-1 blood test',
-    alerts_date:        'Date',
-    alerts_time:        'Time',
-    alerts_priority:    'Priority',
-    alerts_prio_normal: 'Normal',
-    alerts_prio_high:   'Important',
-    alerts_prio_urgent: 'Urgent',
-    alerts_save_btn:    'Save reminder',
-    alerts_no_auto:     'No automatic alerts 🎉',
-    alerts_no_custom:   'No reminders — add one above',
-    alerts_no_today:    'No injection today',
-    alerts_done:        '✓ Done',
-    alerts_due:         '⏰ Due',
-    alerts_upcoming:    'Upcoming',
-    alerts_added:       '✓ Reminder added!',
-    alerts_deleted:     'Reminder deleted',
-    alerts_notif_on:    '🔔 Reminder enabled',
-    alerts_notif_off:   '🔕 Reminder disabled',
-    alerts_time_saved:  '✓ Time updated — ',
-    alerts_cure_end:    'Cycle ends in',
-    alerts_blood_test:  'Blood test recommended',
-    alerts_inj_label:   'Injection',
-    alerts_inj_day:     'of the day',
-    alerts_fill_all:    '⚠️ Fill all fields',
-    alerts_notif_unsupported: 'Not supported on this browser',
-    alerts_notif_activated: '✓ Notifications enabled!',
-    alerts_notif_refused: 'Notifications denied — check Safari settings',
-    alerts_notif_disabled: '🔕 Notifications disabled',
-    alerts_blocked_help:   '⚙️ Allow notifications in Safari Settings → Websites → Notifications',
-
-    // ── PROFIL ───────────────────────────────────────────────
-    profil_title:       'My profile',
-    profil_plan_free:   'Free plan',
-    profil_plan_prem:   '⭐ Premium',
-    profil_info:        'Personal information',
-    profil_name:        'First name',
-    profil_age:         'Age',
-    profil_height:      'Height',
-    profil_goal:        'Goal',
-    profil_stats:       'My statistics',
-    profil_subscription:'Subscription',
-    profil_equipment:   'My equipment',
-    profil_syringes:    '💉 My syringes',
-    profil_syringes_sub:'Select the syringes you own. The calculator will adapt automatically.',
-    profil_needle_type: '🧪 Preferred needle type',
-    profil_solvent:     '💧 Preferred reconstitution solvent',
-    profil_settings:    'Settings',
-    profil_biblio_link: 'Peptide library',
-    profil_export:      'Export my data',
-    profil_export_sub:  'JSON — all my cycles and measurements',
-    profil_home_link:   'Home page',
-    profil_home_sub:    'Back to landing page',
-    profil_danger:      'Danger zone',
-    profil_logout:      '🚪 Sign out',
-    profil_reset:       '🗑 Delete all my data',
-    profil_version:     'PeptideScanner v1.0 · Educational use only',
-    profil_total_cures: 'Total cycles',
-    profil_injections:  'Injections',
-    profil_done_cures:  'Finished cycles',
-    profil_weight_var:  'Weight change',
-    profil_prem_active: '⭐ Premium active',
-    profil_prem_active_sub: 'You have access to all premium features.',
-    profil_upgrade:     'Go Premium',
-    profil_upgrade_sub: 'Unlock full tracking, smart alerts and AI advisor.',
-    profil_upgrade_btn: '⭐ Subscribe — €59 / year',
-    profil_feat1:       'Unlimited cycle calendar',
-    profil_feat2:       'Weight tracking + charts',
-    profil_feat3:       'Alerts & push reminders',
-    profil_feat4:       'Specialized AI advisor',
-    profil_feat5:       'Unlimited cycles & calendar',
-    profil_feat6:       'Full weight tracking',
-    profil_feat7:       'Unlimited AI advisor',
-    profil_logout_confirm: 'Sign out?',
-    profil_reset_confirm1: '⚠️ Delete ALL data? Irreversible.',
-    profil_reset_confirm2: 'Really delete everything?',
-    profil_reset_done:  'Data deleted',
-    profil_export_done: '✓ Data exported',
-    profil_pseudo_title:'Choose your username',
-    profil_pseudo_ph:   'e.g.: James',
-    profil_pseudo_saved:'✓ Username saved!',
-    profil_updated:     '✓ updated',
-    profil_not_filled:  'Not set',
-    profil_biblio_count:'52 peptides referenced',
-    profil_prem_activated: '⭐ Premium activated!',
-    profil_lang:        'Language',
-    profil_lang_sub:    'Français / English',
-    needle_4mm:  '4 mm — Very thin (SC abdominal)',
-    needle_6mm:  '6 mm — Standard SC',
-    needle_8mm:  '8 mm — Shallow SC/IM',
-    needle_12mm: '12 mm — Deep IM',
-    needle_25mm: '25 mm — IM deltoid',
-    solvent_bac:   'Bacteriostatic water (BAC) — Recommended',
-    solvent_water: 'Sterile water for injection',
-    solvent_saline:'Normal saline 0.9%',
-    syringe_u30_label: 'U-30',
-    syringe_u30_sub:   '0.3 mL — 30 units · Mini doses',
-    syringe_u50_label: 'U-50',
-    syringe_u50_sub:   '0.5 mL — 50 units · Medium doses',
-    syringe_u100_label:'U-100',
-    syringe_u100_sub:  '1.0 mL — 100 units · Standard',
-    syringe_u200_label:'2 mL',
-    syringe_u200_sub:  '2.0 mL — Large doses / split-dose',
-
-    // ── INVENTAIRE ───────────────────────────────────────────
-    inv_title:         'Stock',
-    inv_add:           '+ Add vial',
-    inv_vials:         'vials',
-    inv_low_stock:     'low stock',
-    inv_expired:       'expired',
-    inv_expired_badge: '⚠️ EXPIRED',
-    inv_low_badge:     '⚠️ LOW STOCK',
-    inv_sealed_badge:  '🔒 SEALED',
-    inv_modal_add:     'Add a vial',
-    inv_modal_edit:    'Edit vial',
-    inv_peptide:       'Peptide',
-    inv_peptide_ph:    'e.g.: BPC-157, HGH…',
-    inv_qty:           'Total quantity',
-    inv_unit:          'Unit',
-    inv_dose_inj:      'Dose / injection',
-    inv_frequency:     'Frequency',
-    inv_choose_freq:   '-- Choose --',
-    inv_recon_date:    'Reconstitution date',
-    inv_status:        'Status',
-    inv_status_active: 'Active',
-    inv_status_sealed: 'Sealed',
-    inv_status_done:   'Finished',
-    inv_temp:          '🌡 Storage temp.',
-    inv_temp_ph:       'e.g.: 2-8°C',
-    inv_max_days:      '📅 Max duration (days)',
-    inv_storage_note:  'Storage note',
-    inv_storage_note_ph:'e.g.: Keep away from light',
-    inv_note:          'Note (optional)',
-    inv_note_ph:       'e.g.: Lot 2025, recovery cycle…',
-    inv_save:          'Save vial',
-    inv_cancel:        'Cancel',
-    inv_inj_left:      'injections left',
-    inv_added:         '✓ Vial added',
-    inv_updated:       '✓ Vial updated',
-    inv_deleted:       'Vial deleted',
-    inv_delete_confirm:'Delete this vial?',
-    inv_name_required: '⚠️ Peptide name required',
-    inv_empty:         'No vials recorded.\nAdd your first vial.',
-
-    // ── IA ───────────────────────────────────────────────────
-    ia_title:          'AI Advisor',
-    ia_online:         '● Online · Peptide specialist',
-    ia_clear:          'Clear',
-    ia_context:        'Context:',
-    ia_disclaimer:     '⚠️ Educational use — Consult a healthcare professional before any protocol',
-    ia_placeholder:    'Ask your peptide question…',
-    ia_premium_title:  'Premium feature',
-    ia_premium_sub:    'The AI Advisor is reserved for Premium members. Upgrade to access personalized advice.',
-    ia_premium_btn:    '⭐ Go Premium',
-    ia_demo:           'Try demo mode',
-    ia_error:          '⚠️ Connection error. Please retry.',
-    ia_quota:          'Monthly quota reached.',
-
-    // ── CALCULATEUR ──────────────────────────────────────────
-    calc_title:        'Calculator',
-    calc_warning:      'Information tool only',
-    calc_warning_sub:  'This calculator is an information tool. Always verify your calculations before any injection. Consult a healthcare professional before any protocol. PeptideScanner disclaims all liability for dosage errors.',
-    calc_tab_recon:    '🧪 Reconstitution',
-    calc_tab_dosage:   '💉 Dosage',
-    calc_tab_titration:'📈 Titration',
-    calc_tab_guide:    '📋 Injection guide',
-    calc_recon_section:'Step 1 — Calculate concentration',
-    calc_recon_title:  '🧪 Vial reconstitution',
-    calc_peptide_qty:  'Peptide quantity in vial',
-    calc_bac_volume:   'Bacteriostatic water volume to add',
-    calc_recon_result: '✓ Reconstitution result',
-    calc_dosage_section:'Calculate your precise dose',
-    calc_dosage_title: '💉 Precise dose calculator',
-    calc_dosage_sub:   'Enter your concentration (calculated in the Reconstitution tab) and desired dose.',
-    calc_unit:         'Peptide unit',
-    calc_concentration:'Reconstituted vial concentration',
-    calc_desired_dose: 'Desired dose',
-    calc_syringe:      'Syringe type',
-    calc_auto_syringe: '✓ Auto-selected',
-    calc_dosage_result:'✓ Dosage result',
-    calc_titration_section:'Progressive titration plan',
-    calc_guide_section:'Step-by-step injection guide',
-    calc_guide_recon:  'Reconstitution steps',
-    calc_guide_sc:     'Subcutaneous injection guide',
-    calc_guide_warning_title: 'Medical disclaimer',
-    calc_guide_warning_sub: 'This guide is for educational purposes only. Any injection must be validated by a healthcare professional. If in doubt, do not proceed. PeptideScanner is not responsible for handling or dosage errors.',
-    calc_high_dose_title: 'High dose detected',
-    calc_high_dose_confirm: 'I have verified — proceed anyway',
-    calc_high_dose_cancel:  '← Recalculate my dose',
-    calc_dose_table_dose: 'Dose',
-    // ── PEPTIDE DATABASE ─────────────────────────────────────
-    db_eyebrow:          'Library · Database',
-    db_title:            'Complete peptide reference',
-    db_sub:              'Every peptide referenced with dosages, protocols, effects and recommended stacks.',
-    db_stat_peptides:    'Peptides referenced',
-    db_stat_categories:  'Categories',
-    db_stat_shown:       'Shown',
-    db_search_ph:        'Search peptide, effect, category…',
-    db_all:              'All',
-    db_cat_recov:        'Recovery',
-    db_cat_anti:         'Anti-aging',
-    db_cat_neuro:        'Neuro',
-    db_cat_fat:          'Weight',
-    db_cat_sex:          'Sexual',
-    db_cat_immun:        'Immunity',
-    db_cat_cardio:       'Cardio',
-    db_cat_skin:         'Skin',
-    db_guide_title:      '📊 Guide — Research progress',
-    db_dosage:           'Dosage',
-    db_duration:         'Duration',
-    db_stack_with:       'Stack with',
-    db_buy:              'Buy →',
-    db_no_results_msg:   'No peptide found for "{q}".',
-    db_no_results_sub:   'Try a different keyword.',
-    db_modal_dosage:     'Typical dosage',
-    db_modal_admin:      'Administration',
-    db_modal_duration:   'Cycle duration',
-    db_modal_freq:       'Frequency',
-    db_modal_protocol:   'Detailed protocol',
-    db_modal_effects:    'Main effects',
-    db_modal_side_effects:'Side effects',
-    db_modal_stacks:     'Recommended stacks',
-    db_modal_contra:     'Contraindications',
-    db_modal_note:       'Expert note',
-    db_modal_find:       'Find {name} from a verified supplier',
-    db_modal_shops:      'View shops →',
-    db_modal_disclaimer: '⚠️ Educational use only. These are research peptides. Always consult a healthcare professional before use.',
-    db_disclaimer_title: 'Legal disclaimer — Educational and informational use only.',
-    db_disclaimer_body:  'The peptides presented are research peptides. Their acquisition, possession or use may be illegal in your country. The information does not constitute medical advice. Consult a healthcare professional before any protocol.',
-    // ── RESEARCH PHASES ──────────────────────────────────────
-    phase_exp_label:     'Limited data',
-    phase_pre_label:     'Animal research',
-    phase_p1_label:      'First human trials',
-    phase_p2_label:      'Ongoing studies',
-    phase_p3_label:      'Advanced studies',
-    phase_est_label:     'Widely used',
-    phase_exp_desc:      'Very few studies available',
-    phase_pre_desc:      'Tested on animals only',
-    phase_p1_desc:       'Safety verified on a few volunteers',
-    phase_p2_desc:       'Efficacy tested on hundreds of people',
-    phase_p3_desc:       'Tested on thousands — near approval',
-    phase_est_desc:      'Abundant feedback, well-documented profile',
-    phase_exp_desc_dot:  'Very few studies available.',
-    phase_pre_desc_dot:  'Tested on animals only.',
-    phase_p1_desc_dot:   'Safety verified on a few volunteers.',
-    phase_p2_desc_dot:   'Tested on hundreds of people.',
-    phase_p3_desc_dot:   'Tested on thousands — near approval.',
-    phase_est_desc_dot:  'Abundant feedback, well-documented profile.',
-    phase_step1:         'Research',
-    phase_step2:         'Testing',
-    phase_step3:         'Studies',
-    phase_step4:         'Advanced',
-    phase_step5:         'Established',
-    // ── INJECTION SITES ──────────────────────────────────────
-    site_abd_g:      'Left abdomen',
-    site_abd_d:      'Right abdomen',
-    site_thigh_g:    'Left thigh',
-    site_thigh_d:    'Right thigh',
-    site_glute_g:    'Left glute',
-    site_glute_d:    'Right glute',
-    site_deltoid_g:  'Left deltoid',
-    site_deltoid_d:  'Right deltoid',
-    site_quad_g:     'Left quadriceps',
-    site_quad_d:     'Right quadriceps',
-    zone_abdomen:    'Abdomen',
-    zone_thigh:      'Thigh',
-    zone_glute:      'Glute',
-    zone_shoulder:   'Shoulder',
-    zone_arm:        'Arm',
-    // ── CALCULATEUR TITRATION ────────────────────────────────
-    calc_phase_adapt:    'Adaptation phase',
-    calc_increase:       'Progressive increase',
-    calc_eff_dose:       'Effective dose',
-    calc_adv_dose:       'Advanced dose',
-    calc_max_dose:       'Maximum dose',
-    calc_prog_rise:      'Progressive rise',
-    calc_load_phase:     'Loading phase',
-    calc_maint_phase:    'Maintenance phase',
-    calc_intensive:      'Intensive cycle',
-    calc_mandatory_break:'Mandatory break',
-    calc_second_cycle:   '2nd annual cycle',
-    calc_adapt:          'Adaptation',
-    calc_high_dose_label:'High dose',
-    calc_warn_bpc_stack: 'Stack with BPC-157 for optimal synergy',
-    calc_warn_6months:   'Do not repeat before 6 months',
-    calc_warn_2year:     'Maximum 2 cycles per year',
-    calc_warn_titration: 'Mandatory titration — never skip steps',
-    calc_warn_maxdose:   'Do not exceed 2.4 mg/week without medical supervision',
-    calc_approx:         'approximately',
-    calc_at_500:         'at 500mcg/day (2×250mcg)',
-    calc_sem_s1_exp:     'Possible mild nausea, tolerance assessment',
-    calc_sem_s2_exp:     'Noticeable appetite reduction',
-    calc_sem_s3_exp:     'Regular weight loss 0.5–1 kg/week',
-    calc_sem_s4_exp:     'Accelerated weight loss',
-    calc_sem_s5_exp:     'Maximum effect — FDA-approved dose',
-    calc_tir_s1_exp:     'Mild nausea, GIP+GLP1 habituation',
-    calc_tir_s2_exp:     '↓ Significant appetite reduction',
-    calc_bpc_s1_exp:     'Systemic regeneration, improved flexibility, reduced fibrosis',
-    calc_bpc_s2_exp:     'Maintaining effects, preventing recurring injuries',
-    calc_tb_s1_exp:      'Systemic regeneration',
-    calc_epi_s1_exp:     'Telomere lengthening, improved sleep and energy',
-    calc_epi_s2_exp:     'Allow time for telomeres to consolidate',
-    calc_epi_s3_exp:     'Reinforcement of cumulative anti-aging effects',
-    calc_week:           '1×/week',
-    calc_warn_semlow:    'If persistent nausea — stay at 0.25mg',
-    calc_warn_sem1mg:    'Only if 1mg is well tolerated',
-    calc_warn_tol:       'Assess tolerance before increasing',
-    calc_warn_prev_tol:  '⚠️ Only if previous doses well tolerated',
-    calc_warn_absmax:    '⚠️ Maximum dose — Never exceed',
-    calc_warn_exp_p3:    'Experimental peptide — phase 3 clinical trial',
-    calc_warn_hr:        'Monitor heart rate (max 100 bpm at rest)',
-    calc_warn_exp_only:  '⚠️ Not approved — Research only. Mandatory medical supervision',
-    calc_warn_fast:      'Fast for 2h before injection',
-    calc_warn_igf1:      'Check IGF-1 at day 30',
-    calc_warn_no_continuous: '⚠️ Do not use continuously without a break',
-    calc_warn_inject_near:   'Inject near the area to treat',
-    calc_appetite_down:  '↓ Appetite',
-    calc_fat_loss:       'Fat loss',
-    calc_major_loss:     'Major loss',
-    calc_max_effect:     'Maximum effect',
-    calc_intro:          'Introduction',
-    calc_eff_phase:      'Effective phase',
-    calc_opt_dose:       'Optimal dose',
-    calc_cycle_off:      'Mandatory OFF cycle',
-    calc_break_4w:       '4-week break',
-    calc_break_6m:       '6-month break',
-    calc_2nd_cycle:      '2nd cycle',
-    calc_therap_phase:   'Therapeutic phase',
-    calc_tir_s3_exp:     'Rapid weight loss, blood sugar improvement',
-    calc_tir_s4_exp:     'Maximum effects on body composition',
-    calc_tir_s5_exp:     'Optimal results for most patients',
-    calc_tir_s6_exp:     'Maximum approved dose — maintain if well tolerated',
-    calc_ret_s1_exp:     'Mild nausea, body habituation',
-    calc_ret_s2_exp:     'Clear appetite reduction, early weight loss',
-    calc_ret_s3_exp:     'Visible visceral fat loss, improved energy',
-    calc_ret_s4_exp:     'Significant weight loss, body recomposition',
-    calc_ret_s5_exp:     'Maximum results from phase 2 clinical studies',
-    calc_cjc_s1_exp:     'Adaptation, possible mild flush, better sleep from day 3-5',
-    calc_cjc_s2_exp:     '↑ Nocturnal GH, improved recovery, body composition',
-    calc_cjc_s3_exp:     'Maximum GH effects, lipolysis, deep sleep',
-    calc_cjc_s4_exp:     'Allow recovery of natural GH axis',
-    calc_bpc_intro_exp:  'First anti-inflammatory effects, pain reduction day 5-10',
-    calc_bpc_therap_exp: 'Tissue regeneration, healing, gastric protection',
-    calc_bpc_maint_exp:  'Maintaining effects, consolidating recovery',
+  /* NOTIFICATIONS INTELLIGENTES */
+  .notif-banner {
+    display:flex; align-items:center; gap:12px; padding:14px 16px;
+    background:linear-gradient(135deg, rgba(13,148,136,.07), rgba(43,108,176,.05));
+    border:1.5px solid rgba(13,148,136,.2); border-radius:16px; margin-bottom:16px;
   }
-};
-
-// ══════════════════════════════════════════════════════════════
-// MOTEUR DE TRADUCTION
-// ══════════════════════════════════════════════════════════════
-
-/**
- * Retourne la langue active ('fr' ou 'en')
- */
-window.PS_getLang = function() {
-  return localStorage.getItem('ps_lang') || 'fr';
-};
-
-/**
- * Retourne une chaîne traduite
- * @param {string} key
- * @returns {string}
- */
-window.t = function(key) {
-  const lang = window.PS_getLang();
-  return (window.PS_LANG[lang] && window.PS_LANG[lang][key]) ||
-         (window.PS_LANG['fr'][key]) ||
-         key;
-};
-
-/**
- * Change la langue, sauvegarde en localStorage ET Supabase si sb + userId disponibles
- * @param {string} lang - 'fr' | 'en'
- */
-window.PS_setLang = async function(lang) {
-  if (lang !== 'fr' && lang !== 'en') return;
-  localStorage.setItem('ps_lang', lang);
-  // Persister dans Supabase si disponible
-  if (window._ps_sb && window._ps_userId) {
-    try {
-      await window._ps_sb.from('profiles').update({ lang }).eq('id', window._ps_userId);
-    } catch(e) { /* silencieux */ }
+  .notif-banner-icon { font-size:1.6rem; flex-shrink:0; }
+  .notif-banner-text { flex:1; }
+  .notif-banner-text strong { display:block; font-size:.86rem; font-weight:700; margin-bottom:2px; }
+  .notif-banner-text span { font-size:.74rem; color:var(--muted); }
+  .notif-enable-btn {
+    padding:8px 14px; border-radius:10px; border:none;
+    background:var(--accent); color:#fff; font-family:inherit;
+    font-size:.78rem; font-weight:700; cursor:pointer; flex-shrink:0;
+    transition:opacity .2s;
   }
-  // Recharger la page pour appliquer (le plus simple et fiable)
-  location.reload();
-};
+  .notif-enable-btn:hover { opacity:.88; }
+  .notif-enable-btn.granted { background:rgba(13,148,136,.12); color:var(--accent); }
+  .notif-enable-btn.disabled-notif { background:rgba(107,114,128,.1); color:var(--muted); }
 
-/**
- * Charge la langue depuis Supabase (profile.lang) et met à jour localStorage
- * À appeler après auth, en passant sb et userId
- */
-window.PS_loadLangFromProfile = function(sb, userId, profileLang) {
-  window._ps_sb     = sb;
-  window._ps_userId = userId;
-  if (profileLang && (profileLang === 'fr' || profileLang === 'en')) {
-    const local = localStorage.getItem('ps_lang');
-    // Supabase a priorité si pas encore de préférence locale
-    if (!local) localStorage.setItem('ps_lang', profileLang);
+  /* RAPPELS INJECTION avec toggle */
+  .inj-reminder-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:10px; }
+  .inj-reminder-header { padding:12px 16px; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .inj-reminder-title { font-size:.82rem; font-weight:700; }
+  .inj-reminder-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); }
+  .inj-reminder-row:last-child { border-bottom:none; }
+  .inj-reminder-info { flex:1; }
+  .inj-reminder-name { font-size:.84rem; font-weight:600; }
+  .inj-reminder-sub { font-size:.7rem; color:var(--muted); margin-top:2px; }
+  .inj-time-input {
+    background:var(--surface2); border:1.5px solid var(--border); border-radius:8px;
+    padding:6px 10px; font-family:'Space Mono',monospace; font-size:.8rem;
+    color:var(--text); outline:none; width:80px; text-align:center;
+    transition:border-color .2s;
   }
-};
+  .inj-time-input:focus { border-color:var(--accent); }
 
-/**
- * Injecte le bouton toggle FR|EN dans un élément topbar
- * @param {string} containerId - id de l'élément où insérer le toggle
- */
-window.PS_injectLangToggle = function(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  window.PS_renderLangSwitcher();
-};
-/**
- * Crée ou met à jour le sélecteur de langue FR | EN dans tous les #langToggleBtn
- */
-window.PS_renderLangSwitcher = function() {
-  const current = window.PS_getLang();
-  document.querySelectorAll('#langToggleBtn').forEach(el => {
-    el.innerHTML = '';
-    el.style.cssText = 'display:flex;align-items:center;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--border);flex-shrink:0;';
-    el.removeAttribute('onclick');
+  /* TOGGLE SWITCH */
+  .toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider {
+    position:absolute; inset:0; border-radius:24px;
+    background:var(--border); cursor:pointer; transition:.3s;
+  }
+  .toggle-slider::before {
+    content:''; position:absolute; width:18px; height:18px;
+    left:3px; top:3px; border-radius:50%; background:#fff;
+    transition:.3s; box-shadow:0 1px 4px rgba(0,0,0,.15);
+  }
+  .toggle input:checked + .toggle-slider { background:var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
 
-    ['fr','en'].forEach((lang, i) => {
-      const btn = document.createElement('button');
-      const isActive = current === lang;
-      btn.textContent = lang === 'fr' ? '🇫🇷 FR' : '🇬🇧 EN';
-      btn.style.cssText = [
-        'padding:5px 10px',
-        'font-family:inherit',
-        'font-size:.72rem',
-        'font-weight:700',
-        'cursor:pointer',
-        'border:none',
-        'outline:none',
-        'transition:all .15s',
-        isActive
-          ? 'background:var(--accent);color:#fff;'
-          : 'background:var(--surface);color:var(--muted);',
-        i === 0 ? 'border-right:1px solid var(--border);' : '',
-      ].join(';');
-      if (!isActive) {
-        btn.onmouseover = () => { btn.style.background='var(--surface2)'; btn.style.color='var(--text)'; };
-        btn.onmouseout  = () => { btn.style.background='var(--surface)';  btn.style.color='var(--muted)'; };
-      }
-      btn.onclick = (e) => { e.stopPropagation(); if(!isActive) window.PS_setLang(lang); };
-      el.appendChild(btn);
+  .ss-done { background:rgba(13,148,136,.1); color:var(--accent); }
+  .ss-due { background:rgba(249,115,22,.1); color:var(--accent3); }
+  .ss-upcoming { background:var(--surface2); color:var(--muted); }
+  .ai-green { background:rgba(13,148,136,.12); }
+  .ai-amber { background:rgba(249,115,22,.12); }
+  .ai-red { background:rgba(220,38,38,.12); }
+  .ai-purple { background:rgba(168,85,247,.12); }
+  .ai-blue { background:rgba(59,130,246,.12); }
+  .schedule-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; }
+  .schedule-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
+  .sched-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+  .sched-item:last-child { border-bottom:none; }
+  .sched-time { font-family:'Space Mono',monospace; font-size:.8rem; font-weight:700; color:var(--accent); width:44px; flex-shrink:0; }
+  .sched-info { flex:1; }
+  .sched-name { font-size:.84rem; font-weight:600; }
+  .sched-detail { font-size:.7rem; color:var(--muted); }
+  .sched-status { font-size:.72rem; padding:2px 8px; border-radius:100px; font-weight:600; }
+  .ss-done { background:rgba(0,201,167,.1); color:var(--accent); }
+  .ss-due { background:rgba(245,158,11,.1); color:var(--accent3); }
+  .ss-upcoming { background:var(--surface2); color:var(--muted); }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(255,255,255,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 8px; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 14px; border-radius:12px; cursor:pointer; text-decoration:none; color:var(--muted); transition:all .2s; min-width:56px; }
+  .nav-item.active { color:var(--accent); }
+  .nav-icon { font-size:1.3rem; line-height:1; }
+  .nav-label { font-size:.6rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
+  .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
+  .toast { position:fixed; bottom:calc(var(--nav-h)+16px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#fff; padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .empty-state { text-align:center; padding:32px 20px; color:var(--muted); font-size:.85rem; }
+  .empty-state span { font-size:2rem; display:block; margin-bottom:8px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
+  <h1 data-i18n="alerts_title">Alertes</h1>
+  <div id="langToggleBtn"></div>
+</div>
+<div class="content">
+
+  <!-- BANNIÈRE NOTIFICATIONS -->
+  <div class="notif-banner" id="notifBanner">
+    <div class="notif-banner-icon">🔔</div>
+    <div class="notif-banner-text">
+      <strong data-i18n="alerts_notif_title">Notifications intelligentes</strong>
+      <span data-i18n="alerts_notif_sub">Recevez vos rappels d'injection même quand l'app est fermée</span>
+    </div>
+    <button class="notif-enable-btn" id="notifEnableBtn"></button>
+  </div>
+
+  <!-- RAPPELS D'INJECTION PAR CURE -->
+  <div class="section-title"><span data-i18n="alerts_reminders">Rappels d'injection</span></div>
+  <div id="injReminders"></div>
+
+  <!-- SCHEDULE DU JOUR -->
+  <div class="section-title"><span data-i18n="alerts_schedule">Planning du jour</span></div>
+  <div class="schedule-card">
+    <h3 id="todayDate">Aujourd'hui</h3>
+    <div id="scheduleList"></div>
+  </div>
+
+  <!-- ALERTES AUTO -->
+  <div class="section-title"><span data-i18n="alerts_auto">Alertes actives</span></div>
+  <div id="autoAlertsList"></div>
+
+  <!-- ALERTES PERSO -->
+  <div class="section-title" style="margin-top:8px"><span data-i18n="alerts_custom">Mes rappels</span></div>
+  <div id="customAlertsList"></div>
+
+  <!-- AJOUTER ALERTE -->
+  <div class="add-alert-card">
+    <h3 data-i18n="alerts_add_title">+ Nouveau rappel</h3>
+    <div class="form-group">
+      <label class="form-label"><span data-i18n="alerts_msg_label">Message</span></label>
+      <input class="form-input" id="alertMsg" data-i18n-ph="alerts_msg_ph" placeholder="ex: Prise de sang IGF-1">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label"><span data-i18n="alerts_date">Date</span></label>
+        <input class="form-input" id="alertDate" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><span data-i18n="alerts_time">Heure</span></label>
+        <input class="form-input" id="alertTime" type="time">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label"><span data-i18n="alerts_priority">Priorité</span></label>
+      <select class="form-input" id="alertPriority">
+        <option value="green"><span data-i18n="alerts_prio_normal">Normale</span></option>
+        <option value="amber"><span data-i18n="alerts_prio_high">Importante</span></option>
+        <option value="red"><span data-i18n="alerts_prio_urgent">Urgente</span></option>
+      </select>
+    </div>
+    <button class="submit-btn" onclick="addAlert()"><span data-i18n="alerts_save_btn">Enregistrer le rappel</span></button>
+  </div>
+
+</div>
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span></a>
+  <a class="nav-item" href="calculateur.html"><span class="nav-icon">🧮</span><span class="nav-label">Calcul</span></a>
+  <a class="nav-item active" href="alertes.html"><span class="nav-icon">🔔</span><span class="nav-label">Alertes</span><div class="nav-dot"></div></a>
+  <a class="nav-item" href="inventaire.html"><span class="nav-icon">🧪</span><span class="nav-label">Stock</span></a>
+  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
+</nav>
+<div class="toast" id="toast"></div>
+<script src="/lang.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
+const now = new Date();
+
+let userId = null, allCures = [], allInjections = [];
+
+async function init() {
+  const { data } = await sb.auth.getSession();
+  if (!data?.session) { window.location.href = '/login.html'; return; }
+  userId = data.session.user.id;
+
+  const dateEl = document.getElementById('alertDate');
+  const timeEl = document.getElementById('alertTime');
+  const todayLbl = document.getElementById('todayDate');
+  if (dateEl) dateEl.value = todayStr;
+  if (timeEl) timeEl.value = `${String(now.getHours()).padStart(2,'0')}:00`;
+  if (todayLbl) todayLbl.textContent = t('today') + ' — ' + TODAY.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'long',day:'numeric',month:'long'});
+
+  const { data: _profil } = await sb.from('profiles').select('lang').eq('id', userId).single();
+  if(_profil) PS_loadLangFromProfile(sb, userId, _profil.lang);
+  const [cRes, iRes] = await Promise.all([
+    sb.from('cures').select('*').eq('user_id', userId),
+    sb.from('injections').select('*').eq('user_id', userId).limit(200)
+  ]);
+  allCures      = cRes.data || [];
+  allInjections = iRes.data || [];
+
+  renderSchedule();
+  renderAutoAlerts();
+  renderCustomAlerts();
+  renderInjReminders();
+  setTimeout(() => {
+    updateNotifBanner();
+    if (Notification.permission === 'granted') scheduleAllReminders();
+  }, 100);
+}
+
+// ── PROGRAMME DU JOUR ──────────────────────────────────────────
+function renderSchedule() {
+  const list = document.getElementById('scheduleList');
+  const active = allCures.filter(c => {
+    if (c.status !== 'active') return false;
+    const s = new Date(c.start_date); s.setHours(0,0,0,0);
+    const e = new Date(c.start_date); e.setDate(e.getDate()+(c.duration_days||30)); e.setHours(0,0,0,0);
+    return s<=TODAY && e>=TODAY && parseFloat(c.frequency||1)>=1;
+  });
+  if (active.length === 0) { list.innerHTML='<div class="empty-state"><span>✅</span>'+t('alerts_no_today')+'</div>'; return; }
+  let items = [];
+  active.forEach(c => {
+    const freq = parseFloat(c.frequency||1);
+    const cnt  = Math.ceil(freq);
+    const times = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+    const todayInjs = allInjections.filter(i => i.cure_id===c.id && (i.injected_at||'').startsWith(todayStr));
+    times.forEach((t,i) => {
+      const done = todayInjs.some(l => (l.notes||'').includes('slot:'+i));
+      const [h,m] = t.split(':').map(Number);
+      const isDue = !done && (now.getHours()>h||(now.getHours()===h&&now.getMinutes()>=m));
+      items.push({time:t,h,name:c.peptide_name||c.name,detail:(c.dose_mcg||'')+(c.unit?' '+c.unit:''),done,isDue});
     });
   });
-};
+  items.sort((a,b)=>a.h-b.h);
+  list.innerHTML = items.map(it=>`
+    <div class="sched-item">
+      <div class="sched-time">${it.time}</div>
+      <div class="sched-info"><div class="sched-name">${it.name}</div><div class="sched-detail">${it.detail}</div></div>
+      <div class="sched-status ${it.done?'ss-done':it.isDue?'ss-due':'ss-upcoming'}">${it.done?t('alerts_done'):it.isDue?t('alerts_due'):t('alerts_upcoming')}</div>
+    </div>`).join('');
+}
 
+// ── AUTO ALERTES ───────────────────────────────────────────────
+function renderAutoAlerts() {
+  const c = document.getElementById('autoAlertsList');
+  const alerts = [];
+  allCures.forEach(cure => {
+    if (!cure.start_date || !cure.duration_days) return;
+    const s = new Date(cure.start_date); s.setHours(0,0,0,0);
+    const e = new Date(cure.start_date); e.setDate(e.getDate()+cure.duration_days); e.setHours(0,0,0,0);
+    if (s<=TODAY && e>=TODAY) {
+      const daysLeft = Math.ceil((e-TODAY)/86400000);
+      if (daysLeft<=5) alerts.push({icon:'⚠️',cls:'ai-amber',title:`${t('alerts_cure_end')} ${daysLeft}j`,sub:cure.peptide_name||cure.name});
+      const dayNum = Math.floor((TODAY-s)/86400000)+1;
+      if ([14,21,30].includes(dayNum)) alerts.push({icon:'🩸',cls:'ai-purple',title:t('alerts_blood_test'),sub:`J${dayNum} — ${cure.peptide_name||cure.name}`});
+    }
+  });
+  if (alerts.length===0) { c.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">'+t('alerts_no_auto')+'</div>'; return; }
+  c.innerHTML = '<div class="alert-card">'+alerts.map(a=>`
+    <div class="alert-row">
+      <div class="alert-icon ${a.cls}">${a.icon}</div>
+      <div class="alert-body"><div class="alert-title">${a.title}</div><div class="alert-sub">${a.sub}</div></div>
+    </div>`).join('')+'</div>';
+}
 
-/**
- * Applique toutes les traductions data-i18n sur la page
- * Appelée une fois au chargement, après avoir défini la langue
- */
-window.PS_applyI18n = function() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    const val = window.t(key);
-    if (val) el.textContent = val;
+// ── RAPPELS PERSONNALISÉS (localStorage) ───────────────────────
+function renderCustomAlerts() {
+  const c = document.getElementById('customAlertsList');
+  const alerts = JSON.parse(localStorage.getItem('ps_custom_alerts')||'[]');
+  const clsMap = {high:'ai-red',medium:'ai-amber',low:'ai-green'};
+  const iconMap = {high:'🔴',medium:'🟡',low:'🟢'};
+  const dotMap  = {high:'dot-red',medium:'dot-amber',low:'dot-green'};
+  if (alerts.length===0) { c.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">'+t('alerts_no_custom')+'</div>'; return; }
+  const sorted = [...alerts].sort((a,b)=>{
+    const da=new Date(a.date+'T'+a.time), db=new Date(b.date+'T'+b.time);
+    return (isNaN(da)?0:da)-(isNaN(db)?0:db);
   });
-  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    const key = el.getAttribute('data-i18n-ph');
-    const val = window.t(key);
-    if (val) el.placeholder = val;
+  c.innerHTML = '<div class="alert-card">'+sorted.map(a=>`
+    <div class="alert-row">
+      <div class="alert-icon ${clsMap[a.priority]||'ai-green'}">${iconMap[a.priority]||'🟢'}</div>
+      <div class="alert-body"><div class="alert-title">${a.msg}</div><div class="alert-sub">${new Date(a.date+'T12:00').toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'short',day:'numeric',month:'short'})} à ${a.time}</div></div>
+      <div class="alert-right"><div class="alert-time">${a.date===todayStr?'Aujourd\'hui':''}</div><button class="alert-del" onclick="deleteAlert(${a.id})">🗑</button><div class="priority-dot ${dotMap[a.priority]||'dot-green'}"></div></div>
+    </div>`).join('')+'</div>';
+}
+
+function addAlert() {
+  const msg      = document.getElementById('alertMsg').value.trim();
+  const date     = document.getElementById('alertDate').value;
+  const time     = document.getElementById('alertTime').value;
+  const priority = document.getElementById('alertPriority').value;
+  if (!msg||!date||!time) { showToast(t('alerts_fill_all')); return; }
+  const alerts = JSON.parse(localStorage.getItem('ps_custom_alerts')||'[]');
+  alerts.push({id:Date.now(),msg,date,time,priority});
+  localStorage.setItem('ps_custom_alerts', JSON.stringify(alerts));
+  document.getElementById('alertMsg').value = '';
+  showToast(t('alerts_added'));
+  renderCustomAlerts();
+}
+
+function deleteAlert(id) {
+  let alerts = JSON.parse(localStorage.getItem('ps_custom_alerts')||'[]');
+  alerts = alerts.filter(a=>a.id!==id);
+  localStorage.setItem('ps_custom_alerts', JSON.stringify(alerts));
+  showToast(t('alerts_deleted'));
+  renderCustomAlerts();
+}
+
+// ── RAPPELS D'INJECTION ────────────────────────────────────────
+function getReminders() {
+  // Clé par userId pour isoler les données par utilisateur
+  const key = 'ps_reminders_' + (userId || 'anon');
+  try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; }
+}
+
+function saveReminders(r) {
+  const key = 'ps_reminders_' + (userId || 'anon');
+  localStorage.setItem(key, JSON.stringify(r));
+}
+
+function renderInjReminders() {
+  const container = document.getElementById('injReminders');
+  const reminders = getReminders();
+  const active = allCures.filter(c => {
+    if (c.status!=='active') return false;
+    const s=new Date(c.start_date); s.setHours(0,0,0,0);
+    const e=new Date(c.start_date); e.setDate(e.getDate()+(c.duration_days||30)); e.setHours(0,0,0,0);
+    return s<=TODAY && e>=TODAY && parseFloat(c.frequency||1)>=1;
   });
-  document.querySelectorAll('[data-i18n-title]').forEach(el => {
-    const key = el.getAttribute('data-i18n-title');
-    const val = window.t(key);
-    if (val) el.title = val;
+  if (active.length===0) {
+    container.innerHTML='<div class="inj-reminder-card"><div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">'+t('alerts_no_active')+'</div></div></div></div>';
+    return;
+  }
+  container.innerHTML = active.map(cure => {
+    const freq = parseFloat(cure.frequency||1);
+    const cnt  = Math.ceil(freq);
+    const defaultTimes = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+    const saved = reminders[cure.id];
+    // Si pas encore de préférence sauvegardée → activé par défaut
+    // Si sauvegardé → utiliser la valeur exacte (true OU false)
+    const enabled = saved ? saved.enabled === true : true;
+    const times   = saved?.times || defaultTimes;
+    const timesHtml = times.map((t,i)=>`
+      <div class="inj-reminder-row">
+        <div class="inj-reminder-info">
+          <div class="inj-reminder-name">Injection ${cnt>1?i+1:'du jour'}</div>
+          <div class="inj-reminder-sub">${cure.dose_mcg||''} ${cure.unit||'mcg'}</div>
+        </div>
+        <input class="inj-time-input" type="time" value="${t}" onchange="updateReminderTime('${cure.id}',${i},this.value)" ${!enabled?'disabled':''}>
+      </div>`).join('');
+    return `<div class="inj-reminder-card">
+      <div class="inj-reminder-header">
+        <span class="inj-reminder-title">💉 ${cure.peptide_name||cure.name}</span>
+        <label class="toggle"><input type="checkbox" ${enabled?'checked':''} onchange="toggleReminder('${cure.id}',this.checked)"><span class="toggle-slider"></span></label>
+      </div>${timesHtml}</div>`;
+  }).join('');
+}
+
+function toggleReminder(cureId, enabled) {
+  const r = getReminders();
+  // Sauvegarder explicitement true ou false — jamais undefined
+  r[cureId] = { ...(r[cureId] || {}), enabled: enabled === true };
+  saveReminders(r);
+  renderInjReminders();
+  showToast(enabled ? t('alerts_notif_on') : t('alerts_notif_off'));
+}
+
+function updateReminderTime(cureId, idx, newTime) {
+  const r = getReminders();
+  const cure = allCures.find(c=>c.id===cureId);
+  if (!cure) return;
+  const cnt = Math.ceil(parseFloat(cure.frequency||1));
+  const def = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+  const cur = r[cureId]?.times ? [...r[cureId].times] : [...def];
+  cur[idx] = newTime;
+  r[cureId] = { ...(r[cureId] || {}), times: cur };
+  saveReminders(r);
+  showToast(t('alerts_time_saved') + newTime);
+}
+
+// ── NOTIFICATIONS ──────────────────────────────────────────────
+function updateNotifBanner() {
+  const btn  = document.getElementById('notifEnableBtn');
+  const banner = document.getElementById('notifBanner');
+  if (!btn || !banner) return;
+  if (!('Notification' in window)) { banner.style.display='none'; return; }
+
+  const choice = localStorage.getItem('ps_notif_choice'); // 'on' | 'off' | null
+
+  if (Notification.permission === 'denied') {
+    btn.textContent = t('alerts_blocked'); btn.style.color = 'var(--danger)';
+    btn.onclick = null; return;
+  }
+  if (choice === 'off') {
+    btn.textContent = t('alerts_enable');
+    btn.classList.remove('granted'); btn.classList.remove('disabled-notif');
+    btn.onclick = requestNotifPermission;
+    return;
+  }
+  if (Notification.permission === 'granted' || choice === 'on') {
+    btn.textContent = t('alerts_enabled');
+    btn.classList.add('granted');
+    btn.onclick = disableNotifications;
+    return;
+  }
+  // État par défaut
+  btn.textContent = t('alerts_enable');
+  btn.onclick = requestNotifPermission;
+}
+
+function requestNotifPermission() {
+  if (!('Notification' in window)) { showToast(t('alerts_notif_unsupported')); return; }
+  localStorage.setItem('ps_notif_choice', 'on');
+  const btn = document.getElementById('notifEnableBtn');
+  if (btn) { btn.textContent = t('alerts_enabled'); btn.classList.add('granted'); btn.onclick = disableNotifications; }
+  Notification.requestPermission().then(p => {
+    if (p === 'granted') {
+      showToast(t('alerts_notif_activated'));
+      scheduleAllReminders();
+    } else if (p === 'denied') {
+      localStorage.removeItem('ps_notif_choice');
+      if (btn) { btn.textContent = t('alerts_blocked'); btn.style.color = 'var(--danger)'; btn.onclick = null; }
+      showToast(t('alerts_notif_refused'));
+    }
   });
-};
+}
+
+function disableNotifications() {
+  localStorage.setItem('ps_notif_choice', 'off');
+  const btn = document.getElementById('notifEnableBtn');
+  if (btn) { btn.textContent = t('alerts_enable'); btn.classList.remove('granted'); btn.onclick = requestNotifPermission; }
+  showToast(t('alerts_notif_disabled'));
+}
+
+function scheduleAllReminders() {
+  const reminders = JSON.parse(localStorage.getItem('ps_reminders')||'{}');
+  allCures.forEach(cure => {
+    const s=new Date(cure.start_date); s.setHours(0,0,0,0);
+    const e=new Date(cure.start_date); e.setDate(e.getDate()+(cure.duration_days||30));
+    if (s>TODAY||e<TODAY) return;
+    const freq=parseFloat(cure.frequency||1); if(freq<1) return;
+    const cnt=Math.ceil(freq);
+    const def=cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+    const saved=reminders[cure.id]; if(saved?.enabled===false) return;
+    const times=saved?.times||def;
+    times.forEach((t,i) => {
+      const [h,m]=t.split(':').map(Number);
+      const trigger=new Date(); trigger.setHours(h,m,0,0);
+      const ms=trigger-now;
+      if (ms>0) setTimeout(()=>{
+        const todayInjs=allInjections.filter(inj=>inj.cure_id===cure.id&&(inj.injected_at||'').startsWith(todayStr));
+        if (!todayInjs.some(l=>(l.notes||'').includes('slot:'+i))) {
+          new Notification(`💉 ${cure.peptide_name||cure.name}`,{body:`${cure.dose_mcg||''} ${cure.unit||'mcg'} · ${t}`,icon:'/icons/icon-192.png'});
+        }
+      }, ms);
+    });
+  });
+}
+
+init().then(()=>{
+  PS_applyI18n();
+  // Initialiser le bouton notif
+const _nb = document.getElementById('notifEnableBtn');
+if (_nb) {
+  const _choice = localStorage.getItem('ps_notif_choice');
+  if (Notification.permission === 'granted' && _choice !== 'off') {
+    _nb.textContent = t('alerts_enabled');
+    _nb.classList.add('granted');
+    _nb.onclick = disableNotifications;
+  } else if (Notification.permission === 'denied') {
+    _nb.textContent = t('alerts_blocked');
+    _nb.style.color = 'var(--danger)';
+    _nb.onclick = null;
+  } else {
+    _nb.textContent = t('alerts_enable');
+    _nb.onclick = requestNotifPermission;
+  }
+}
+  PS_renderLangSwitcher();
+});
+</script>
+</body>
+</html>

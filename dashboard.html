@@ -504,7 +504,7 @@
       <div class="form-group">
         <label class="form-label" data-i18n="dash_admin">Administration</label>
         <select class="form-input" id="newCureAdmin">
-          <option>SC</option><option>IM</option><option>Oral</option><option>Nasal</option><option>IV</option>
+          <option value="SC" data-i18n="admin_sc">SC</option><option value="IM" data-i18n="admin_im">IM</option><option value="Oral" data-i18n="admin_oral">Oral</option><option value="Nasal" data-i18n="admin_nasal">Nasal</option><option value="IV" data-i18n="admin_iv">IV</option>
         </select>
       </div>
     </div>
@@ -521,12 +521,12 @@
     <div class="form-group">
       <label class="form-label"><span data-i18n="dash_frequency">Fréquence d'injection</span></label>
       <select class="form-input" id="newCureFreq">
-        <option value="1">1× par jour</option>
-        <option value="2">2× par jour</option>
-        <option value="3">3× par jour</option>
-        <option value="0.5">1× tous les 2 jours</option>
-        <option value="0.28">2× par semaine</option>
-        <option value="0.14">1× par semaine</option>
+        <option value="1" data-i18n="freq_1x">1× par jour</option>
+        <option value="2" data-i18n="freq_2x">2× par jour</option>
+        <option value="3" data-i18n="freq_3x">3× par jour</option>
+        <option value="0.5" data-i18n="freq_1_2d">1× tous les 2 jours</option>
+        <option value="0.28" data-i18n="freq_2x_w">2× par semaine</option>
+        <option value="0.14" data-i18n="freq_1x_w">1× par semaine</option>
       </select>
     </div>
     <button class="submit-btn" onclick="saveCure()"><span data-i18n="dash_start_cure">Démarrer la cure</span></button>

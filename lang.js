@@ -466,6 +466,8 @@ window.PS_LANG = {
     zone_glute:      'Glute',
     zone_shoulder:   'Shoulder',
     zone_arm:        'Arm',
+    site_quad_g:     'Left quadriceps',
+    site_quad_d:     'Right quadriceps',
     // ── CALCULATOR EXTRA ─────────────────────────────────────
     calc_units:      'units',
     calc_verification: 'Verification',
@@ -485,6 +487,8 @@ window.PS_LANG = {
     zone_glute:      'Fessier',
     zone_shoulder:   'Épaule',
     zone_arm:        'Bras',
+    site_quad_g:     'Quadriceps gauche',
+    site_quad_d:     'Quadriceps droit',
     // ── CALCULATEUR EXTRA ────────────────────────────────────
     calc_units:      'unités',
     calc_verification: 'Vérification',

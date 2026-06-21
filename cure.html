@@ -280,7 +280,7 @@
       <input class="form-input" id="newCureNotes" placeholder="Objectif, remarques…">
     </div>
     <button class="submit-btn" id="modalSubmit" onclick="saveCure()">Démarrer la cure</button>
-    <button class="delete-btn" id="modalDelete" style="display:none" onclick="deleteCure()">Supprimer cette cure</button>
+    <button class="delete-btn" id="modalDelete" style="display:none" onclick="deleteCure()">${t('cure_delete_btn')}</button>
   </div>
 </div>
 
@@ -308,21 +308,21 @@ let userId = null, currentCureId = null, editCureId = null;
 let calYear = TODAY.getFullYear(), calMonth = TODAY.getMonth();
 let allCures = [], allInjections = [];
 
-const SITES_SC = [
-  { id:'abd_g',    label:t('site_abd_g'),   icon:'🫃', zone:t('zone_abdomen') },
+function getSITES_SC() { return [
+  { id:'abd_g',    label:t('site_abd_g'),    icon:'🫃', zone:t('zone_abdomen') },
   { id:'abd_d',    label:t('site_abd_d'),    icon:'🫃', zone:t('zone_abdomen') },
-  { id:'cuisse_g', label:t('site_thigh_g'),    icon:'🦵', zone:t('zone_thigh') },
-  { id:'cuisse_d', label:t('site_thigh_d'),    icon:'🦵', zone:t('zone_thigh') },
-  { id:'fesse_g',  label:t('site_glute_g'),     icon:'🍑', zone:'Fesse' },
-  { id:'fesse_d',  label:t('site_glute_d'),     icon:'🍑', zone:'Fesse' },
-];
-const SITES_IM = [
+  { id:'cuisse_g', label:t('site_thigh_g'), icon:'🦵', zone:t('zone_thigh') },
+  { id:'cuisse_d', label:t('site_thigh_d'), icon:'🦵', zone:t('zone_thigh') },
+  { id:'fesse_g',  label:t('site_glute_g'), icon:'🍑', zone:t('zone_glute') },
+  { id:'fesse_d',  label:t('site_glute_d'), icon:'🍑', zone:t('zone_glute') },
+]; }
+function getSITES_IM() { return [
   { id:'deltoid_g', label:t('site_deltoid_g'), icon:'💪', zone:t('zone_shoulder') },
   { id:'deltoid_d', label:t('site_deltoid_d'), icon:'💪', zone:t('zone_shoulder') },
-  { id:'quad_g',    label:'Quadriceps gauche', icon:'🦵', zone:t('zone_thigh') },
-  { id:'quad_d',    label:'Quadriceps droit',  icon:'🦵', zone:t('zone_thigh') },
-];
-function getSites(admin) { return (admin||'').toUpperCase() === 'IM' ? SITES_IM : SITES_SC; }
+  { id:'quad_g',    label:t('site_quad_g'),    icon:'🦵', zone:t('zone_thigh') },
+  { id:'quad_d',    label:t('site_quad_d'),    icon:'🦵', zone:t('zone_thigh') },
+]; }
+function getSites(admin) { return (admin||'').toUpperCase() === 'IM' ? getSITES_IM() : getSITES_SC(); }
 function getNextSite(cureId, admin) {
   const sites = getSites(admin);
   const idx   = (parseInt(localStorage.getItem('ps_site_'+cureId)||'-1') + 1) % sites.length;
@@ -723,7 +723,9 @@ async function openAddCure() {
   document.getElementById('modalSubmit').textContent = t('cure_start_btn');
   document.getElementById('modalDelete').style.display = 'none';
   ['newCureDosage','newCureNotes'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
-  document.getElementById('newCureAdmin').value    = 'SC';
+  document.getElementById('newCureAdmin').value = 'SC';
+  // S'assurer que les options ont les bons textContent traduits
+  PS_applyI18n();
   document.getElementById('newCureStart').value    = todayStr;
   document.getElementById('newCureDuration').value = '';
   document.getElementById('newCureFreq').value     = '1';

@@ -372,6 +372,7 @@ window.PS_LANG = {
     ia_demo:           'Tester en mode démo',
     ia_error:          '⚠️ Erreur de connexion. Réessayez.',
     ia_quota:          'Quota mensuel atteint.',
+    ia_clear_confirm:  'Effacer l\'historique de conversation ?',
 
     // ── CALCULATEUR ──────────────────────────────────────────
     calc_title:        'Calculateur',
@@ -1183,6 +1184,7 @@ window.PS_LANG = {
     ia_demo:           'Try demo mode',
     ia_error:          '⚠️ Connection error. Please retry.',
     ia_quota:          'Monthly quota reached.',
+    ia_clear_confirm:  'Clear conversation history?',
 
     // ── CALCULATEUR ──────────────────────────────────────────
     calc_title:        'Calculator',

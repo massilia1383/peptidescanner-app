@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<script src="/lang.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>PeptideScanner — Conseiller IA</title>
 <style>
@@ -222,7 +223,7 @@
     <div class="ai-avatar">🧬<div class="ai-online"></div></div>
     <div class="ai-info">
       <strong data-i18n="ia_title">Conseiller IA</strong>
-      <span data-i18n="ia_online">${t('ia_online')}</span>
+      <span data-i18n="ia_online">● En ligne · Spécialiste peptides</span>
     </div>
   </div>
   <div id="langToggleBtn"></div>
@@ -280,7 +281,6 @@
   <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
 </nav>
 
-<script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
@@ -708,7 +708,7 @@ function autoResize(el) {
 }
 
 function clearChat() {
-  if (!confirm('Effacer l\'historique de conversation ?')) return;
+  if (!confirm(t('ia_clear_confirm'))) return;
   chatHistory = [];
   localStorage.removeItem('ps_ia_history_'+userId);
   document.getElementById('messages').innerHTML = '';

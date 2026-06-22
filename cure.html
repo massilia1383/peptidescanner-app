@@ -289,7 +289,7 @@
       <div class="titration-section" id="titrationSection">
         <div id="titrationPaliers"></div>
         <button class="titration-add-btn" id="titrationAddBtn" onclick="addPalier()">＋ <span data-i18n="titration_add_palier">Ajouter un palier</span></button>
-        <div class="titration-info" data-i18n="titration_info">La dose principale sera ignorée — chaque palier définit sa propre dose.</div>
+
       </div>
     </div>
     <div class="form-group">
@@ -824,8 +824,6 @@ async function openEditCure(id) {
   document.getElementById('newCureNotes').value = _userNote;
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
-  PS_applyI18n();
-  PS_renderLangSwitcher();
 }
 
 

@@ -741,8 +741,6 @@ async function openAddCure() {
   document.getElementById('modalDelete').style.display = 'none';
   ['newCureDosage','newCureNotes'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
   document.getElementById('newCureAdmin').value = 'SC';
-  // S'assurer que les options ont les bons textContent traduits
-  PS_applyI18n();
   resetTitration();
   document.getElementById('newCureStart').value    = todayStr;
   document.getElementById('newCureDuration').value = '';
@@ -753,8 +751,6 @@ async function openAddCure() {
 
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
-  PS_applyI18n();
-  PS_renderLangSwitcher();
 }
 
 async function populatePeptideSelect(currentVal) {
@@ -957,17 +953,17 @@ function loadTitrationFromCure(cure) {
 }
 
 function getTitrationDoseForDay(cure, dayNum) {
-  // Retourner la dose du palier correspondant au jour donné
   try {
-    const match = (cure.notes||'').match(/titration:(\[[^\]]+\])/);
+    const notesStr = cure.notes || '';
+    const match = notesStr.match(/titration:(\[.+?\])(?:\||$)/);
     if (!match) return null;
     const pals = JSON.parse(match[1]);
+    if (!pals || pals.length === 0) return null;
     let dayCount = 0;
     for (const p of pals) {
       dayCount += parseInt(p.duree_jours) || 7;
       if (dayNum <= dayCount) return p.dose;
     }
-    // Après le dernier palier, garder la dernière dose
     return pals[pals.length-1]?.dose || null;
   } catch(e) { return null; }
 }
@@ -980,7 +976,14 @@ async function saveCure() {
   const duration = document.getElementById('newCureDuration').value;
   const freq     = document.getElementById('newCureFreq').value;
   const notes    = document.getElementById('newCureNotes').value;
-  if (!peptide||!dosage||!startDate||!duration) { showToast(t('alerts_fill_all')); return; }
+  // Validation titration
+  if (titrationActive) {
+    const invalid = paliers.some(p => !p.dose || p.dose.trim() === '');
+    if (invalid) { showToast(t('titration_fill_doses')); return; }
+    if (paliers.length === 0) { showToast(t('titration_fill_doses')); return; }
+  }
+  if (!peptide||!startDate||!duration) { showToast(t('alerts_fill_all')); return; }
+  if (!titrationActive && !dosage) { showToast(t('alerts_fill_all')); return; }
   // Si titration active, utiliser la dose du premier palier
   const effectiveDosage = (titrationActive && paliers.length > 0 && paliers[0].dose) ? paliers[0].dose : dosage;
   const doseNum = parseFloat(effectiveDosage);

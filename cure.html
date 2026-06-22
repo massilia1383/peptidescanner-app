@@ -501,7 +501,7 @@ function renderCalendar() {
     <div class="cal-days-header">${DAYS_SHORT().map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>
     <div class="cal-grid">${daysHtml}</div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(0,201,167,.25)"></div><span data-i18n="cure_legend_done">Fait</span>${t('cure_legend_done')}</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(0,201,167,.25)"></div><span data-i18n="cure_legend_done">Fait</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,.2)"></div><span data-i18n="cure_legend_partial">Partiel</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:rgba(239,68,68,.15)"></div><span data-i18n="cure_legend_missed">Manqué</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:rgba(43,108,176,.15);border:1px dashed rgba(43,108,176,.4)"></div><span data-i18n="cure_legend_planned">Prévu</span></div>
@@ -545,7 +545,7 @@ function selectDay(ds, clickable) {
       const displayTime0 = existInj0 ? (existInj0.injected_at||'').slice(11,16) : times[0];
       slotsHtml = `<div class="inj-slot ${done?'done':''}" onclick="handleSlotClick(event,'${ds}',0,'${times[0]}')">
         <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
-        <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name}</div><div class="slot-detail">${cure.dose_mcg||''} ${cure.unit||'mg'} · ${admin}</div></div>
+        <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name}</div><div class="slot-detail">${getTitrationDoseForDay(cure, dayNum) || (cure.dose_mcg ? cure.dose_mcg+' '+(cure.unit||'mg') : '')} · ${admin}</div></div>
         <input type="time" class="slot-time-input ${existInj0?'saved':''}" value="${displayTime0}" data-inj-id="${existInj0?.id||''}" data-ds="${ds}" data-slot="0" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;
     }
   } else {
@@ -555,7 +555,7 @@ function selectDay(ds, clickable) {
       const displayT= existInj ? (existInj.injected_at||'').slice(11,16) : t;
       slotsHtml += `<div class="inj-slot ${done?'done':''}" onclick="handleSlotClick(event,'${ds}',${i},'${t}')">
         <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
-        <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name} · #${i+1}</div><div class="slot-detail">${cure.dose_mcg||''} ${cure.unit||'mg'} · ${admin}</div></div>
+        <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name} · #${i+1}</div><div class="slot-detail">${getTitrationDoseForDay(cure, dayNum) || (cure.dose_mcg ? cure.dose_mcg+' '+(cure.unit||'mg') : '')} · ${admin}</div></div>
         <input type="time" class="slot-time-input ${existInj?'saved':''}" value="${displayT}" data-inj-id="${existInj?.id||''}" data-ds="${ds}" data-slot="${i}" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;
     });
   }
@@ -645,7 +645,7 @@ async function toggleInj(ds, slot, time) {
     await sb.from('injections').insert({
       user_id: userId, cure_id: currentCureId,
       peptide_name: cure?.peptide_name||cure?.name,
-      dose_mcg: cure?.dose_mcg||null,
+      dose_mcg: (() => { const startD=new Date(cure?.start_date); startD.setHours(0,0,0,0); const dn=Math.floor((new Date(ds)-startD)/86400000)+1; const td=getTitrationDoseForDay(cure,dn); return td ? parseFloat(td) : (cure?.dose_mcg||null); })(),
       injection_site: site.label,
       injected_at: new Date(`${ds}T${actualTime}`).toISOString(),
       notes: 'slot:'+slot

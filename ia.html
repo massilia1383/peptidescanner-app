@@ -391,7 +391,7 @@ function buildContext() {
   const parts = [];
   const TODAY = new Date(); TODAY.setHours(0,0,0,0);
   if (profil.full_name) parts.push(`${t('ia_ctx_user')}: ${profil.full_name}`);
-  if (profil.goal)      parts.push(`${t('ia_ctx_goal')}: ${profil.goal}`);
+  if (profil.goal)      parts.push(`${t('ia_ctx_goal')}: ${t('goal_'+profil.goal) || profil.goal}`);
   if (profil.weight_kg) parts.push(`Poids: ${profil.weight_kg} kg`);
 
   const active = allCures.find(c => {
@@ -567,7 +567,7 @@ function getLocalAIResponse(text) {
 
   if (q.includes('bonjour') || q.includes('salut') || q.includes('hello')) {
     const prenom = profil.full_name ? ` ${profil.full_name.split(' ')[0]}` : '';
-    return `Bonjour${prenom} ! 👋\n\nJe suis votre Conseiller IA spécialisé en peptides. Posez-moi n'importe quelle question sur :\n- Les dosages et protocoles\n- Les stacks synergiques\n- La reconstitution et conservation\n- Les effets et contre-indications\n\nQue souhaitez-vous savoir ?`;
+    return t('ia_fallback_welcome').replace('{name}', prenom);
   }
 
   return `**Votre question sur les peptides** 🧬\n\nJe n'ai pas de réponse spécifique sur ce sujet dans ma base de connaissances locale.\n\nConsultez :\n- La **bibliothèque peptides** de PeptideScanner\n- Un médecin spécialisé en médecine fonctionnelle\n\n**Exemples de questions :**\n- "Quel protocole pour BPC-157 ?"\n- "Comment reconstituer mes peptides ?"\n- "Quels bilans sanguins faire ?"\n\n⚠️ Usage éducatif uniquement — Consultez toujours un professionnel de santé.`;
@@ -675,14 +675,14 @@ function scrollToBottom() {
 function renderWelcome() {
   const active = getActiveCure();
   const prenom = profil.full_name ? ` ${profil.full_name.split(' ')[0]}` : '';
-  let welcome = `**Bonjour${prenom} ! Je suis votre Conseiller IA spécialisé en peptides.** 🧬\n\n`;
+  let welcome = `**${t('ia_hello').replace('{name}', prenom)}** 🧬\n\n`;
 
   if (IA_ENABLED) {
     welcome += isPremium
       ? `Je suis connecté à Claude (Anthropic) et prêt à répondre à toutes vos questions.\n\n`
       : `Vous disposez de **${FREE_LIMIT - freeQuestions} question(s) gratuite(s)** avant de passer Premium.\n\n`;
   } else {
-    welcome += `*(Mode base de connaissances locale — IA Claude bientôt disponible)*\n\n`;
+    welcome += `*(${t('ia_mode_local')})*\n\n`;
   }
 
   if (active) {
@@ -1213,7 +1213,7 @@ function getAIResponse(question) {
 
   if (q.includes('bonjour') || q.includes('salut') || q.includes('hello')) {
     const prenom = profil.prenom ? ` ${profil.prenom}` : '';
-    return `Bonjour${prenom} ! 👋\n\nJe suis votre Conseiller IA spécialisé en peptides. Posez-moi n'importe quelle question sur :\n- Les dosages et protocoles\n- Les stacks synergiques\n- La reconstitution et conservation\n- Les effets et contre-indications\n- Les bilans sanguins à surveiller\n\nQue souhaitez-vous savoir ?`;
+    return t('ia_fallback_welcome').replace('{name}', prenom);
   }
 
   // Réponse par défaut utile

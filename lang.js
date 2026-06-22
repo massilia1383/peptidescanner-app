@@ -373,6 +373,9 @@ window.PS_LANG = {
     ia_error:          '⚠️ Erreur de connexion. Réessayez.',
     ia_quota:          'Quota mensuel atteint.',
     ia_clear_confirm:  'Effacer l\'historique de conversation ?',
+    ia_hello:          'Bonjour{name} ! Je suis votre Conseiller IA spécialisé en peptides.',
+    ia_mode_local:     'Mode base de connaissances locale — IA Claude bientôt disponible',
+    ia_fallback_welcome: 'Bonjour{name} ! 👋\n\nJe suis votre Conseiller IA spécialisé en peptides. Posez-moi n\'importe quelle question sur :\n- Les dosages et protocoles\n- Les stacks synergiques\n- La reconstitution et conservation\n- Les effets et contre-indications\n\nQue souhaitez-vous savoir ?',
     // ── IA EXTRA ─────────────────────────────────────────────
     ia_ctx_cure:       'Cure active',
     ia_ctx_dosage:     'Dosage',
@@ -1190,6 +1193,9 @@ window.PS_LANG = {
     ia_error:          '⚠️ Connection error. Please retry.',
     ia_quota:          'Monthly quota reached.',
     ia_clear_confirm:  'Clear conversation history?',
+    ia_hello:          'Hello{name}! I am your specialized AI Peptide Advisor.',
+    ia_mode_local:     'Local knowledge base mode — Claude AI coming soon',
+    ia_fallback_welcome: 'Hello{name}! 👋\n\nI am your specialized AI Peptide Advisor. Ask me anything about:\n- Dosages and protocols\n- Synergistic stacks\n- Reconstitution and storage\n- Effects and contraindications\n\nWhat would you like to know?',
     // ── IA EXTRA ─────────────────────────────────────────────
     ia_ctx_cure:       'Active cycle',
     ia_ctx_dosage:     'Dosage',

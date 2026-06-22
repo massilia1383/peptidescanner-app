@@ -275,6 +275,23 @@
         <option value="0.14" data-i18n="freq_1x_w">1× par semaine</option>
       </select>
     </div>
+
+    <!-- TITRATION TOGGLE -->
+    <div class="form-group" id="titrationToggleWrap">
+      <div class="titration-toggle" onclick="toggleTitration()">
+        <div>
+          <div class="titration-toggle-label">📈 <span data-i18n="titration_title">Titration progressive</span></div>
+          <div class="titration-toggle-sub" data-i18n="titration_sub">Paliers de dose progressifs (max 4)</div>
+        </div>
+        <div class="titration-toggle-switch" id="titrationSwitch"></div>
+      </div>
+      <!-- Section paliers -->
+      <div class="titration-section" id="titrationSection">
+        <div id="titrationPaliers"></div>
+        <button class="titration-add-btn" id="titrationAddBtn" onclick="addPalier()">＋ <span data-i18n="titration_add_palier">Ajouter un palier</span></button>
+        <div class="titration-info" data-i18n="titration_info">La dose principale sera ignorée — chaque palier définit sa propre dose.</div>
+      </div>
+    </div>
     <div class="form-group">
       <label class="form-label" data-i18n="cure_notes">Notes (optionnel)</label>
       <input class="form-input" id="newCureNotes" placeholder="Objectif, remarques…">
@@ -726,6 +743,7 @@ async function openAddCure() {
   document.getElementById('newCureAdmin').value = 'SC';
   // S'assurer que les options ont les bons textContent traduits
   PS_applyI18n();
+  resetTitration();
   document.getElementById('newCureStart').value    = todayStr;
   document.getElementById('newCureDuration').value = '';
   document.getElementById('newCureFreq').value     = '1';
@@ -814,6 +832,138 @@ async function openEditCure(id) {
   PS_renderLangSwitcher();
 }
 
+
+// ── TITRATION ─────────────────────────────────────────────────
+let titrationActive = false;
+let paliers = []; // [{dose, duree_jours}]
+
+function toggleTitration() {
+  titrationActive = !titrationActive;
+  const sw = document.getElementById('titrationSwitch');
+  const sec = document.getElementById('titrationSection');
+  const dosageWrap = document.getElementById('newCureDosage').closest('.form-row');
+  if (titrationActive) {
+    sw.classList.add('on');
+    sec.classList.add('visible');
+    dosageWrap.style.opacity = '0.4';
+    dosageWrap.style.pointerEvents = 'none';
+    if (paliers.length === 0) addPalier();
+  } else {
+    sw.classList.remove('on');
+    sec.classList.remove('visible');
+    dosageWrap.style.opacity = '';
+    dosageWrap.style.pointerEvents = '';
+  }
+}
+
+function addPalier() {
+  if (paliers.length >= 4) return;
+  paliers.push({ dose: '', duree_jours: 7 });
+  renderPaliers();
+}
+
+function removePalier(idx) {
+  paliers.splice(idx, 1);
+  renderPaliers();
+  if (paliers.length === 0) {
+    toggleTitration();
+  }
+}
+
+function updatePalier(idx, field, val) {
+  paliers[idx][field] = val;
+}
+
+function renderPaliers() {
+  const container = document.getElementById('titrationPaliers');
+  const addBtn = document.getElementById('titrationAddBtn');
+  addBtn.disabled = paliers.length >= 4;
+
+  container.innerHTML = paliers.map((p, i) => `
+    <div class="titration-palier">
+      <div class="titration-palier-header">
+        <span class="titration-palier-num">${t('titration_palier')} ${i+1}</span>
+        ${paliers.length > 1 ? `<button class="titration-palier-remove" onclick="removePalier(${i})">✕</button>` : ''}
+      </div>
+      <div class="titration-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" data-i18n="cure_dosage" style="font-size:.72rem">${t('cure_dosage')}</label>
+          <input class="form-input" style="font-size:.85rem;padding:8px 10px"
+            placeholder="ex: 0.5 mg"
+            value="${p.dose}"
+            onchange="updatePalier(${i},'dose',this.value)"
+            oninput="updatePalier(${i},'dose',this.value)">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" style="font-size:.72rem" data-i18n="titration_duration">${t('titration_duration')}</label>
+          <input class="form-input" type="number" style="font-size:.85rem;padding:8px 10px"
+            placeholder="7"
+            min="1" max="90"
+            value="${p.duree_jours}"
+            onchange="updatePalier(${i},'duree_jours',parseInt(this.value)||7)"
+            oninput="updatePalier(${i},'duree_jours',parseInt(this.value)||7)">
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Mettre à jour la durée totale automatiquement
+  if (titrationActive && paliers.length > 0) {
+    const total = paliers.reduce((s, p) => s + (parseInt(p.duree_jours)||7), 0);
+    const durInput = document.getElementById('newCureDuration');
+    durInput.value = total;
+  }
+}
+
+function resetTitration() {
+  titrationActive = false;
+  paliers = [];
+  const sw = document.getElementById('titrationSwitch');
+  const sec = document.getElementById('titrationSection');
+  if (sw) sw.classList.remove('on');
+  if (sec) sec.classList.remove('visible');
+  const dosageWrap = document.getElementById('newCureDosage')?.closest('.form-row');
+  if (dosageWrap) { dosageWrap.style.opacity = ''; dosageWrap.style.pointerEvents = ''; }
+  if (document.getElementById('titrationPaliers')) {
+    document.getElementById('titrationPaliers').innerHTML = '';
+  }
+}
+
+function loadTitrationFromCure(cure) {
+  // Charger la titration depuis les notes de la cure
+  // Format stocké : titration:[{"dose":"0.5 mg","duree_jours":7},...]
+  try {
+    const match = (cure.notes||'').match(/titration:(\[[^\]]+\])/);
+    if (match) {
+      paliers = JSON.parse(match[1]);
+      titrationActive = true;
+      const sw = document.getElementById('titrationSwitch');
+      const sec = document.getElementById('titrationSection');
+      if (sw) sw.classList.add('on');
+      if (sec) sec.classList.add('visible');
+      const dosageWrap = document.getElementById('newCureDosage')?.closest('.form-row');
+      if (dosageWrap) { dosageWrap.style.opacity = '0.4'; dosageWrap.style.pointerEvents = 'none'; }
+      renderPaliers();
+    }
+  } catch(e) { /* silencieux */ }
+}
+
+function getTitrationDoseForDay(cure, dayNum) {
+  // Retourner la dose du palier correspondant au jour donné
+  try {
+    const match = (cure.notes||'').match(/titration:(\[[^\]]+\])/);
+    if (!match) return null;
+    const pals = JSON.parse(match[1]);
+    let dayCount = 0;
+    for (const p of pals) {
+      dayCount += parseInt(p.duree_jours) || 7;
+      if (dayNum <= dayCount) return p.dose;
+    }
+    // Après le dernier palier, garder la dernière dose
+    return pals[pals.length-1]?.dose || null;
+  } catch(e) { return null; }
+}
+
 async function saveCure() {
   const peptide  = document.getElementById('newCurePeptide').value;
   const dosage   = document.getElementById('newCureDosage').value;
@@ -823,8 +973,10 @@ async function saveCure() {
   const freq     = document.getElementById('newCureFreq').value;
   const notes    = document.getElementById('newCureNotes').value;
   if (!peptide||!dosage||!startDate||!duration) { showToast(t('alerts_fill_all')); return; }
-  const doseNum = parseFloat(dosage);
-  const unit    = dosage.toLowerCase().includes('iu')?'IU':'mg'; // mg par défaut
+  // Si titration active, utiliser la dose du premier palier
+  const effectiveDosage = (titrationActive && paliers.length > 0 && paliers[0].dose) ? paliers[0].dose : dosage;
+  const doseNum = parseFloat(effectiveDosage);
+  const unit    = effectiveDosage.toLowerCase().includes('iu')?'IU':'mg'; // mg par défaut
 
   // Chercher si ce peptide correspond à un flacon du stock → stocker l'inventory_id
   let inventoryId = null;
@@ -843,6 +995,15 @@ async function saveCure() {
     }
   }
 
+  // Sérialiser les paliers de titration dans les notes
+  let titrationStr = '';
+  if (titrationActive && paliers.length > 0) {
+    const validPaliers = paliers.filter(p => p.dose && p.duree_jours > 0);
+    if (validPaliers.length > 0) {
+      titrationStr = 'titration:' + JSON.stringify(validPaliers);
+    }
+  }
+
   const _cleanNote = notes
     .replace(/admin:[^|]*/g, '')
     .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
@@ -850,7 +1011,7 @@ async function saveCure() {
     .replace(/\s*[|]+\s*$/g, '')
     .replace(/\s*[|]+\s*/g, ' | ')
     .trim();
-  const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(_cleanNote?' | '+_cleanNote:'');
+  const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(titrationStr?' | '+titrationStr:'')+ (_cleanNote?' | '+_cleanNote:'');
   const payload = { name:peptide, peptide_name:peptide, dose_mcg:doseNum||null, unit, frequency:freq,
     duration_days:parseInt(duration), start_date:startDate, status:'active', notes:notesStr };
 

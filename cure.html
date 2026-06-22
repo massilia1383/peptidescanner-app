@@ -281,7 +281,7 @@
       <div class="titration-toggle" onclick="toggleTitration()">
         <div>
           <div class="titration-toggle-label">📈 <span data-i18n="titration_title">Titration progressive</span></div>
-          <div class="titration-toggle-sub" data-i18n="titration_sub">Paliers de dose progressifs (max 4)</div>
+          <div class="titration-toggle-sub" data-i18n="titration_sub">Dose du champ → Palier 1, puis ajouter les suivants</div>
         </div>
         <div class="titration-toggle-switch" id="titrationSwitch"></div>
       </div>
@@ -837,18 +837,28 @@ function toggleTitration() {
   titrationActive = !titrationActive;
   const sw = document.getElementById('titrationSwitch');
   const sec = document.getElementById('titrationSection');
-  const dosageWrap = document.getElementById('newCureDosage').closest('.form-row');
+  const dosageInput = document.getElementById('newCureDosage');
   if (titrationActive) {
     sw.classList.add('on');
     sec.classList.add('visible');
-    dosageWrap.style.opacity = '0.4';
-    dosageWrap.style.pointerEvents = 'none';
-    if (paliers.length === 0) addPalier();
+    // Pré-remplir palier 1 avec la dose du champ principal
+    if (paliers.length === 0) {
+      const mainDose = dosageInput ? dosageInput.value.trim() : '';
+      paliers.push({ dose: mainDose, duree_jours: 7 });
+      renderPaliers();
+    }
+    // Masquer le champ dosage principal (remplacé par les paliers)
+    if (dosageInput) {
+      dosageInput.closest('.form-row').style.display = 'none';
+    }
   } else {
     sw.classList.remove('on');
     sec.classList.remove('visible');
-    dosageWrap.style.opacity = '';
-    dosageWrap.style.pointerEvents = '';
+    paliers = [];
+    // Réafficher le champ dosage principal
+    if (dosageInput) {
+      dosageInput.closest('.form-row').style.display = '';
+    }
   }
 }
 
@@ -926,18 +936,20 @@ function resetTitration() {
   const sec = document.getElementById('titrationSection');
   if (sw) sw.classList.remove('on');
   if (sec) sec.classList.remove('visible');
-  const dosageWrap = document.getElementById('newCureDosage')?.closest('.form-row');
-  if (dosageWrap) { dosageWrap.style.opacity = ''; dosageWrap.style.pointerEvents = ''; }
+  const dosageInput = document.getElementById('newCureDosage');
+  if (dosageInput) {
+    const wrap = dosageInput.closest('.form-row');
+    if (wrap) { wrap.style.display = ''; wrap.style.opacity = ''; wrap.style.pointerEvents = ''; }
+  }
   if (document.getElementById('titrationPaliers')) {
     document.getElementById('titrationPaliers').innerHTML = '';
   }
 }
 
 function loadTitrationFromCure(cure) {
-  // Charger la titration depuis les notes de la cure
-  // Format stocké : titration:[{"dose":"0.5 mg","duree_jours":7},...]
   try {
-    const match = (cure.notes||'').match(/titration:(\[[^\]]+\])/);
+    const notesStr = cure.notes || '';
+    const match = notesStr.match(/titration:(\[.+?\])(?:\||$)/);
     if (match) {
       paliers = JSON.parse(match[1]);
       titrationActive = true;
@@ -945,8 +957,12 @@ function loadTitrationFromCure(cure) {
       const sec = document.getElementById('titrationSection');
       if (sw) sw.classList.add('on');
       if (sec) sec.classList.add('visible');
-      const dosageWrap = document.getElementById('newCureDosage')?.closest('.form-row');
-      if (dosageWrap) { dosageWrap.style.opacity = '0.4'; dosageWrap.style.pointerEvents = 'none'; }
+      // Masquer le champ dosage principal
+      const dosageInput = document.getElementById('newCureDosage');
+      if (dosageInput) {
+        const wrap = dosageInput.closest('.form-row');
+        if (wrap) wrap.style.display = 'none';
+      }
       renderPaliers();
     }
   } catch(e) { /* silencieux */ }
@@ -985,9 +1001,9 @@ async function saveCure() {
   if (!peptide||!startDate||!duration) { showToast(t('alerts_fill_all')); return; }
   if (!titrationActive && !dosage) { showToast(t('alerts_fill_all')); return; }
   // Si titration active, utiliser la dose du premier palier
-  const effectiveDosage = (titrationActive && paliers.length > 0 && paliers[0].dose) ? paliers[0].dose : dosage;
+  const effectiveDosage = String((titrationActive && paliers.length > 0 && paliers[0].dose) ? paliers[0].dose : dosage || '');
   const doseNum = parseFloat(effectiveDosage);
-  const unit    = effectiveDosage.toLowerCase().includes('iu')?'IU':'mg'; // mg par défaut
+  const unit    = effectiveDosage.toLowerCase().includes('iu') ? 'IU' : (effectiveDosage.toLowerCase().includes('mcg') ? 'mcg' : 'mg');
 
   // Chercher si ce peptide correspond à un flacon du stock → stocker l'inventory_id
   let inventoryId = null;

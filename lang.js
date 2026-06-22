@@ -162,7 +162,7 @@ window.PS_LANG = {
     cure_choose:        'Choisir…',
     // ── TITRATION ─────────────────────────────────────────────
     titration_title:      'Titration progressive',
-    titration_sub:        'Paliers de dose progressifs (max 4)',
+    titration_sub:        'La dose ci-dessus devient le Palier 1',
     titration_add_palier: 'Ajouter un palier',
     titration_palier:     'Palier',
     titration_duration:   'Durée (jours)',
@@ -1003,7 +1003,7 @@ window.PS_LANG = {
     cure_choose:        'Choose…',
     // ── TITRATION ─────────────────────────────────────────────
     titration_title:      'Progressive titration',
-    titration_sub:        'Progressive dose steps (max 4)',
+    titration_sub:        'Dose above becomes Step 1',
     titration_add_palier: 'Add a step',
     titration_palier:     'Step',
     titration_duration:   'Duration (days)',

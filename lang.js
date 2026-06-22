@@ -373,6 +373,11 @@ window.PS_LANG = {
     ia_error:          '⚠️ Erreur de connexion. Réessayez.',
     ia_quota:          'Quota mensuel atteint.',
     ia_clear_confirm:  'Effacer l\'historique de conversation ?',
+    // ── IA EXTRA ─────────────────────────────────────────────
+    ia_ctx_cure:       'Cure active',
+    ia_ctx_dosage:     'Dosage',
+    ia_welcome_cure:   'Je vois que vous êtes au **Jour {day}** de votre cure **{peptide}**.\n\nJe peux vous aider avec :\n- Optimisation de votre protocole\n- Dosages et effets\n- Stacks synergiques\n- Bilans sanguins à surveiller\n\nQue souhaitez-vous savoir ?',
+    ia_welcome_nocure: 'Je peux vous aider avec :\n- Choisir le bon peptide selon vos objectifs\n- Établir un protocole de cure complet\n- Comprendre les dosages et voies d\'administration\n- Créer des stacks synergiques\n\nQuelle est votre question ?',
 
     // ── CALCULATEUR ──────────────────────────────────────────
     calc_title:        'Calculateur',
@@ -1185,6 +1190,11 @@ window.PS_LANG = {
     ia_error:          '⚠️ Connection error. Please retry.',
     ia_quota:          'Monthly quota reached.',
     ia_clear_confirm:  'Clear conversation history?',
+    // ── IA EXTRA ─────────────────────────────────────────────
+    ia_ctx_cure:       'Active cycle',
+    ia_ctx_dosage:     'Dosage',
+    ia_welcome_cure:   'I can see you are on **Day {day}** of your **{peptide}** cycle.\n\nI can help you with:\n- Protocol optimization\n- Dosages and effects\n- Synergistic stacks\n- Blood tests to monitor\n\nWhat would you like to know?',
+    ia_welcome_nocure: 'I can help you with:\n- Choosing the right peptide for your goals\n- Setting up a complete cycle protocol\n- Understanding dosages and administration routes\n- Creating synergistic stacks\n\nWhat is your question?',
 
     // ── CALCULATEUR ──────────────────────────────────────────
     calc_title:        'Calculator',

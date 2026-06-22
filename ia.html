@@ -402,8 +402,8 @@ function buildContext() {
   });
   if (active) {
     const dayNum = Math.floor((TODAY - new Date(active.start_date)) / 86400000) + 1;
-    parts.push(`Cure active: ${active.peptide_name||active.name} J${dayNum}/${active.duration_days}`);
-    parts.push(`Dosage: ${active.dose_mcg||''} ${active.unit||'mcg'} ${active.frequency||''}×/j`);
+    parts.push(`${t('ia_ctx_cure')}: ${active.peptide_name||active.name} J${dayNum}/${active.duration_days}`);
+    parts.push(`${t('ia_ctx_dosage')}: ${active.dose_mcg||''} ${active.unit||'mcg'} ${active.frequency||''}×/${t('day')}`);
   }
   if (allWeights.length > 0) parts.push(`${t('ia_ctx_weight')}: ${allWeights[0].weight_kg} kg`);
   return parts;
@@ -688,9 +688,9 @@ function renderWelcome() {
   if (active) {
     const TODAY = new Date(); TODAY.setHours(0,0,0,0);
     const dayNum = Math.floor((TODAY - new Date(active.start_date)) / 86400000) + 1;
-    welcome += `Je vois que vous êtes au **Jour ${dayNum}** de votre cure **${active.peptide_name||active.name}**.\n\nJe peux vous aider avec :\n- Optimisation de votre protocole\n- Dosages et effets\n- Stacks synergiques\n- Bilans sanguins à surveiller\n\nQue souhaitez-vous savoir ?`;
+    welcome += `${t('ia_welcome_cure').replace('{day}', dayNum).replace('{peptide}', active.peptide_name||active.name)}`;
   } else {
-    welcome += `Je peux vous aider avec :\n- Choisir le bon peptide selon vos objectifs\n- Établir un protocole de cure complet\n- Comprendre les dosages et voies d'administration\n- Créer des stacks synergiques\n\nQuelle est votre question ?`;
+    welcome += t('ia_welcome_nocure');
   }
 
   welcome += '\n\n' + t('ia_disclaimer');

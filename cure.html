@@ -817,6 +817,7 @@ async function openEditCure(id) {
   const _userNote = (cure.notes||'')
     .replace(/admin:[^|]*/g, '')
     .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
+    .replace(/[|]?titration:\[.*?\]/g, '')
     .replace(/^\s*[|]+\s*/g, '')
     .replace(/\s*[|]+\s*$/g, '')
     .replace(/\s*[|]+\s*/g, ' | ')
@@ -1032,6 +1033,7 @@ async function saveCure() {
   const _cleanNote = notes
     .replace(/admin:[^|]*/g, '')
     .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
+    .replace(/[|]?titration:\[.*?\]/g, '')
     .replace(/^\s*[|]+\s*/g, '')
     .replace(/\s*[|]+\s*$/g, '')
     .replace(/\s*[|]+\s*/g, ' | ')
@@ -1063,11 +1065,19 @@ async function deleteCure() {
   await loadData();
 }
 
-function closeModal()      { document.getElementById('addCureModal').classList.remove('open'); document.body.style.overflow=''; }
+function closeModal() {
+  document.getElementById('addCureModal').classList.remove('open');
+  document.body.style.overflow = '';
+  resetTitration();
+  editCureId = null;
+}
 function closeIfOverlay(e) { if(e.target===document.getElementById('addCureModal')) closeModal(); }
 
 init().then(()=>{
-  PS_applyI18n();
+  // Appliquer les traductions SEULEMENT si le modal est fermé
+  if (!document.getElementById('addCureModal').classList.contains('open')) {
+    PS_applyI18n();
+  }
   PS_renderLangSwitcher();
 });
 </script>

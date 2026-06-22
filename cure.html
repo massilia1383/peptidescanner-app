@@ -281,15 +281,25 @@
       <div class="titration-toggle" onclick="toggleTitration()">
         <div>
           <div class="titration-toggle-label">📈 <span data-i18n="titration_title">Titration progressive</span></div>
-          <div class="titration-toggle-sub" data-i18n="titration_sub">Dose du champ → Palier 1, puis ajouter les suivants</div>
+          <div class="titration-toggle-sub" data-i18n="titration_sub">Palier 1 = dosage · Ajoutez Palier 2, 3, 4…</div>
         </div>
         <div class="titration-toggle-switch" id="titrationSwitch"></div>
       </div>
       <!-- Section paliers -->
       <div class="titration-section" id="titrationSection">
+        <!-- Palier 1 = dosage principal + durée configurable -->
+        <div class="titration-palier" style="margin-bottom:8px;background:rgba(13,148,136,.06);border-color:rgba(13,148,136,.2)">
+          <div class="titration-palier-header">
+            <span class="titration-palier-num">Palier 1 <span data-i18n="titration_from_dosage" style="font-weight:400;color:var(--muted)">= dosage ci-dessus</span></span>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" style="font-size:.72rem" data-i18n="titration_duration">Durée (jours)</label>
+            <input class="form-input" type="number" id="palier1Days" style="font-size:.85rem;padding:8px 10px" placeholder="7" min="1" max="90" value="7" oninput="updateTotalDuration()">
+          </div>
+        </div>
+        <!-- Paliers suivants (2, 3, 4) -->
         <div id="titrationPaliers"></div>
         <button class="titration-add-btn" id="titrationAddBtn" onclick="addPalier()">＋ <span data-i18n="titration_add_palier">Ajouter un palier</span></button>
-
       </div>
     </div>
     <div class="form-group">
@@ -967,6 +977,14 @@ function loadTitrationFromCure(cure) {
   } catch(e) { /* silencieux */ }
 }
 
+
+function updateTotalDuration() {
+  if (!titrationActive) return;
+  const p1Days = parseInt(document.getElementById('palier1Days')?.value) || 7;
+  const total = p1Days + paliers.reduce((s, p) => s + (parseInt(p.duree_jours)||7), 0);
+  const durInput = document.getElementById('newCureDuration');
+  if (durInput) durInput.value = total;
+}
 
 function normalizeDose(val) {
   // Accepte virgule ou point : "0,5" → "0.5", "1,5 mg" → "1.5 mg"

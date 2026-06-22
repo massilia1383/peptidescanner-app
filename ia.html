@@ -391,7 +391,16 @@ function buildContext() {
   const parts = [];
   const TODAY = new Date(); TODAY.setHours(0,0,0,0);
   if (profil.full_name) parts.push(`${t('ia_ctx_user')}: ${profil.full_name}`);
-  if (profil.goal)      parts.push(`${t('ia_ctx_goal')}: ${t('goal_'+profil.goal) || profil.goal}`);
+  if (profil.goal) {
+    const goalMap = {
+      'perte_graisse': t('goal_fat_loss'), 'muscle': t('goal_muscle'),
+      'performance': t('goal_performance'), 'anti_age': t('goal_anti_age'),
+      'recuperation': t('goal_recovery'), 'sante': t('goal_health'),
+      'Perte de poids': t('goal_fat_loss'), 'prise_masse': t('goal_muscle'),
+    };
+    const goalLabel = goalMap[profil.goal] || profil.goal;
+    parts.push(`${t('ia_ctx_goal')}: ${goalLabel}`);
+  }
   if (profil.weight_kg) parts.push(`Poids: ${profil.weight_kg} kg`);
 
   const active = allCures.find(c => {
@@ -584,24 +593,24 @@ function getActiveCure() {
 }
 
 // ── SUGGESTIONS ───────────────────────────────────────────────
-const SUGGESTIONS_POOL = [
-  '🔬 Quel peptide pour la récupération tendon ?',
+function getSuggestionsPool() { return [
+  t('ia_q_tendon'),
   t('ia_q2'),
   t('ia_q1'),
-  '🧠 Peptides nootropiques pour la concentration ?',
-  '💉 Comment reconstituer le BPC-157 ?',
-  '🔄 Peut-on combiner BPC-157 et TB-500 ?',
-  '📅 Quelle durée pour une cure Epithalon ?',
-  '🩸 Quels bilans sanguins surveiller ?',
+  t('ia_q_nootropic'),
+  t('ia_q_recon'),
+  t('ia_q_stack'),
+  t('ia_q_epithalon'),
+  t('ia_q_bloodtest'),
   t('ia_q4'),
   t('ia_q3'),
-  '🛡️ Quels effets secondaires surveiller ?',
-  '💊 Semaglutide : comment démarrer ?',
-];
+  t('ia_q_sideeffects'),
+  t('ia_q_sema'),
+]; }
 
 function renderSuggestions() {
   const wrap = document.getElementById('suggestionsWrap');
-  const shuffled = [...SUGGESTIONS_POOL].sort(() => Math.random() - 0.5).slice(0, 4);
+  const shuffled = [...getSuggestionsPool()].sort(() => Math.random() - 0.5).slice(0, 4);
   wrap.innerHTML = shuffled.map(s =>
     `<div class="suggestion-chip" onclick="useSuggestion('${s.replace(/'/g,"\\'")}')"> ${s}</div>`
   ).join('');

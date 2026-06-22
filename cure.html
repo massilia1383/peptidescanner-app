@@ -840,10 +840,9 @@ function toggleTitration() {
   if (titrationActive) {
     sw.classList.add('on');
     sec.classList.add('visible');
-    // Pré-remplir palier 1 avec la dose du champ principal
+    // Le dosage principal est le Palier 1 — on commence directement au Palier 2
     if (paliers.length === 0) {
-      const mainDose = normalizeDose(dosageInput ? dosageInput.value.trim() : '');
-      paliers.push({ dose: mainDose, duree_jours: 7 });
+      paliers.push({ dose: '', duree_jours: 7 }); // Palier 2 vide
       renderPaliers();
     }
     // Masquer le champ dosage principal (remplacé par les paliers)
@@ -895,7 +894,7 @@ function renderPaliers() {
   container.innerHTML = paliers.map((p, i) => `
     <div class="titration-palier">
       <div class="titration-palier-header">
-        <span class="titration-palier-num">${t('titration_palier')} ${i+1}</span>
+        <span class="titration-palier-num">${t('titration_palier')} ${i+2}</span>
         ${paliers.length > 1 ? `<button class="titration-palier-remove" onclick="removePalier(${i})">✕</button>` : ''}
       </div>
       <div class="titration-row">
@@ -920,11 +919,12 @@ function renderPaliers() {
     </div>
   `).join('');
 
-  // Mettre à jour la durée totale automatiquement
-  if (titrationActive && paliers.length > 0) {
-    const total = paliers.reduce((s, p) => s + (parseInt(p.duree_jours)||7), 0);
+  // Mettre à jour la durée totale (palier1 + paliers suivants)
+  if (titrationActive) {
+    const p1Days = parseInt(document.getElementById('palier1Days')?.value) || 7;
+    const total = p1Days + paliers.reduce((s, p) => s + (parseInt(p.duree_jours)||7), 0);
     const durInput = document.getElementById('newCureDuration');
-    durInput.value = total;
+    if (durInput) durInput.value = total;
   }
 }
 
@@ -976,11 +976,17 @@ function normalizeDose(val) {
 function getTitrationDoseForDay(cure, dayNum) {
   try {
     const notesStr = cure.notes || '';
-    const match = notesStr.match(/titration:(\[.*?\])(?:\s*\||$|\s*$)/);
-    if (!match) return null;
-    const pals = JSON.parse(match[1]);
+    const titMatch = notesStr.match(/titration:(\[.*?\])(?:\s*\||$|\s*$)/);
+    if (!titMatch) return null;
+    const pals = JSON.parse(titMatch[1]);
     if (!pals || pals.length === 0) return null;
-    let dayCount = 0;
+    // Palier 1 = dose principale, durée stockée dans titration_p1
+    const p1Match = notesStr.match(/titration_p1:(\d+)/);
+    const p1Days = p1Match ? parseInt(p1Match[1]) : 7;
+    // Jours 1 à p1Days = dose principale (null = utiliser cure.dose_mcg)
+    if (dayNum <= p1Days) return null;
+    // Paliers suivants
+    let dayCount = p1Days;
     for (const p of pals) {
       dayCount += parseInt(p.duree_jours) || 7;
       if (dayNum <= dayCount) return p.dose;
@@ -1006,7 +1012,7 @@ async function saveCure() {
   if (!peptide||!startDate||!duration) { showToast(t('alerts_fill_all')); return; }
   if (!titrationActive && !dosage) { showToast(t('alerts_fill_all')); return; }
   // Si titration active, utiliser la dose du premier palier
-  const effectiveDosage = normalizeDose((titrationActive && paliers.length > 0 && paliers[0].dose) ? paliers[0].dose : dosage || '');
+  const effectiveDosage = normalizeDose(dosage || ''); // Palier 1 = dosage principal
   const doseNum = parseFloat(effectiveDosage);
   const unit    = effectiveDosage.toLowerCase().includes('iu') ? 'IU' : (effectiveDosage.toLowerCase().includes('mcg') ? 'mcg' : 'mg');
 
@@ -1030,10 +1036,9 @@ async function saveCure() {
   // Sérialiser les paliers de titration dans les notes
   let titrationStr = '';
   if (titrationActive && paliers.length > 0) {
+    const p1Days = parseInt(document.getElementById('palier1Days')?.value) || 7;
     const validPaliers = paliers.filter(p => p.dose && p.duree_jours > 0);
-    if (validPaliers.length > 0) {
-      titrationStr = 'titration:' + JSON.stringify(validPaliers);
-    }
+    titrationStr = 'titration_p1:'+p1Days+'|titration:' + JSON.stringify(validPaliers);
   }
 
   const _cleanNote = notes

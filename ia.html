@@ -1222,9 +1222,9 @@ function getAIResponse(question) {
 
 function getActiveCure() {
   const TODAY = new Date(); TODAY.setHours(0,0,0,0);
-  return cures.find(c => {
-    const s=new Date(c.startDate);s.setHours(0,0,0,0);
-    const e=new Date(c.startDate);e.setDate(e.getDate()+parseInt(c.duration));e.setHours(0,0,0,0);
+  return (allCures||[]).find(c => {
+    const s=new Date(c.start_date);s.setHours(0,0,0,0);
+    const e=new Date(c.start_date);e.setDate(e.getDate()+(c.duration_days||30));e.setHours(0,0,0,0);
     return s<=TODAY&&e>=TODAY;
   });
 }

@@ -842,7 +842,7 @@ function toggleTitration() {
     sec.classList.add('visible');
     // Pré-remplir palier 1 avec la dose du champ principal
     if (paliers.length === 0) {
-      const mainDose = dosageInput ? dosageInput.value.trim() : '';
+      const mainDose = normalizeDose(dosageInput ? dosageInput.value.trim() : '');
       paliers.push({ dose: mainDose, duree_jours: 7 });
       renderPaliers();
     }
@@ -904,8 +904,8 @@ function renderPaliers() {
           <input class="form-input" style="font-size:.85rem;padding:8px 10px"
             placeholder="ex: 0.5 mg"
             value="${p.dose}"
-            onchange="updatePalier(${i},'dose',this.value)"
-            oninput="updatePalier(${i},'dose',this.value)">
+            onchange="updatePalier(${i},'dose',normalizeDose(this.value))"
+            oninput="updatePalier(${i},'dose',normalizeDose(this.value))">
         </div>
         <div class="form-group" style="margin-bottom:0">
           <label class="form-label" style="font-size:.72rem" data-i18n="titration_duration">${t('titration_duration')}</label>
@@ -948,7 +948,7 @@ function resetTitration() {
 function loadTitrationFromCure(cure) {
   try {
     const notesStr = cure.notes || '';
-    const match = notesStr.match(/titration:(\[.+?\])(?:\||$)/);
+    const match = notesStr.match(/titration:(\[.*?\])(?:\s*\||$|\s*$)/);
     if (match) {
       paliers = JSON.parse(match[1]);
       titrationActive = true;
@@ -967,10 +967,16 @@ function loadTitrationFromCure(cure) {
   } catch(e) { /* silencieux */ }
 }
 
+
+function normalizeDose(val) {
+  // Accepte virgule ou point : "0,5" → "0.5", "1,5 mg" → "1.5 mg"
+  return String(val || '').replace(',', '.');
+}
+
 function getTitrationDoseForDay(cure, dayNum) {
   try {
     const notesStr = cure.notes || '';
-    const match = notesStr.match(/titration:(\[.+?\])(?:\||$)/);
+    const match = notesStr.match(/titration:(\[.*?\])(?:\s*\||$|\s*$)/);
     if (!match) return null;
     const pals = JSON.parse(match[1]);
     if (!pals || pals.length === 0) return null;
@@ -985,7 +991,7 @@ function getTitrationDoseForDay(cure, dayNum) {
 
 async function saveCure() {
   const peptide  = document.getElementById('newCurePeptide').value;
-  const dosage   = document.getElementById('newCureDosage').value;
+  const dosage   = normalizeDose(document.getElementById('newCureDosage').value);
   const admin    = document.getElementById('newCureAdmin').value;
   const startDate= document.getElementById('newCureStart').value;
   const duration = document.getElementById('newCureDuration').value;
@@ -1000,7 +1006,7 @@ async function saveCure() {
   if (!peptide||!startDate||!duration) { showToast(t('alerts_fill_all')); return; }
   if (!titrationActive && !dosage) { showToast(t('alerts_fill_all')); return; }
   // Si titration active, utiliser la dose du premier palier
-  const effectiveDosage = String((titrationActive && paliers.length > 0 && paliers[0].dose) ? paliers[0].dose : dosage || '');
+  const effectiveDosage = normalizeDose((titrationActive && paliers.length > 0 && paliers[0].dose) ? paliers[0].dose : dosage || '');
   const doseNum = parseFloat(effectiveDosage);
   const unit    = effectiveDosage.toLowerCase().includes('iu') ? 'IU' : (effectiveDosage.toLowerCase().includes('mcg') ? 'mcg' : 'mg');
 

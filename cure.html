@@ -421,9 +421,33 @@ function render() {
   const daysLeft= Math.max(0, Math.ceil((endD - TODAY) / 86400000));
   const cureInjs= allInjections.filter(i => i.cure_id === currentCureId);
   const freq    = parseFloat(cure.frequency) || 1;
-  const totalExp= Math.round(Math.min(dayNum, cure.duration_days||30) * freq);
-  const done    = cureInjs.length;
-  const compPct = totalExp > 0 ? Math.min(100, Math.round(done/totalExp*100)) : 0;
+  const totalDays    = cure.duration_days || 30;
+  const daysElapsed  = Math.min(dayNum, totalDays);
+  const totalExp     = Math.round(daysElapsed * freq);         // attendues jusqu'à aujourd'hui
+  const totalPlanned = Math.round(totalDays * freq);           // total prévues sur toute la cure
+  const done         = cureInjs.length;
+  const remaining    = Math.max(0, totalPlanned - done);       // restantes à faire
+  const compPct      = totalExp > 0 ? Math.min(100, Math.round(done/totalExp*100)) : 0;
+
+  // Calculer les paliers si titration active
+  const hasTitration = (cure.notes||'').includes('titration:[');
+  let paliersInfo = '';
+  if (hasTitration) {
+    try {
+      const p1Match = (cure.notes||'').match(/titration_p1:(\d+)/);
+      const p1Days  = p1Match ? parseInt(p1Match[1]) : 7;
+      const tMatch  = (cure.notes||'').match(/titration:(\[.*?\])(?:\s*\||$|\s*$)/);
+      const pals    = tMatch ? JSON.parse(tMatch[1]) : [];
+      let palHtml   = `<div class="stat-row"><span class="stat-row-key" style="font-weight:700">${t('titration_title')}</span></div>`;
+      // Palier 1
+      const p1Dose = cure.dose_mcg ? cure.dose_mcg+' '+(cure.unit||'mg') : '—';
+      palHtml += `<div class="stat-row" style="padding-left:10px"><span class="stat-row-key">Palier 1 · ${p1Dose}</span><span class="stat-row-val" style="font-size:.75rem">${p1Days} ${t('days')}</span></div>`;
+      pals.forEach((p, i) => {
+        palHtml += `<div class="stat-row" style="padding-left:10px"><span class="stat-row-key">Palier ${i+2} · ${p.dose||'—'}</span><span class="stat-row-val" style="font-size:.75rem">${p.duree_jours} ${t('days')}</span></div>`;
+      });
+      paliersInfo = palHtml;
+    } catch(e) {}
+  }
   const admin   = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
   const freqLabel = freq >= 1 ? freq+'×/'+t('days_suffix') : '1×/'+Math.round(1/freq)+t('days_suffix');
   const doseLabel = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mg'}` : '—';
@@ -466,8 +490,11 @@ function render() {
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_done')}</span><span class="stat-row-val" style="color:var(--accent)">${done}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_expected')}</span><span class="stat-row-val">${totalExp}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_missed')}</span><span class="stat-row-val" style="color:var(--danger)">${Math.max(0,totalExp-done)}</span></div>
-      <div class="stat-row"><span class="stat-row-key">${t('cure_current_day')}</span><span class="stat-row-val">J${Math.min(dayNum,cure.duration_days||30)}</span></div>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_remaining')}</span><span class="stat-row-val" style="color:var(--accent2)">${remaining}</span></div>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_total_planned')}</span><span class="stat-row-val">${totalPlanned}</span></div>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_current_day')}</span><span class="stat-row-val">J${Math.min(dayNum,totalDays)}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_frequency')}</span><span class="stat-row-val">${freqLabel}</span></div>
+      ${paliersInfo}
     </div>`;
 
   renderCalendar();
@@ -604,11 +631,15 @@ function selectDay(ds, clickable) {
     });
   }
 
+  // Déterminer si c'est un jour de repos
+  const isRestDay = slotsHtml.includes(t('cure_rest_day'));
+
   dd.innerHTML = `
     <div class="dd-header">
       <div class="dd-date">${dateLabel}</div>
       <button class="dd-close" onclick="document.getElementById('dayDetail').classList.remove('show')">✕</button>
     </div>
+    ${!isRestDay ? `
     <div style="background:rgba(13,148,136,.05);border:1.5px solid rgba(13,148,136,.18);border-radius:14px;padding:12px 14px;margin:10px 0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600">${t('cure_suggested_site')}</div>
@@ -618,7 +649,7 @@ function selectDay(ds, clickable) {
         <span style="font-size:1.6rem">${nextSite.icon}</span>
         <div><div style="font-size:.92rem;font-weight:700">${nextSite.label}</div><div style="font-size:.7rem;color:var(--muted)">${t('cure_zone')} ${nextSite.zone}</div></div>
       </div>
-    </div>
+    </div>` : ''}
     ${slotsHtml}
     <textarea class="note-area" id="dayNote" rows="2" placeholder="${t('cure_note_ph')}">${localStorage.getItem('ps_note_'+currentCureId+'_'+ds)||''}</textarea>
     <button class="save-note-btn" onclick="saveNote('${ds}')">${t('cure_save_note')}</button>`;

@@ -202,6 +202,26 @@
   .phase-phase2       { background:rgba(249,115,22,.1);  color:#7C2D12; border:1px solid rgba(249,115,22,.2); }
   .phase-phase3       { background:rgba(139,92,246,.1);  color:#4C1D95; border:1px solid rgba(139,92,246,.2); }
   .phase-experimental { background:rgba(220,38,38,.08);  color:#7F1D1D; border:1px solid rgba(220,38,38,.15); }
+
+  /* ── TITRATION ─────────────────────────────────────────── */
+  .titration-toggle { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:rgba(13,148,136,.06); border:1px solid rgba(13,148,136,.2); border-radius:12px; cursor:pointer; }
+  .titration-toggle-label { font-size:.85rem; font-weight:600; color:var(--accent); }
+  .titration-toggle-sub { font-size:.72rem; color:var(--muted); margin-top:2px; }
+  .titration-toggle-switch { width:36px; height:20px; background:var(--border); border-radius:100px; position:relative; transition:background .2s; flex-shrink:0; }
+  .titration-toggle-switch.on { background:var(--accent); }
+  .titration-toggle-switch::after { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; background:#fff; border-radius:50%; transition:transform .2s; }
+  .titration-toggle-switch.on::after { transform:translateX(16px); }
+  .titration-section { display:none; margin-top:10px; }
+  .titration-section.visible { display:block; }
+  .titration-palier { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:8px; }
+  .titration-palier-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .titration-palier-num { font-size:.72rem; font-weight:700; color:var(--accent); font-family:'Space Mono',monospace; background:rgba(13,148,136,.1); padding:2px 8px; border-radius:100px; }
+  .titration-palier-remove { background:none; border:none; color:var(--muted); cursor:pointer; font-size:.9rem; padding:2px 6px; border-radius:6px; }
+  .titration-palier-remove:hover { color:var(--danger); }
+  .titration-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .titration-add-btn { width:100%; padding:10px; border:1.5px dashed rgba(13,148,136,.3); background:transparent; color:var(--accent); border-radius:10px; font-family:inherit; font-size:.82rem; font-weight:600; cursor:pointer; margin-top:4px; }
+  .titration-add-btn:disabled { opacity:.4; cursor:not-allowed; }
+
 </style>
 </head>
 <body>

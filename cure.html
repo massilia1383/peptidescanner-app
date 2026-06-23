@@ -519,7 +519,7 @@ function renderCalendar() {
       }
     }
     if (isToday) cls += ' today';
-    daysHtml += `<div class="${cls}" onclick="selectDay('${ds}',${inCure&&!isFuture})">${d}${dot?`<div class="day-dot ${dot}"></div>`:''}</div>`;
+    daysHtml += `<div class="${cls}" onclick="selectDay('${ds}',${inCure})">${d}${dot?`<div class="day-dot ${dot}"></div>`:''}</div>`;
   }
 
   cal.innerHTML = `
@@ -550,6 +550,7 @@ function changeMonth(dir) {
 function selectDay(ds, clickable) {
   const dd = document.getElementById('dayDetail');
   if (!clickable) { dd.classList.remove('show'); return; }
+  const isPast = ds <= todayStr;
 
   const cure  = allCures.find(x => x.id === currentCureId);
   if (!cure) return;
@@ -583,7 +584,7 @@ function selectDay(ds, clickable) {
       const done    = dayInjs.some(l => (l.notes||'').includes('slot:'+i));
       const existInj= dayInjs.find(l => (l.notes||'').includes('slot:'+i));
       const displayT= existInj ? (existInj.injected_at||'').slice(11,16) : t;
-      slotsHtml += `<div class="inj-slot ${done?'done':''}" onclick="handleSlotClick(event,'${ds}',${i},'${t}')">
+      slotsHtml += `<div class="inj-slot ${done?'done':''}" onclick="${isPast?`handleSlotClick(event,'${ds}',${i},'${t}')`:''}"`>
         <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
         <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name} · #${i+1}</div><div class="slot-detail">${getTitrationDoseForDay(cure, dayNum) || (cure.dose_mcg ? cure.dose_mcg+' '+(cure.unit||'mg') : '')} · ${admin}</div></div>
         <input type="time" class="slot-time-input ${existInj?'saved':''}" value="${displayT}" data-inj-id="${existInj?.id||''}" data-ds="${ds}" data-slot="${i}" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;

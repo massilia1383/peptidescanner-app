@@ -443,7 +443,8 @@ function render() {
       const p1Dose = cure.dose_mcg ? cure.dose_mcg+' '+(cure.unit||'mg') : '—';
       palHtml += `<div class="stat-row" style="padding-left:10px"><span class="stat-row-key">Palier 1 · ${p1Dose}</span><span class="stat-row-val" style="font-size:.75rem">${p1Days} ${t('days')}</span></div>`;
       pals.forEach((p, i) => {
-        palHtml += `<div class="stat-row" style="padding-left:10px"><span class="stat-row-key">Palier ${i+2} · ${p.dose||'—'}</span><span class="stat-row-val" style="font-size:.75rem">${p.duree_jours} ${t('days')}</span></div>`;
+        const _pDose = p.dose ? (String(p.dose).match(/[a-zA-Z]/) ? p.dose : p.dose+' '+(cure.unit||'mg')) : '—';
+        palHtml += `<div class="stat-row" style="padding-left:10px"><span class="stat-row-key">Palier ${i+2} · ${_pDose}</span><span class="stat-row-val" style="font-size:.75rem">${p.duree_jours} ${t('days')}</span></div>`;
       });
       paliersInfo = palHtml;
     } catch(e) {}
@@ -1131,7 +1132,7 @@ async function saveCure() {
   let titrationStr = '';
   if (titrationActive && paliers.length > 0) {
     const p1Days = parseInt(document.getElementById('palier1Days')?.value) || 7;
-    const validPaliers = paliers.filter(p => p.dose && p.duree_jours > 0);
+    const validPaliers = paliers.filter(p => p.dose && p.duree_jours > 0).map(p => ({ ...p, dose: String(p.dose).match(/[a-zA-Z]/) ? p.dose : p.dose+' '+(unit||'mg') }));
     titrationStr = 'titration_p1:'+p1Days+'|titration:' + JSON.stringify(validPaliers);
   }
 

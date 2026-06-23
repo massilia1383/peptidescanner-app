@@ -70,6 +70,12 @@
     border-radius:8px; transition:color .2s;
   }
   .skip-btn:hover { color:var(--text); }
+  .back-btn {
+    background:transparent; border:none; color:var(--muted);
+    font-family:inherit; font-size:.82rem; cursor:pointer; padding:6px 10px;
+    border-radius:8px; transition:color .2s; display:none;
+  }
+  .back-btn:hover { color:var(--text); }
 
   /* SLIDES ZONE : prend tout l'espace dispo */
   .slides {
@@ -130,28 +136,28 @@
   /* FIRST CURE SETUP */
   .setup-card {
     width:100%; background:var(--surface);
-    border:1px solid var(--border); border-radius:16px; padding:16px;
-    margin-bottom:8px;
+    border:1px solid var(--border); border-radius:14px; padding:12px;
+    margin-bottom:4px;
   }
   .setup-card-title {
     font-size:.72rem; font-weight:700; color:var(--muted);
     text-transform:uppercase; letter-spacing:1px;
-    font-family:'Space Mono',monospace; margin-bottom:14px;
+    font-family:'Space Mono',monospace; margin-bottom:8px;
   }
-  .form-group { margin-bottom:10px; }
-  .form-label { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:5px; display:block; }
+  .form-group { margin-bottom:7px; }
+  .form-label { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:3px; display:block; }
   .form-input {
     width:100%; background:var(--surface2); border:1.5px solid var(--border);
-    border-radius:10px; padding:10px 12px; color:var(--text);
+    border-radius:10px; padding:8px 11px; color:var(--text);
     font-family:inherit; font-size:.85rem; outline:none; transition:border-color .2s;
   }
   .form-input:focus { border-color:var(--accent); background:#fff; }
-  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 
   /* PEPTIDE SUGGESTIONS */
-  .pep-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .pep-chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
   .pep-chip {
-    padding:5px 11px; border-radius:100px; font-size:.72rem; font-weight:600;
+    padding:4px 9px; border-radius:100px; font-size:.68rem; font-weight:600;
     border:1.5px solid var(--border); background:var(--surface2); color:var(--muted);
     cursor:pointer; transition:all .2s;
   }
@@ -159,17 +165,17 @@
   .pep-chip.selected { border-color:var(--accent); background:rgba(13,148,136,.1); color:var(--accent); }
 
   /* NOTIF SETUP */
-  .notif-options { width:100%; display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
+  .notif-options { width:100%; display:flex; flex-direction:column; gap:6px; margin-bottom:4px; }
   .notif-opt {
-    display:flex; align-items:center; gap:12px; padding:12px 14px;
+    display:flex; align-items:center; gap:10px; padding:9px 12px;
     background:var(--surface); border:1.5px solid var(--border);
     border-radius:12px; cursor:pointer; transition:all .2s;
   }
   .notif-opt.selected { border-color:var(--accent); background:rgba(13,148,136,.06); }
   .notif-opt-icon { font-size:1.2rem; flex-shrink:0; }
   .notif-opt-info { flex:1; }
-  .notif-opt-info strong { display:block; font-size:.85rem; margin-bottom:1px; }
-  .notif-opt-info span { font-size:.72rem; color:var(--muted); }
+  .notif-opt-info strong { display:block; font-size:.82rem; margin-bottom:0; }
+  .notif-opt-info span { font-size:.69rem; color:var(--muted); }
   .notif-check {
     width:20px; height:20px; border-radius:6px; flex-shrink:0;
     border:2px solid var(--border); display:flex; align-items:center; justify-content:center;
@@ -246,7 +252,10 @@
 
   <!-- TOPBAR -->
   <div class="onb-topbar">
-    <div id="langToggleBtn"></div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button class="back-btn" id="backBtn" onclick="prevSlide()">← <span id="backLabel"></span></button>
+      <div id="langToggleBtn"></div>
+    </div>
     <button class="skip-btn" id="skipBtn" onclick="skipOnboarding()"></button>
   </div>
 
@@ -511,6 +520,14 @@ function updateUI() {
   document.getElementById('nextBtn').textContent = getBtnLabel(currentSlide);
   var skipVisible = currentSlide === 2 || currentSlide === 3;
   document.getElementById('skipStepBtn').style.display = skipVisible ? 'block' : 'none';
+  // Bouton retour
+  var backBtn = document.getElementById('backBtn');
+  if (currentSlide > 1) {
+    backBtn.style.display = 'inline-block';
+    document.getElementById('backLabel').textContent = t('back');
+  } else {
+    backBtn.style.display = 'none';
+  }
 }
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────
@@ -520,6 +537,26 @@ function nextSlide() {
   if (currentSlide === 3) saveNotifStep();
   if (currentSlide === 4) buildSummary();
   goToSlide(currentSlide + 1);
+}
+
+function prevSlide() {
+  if (currentSlide <= 1) return;
+  var prev = document.getElementById('slide' + currentSlide);
+  prev.classList.remove('active');
+  prev.style.transform = 'translateX(40px)';
+  prev.style.opacity = '0';
+  setTimeout(function(){ prev.style.transform = ''; prev.style.opacity = ''; prev.classList.add('exit'); setTimeout(function(){ prev.classList.remove('exit'); },400); }, 400);
+  currentSlide--;
+  var next = document.getElementById('slide' + currentSlide);
+  next.style.transform = 'translateX(-40px)';
+  next.style.opacity = '0';
+  next.classList.add('active');
+  next.scrollTop = 0;
+  setTimeout(function(){
+    next.style.transform = '';
+    next.style.opacity = '';
+  }, 20);
+  updateUI();
 }
 
 function skipStep() {

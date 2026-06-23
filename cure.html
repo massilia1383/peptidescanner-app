@@ -910,6 +910,17 @@ async function openEditCure(id) {
     .replace(/\s*[|]+\s*/g, ' | ')
     .trim();
   document.getElementById('newCureNotes').value = _userNote;
+  // Réinitialiser la titration avant de charger
+  titrationActive = false;
+  paliers = [];
+  const sw = document.getElementById('titrationSwitch');
+  const sec = document.getElementById('titrationSection');
+  if (sw) sw.classList.remove('on');
+  if (sec) sec.classList.remove('visible');
+  const dosageRow = document.getElementById('newCureDosage')?.closest('.form-row');
+  if (dosageRow) dosageRow.style.display = '';
+  // Charger la titration si elle existe dans les notes
+  loadTitrationFromCure(cure);
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }

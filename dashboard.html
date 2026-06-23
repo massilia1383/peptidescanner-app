@@ -39,7 +39,7 @@
   .cure-card {
     background:linear-gradient(135deg, rgba(13,148,136,.08) 0%, rgba(43,108,176,.06) 100%);
     border:1.5px solid rgba(13,148,136,.2); border-radius:22px;
-    padding:22px 20px; margin-bottom:16px; position:relative; overflow:hidden;
+    padding:22px 20px; margin-bottom:16px; position:relative;
     box-shadow:0 4px 20px rgba(13,148,136,.08);
   }
   .cure-card::before {
@@ -313,7 +313,7 @@
   .phase-experimental { background:rgba(220,38,38,.08);  color:#7F1D1D; border:1px solid rgba(220,38,38,.15); }
 
   /* ── CAROUSEL CURES ─────────────────────────────────────── */
-  .carousel-wrap { position:relative; margin-bottom:16px; }
+  .carousel-wrap { position:relative; margin-bottom:16px; padding:0 18px; }
 
   /* Navigation dots */
   .carousel-dots {
@@ -345,7 +345,7 @@
   .cure-card {
     background:linear-gradient(135deg, rgba(13,148,136,.08) 0%, rgba(43,108,176,.06) 100%);
     border:1.5px solid rgba(13,148,136,.2); border-radius:22px;
-    padding:22px 20px; position:relative; overflow:hidden;
+    padding:22px 20px; position:relative;
     box-shadow:0 4px 20px rgba(13,148,136,.08);
     transition:transform .35s cubic-bezier(.4,0,.2,1), opacity .35s ease;
   }
@@ -353,7 +353,7 @@
     content:''; position:absolute; top:-40px; right:-40px;
     width:160px; height:160px; border-radius:50%;
     background:radial-gradient(circle, rgba(13,148,136,.06) 0%, transparent 70%);
-    pointer-events:none;
+    pointer-events:none; overflow:hidden;
   }
   .cure-card.slide-out-left  { transform:translateX(-60px); opacity:0; }
   .cure-card.slide-out-right { transform:translateX(60px);  opacity:0; }

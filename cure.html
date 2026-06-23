@@ -372,7 +372,8 @@ function getSITES_IM() { return [
 function getSites(admin) { return (admin||'').toUpperCase() === 'IM' ? getSITES_IM() : getSITES_SC(); }
 function getNextSite(cureId, admin) {
   const sites = getSites(admin);
-  const idx   = (parseInt(localStorage.getItem('ps_site_'+cureId)||'-1') + 1) % sites.length;
+  // Lire l'index actuel SANS incrémenter
+  const idx = Math.max(0, parseInt(localStorage.getItem('ps_site_'+cureId)||'0') % sites.length);
   return { site: sites[idx], idx };
 }
 
@@ -622,7 +623,7 @@ function cycleSite(ds) {
   const cure  = allCures.find(x => x.id === currentCureId);
   const admin = (cure?.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
   const sites = getSites(admin);
-  const cur   = parseInt(localStorage.getItem('ps_site_'+currentCureId)||'-1');
+  const cur   = parseInt(localStorage.getItem('ps_site_'+currentCureId)||'0');
   localStorage.setItem('ps_site_'+currentCureId, (cur+1) % sites.length);
   selectDay(ds, true);
 }
@@ -674,7 +675,8 @@ async function toggleInj(ds, slot, time) {
   } else {
     const admin = (cure?.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
     const { site, idx } = getNextSite(currentCureId, admin);
-    localStorage.setItem('ps_site_'+currentCureId, idx);
+    // Avancer le site après injection
+    localStorage.setItem('ps_site_'+currentCureId, (idx+1) % getSites(admin).length);
     const timeInput = document.querySelector(`.slot-time-input[data-ds="${ds}"][data-slot="${slot}"]`);
     const actualTime = timeInput ? timeInput.value : time;
     await sb.from('injections').insert({
@@ -756,7 +758,9 @@ async function updateStockAfterInjection(cure, direction) {
 }
 
 function saveNote(ds) {
-  localStorage.setItem('ps_note_'+currentCureId+'_'+ds, document.getElementById('dayNote').value);
+  const el = document.getElementById('dayNote');
+  if (!el) { showToast('⚠️ Erreur'); return; }
+  localStorage.setItem('ps_note_'+currentCureId+'_'+ds, el.value);
   showToast(t('cure_note_saved'));
 }
 

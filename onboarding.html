@@ -13,159 +13,190 @@
     --text:#1F2937; --muted:#6B7280; --danger:#DC2626;
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
   body {
     font-family:'Space Grotesk',sans-serif; background:var(--bg);
     color:var(--text); min-height:100vh;
-    /* PAS overflow:hidden — permet le scroll sur les slides longues */
+    display:flex; align-items:center; justify-content:center;
   }
 
   /* BG */
-  .bg-glow { position:fixed; inset:0; pointer-events:none; z-index:0;
-    background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,201,167,.06) 0%, transparent 70%); }
+  .bg-glow {
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,201,167,.06) 0%, transparent 70%);
+  }
+
+  /* ── WRAPPER : plein écran mobile, carte centrée desktop ── */
+  .onb-wrapper {
+    position:relative; z-index:1;
+    width:100%; max-width:480px;
+    /* Mobile : plein écran */
+    height:100vh;
+    display:flex; flex-direction:column;
+    background:var(--bg);
+    overflow:hidden;
+  }
+
+  /* Desktop : carte avec ombre */
+  @media (min-width:768px) {
+    body { padding:24px; }
+    .onb-wrapper {
+      height:min(820px, calc(100vh - 48px));
+      border-radius:28px;
+      box-shadow:0 24px 80px rgba(0,0,0,.12), 0 4px 16px rgba(0,0,0,.06);
+      border:1px solid var(--border);
+    }
+  }
 
   /* PROGRESS BAR */
   .progress-track {
-    position:fixed; top:0; left:0; right:0; height:3px;
-    background:var(--border); z-index:100;
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:var(--border); z-index:10; flex-shrink:0;
+    border-radius:28px 28px 0 0;
   }
   .progress-fill {
     height:100%; background:linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius:0 2px 2px 0; transition:width .5s ease;
+    border-radius:3px; transition:width .5s ease;
   }
 
-  /* SKIP */
+  /* TOPBAR : lang switcher + skip */
+  .onb-topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 20px 8px; flex-shrink:0;
+  }
   .skip-btn {
-    position:fixed; top:16px; right:20px; z-index:100;
     background:transparent; border:none; color:var(--muted);
-    font-family:inherit; font-size:.82rem; cursor:pointer; padding:8px 12px;
+    font-family:inherit; font-size:.82rem; cursor:pointer; padding:6px 10px;
     border-radius:8px; transition:color .2s;
   }
   .skip-btn:hover { color:var(--text); }
 
-  /* SLIDES CONTAINER — hauteur min pour que le contenu + bottom-nav ne se chevauchent pas */
-  .slides { position:relative; width:100%; min-height:100vh; }
+  /* SLIDES ZONE : prend tout l'espace dispo */
+  .slides {
+    position:relative; flex:1; overflow:hidden;
+  }
 
   .slide {
     position:absolute; inset:0;
-    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-    /* padding-top: passe sous la progress bar, padding-bottom: passe au-dessus du bottom-nav */
-    padding:72px 28px 160px;
+    display:flex; flex-direction:column; align-items:center;
+    padding:16px 24px 8px;
     opacity:0; pointer-events:none; transform:translateX(40px);
     transition:all .4s cubic-bezier(.4,0,.2,1);
-    overflow-y:auto;
-    /* centrage vertical uniquement quand le contenu est court */
-    min-height:100vh;
+    overflow-y:auto; overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
   }
-  /* Centrage vertical pour les slides avec peu de contenu */
-  .slide.center-v {
-    justify-content:center;
-  }
+  .slide.center-v { justify-content:center; }
   .slide.active { opacity:1; pointer-events:all; transform:translateX(0); }
   .slide.exit { opacity:0; transform:translateX(-40px); }
 
   /* SLIDE CONTENT */
   .slide-icon {
-    font-size:4rem; margin-bottom:24px;
+    font-size:3.2rem; margin-bottom:16px; flex-shrink:0;
     animation:iconFloat 3s ease-in-out infinite;
-    flex-shrink:0;
   }
-  @keyframes iconFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  @keyframes iconFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
   .slide-eyebrow {
-    font-family:'Space Mono',monospace; font-size:.7rem;
+    font-family:'Space Mono',monospace; font-size:.65rem;
     color:var(--accent); letter-spacing:2px; text-transform:uppercase;
-    margin-bottom:10px;
+    margin-bottom:8px; flex-shrink:0;
   }
   .slide-title {
-    font-size:clamp(1.6rem,5vw,2.2rem); font-weight:700;
-    text-align:center; line-height:1.2; margin-bottom:14px;
+    font-size:clamp(1.4rem,4vw,1.9rem); font-weight:700;
+    text-align:center; line-height:1.2; margin-bottom:10px; flex-shrink:0;
   }
   .slide-title span { color:var(--accent); }
   .slide-sub {
-    font-size:.92rem; color:var(--muted); text-align:center;
-    line-height:1.7; max-width:340px; margin-bottom:32px;
+    font-size:.88rem; color:var(--muted); text-align:center;
+    line-height:1.6; max-width:340px; margin-bottom:20px; flex-shrink:0;
   }
 
   /* FEATURE LIST */
-  .feat-list { width:100%; max-width:360px; display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+  .feat-list { width:100%; display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
   .feat-item {
-    display:flex; align-items:center; gap:14px;
+    display:flex; align-items:center; gap:12px;
     background:var(--surface); border:1px solid var(--border);
-    border-radius:14px; padding:14px 16px;
+    border-radius:12px; padding:12px 14px;
     animation:slideIn .4s ease both;
   }
   .feat-item:nth-child(1){animation-delay:.1s}
   .feat-item:nth-child(2){animation-delay:.2s}
   .feat-item:nth-child(3){animation-delay:.3s}
   .feat-item:nth-child(4){animation-delay:.4s}
-  @keyframes slideIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-  .feat-icon { font-size:1.4rem; flex-shrink:0; }
-  .feat-text strong { display:block; font-size:.88rem; font-weight:600; margin-bottom:2px; }
-  .feat-text span { font-size:.75rem; color:var(--muted); }
+  @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .feat-icon { font-size:1.3rem; flex-shrink:0; }
+  .feat-text strong { display:block; font-size:.85rem; font-weight:600; margin-bottom:1px; }
+  .feat-text span { font-size:.73rem; color:var(--muted); }
 
   /* FIRST CURE SETUP */
   .setup-card {
-    width:100%; max-width:360px; background:var(--surface);
-    border:1px solid var(--border); border-radius:20px; padding:20px;
-    margin-bottom:24px;
+    width:100%; background:var(--surface);
+    border:1px solid var(--border); border-radius:16px; padding:16px;
+    margin-bottom:8px;
   }
-  .setup-card h3 { font-size:.88rem; font-weight:600; margin-bottom:16px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-family:'Space Mono',monospace; }
-  .form-group { margin-bottom:12px; }
-  .form-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; display:block; }
+  .setup-card-title {
+    font-size:.72rem; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:1px;
+    font-family:'Space Mono',monospace; margin-bottom:14px;
+  }
+  .form-group { margin-bottom:10px; }
+  .form-label { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:5px; display:block; }
   .form-input {
     width:100%; background:var(--surface2); border:1.5px solid var(--border);
-    border-radius:10px; padding:11px 14px; color:var(--text);
-    font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s;
+    border-radius:10px; padding:10px 12px; color:var(--text);
+    font-family:inherit; font-size:.85rem; outline:none; transition:border-color .2s;
   }
-  .form-input:focus { border-color:var(--accent); }
-  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .form-input:focus { border-color:var(--accent); background:#fff; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 
   /* PEPTIDE SUGGESTIONS */
-  .pep-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .pep-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
   .pep-chip {
-    padding:6px 12px; border-radius:100px; font-size:.75rem; font-weight:600;
+    padding:5px 11px; border-radius:100px; font-size:.72rem; font-weight:600;
     border:1.5px solid var(--border); background:var(--surface2); color:var(--muted);
     cursor:pointer; transition:all .2s;
   }
-  .pep-chip:hover { border-color:rgba(0,201,167,.4); color:var(--text); }
-  .pep-chip.selected { border-color:var(--accent); background:rgba(0,201,167,.1); color:var(--accent); }
+  .pep-chip:hover { border-color:rgba(13,148,136,.4); color:var(--text); }
+  .pep-chip.selected { border-color:var(--accent); background:rgba(13,148,136,.1); color:var(--accent); }
 
   /* NOTIF SETUP */
-  .notif-options { width:100%; max-width:360px; display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
+  .notif-options { width:100%; display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
   .notif-opt {
-    display:flex; align-items:center; gap:14px; padding:14px 16px;
+    display:flex; align-items:center; gap:12px; padding:12px 14px;
     background:var(--surface); border:1.5px solid var(--border);
-    border-radius:14px; cursor:pointer; transition:all .2s;
+    border-radius:12px; cursor:pointer; transition:all .2s;
   }
-  .notif-opt.selected { border-color:var(--accent); background:rgba(0,201,167,.06); }
-  .notif-opt-icon { font-size:1.3rem; flex-shrink:0; }
+  .notif-opt.selected { border-color:var(--accent); background:rgba(13,148,136,.06); }
+  .notif-opt-icon { font-size:1.2rem; flex-shrink:0; }
   .notif-opt-info { flex:1; }
-  .notif-opt-info strong { display:block; font-size:.88rem; margin-bottom:2px; }
-  .notif-opt-info span { font-size:.75rem; color:var(--muted); }
+  .notif-opt-info strong { display:block; font-size:.85rem; margin-bottom:1px; }
+  .notif-opt-info span { font-size:.72rem; color:var(--muted); }
   .notif-check {
-    width:22px; height:22px; border-radius:6px; flex-shrink:0;
+    width:20px; height:20px; border-radius:6px; flex-shrink:0;
     border:2px solid var(--border); display:flex; align-items:center; justify-content:center;
-    font-size:.75rem; transition:all .2s;
+    font-size:.72rem; transition:all .2s;
   }
   .notif-opt.selected .notif-check { background:var(--accent); border-color:var(--accent); color:#fff; }
 
-  /* BOTTOM NAV — hauteur fixe avec gradient */
+  /* BOTTOM NAV — dans le wrapper, pas fixed */
   .bottom-nav {
-    position:fixed; bottom:0; left:0; right:0; z-index:50;
-    padding:12px 24px 28px;
-    background:linear-gradient(to top, var(--bg) 70%, transparent);
-    display:flex; flex-direction:column; align-items:center; gap:10px;
+    flex-shrink:0; padding:10px 20px 20px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    background:linear-gradient(to top, var(--bg) 60%, transparent);
+  }
+  @media (min-width:768px) {
+    .bottom-nav { padding:10px 24px 24px; }
   }
   .next-btn {
-    width:100%; max-width:400px; padding:15px; border-radius:14px;
+    width:100%; padding:14px; border-radius:14px;
     border:none; background:var(--accent); color:#fff;
-    font-family:inherit; font-size:1rem; font-weight:700; cursor:pointer;
-    transition:all .2s; box-shadow:0 4px 20px rgba(13,148,136,.25);
+    font-family:inherit; font-size:.95rem; font-weight:700; cursor:pointer;
+    transition:all .2s; box-shadow:0 4px 16px rgba(13,148,136,.25);
   }
   .next-btn:hover { opacity:.9; transform:translateY(-1px); }
   .next-btn:active { transform:translateY(0); }
   .next-btn.secondary {
     background:transparent; color:var(--muted); border:1px solid var(--border);
-    box-shadow:none; font-size:.88rem; padding:11px;
+    box-shadow:none; font-size:.84rem; padding:10px;
   }
 
   /* DOTS */
@@ -175,249 +206,260 @@
   .dot.done { background:rgba(13,148,136,.4); }
 
   /* FINAL SCREEN */
-  .final-wrap { text-align:center; display:flex; flex-direction:column; align-items:center; }
+  .final-wrap { text-align:center; display:flex; flex-direction:column; align-items:center; width:100%; }
   .final-badge {
     display:inline-flex; align-items:center; gap:8px;
     background:rgba(13,148,136,.1); border:1px solid rgba(13,148,136,.3);
-    padding:8px 18px; border-radius:100px; font-size:.78rem; font-weight:600;
-    color:var(--accent); margin-bottom:20px;
-    font-family:'Space Mono',monospace;
+    padding:6px 16px; border-radius:100px; font-size:.72rem; font-weight:600;
+    color:var(--accent); margin-bottom:14px; font-family:'Space Mono',monospace;
   }
-  .confetti { font-size:3rem; animation:confettiPop .6s ease both; }
+  .confetti { font-size:2.8rem; animation:confettiPop .6s ease both; margin-bottom:8px; }
   @keyframes confettiPop { 0%{transform:scale(0) rotate(-10deg)} 80%{transform:scale(1.15) rotate(3deg)} 100%{transform:scale(1) rotate(0)} }
 
   /* SUMMARY CARDS */
-  .summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:360px; margin:20px 0; }
+  .summary-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+    width:100%; margin:14px 0;
+  }
   .sum-card {
     background:var(--surface); border:1px solid var(--border);
-    border-radius:14px; padding:14px; text-align:center;
+    border-radius:12px; padding:12px; text-align:center;
   }
-  .sum-val { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; color:var(--accent); margin-bottom:4px; }
-  .sum-label { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; }
+  .sum-val { font-family:'Space Mono',monospace; font-size:.95rem; font-weight:700; color:var(--accent); margin-bottom:3px; }
+  .sum-label { font-size:.63rem; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; }
+
+  .onb-disclaimer {
+    font-size:.72rem; color:var(--muted); text-align:center;
+    line-height:1.6; max-width:300px; margin-top:4px;
+  }
 </style>
 </head>
 <body>
 <div class="bg-glow"></div>
 
-<!-- PROGRESS -->
-<div class="progress-track">
-  <div class="progress-fill" id="progressFill" style="width:20%"></div>
-</div>
-<button class="skip-btn" id="skipBtn" onclick="skipOnboarding()"></button>
-<div id="langToggleBtn" style="position:fixed;top:12px;left:16px;z-index:101;"></div>
+<div class="onb-wrapper">
 
-<!-- SLIDES -->
-<div class="slides" id="slides">
+  <!-- PROGRESS -->
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:20%"></div>
+  </div>
 
-  <!-- ═══ SLIDE 1 : Bienvenue ═══ -->
-  <div class="slide center-v active" id="slide1">
-    <div class="slide-icon">🧬</div>
-    <div class="slide-eyebrow" data-i18n="onb_welcome_eyebrow"></div>
-    <div class="slide-title" id="welcomeTitle"></div>
-    <div class="slide-sub" data-i18n="onb_welcome_sub"></div>
-    <div class="feat-list">
-      <div class="feat-item">
-        <div class="feat-icon">📚</div>
-        <div class="feat-text">
-          <strong data-i18n="onb_feat1_title"></strong>
-          <span data-i18n="onb_feat1_sub"></span>
+  <!-- TOPBAR -->
+  <div class="onb-topbar">
+    <div id="langToggleBtn"></div>
+    <button class="skip-btn" id="skipBtn" onclick="skipOnboarding()"></button>
+  </div>
+
+  <!-- SLIDES -->
+  <div class="slides" id="slides">
+
+    <!-- ═══ SLIDE 1 : Bienvenue ═══ -->
+    <div class="slide center-v active" id="slide1">
+      <div class="slide-icon">🧬</div>
+      <div class="slide-eyebrow" data-i18n="onb_welcome_eyebrow"></div>
+      <div class="slide-title" id="welcomeTitle"></div>
+      <div class="slide-sub" data-i18n="onb_welcome_sub"></div>
+      <div class="feat-list">
+        <div class="feat-item">
+          <div class="feat-icon">📚</div>
+          <div class="feat-text">
+            <strong data-i18n="onb_feat1_title"></strong>
+            <span data-i18n="onb_feat1_sub"></span>
+          </div>
         </div>
-      </div>
-      <div class="feat-item">
-        <div class="feat-icon">📅</div>
-        <div class="feat-text">
-          <strong data-i18n="onb_feat2_title"></strong>
-          <span data-i18n="onb_feat2_sub"></span>
+        <div class="feat-item">
+          <div class="feat-icon">📅</div>
+          <div class="feat-text">
+            <strong data-i18n="onb_feat2_title"></strong>
+            <span data-i18n="onb_feat2_sub"></span>
+          </div>
         </div>
-      </div>
-      <div class="feat-item">
-        <div class="feat-icon">⚖️</div>
-        <div class="feat-text">
-          <strong data-i18n="onb_feat3_title"></strong>
-          <span data-i18n="onb_feat3_sub"></span>
+        <div class="feat-item">
+          <div class="feat-icon">⚖️</div>
+          <div class="feat-text">
+            <strong data-i18n="onb_feat3_title"></strong>
+            <span data-i18n="onb_feat3_sub"></span>
+          </div>
         </div>
-      </div>
-      <div class="feat-item">
-        <div class="feat-icon">🔔</div>
-        <div class="feat-text">
-          <strong data-i18n="onb_feat4_title"></strong>
-          <span data-i18n="onb_feat4_sub"></span>
+        <div class="feat-item">
+          <div class="feat-icon">🔔</div>
+          <div class="feat-text">
+            <strong data-i18n="onb_feat4_title"></strong>
+            <span data-i18n="onb_feat4_sub"></span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ═══ SLIDE 2 : Première cure ═══ -->
-  <div class="slide" id="slide2">
-    <div class="slide-icon">💉</div>
-    <div class="slide-eyebrow" data-i18n="onb_step1_eyebrow"></div>
-    <div class="slide-title"><span data-i18n="onb_step1_title"></span></div>
-    <div class="slide-sub" data-i18n="onb_step1_sub"></div>
-
-    <div class="setup-card">
-      <h3 data-i18n="onb_peptide_label"></h3>
-      <div class="form-group">
-        <label class="form-label" data-i18n="onb_peptide_label"></label>
-        <select class="form-input" id="onbPeptide">
-          <option value="" data-i18n="onb_peptide_select"></option>
-          <option>BPC-157</option><option>TB-500</option><option>CJC-1295</option>
-          <option>Ipamorelin</option><option>Semaglutide</option><option>Epithalon</option>
-          <option>Semax</option><option>PT-141</option><option>GHK-Cu</option><option>Autre / Other</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="onb_suggestions"></label>
-        <div class="pep-chips">
-          <div class="pep-chip" onclick="selectChip(this,'BPC-157')">BPC-157</div>
-          <div class="pep-chip" onclick="selectChip(this,'TB-500')">TB-500</div>
-          <div class="pep-chip" onclick="selectChip(this,'Ipamorelin')">Ipamorelin</div>
-          <div class="pep-chip" onclick="selectChip(this,'Semaglutide')">Semaglutide</div>
-          <div class="pep-chip" onclick="selectChip(this,'CJC-1295')">CJC-1295</div>
-          <div class="pep-chip" onclick="selectChip(this,'Epithalon')">Epithalon</div>
-        </div>
-      </div>
-      <div class="form-row">
+    <!-- ═══ SLIDE 2 : Première cure ═══ -->
+    <div class="slide" id="slide2">
+      <div class="slide-icon">💉</div>
+      <div class="slide-eyebrow" data-i18n="onb_step1_eyebrow"></div>
+      <div class="slide-title"><span data-i18n="onb_step1_title"></span></div>
+      <div class="slide-sub" data-i18n="onb_step1_sub"></div>
+      <div class="setup-card">
+        <div class="setup-card-title" data-i18n="onb_peptide_label"></div>
         <div class="form-group">
-          <label class="form-label" data-i18n="onb_dosage"></label>
-          <input class="form-input" id="onbDosage" placeholder="250 mcg">
-        </div>
-        <div class="form-group">
-          <label class="form-label" data-i18n="onb_admin"></label>
-          <select class="form-input" id="onbAdmin">
-            <option>SC</option><option>IM</option><option>Oral</option><option>Nasal</option>
+          <select class="form-input" id="onbPeptide">
+            <option value="" id="onbPeptideDefault"></option>
+            <option>BPC-157</option><option>TB-500</option><option>CJC-1295</option>
+            <option>Ipamorelin</option><option>Semaglutide</option><option>Epithalon</option>
+            <option>Semax</option><option>PT-141</option><option>GHK-Cu</option>
+            <option id="onbPeptideOther"></option>
           </select>
         </div>
-      </div>
-      <div class="form-row">
         <div class="form-group">
-          <label class="form-label" data-i18n="onb_start"></label>
-          <input class="form-input" id="onbStart" type="date">
+          <div class="form-label" data-i18n="onb_suggestions"></div>
+          <div class="pep-chips">
+            <div class="pep-chip" onclick="selectChip(this,'BPC-157')">BPC-157</div>
+            <div class="pep-chip" onclick="selectChip(this,'TB-500')">TB-500</div>
+            <div class="pep-chip" onclick="selectChip(this,'Ipamorelin')">Ipamorelin</div>
+            <div class="pep-chip" onclick="selectChip(this,'Semaglutide')">Semaglutide</div>
+            <div class="pep-chip" onclick="selectChip(this,'CJC-1295')">CJC-1295</div>
+            <div class="pep-chip" onclick="selectChip(this,'Epithalon')">Epithalon</div>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label" data-i18n="onb_duration"></label>
-          <input class="form-input" id="onbDuration" type="number" placeholder="30" min="1" max="365">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" data-i18n="onb_dosage"></label>
+            <input class="form-input" id="onbDosage" placeholder="250 mcg">
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="onb_admin"></label>
+            <select class="form-input" id="onbAdmin">
+              <option>SC</option><option>IM</option><option>Oral</option><option>Nasal</option>
+            </select>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ SLIDE 3 : Notifications ═══ -->
-  <div class="slide" id="slide3">
-    <div class="slide-icon">🔔</div>
-    <div class="slide-eyebrow" data-i18n="onb_step2_eyebrow"></div>
-    <div class="slide-title"><span data-i18n="onb_step2_title"></span></div>
-    <div class="slide-sub" data-i18n="onb_step2_sub"></div>
-
-    <div class="notif-options">
-      <div class="notif-opt selected" id="notif1" onclick="toggleNotif(this)">
-        <div class="notif-opt-icon">💉</div>
-        <div class="notif-opt-info">
-          <strong data-i18n="onb_notif1_title"></strong>
-          <span data-i18n="onb_notif1_sub"></span>
-        </div>
-        <div class="notif-check">✓</div>
-      </div>
-      <div class="notif-opt selected" id="notif2" onclick="toggleNotif(this)">
-        <div class="notif-opt-icon">🩸</div>
-        <div class="notif-opt-info">
-          <strong data-i18n="onb_notif2_title"></strong>
-          <span data-i18n="onb_notif2_sub"></span>
-        </div>
-        <div class="notif-check">✓</div>
-      </div>
-      <div class="notif-opt selected" id="notif3" onclick="toggleNotif(this)">
-        <div class="notif-opt-icon">📦</div>
-        <div class="notif-opt-info">
-          <strong data-i18n="onb_notif3_title"></strong>
-          <span data-i18n="onb_notif3_sub"></span>
-        </div>
-        <div class="notif-check">✓</div>
-      </div>
-      <div class="notif-opt" id="notif4" onclick="toggleNotif(this)">
-        <div class="notif-opt-icon">⚖️</div>
-        <div class="notif-opt-info">
-          <strong data-i18n="onb_notif4_title"></strong>
-          <span data-i18n="onb_notif4_sub"></span>
-        </div>
-        <div class="notif-check"></div>
-      </div>
-      <div class="notif-opt" id="notif5" onclick="toggleNotif(this)">
-        <div class="notif-opt-icon">📊</div>
-        <div class="notif-opt-info">
-          <strong data-i18n="onb_notif5_title"></strong>
-          <span data-i18n="onb_notif5_sub"></span>
-        </div>
-        <div class="notif-check"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ SLIDE 4 : Découverte biblio ═══ -->
-  <div class="slide center-v" id="slide4">
-    <div class="slide-icon">🔬</div>
-    <div class="slide-eyebrow" data-i18n="onb_step3_eyebrow"></div>
-    <div class="slide-title"><span data-i18n="onb_step3_title"></span></div>
-    <div class="slide-sub" data-i18n="onb_step3_sub"></div>
-
-    <div class="feat-list">
-      <div class="feat-item">
-        <div class="feat-icon">🧬</div>
-        <div class="feat-text">
-          <strong data-i18n="onb_lib1_title"></strong>
-          <span data-i18n="onb_lib1_sub"></span>
-        </div>
-      </div>
-      <div class="feat-item">
-        <div class="feat-icon">💊</div>
-        <div class="feat-text">
-          <strong data-i18n="onb_lib2_title"></strong>
-          <span data-i18n="onb_lib2_sub"></span>
-        </div>
-      </div>
-      <div class="feat-item">
-        <div class="feat-icon">🛒</div>
-        <div class="feat-text">
-          <strong data-i18n="onb_lib3_title"></strong>
-          <span data-i18n="onb_lib3_sub"></span>
-        </div>
-      </div>
-      <div class="feat-item">
-        <div class="feat-icon">🔍</div>
-        <div class="feat-text">
-          <strong data-i18n="onb_lib4_title"></strong>
-          <span data-i18n="onb_lib4_sub"></span>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" data-i18n="onb_start"></label>
+            <input class="form-input" id="onbStart" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="onb_duration"></label>
+            <input class="form-input" id="onbDuration" type="number" placeholder="30" min="1" max="365">
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ═══ SLIDE 5 : Prêt ! ═══ -->
-  <div class="slide center-v" id="slide5">
-    <div class="final-wrap">
-      <div class="confetti">🎉</div>
-      <div class="final-badge" data-i18n="onb_ready_badge"></div>
-      <div class="slide-title" style="margin-top:8px"><span data-i18n="onb_ready_title"></span></div>
-      <div class="slide-sub" data-i18n="onb_ready_sub"></div>
-      <div class="summary-grid" id="summaryGrid"></div>
-      <div style="font-size:.75rem;color:var(--muted);text-align:center;line-height:1.6;max-width:300px"
-           data-i18n="onb_disclaimer"></div>
+    <!-- ═══ SLIDE 3 : Notifications ═══ -->
+    <div class="slide" id="slide3">
+      <div class="slide-icon">🔔</div>
+      <div class="slide-eyebrow" data-i18n="onb_step2_eyebrow"></div>
+      <div class="slide-title"><span data-i18n="onb_step2_title"></span></div>
+      <div class="slide-sub" data-i18n="onb_step2_sub"></div>
+      <div class="notif-options">
+        <div class="notif-opt selected" id="notif1" onclick="toggleNotif(this)">
+          <div class="notif-opt-icon">💉</div>
+          <div class="notif-opt-info">
+            <strong data-i18n="onb_notif1_title"></strong>
+            <span data-i18n="onb_notif1_sub"></span>
+          </div>
+          <div class="notif-check">✓</div>
+        </div>
+        <div class="notif-opt selected" id="notif2" onclick="toggleNotif(this)">
+          <div class="notif-opt-icon">🩸</div>
+          <div class="notif-opt-info">
+            <strong data-i18n="onb_notif2_title"></strong>
+            <span data-i18n="onb_notif2_sub"></span>
+          </div>
+          <div class="notif-check">✓</div>
+        </div>
+        <div class="notif-opt selected" id="notif3" onclick="toggleNotif(this)">
+          <div class="notif-opt-icon">📦</div>
+          <div class="notif-opt-info">
+            <strong data-i18n="onb_notif3_title"></strong>
+            <span data-i18n="onb_notif3_sub"></span>
+          </div>
+          <div class="notif-check">✓</div>
+        </div>
+        <div class="notif-opt" id="notif4" onclick="toggleNotif(this)">
+          <div class="notif-opt-icon">⚖️</div>
+          <div class="notif-opt-info">
+            <strong data-i18n="onb_notif4_title"></strong>
+            <span data-i18n="onb_notif4_sub"></span>
+          </div>
+          <div class="notif-check"></div>
+        </div>
+        <div class="notif-opt" id="notif5" onclick="toggleNotif(this)">
+          <div class="notif-opt-icon">📊</div>
+          <div class="notif-opt-info">
+            <strong data-i18n="onb_notif5_title"></strong>
+            <span data-i18n="onb_notif5_sub"></span>
+          </div>
+          <div class="notif-check"></div>
+        </div>
+      </div>
     </div>
+
+    <!-- ═══ SLIDE 4 : Biblio ═══ -->
+    <div class="slide center-v" id="slide4">
+      <div class="slide-icon">🔬</div>
+      <div class="slide-eyebrow" data-i18n="onb_step3_eyebrow"></div>
+      <div class="slide-title"><span data-i18n="onb_step3_title"></span></div>
+      <div class="slide-sub" data-i18n="onb_step3_sub"></div>
+      <div class="feat-list">
+        <div class="feat-item">
+          <div class="feat-icon">🧬</div>
+          <div class="feat-text">
+            <strong data-i18n="onb_lib1_title"></strong>
+            <span data-i18n="onb_lib1_sub"></span>
+          </div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon">💊</div>
+          <div class="feat-text">
+            <strong data-i18n="onb_lib2_title"></strong>
+            <span data-i18n="onb_lib2_sub"></span>
+          </div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon">🛒</div>
+          <div class="feat-text">
+            <strong data-i18n="onb_lib3_title"></strong>
+            <span data-i18n="onb_lib3_sub"></span>
+          </div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon">🔍</div>
+          <div class="feat-text">
+            <strong data-i18n="onb_lib4_title"></strong>
+            <span data-i18n="onb_lib4_sub"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SLIDE 5 : Prêt ! ═══ -->
+    <div class="slide center-v" id="slide5">
+      <div class="final-wrap">
+        <div class="confetti">🎉</div>
+        <div class="final-badge" data-i18n="onb_ready_badge"></div>
+        <div class="slide-title"><span data-i18n="onb_ready_title"></span></div>
+        <div class="slide-sub" data-i18n="onb_ready_sub"></div>
+        <div class="summary-grid" id="summaryGrid"></div>
+        <div class="onb-disclaimer" data-i18n="onb_disclaimer"></div>
+      </div>
+    </div>
+
+  </div><!-- /slides -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="dots" id="dots">
+      <div class="dot active" id="dot1"></div>
+      <div class="dot" id="dot2"></div>
+      <div class="dot" id="dot3"></div>
+      <div class="dot" id="dot4"></div>
+      <div class="dot" id="dot5"></div>
+    </div>
+    <button class="next-btn" id="nextBtn" onclick="nextSlide()"></button>
+    <button class="next-btn secondary" id="skipStepBtn" onclick="skipStep()" style="display:none" data-i18n="onb_skip_step"></button>
   </div>
 
-</div><!-- /slides -->
-
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <div class="dots" id="dots">
-    <div class="dot active" id="dot1"></div>
-    <div class="dot" id="dot2"></div>
-    <div class="dot" id="dot3"></div>
-    <div class="dot" id="dot4"></div>
-    <div class="dot" id="dot5"></div>
-  </div>
-  <button class="next-btn" id="nextBtn" onclick="nextSlide()"></button>
-  <button class="next-btn secondary" id="skipStepBtn" onclick="skipStep()" style="display:none" data-i18n="onb_skip_step"></button>
-</div>
+</div><!-- /onb-wrapper -->
 
 <script>
 // ── HELPERS ────────────────────────────────────────────────────────────
@@ -427,25 +469,24 @@ function setLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
 // Date locale — jamais toISOString() (timezone UTC+7)
 function todayLocalStr() {
   const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  return y+'-'+m+'-'+day;
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
 let currentSlide = 1;
 const TOTAL = 5;
 
-// Libellés boutons par slide (traduits dynamiquement)
 function getBtnLabel(slide) {
-  const keys = ['onb_btn_start','onb_btn_cure','onb_btn_notif','onb_btn_biblio','onb_btn_dashboard'];
-  return t(keys[slide-1]);
+  return t(['onb_btn_start','onb_btn_cure','onb_btn_notif','onb_btn_biblio','onb_btn_dashboard'][slide-1]);
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────
 document.getElementById('onbStart').value = todayLocalStr();
 
-// Nom de bienvenue
+// Placeholder select peptide (option ne supporte pas data-i18n)
+document.getElementById('onbPeptideDefault').textContent = t('onb_peptide_select');
+document.getElementById('onbPeptideOther').textContent = PS_getLang() === 'fr' ? 'Autre' : 'Other';
+
+// Titre de bienvenue
 const profil = getLS('pt_profil', {});
 const prenom = profil.prenom || '';
 const welcomeTitle = document.getElementById('welcomeTitle');
@@ -454,25 +495,21 @@ welcomeTitle.innerHTML = t('onb_welcome_title') + ' <span>' + (prenom ? prenom +
 // Skip btn
 document.getElementById('skipBtn').textContent = t('onb_skip');
 
-// Appliquer les traductions data-i18n
+// Traductions
 PS_applyI18n();
 
-// Switcher de langue
+// Lang switcher
 PS_renderLangSwitcher();
 
 // ── UI UPDATE ──────────────────────────────────────────────────────────
 function updateUI() {
-  // Progress
   document.getElementById('progressFill').style.width = (currentSlide / TOTAL * 100) + '%';
-  // Dots
-  for (let i = 1; i <= TOTAL; i++) {
-    const d = document.getElementById('dot' + i);
+  for (var i = 1; i <= TOTAL; i++) {
+    var d = document.getElementById('dot' + i);
     d.className = 'dot' + (i === currentSlide ? ' active' : i < currentSlide ? ' done' : '');
   }
-  // Bouton principal
   document.getElementById('nextBtn').textContent = getBtnLabel(currentSlide);
-  // Bouton skip step (slides 2 et 3 uniquement)
-  const skipVisible = [2, 3].includes(currentSlide);
+  var skipVisible = currentSlide === 2 || currentSlide === 3;
   document.getElementById('skipStepBtn').style.display = skipVisible ? 'block' : 'none';
 }
 
@@ -491,20 +528,18 @@ function skipStep() {
 }
 
 function goToSlide(n) {
-  const prev = document.getElementById('slide' + currentSlide);
+  var prev = document.getElementById('slide' + currentSlide);
   prev.classList.remove('active');
   prev.classList.add('exit');
-  setTimeout(() => prev.classList.remove('exit'), 400);
+  setTimeout(function(){ prev.classList.remove('exit'); }, 400);
   currentSlide = n;
-  const next = document.getElementById('slide' + n);
+  var next = document.getElementById('slide' + n);
   next.classList.add('active');
-  // Scroll to top du slide
   next.scrollTop = 0;
   updateUI();
 }
 
 function skipOnboarding() { goToDashboard(); }
-
 function goToDashboard() {
   setLS('pt_onboarded', true);
   window.location = 'dashboard.html';
@@ -512,105 +547,58 @@ function goToDashboard() {
 
 // ── STEP 2 : CURE ──────────────────────────────────────────────────────
 function selectChip(el, val) {
-  document.querySelectorAll('.pep-chip').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.pep-chip').forEach(function(c){ c.classList.remove('selected'); });
   el.classList.add('selected');
   document.getElementById('onbPeptide').value = val;
-  const defaults = {
-    'BPC-157':'250 mcg','TB-500':'2.5 mg','CJC-1295':'1 mg',
-    'Ipamorelin':'200 mcg','Semaglutide':'0.25 mg',
-    'Epithalon':'5 mg','Semax':'500 mcg','PT-141':'0.5 mg','GHK-Cu':'1 mg'
-  };
+  var defaults = {'BPC-157':'250 mcg','TB-500':'2.5 mg','CJC-1295':'1 mg','Ipamorelin':'200 mcg','Semaglutide':'0.25 mg','Epithalon':'5 mg','Semax':'500 mcg','PT-141':'0.5 mg','GHK-Cu':'1 mg'};
   if (defaults[val]) document.getElementById('onbDosage').value = defaults[val];
-  const adminDefs = {'Semax':'Nasal','Epithalon':'SC','Semaglutide':'SC'};
+  var adminDefs = {'Semax':'Nasal','Epithalon':'SC','Semaglutide':'SC'};
   if (adminDefs[val]) document.getElementById('onbAdmin').value = adminDefs[val];
 }
 
 function saveCureStep() {
-  const peptide  = document.getElementById('onbPeptide').value;
-  const dosage   = document.getElementById('onbDosage').value;
-  const admin    = document.getElementById('onbAdmin').value;
-  const start    = document.getElementById('onbStart').value;
-  const duration = document.getElementById('onbDuration').value;
+  var peptide  = document.getElementById('onbPeptide').value;
+  var dosage   = document.getElementById('onbDosage').value;
+  var admin    = document.getElementById('onbAdmin').value;
+  var start    = document.getElementById('onbStart').value;
+  var duration = document.getElementById('onbDuration').value;
   if (!peptide || !dosage || !start || !duration) return;
-  const cures = getLS('pt_cures', []);
-  cures.push({
-    id: Date.now().toString(), peptide, dosage, admin,
-    startDate: start, duration, freq: '2',
-    notes: t('onb_step1_sub')
-  });
+  var cures = getLS('pt_cures', []);
+  cures.push({ id: Date.now().toString(), peptide, dosage, admin, startDate: start, duration, freq: '2', notes: '' });
   setLS('pt_cures', cures);
 }
 
 // ── STEP 3 : NOTIFS ────────────────────────────────────────────────────
 function toggleNotif(el) {
   el.classList.toggle('selected');
-  const check = el.querySelector('.notif-check');
-  check.textContent = el.classList.contains('selected') ? '✓' : '';
+  el.querySelector('.notif-check').textContent = el.classList.contains('selected') ? '✓' : '';
 }
 
 function saveNotifStep() {
-  const notifPrefs = {
+  var notifPrefs = {
     injections: document.getElementById('notif1').classList.contains('selected'),
     bilans:     document.getElementById('notif2').classList.contains('selected'),
     stock:      document.getElementById('notif3').classList.contains('selected'),
     pesee:      document.getElementById('notif4').classList.contains('selected'),
     resume:     document.getElementById('notif5').classList.contains('selected'),
   };
-  const p = getLS('pt_profil', {});
-  setLS('pt_profil', {...p, notifPrefs});
-
-  if (notifPrefs.pesee) {
-    const alerts = getLS('pt_alertes', []);
-    alerts.push({
-      id: Date.now() + 1,
-      msg: t('onb_notif4_title'),
-      date: getNextMonday(),
-      time: '08:00',
-      priority: 'green',
-      recurrent: true
-    });
-    setLS('pt_alertes', alerts);
-  }
-}
-
-function getNextMonday() {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = day === 1 ? 7 : (8 - day) % 7;
-  d.setDate(d.getDate() + diff);
-  return todayLocalStr.call({}, d);
+  var p = getLS('pt_profil', {});
+  setLS('pt_profil', Object.assign({}, p, { notifPrefs: notifPrefs }));
 }
 
 // ── STEP 5 : SUMMARY ───────────────────────────────────────────────────
 function buildSummary() {
-  const cures   = getLS('pt_cures', []);
-  const weights = getLS('pt_weights', []);
-  const alertes = getLS('pt_alertes', []);
-  const profil_  = getLS('pt_profil', {});
-  const grid = document.getElementById('summaryGrid');
-  grid.innerHTML = `
-    <div class="sum-card">
-      <div class="sum-val">${cures.length}</div>
-      <div class="sum-label" data-i18n="onb_sum_cures">${t('onb_sum_cures')}</div>
-    </div>
-    <div class="sum-card">
-      <div class="sum-val">${weights.length}</div>
-      <div class="sum-label" data-i18n="onb_sum_weights">${t('onb_sum_weights')}</div>
-    </div>
-    <div class="sum-card">
-      <div class="sum-val">${alertes.length}</div>
-      <div class="sum-label" data-i18n="onb_sum_alerts">${t('onb_sum_alerts')}</div>
-    </div>
-    <div class="sum-card">
-      <div class="sum-val" style="color:${profil_.premium ? 'var(--accent3)' : 'var(--accent)'}">
-        ${profil_.premium ? '⭐' : '🆓'}
-      </div>
-      <div class="sum-label">${profil_.premium ? t('profil_plan_prem') : t('onb_sum_plan')}</div>
-    </div>
-  `;
+  var cures   = getLS('pt_cures', []);
+  var weights = getLS('pt_weights', []);
+  var alertes = getLS('pt_alertes', []);
+  var profil_ = getLS('pt_profil', {});
+  document.getElementById('summaryGrid').innerHTML =
+    '<div class="sum-card"><div class="sum-val">' + cures.length + '</div><div class="sum-label">' + t('onb_sum_cures') + '</div></div>' +
+    '<div class="sum-card"><div class="sum-val">' + weights.length + '</div><div class="sum-label">' + t('onb_sum_weights') + '</div></div>' +
+    '<div class="sum-card"><div class="sum-val">' + alertes.length + '</div><div class="sum-label">' + t('onb_sum_alerts') + '</div></div>' +
+    '<div class="sum-card"><div class="sum-val" style="color:' + (profil_.premium ? 'var(--accent3)' : 'var(--accent)') + '">' + (profil_.premium ? '⭐' : '🆓') + '</div><div class="sum-label">' + (profil_.premium ? t('profil_plan_prem') : t('onb_sum_plan')) + '</div></div>';
 }
 
-// Init UI
 updateUI();
 </script>
 </body>

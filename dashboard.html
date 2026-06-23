@@ -846,7 +846,7 @@ async function toggleFavorite() {
 
   // Optimistic update
   cure.is_favorite = newVal;
-  document.getElementById('favBtn').textContent = newVal ? '⭐' : '☆';
+  renderCureData(activeCures[carouselIdx]); // optimistic update badge
 
   // Si on met en favori → retirer le favori des autres
   if (newVal) {
@@ -863,7 +863,7 @@ async function toggleFavorite() {
   const { error } = await sb.from('cures').update({ is_favorite: newVal }).eq('id', cure.id);
   if (error) {
     cure.is_favorite = !newVal; // rollback
-    document.getElementById('favBtn').textContent = !newVal ? '⭐' : '☆';
+    renderCureData(activeCures[carouselIdx]);
     showToast('Erreur : ' + error.message);
     return;
   }

@@ -1972,10 +1972,22 @@ window.PS_LANG = {
 // ══════════════════════════════════════════════════════════════
 
 /**
+ * Détection automatique de la langue au premier chargement
+ * Utilise navigator.language si pas encore de préférence sauvegardée
+ */
+(function() {
+  if (!localStorage.getItem('ps_lang')) {
+    var browserLang = (navigator.language || navigator.userLanguage || 'fr').slice(0, 2).toLowerCase();
+    var supported = ['fr', 'en'];
+    localStorage.setItem('ps_lang', supported.includes(browserLang) ? browserLang : 'en');
+  }
+})();
+
+/**
  * Retourne la langue active ('fr' ou 'en')
  */
 window.PS_getLang = function() {
-  return localStorage.getItem('ps_lang') || 'fr';
+  return localStorage.getItem('ps_lang') || 'en';
 };
 
 /**

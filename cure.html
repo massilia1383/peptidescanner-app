@@ -370,10 +370,18 @@ function getSITES_IM() { return [
   { id:'quad_d',    label:t('site_quad_d'),    icon:'🦵', zone:t('zone_thigh') },
 ]; }
 function getSites(admin) { return (admin||'').toUpperCase() === 'IM' ? getSITES_IM() : getSITES_SC(); }
-function getNextSite(cureId, admin) {
+function getNextSite(cureId, admin, ds) {
   const sites = getSites(admin);
-  // Lire l'index actuel SANS incrémenter
-  const idx = Math.max(0, parseInt(localStorage.getItem('ps_site_'+cureId)||'0') % sites.length);
+  const key = 'ps_site_'+cureId+'_'+(ds||'');
+  const stored = localStorage.getItem(key);
+  // Si un site a été choisi pour cette date, l'utiliser
+  if (stored !== null) {
+    const idx = parseInt(stored) % sites.length;
+    return { site: sites[idx], idx };
+  }
+  // Sinon, calculer le prochain site dans la rotation globale
+  const globalKey = 'ps_site_global_'+cureId;
+  const idx = Math.max(0, parseInt(localStorage.getItem(globalKey)||'0') % sites.length);
   return { site: sites[idx], idx };
 }
 
@@ -566,7 +574,7 @@ function selectDay(ds, clickable) {
   const dayInjs   = allInjections.filter(i => i.cure_id===currentCureId && (i.injected_at||'').startsWith(ds));
   const admin     = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
   const sites     = getSites(admin);
-  const { site: nextSite, idx: nextIdx } = getNextSite(currentCureId, admin);
+  const { site: nextSite, idx: nextIdx } = getNextSite(currentCureId, admin, ds);
 
   let slotsHtml = '';
   if (freq < 1) {
@@ -623,8 +631,9 @@ function cycleSite(ds) {
   const cure  = allCures.find(x => x.id === currentCureId);
   const admin = (cure?.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
   const sites = getSites(admin);
-  const cur   = parseInt(localStorage.getItem('ps_site_'+currentCureId)||'0');
-  localStorage.setItem('ps_site_'+currentCureId, (cur+1) % sites.length);
+  const key = 'ps_site_'+currentCureId+'_'+ds;
+  const cur = parseInt(localStorage.getItem(key)||'0');
+  localStorage.setItem(key, (cur+1) % sites.length);
   selectDay(ds, true);
 }
 
@@ -674,9 +683,13 @@ async function toggleInj(ds, slot, time) {
     showToast(t('cure_inj_cancelled'));
   } else {
     const admin = (cure?.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
-    const { site, idx } = getNextSite(currentCureId, admin);
-    // Avancer le site après injection
-    localStorage.setItem('ps_site_'+currentCureId, (idx+1) % getSites(admin).length);
+    const { site, idx } = getNextSite(currentCureId, admin, ds);
+    // Mémoriser le site utilisé pour cette date
+    localStorage.setItem('ps_site_'+currentCureId+'_'+ds, idx);
+    // Avancer le site global pour la prochaine injection
+    const _gsites = getSites(admin);
+    const _gkey = 'ps_site_global_'+currentCureId;
+    localStorage.setItem(_gkey, (idx+1) % _gsites.length);
     const timeInput = document.querySelector(`.slot-time-input[data-ds="${ds}"][data-slot="${slot}"]`);
     const actualTime = timeInput ? timeInput.value : time;
     await sb.from('injections').insert({
@@ -759,8 +772,11 @@ async function updateStockAfterInjection(cure, direction) {
 
 function saveNote(ds) {
   const el = document.getElementById('dayNote');
-  if (!el) { showToast('⚠️ Erreur'); return; }
+  if (!el) return;
   localStorage.setItem('ps_note_'+currentCureId+'_'+ds, el.value);
+  // Feedback visuel sur le bouton
+  const btn = el.nextElementSibling;
+  if (btn) { btn.textContent = '✓'; btn.style.background = 'var(--accent)'; setTimeout(() => { btn.textContent = t('cure_save_note'); btn.style.background = ''; }, 1500); }
   showToast(t('cure_note_saved'));
 }
 

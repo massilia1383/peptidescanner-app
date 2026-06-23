@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>PeptideScanner — Boutiques partenaires</title>
+<script src="/lang.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
   :root {
@@ -14,182 +15,87 @@
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
-
-  /* TOPBAR */
-  .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100;  }
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; }
   .topbar h1 { font-size:1.05rem; font-weight:700; }
   .topbar-logo { font-family:'Space Mono',monospace; font-size:.82rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
   .logo-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
-
   .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
-
-  /* HERO BANNER */
-  .hero-banner {
-    background:linear-gradient(135deg, rgba(0,201,167,.1) 0%, rgba(99,102,241,.08) 100%);
-    border:1px solid rgba(0,201,167,.2); border-radius:18px;
-    padding:18px; margin-bottom:16px; position:relative; overflow:hidden;
-  }
-  .hero-banner::after {
-    content:'🛒'; position:absolute; right:16px; top:50%;
-    transform:translateY(-50%); font-size:3rem; opacity:.15;
-  }
+  .hero-banner { background:linear-gradient(135deg,rgba(13,148,136,.1) 0%,rgba(99,102,241,.08) 100%); border:1px solid rgba(13,148,136,.2); border-radius:18px; padding:18px; margin-bottom:16px; position:relative; overflow:hidden; }
+  .hero-banner::after { content:'🛒'; position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:3rem; opacity:.15; }
   .hero-banner h2 { font-size:1rem; font-weight:700; margin-bottom:4px; }
   .hero-banner p { font-size:.78rem; color:var(--muted); line-height:1.5; }
   .hero-stats { display:flex; gap:16px; margin-top:12px; }
   .hero-stat { text-align:center; }
   .hero-stat-val { font-family:'Space Mono',monospace; font-size:1.1rem; font-weight:700; color:var(--accent); }
   .hero-stat-label { font-size:.62rem; color:var(--muted); margin-top:2px; }
-
-  /* SEARCH */
   .search-wrap { position:relative; margin-bottom:12px; }
-  .search-input {
-    width:100%; background:var(--surface); border:1.5px solid var(--border);
-    border-radius:12px; padding:11px 16px 11px 40px;
-    color:var(--text); font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s;
-  }
+  .search-input { width:100%; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:11px 16px 11px 40px; color:var(--text); font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s; }
   .search-input:focus { border-color:var(--accent); }
   .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); }
-
-  /* FILTER CHIPS */
   .filters { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; scrollbar-width:none; }
   .filters::-webkit-scrollbar { display:none; }
-  .filter-chip {
-    padding:7px 14px; border-radius:100px; border:1px solid var(--border);
-    background:var(--surface); color:var(--muted); font-size:.78rem; font-weight:600;
-    cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0;
-  }
-  .filter-chip.active { background:rgba(0,201,167,.12); border-color:rgba(0,201,167,.4); color:var(--accent); }
-
-  /* SECTION TITLE */
+  .filter-chip { padding:7px 14px; border-radius:100px; border:1px solid var(--border); background:var(--surface); color:var(--muted); font-size:.78rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0; }
+  .filter-chip.active { background:rgba(13,148,136,.12); border-color:rgba(13,148,136,.4); color:var(--accent); }
   .section-label { font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:10px; }
-
-  /* SHOP CARD */
-  .shop-card {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:18px; overflow:hidden; margin-bottom:12px;
-    transition:all .2s; cursor:pointer;
-  }
-  .shop-card:hover { border-color:rgba(0,201,167,.3); transform:translateY(-2px); }
+  .shop-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden; margin-bottom:12px; transition:all .2s; cursor:pointer; }
+  .shop-card:hover { border-color:rgba(13,148,136,.3); transform:translateY(-2px); }
   .shop-card.hidden { display:none; }
-
   .shop-header { padding:16px 16px 12px; display:flex; align-items:flex-start; gap:14px; }
-  .shop-logo {
-    width:52px; height:52px; border-radius:14px; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center; font-size:1.6rem;
-    border:1px solid var(--border);
-  }
+  .shop-logo { width:52px; height:52px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.6rem; border:1px solid var(--border); }
   .shop-meta { flex:1; min-width:0; }
   .shop-name-row { display:flex; align-items:center; gap:8px; margin-bottom:3px; flex-wrap:wrap; }
   .shop-name { font-size:.95rem; font-weight:700; }
-  .verified-badge {
-    display:flex; align-items:center; gap:3px; padding:2px 7px;
-    background:rgba(0,201,167,.1); border-radius:100px;
-    font-size:.62rem; font-weight:700; color:var(--accent); flex-shrink:0;
-    border:1px solid rgba(0,201,167,.2);
-  }
+  .verified-badge { display:flex; align-items:center; gap:3px; padding:2px 7px; background:rgba(13,148,136,.1); border-radius:100px; font-size:.62rem; font-weight:700; color:var(--accent); flex-shrink:0; border:1px solid rgba(13,148,136,.2); }
   .shop-origin { font-size:.72rem; color:var(--muted); margin-bottom:6px; }
   .shop-tags { display:flex; gap:5px; flex-wrap:wrap; }
-  .shop-tag {
-    padding:2px 8px; border-radius:6px; font-size:.65rem; font-weight:600;
-    background:var(--surface2); color:var(--muted); border:1px solid var(--border);
-  }
+  .shop-tag { padding:2px 8px; border-radius:6px; font-size:.65rem; font-weight:600; background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
   .shop-tag.hot { background:rgba(239,68,68,.08); color:var(--danger); border-color:rgba(239,68,68,.2); }
   .shop-tag.new { background:rgba(99,102,241,.08); color:var(--accent2); border-color:rgba(99,102,241,.2); }
   .shop-tag.top { background:rgba(245,158,11,.08); color:var(--gold); border-color:rgba(245,158,11,.2); }
-
-  /* RATING */
   .shop-rating { display:flex; align-items:center; gap:4px; margin-top:4px; }
   .stars { color:var(--gold); font-size:.8rem; letter-spacing:1px; }
   .rating-val { font-family:'Space Mono',monospace; font-size:.75rem; font-weight:700; color:var(--gold); }
   .rating-count { font-size:.68rem; color:var(--muted); }
-
-  /* SHOP BODY */
   .shop-body { padding:0 16px 12px; }
   .shop-desc { font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:10px; }
   .shop-cats { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
-  .shop-cat {
-    padding:3px 10px; border-radius:100px; font-size:.68rem; font-weight:600;
-    background:var(--surface2); color:var(--muted);
-  }
-  .shop-cat.green { background:rgba(0,201,167,.08); color:var(--accent); }
+  .shop-cat { padding:3px 10px; border-radius:100px; font-size:.68rem; font-weight:600; background:var(--surface2); color:var(--muted); }
+  .shop-cat.green { background:rgba(13,148,136,.08); color:var(--accent); }
   .shop-cat.purple { background:rgba(99,102,241,.08); color:var(--accent2); }
   .shop-cat.amber { background:rgba(245,158,11,.08); color:var(--gold); }
-
-  /* PROMO CODE */
-  .promo-row {
-    display:flex; align-items:center; gap:8px; padding:10px 12px;
-    background:rgba(0,201,167,.06); border-radius:10px;
-    border:1px dashed rgba(0,201,167,.3); margin-bottom:10px;
-  }
+  .promo-row { display:flex; align-items:center; gap:8px; padding:10px 12px; background:rgba(13,148,136,.06); border-radius:10px; border:1px dashed rgba(13,148,136,.3); margin-bottom:10px; }
   .promo-label { font-size:.68rem; color:var(--muted); flex-shrink:0; }
-  .promo-code {
-    font-family:'Space Mono',monospace; font-size:.82rem; font-weight:700;
-    color:var(--accent); flex:1; letter-spacing:1px;
-  }
+  .promo-code { font-family:'Space Mono',monospace; font-size:.82rem; font-weight:700; color:var(--accent); flex:1; letter-spacing:1px; }
   .promo-disc { font-size:.72rem; color:var(--accent3); font-weight:700; flex-shrink:0; }
-  .copy-btn {
-    background:rgba(0,201,167,.15); border:none; color:var(--accent);
-    padding:4px 10px; border-radius:6px; font-size:.7rem; font-weight:700;
-    cursor:pointer; flex-shrink:0; transition:all .2s; font-family:inherit;
-  }
-  .copy-btn:hover { background:rgba(0,201,167,.25); }
-
-  /* SHOP FOOTER */
+  .copy-btn { background:rgba(13,148,136,.15); border:none; color:var(--accent); padding:4px 10px; border-radius:6px; font-size:.7rem; font-weight:700; cursor:pointer; flex-shrink:0; transition:all .2s; font-family:inherit; }
+  .copy-btn:hover { background:rgba(13,148,136,.25); }
   .shop-footer { display:flex; gap:8px; padding:0 16px 14px; }
-  .shop-btn {
-    flex:1; padding:10px; border-radius:10px; border:none;
-    font-family:inherit; font-size:.82rem; font-weight:700; cursor:pointer; transition:all .2s;
-    text-decoration:none; text-align:center; display:block;
-  }
+  .shop-btn { flex:1; padding:10px; border-radius:10px; border:none; font-family:inherit; font-size:.82rem; font-weight:700; cursor:pointer; transition:all .2s; text-decoration:none; text-align:center; display:block; }
   .shop-btn.primary { background:var(--accent); color:#000; }
   .shop-btn.primary:hover { opacity:.85; }
   .shop-btn.secondary { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
   .shop-btn.secondary:hover { border-color:var(--accent); color:var(--accent); }
-
-  /* LIVRAISON INFO */
   .delivery-row { display:flex; gap:12px; padding:8px 16px; border-top:1px solid var(--border); }
   .del-item { display:flex; align-items:center; gap:5px; font-size:.68rem; color:var(--muted); }
   .del-item span { color:var(--text); font-weight:600; }
-
-  /* DEVENIR PARTENAIRE */
-  .partner-card {
-    background:linear-gradient(135deg, rgba(99,102,241,.08), rgba(0,201,167,.06));
-    border:1px solid rgba(99,102,241,.2); border-radius:18px;
-    padding:20px; margin-bottom:16px; text-align:center;
-  }
+  .partner-card { background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(13,148,136,.06)); border:1px solid rgba(99,102,241,.2); border-radius:18px; padding:20px; margin-bottom:16px; text-align:center; }
   .partner-card h3 { font-size:1rem; font-weight:700; margin-bottom:8px; }
   .partner-card p { font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:16px; }
   .partner-features { display:flex; flex-direction:column; gap:7px; margin-bottom:16px; text-align:left; }
   .partner-feat { display:flex; align-items:center; gap:8px; font-size:.8rem; color:var(--muted); }
   .partner-feat::before { content:'✓'; color:var(--accent); font-weight:700; flex-shrink:0; }
-  .partner-btn {
-    width:100%; padding:12px; border-radius:10px; border:none;
-    background:var(--accent2); color:#fff; font-family:inherit;
-    font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s;
-  }
+  .partner-btn { width:100%; padding:12px; border-radius:10px; border:none; background:var(--accent2); color:#fff; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; }
   .partner-btn:hover { opacity:.85; }
-
-  /* DISCLAIMER */
-  .affil-disclaimer {
-    background:rgba(107,122,153,.06); border:1px solid var(--border);
-    border-radius:12px; padding:12px 14px; margin-bottom:16px;
-    font-size:.72rem; color:var(--muted); line-height:1.5; text-align:center;
-  }
-
-  /* BOTTOM NAV */
+  .affil-disclaimer { background:rgba(107,122,153,.06); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:16px; font-size:.72rem; color:var(--muted); line-height:1.5; text-align:center; }
   .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(255,255,255,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 8px; }
   .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 10px; border-radius:12px; cursor:pointer; text-decoration:none; color:var(--muted); transition:all .2s; min-width:48px; }
   .nav-item.active { color:var(--accent); }
   .nav-icon { font-size:1.2rem; line-height:1; }
   .nav-label { font-size:.55rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
   .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
-
-  /* TOAST */
   .toast { position:fixed; bottom:calc(var(--nav-h)+16px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#000; padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-  /* MODAL */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:400; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .25s; backdrop-filter:blur(4px); }
   .modal-overlay.open { opacity:1; pointer-events:all; }
   .modal-sheet { width:100%; background:var(--surface); border-radius:24px 24px 0 0; padding:24px 20px 40px; transform:translateY(100%); transition:transform .3s; max-width:480px; margin:0 auto; max-height:85vh; overflow-y:auto; }
@@ -201,7 +107,7 @@
   .modal-section { margin-bottom:16px; }
   .modal-section h4 { font-size:.72rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:10px; }
   .peptide-list { display:flex; flex-wrap:wrap; gap:6px; }
-  .pep-pill { padding:4px 12px; border-radius:100px; font-size:.72rem; font-weight:600; background:rgba(0,201,167,.1); color:var(--accent); border:1px solid rgba(0,201,167,.2); }
+  .pep-pill { padding:4px 12px; border-radius:100px; font-size:.72rem; font-weight:600; background:rgba(13,148,136,.1); color:var(--accent); border:1px solid rgba(13,148,136,.2); }
   .info-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(30,45,69,.5); font-size:.84rem; }
   .info-row:last-child { border-bottom:none; }
   .info-key { color:var(--muted); }
@@ -210,345 +116,175 @@
   .big-cta:hover { opacity:.85; }
   .no-results { text-align:center; padding:40px 20px; color:var(--muted); }
   .no-results span { font-size:2rem; display:block; margin-bottom:8px; }
+  .form-field { margin-bottom:12px; }
+  .form-field label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; display:block; }
+  .form-field input, .form-field select { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:11px 14px; color:var(--text); font-family:inherit; font-size:.88rem; outline:none; }
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <h1>Boutiques partenaires</h1>
-  <div style="width:36px"></div>
+  <h1 data-i18n="shops_title"></h1>
+  <div id="langToggleBtn"></div>
 </div>
 
 <div class="content">
-
-  <!-- HERO -->
   <div class="hero-banner">
-    <h2>Fournisseurs vérifiés 🛒</h2>
-    <p>Boutiques sélectionnées pour leur qualité, leurs certificats d'analyse et leur fiabilité.</p>
+    <h2 data-i18n="shops_hero_title"></h2>
+    <p data-i18n="shops_hero_sub"></p>
     <div class="hero-stats">
-      <div class="hero-stat"><div class="hero-stat-val">12</div><div class="hero-stat-label">Boutiques</div></div>
-      <div class="hero-stat"><div class="hero-stat-val">8</div><div class="hero-stat-label">Vérifiées</div></div>
-      <div class="hero-stat"><div class="hero-stat-val">6</div><div class="hero-stat-label">Codes promo</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">12</div><div class="hero-stat-label" data-i18n="shops_stat_shops"></div></div>
+      <div class="hero-stat"><div class="hero-stat-val">8</div><div class="hero-stat-label" data-i18n="shops_stat_verified"></div></div>
+      <div class="hero-stat"><div class="hero-stat-val">6</div><div class="hero-stat-label" data-i18n="shops_stat_promo"></div></div>
     </div>
   </div>
 
-  <!-- SEARCH -->
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
-    <input class="search-input" id="searchInput" placeholder="Rechercher une boutique, un peptide…" oninput="filterShops()">
+    <input class="search-input" id="searchInput" oninput="filterShops()" data-i18n-ph="shops_search_ph">
   </div>
 
-  <!-- FILTERS -->
-  <div class="filters">
-    <div class="filter-chip active" onclick="filterCat('all',this)">Toutes</div>
-    <div class="filter-chip" onclick="filterCat('peptides',this)">Peptides</div>
-    <div class="filter-chip" onclick="filterCat('materiel',this)">Matériel</div>
-    <div class="filter-chip" onclick="filterCat('testing',this)">Lab Testing</div>
-    <div class="filter-chip" onclick="filterCat('promo',this)">Code promo</div>
-    <div class="filter-chip" onclick="filterCat('eu',this)">🇪🇺 Europe</div>
-    <div class="filter-chip" onclick="filterCat('fr',this)">🇫🇷 France</div>
-  </div>
+  <div class="filters" id="filtersBar"></div>
 
-  <!-- BOUTIQUES -->
-  <div class="section-label">Boutiques recommandées</div>
+  <div class="section-label" data-i18n="shops_section_label"></div>
   <div id="shopsList"></div>
 
-  <!-- NO RESULTS -->
   <div class="no-results" id="noResults" style="display:none">
     <span>🔍</span>
-    Aucune boutique trouvée.<br>Essayez un autre filtre.
+    <span data-i18n="shops_no_results"></span>
   </div>
 
-  <!-- DEVENIR PARTENAIRE -->
   <div class="partner-card">
-    <h3>Vous êtes une boutique ? 🤝</h3>
-    <p>Rejoignez notre réseau de partenaires affiliés et touchez des milliers d'utilisateurs actifs.</p>
+    <h3 data-i18n="shops_partner_title"></h3>
+    <p data-i18n="shops_partner_sub"></p>
     <div class="partner-features">
-      <div class="partner-feat">Visibilité auprès de notre communauté</div>
-      <div class="partner-feat">Liens affiliés trackés avec statistiques</div>
-      <div class="partner-feat">Badge "Partenaire vérifié" sur votre fiche</div>
-      <div class="partner-feat">Intégration dans les fiches peptides</div>
-      <div class="partner-feat">Newsletter mensuelle aux utilisateurs</div>
+      <div class="partner-feat" data-i18n="shops_partner_feat1"></div>
+      <div class="partner-feat" data-i18n="shops_partner_feat2"></div>
+      <div class="partner-feat" data-i18n="shops_partner_feat3"></div>
+      <div class="partner-feat" data-i18n="shops_partner_feat4"></div>
+      <div class="partner-feat" data-i18n="shops_partner_feat5"></div>
     </div>
-    <button class="partner-btn" onclick="openPartnerForm()">Devenir partenaire →</button>
+    <button class="partner-btn" onclick="openPartnerForm()" data-i18n="shops_partner_btn"></button>
   </div>
 
-  <!-- DISCLAIMER -->
-  <div class="affil-disclaimer">
-    🔗 PeptideScanner utilise des liens affiliés. Nous percevons une commission sur les ventes, sans coût supplémentaire pour vous. Cela nous permet de maintenir l'app gratuite. Nous ne recommandons que des boutiques vérifiées indépendamment.
-  </div>
-
+  <div class="affil-disclaimer" data-i18n="shops_disclaimer"></div>
 </div>
 
-<!-- SHOP DETAIL MODAL -->
+<!-- SHOP MODAL -->
 <div class="modal-overlay" id="shopModal" onclick="closeIfOverlay(event)">
   <div class="modal-sheet" id="shopModalContent"></div>
 </div>
 
 <!-- PARTNER MODAL -->
 <div class="modal-overlay" id="partnerModal" onclick="closePartnerIfOverlay(event)">
-  <div class="modal-sheet">
-    <div class="sheet-handle"></div>
-    <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px">Devenir partenaire</div>
-    <div style="font-size:.82rem;color:var(--muted);margin-bottom:20px;line-height:1.6">Remplissez ce formulaire et notre équipe vous contactera sous 48h.</div>
-    <div style="margin-bottom:12px"><label style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block">Nom de la boutique</label><input style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:inherit;font-size:.88rem;outline:none" id="partnerName" placeholder="Ex: PurePeptides EU"></div>
-    <div style="margin-bottom:12px"><label style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block">Site web</label><input style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:inherit;font-size:.88rem;outline:none" id="partnerUrl" placeholder="https://votre-boutique.com"></div>
-    <div style="margin-bottom:12px"><label style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block">Email de contact</label><input style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:inherit;font-size:.88rem;outline:none" type="email" id="partnerEmail" placeholder="contact@boutique.com"></div>
-    <div style="margin-bottom:16px"><label style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block">Pays de livraison principal</label><select style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:inherit;font-size:.88rem;outline:none"><option>France</option><option>Europe (UE)</option><option>International</option><option>USA</option></select></div>
-    <button style="width:100%;padding:13px;border-radius:12px;border:none;background:var(--accent2);color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer" onclick="submitPartner()">Envoyer la demande</button>
-    <button style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:.86rem;cursor:pointer;margin-top:8px" onclick="closePartnerModal()">Annuler</button>
-  </div>
+  <div class="modal-sheet" id="partnerSheet"></div>
 </div>
 
 <nav class="bottom-nav">
-  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
-  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label">Biblio</span></a>
-  <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span></a>
-  <a class="nav-item" href="ia.html"><span class="nav-icon">🤖</span><span class="nav-label">IA</span></a>
-  <a class="nav-item active" href="boutiques.html"><span class="nav-icon">🛒</span><span class="nav-label">Boutiques</span><div class="nav-dot"></div></a>
-  <a class="nav-item" href="inventaire.html">
-    <span class="nav-icon">🧪</span>
-    <span class="nav-label">Stock</span>
-  </a>
-  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label" data-i18n="nav_home"></span></a>
+  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label" data-i18n="nav_biblio"></span></a>
+  <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label" data-i18n="nav_cure"></span></a>
+  <a class="nav-item" href="ia.html"><span class="nav-icon">🤖</span><span class="nav-label" data-i18n="nav_ia"></span></a>
+  <a class="nav-item active" href="boutiques.html"><span class="nav-icon">🛒</span><span class="nav-label" data-i18n="nav_stock"></span><div class="nav-dot"></div></a>
+  <a class="nav-item" href="inventaire.html"><span class="nav-icon">🧪</span><span class="nav-label" data-i18n="nav_stock"></span></a>
+  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label" data-i18n="nav_profile"></span></a>
 </nav>
 <div class="toast" id="toast"></div>
 
 <script>
-function showToast(m,c=''){const t=document.getElementById('toast');t.textContent=m;t.className='toast '+(c?c:'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+PS_applyI18n();
+PS_renderLangSwitcher();
 
-// ── DATA ──────────────────────────────────────────────────────────────
-const SHOPS = [
-  {
-    id:1, name:'PurePeptides EU', emoji:'🔬', origin:'🇪🇺 Europe · Livraison FR/BE/CH',
-    verified:true, rating:4.8, reviews:312,
-    tags:['top','hot'],
-    cats:['peptides'],
-    desc:'Référence européenne pour les peptides de recherche. Certificats d\'analyse HPLC disponibles pour chaque lot. Stock permanent, livraison rapide en 48-72h.',
-    peptides:['BPC-157','TB-500','CJC-1295','Ipamorelin','GHRP-6','Epithalon','Semax','GHK-Cu','PT-141','AOD-9604'],
-    promo:{code:'PEPTTRACK15',discount:'-15%',desc:'15% sur votre 1ère commande'},
-    delivery:{delai:'48-72h',franco:'100€',pays:'FR/BE/CH/DE'},
-    url:'https://example.com/purepeptides',
-    note:'Certificats HPLC · Paiement sécurisé · Service client FR'
-  },
-  {
-    id:2, name:'ResearchPep Pro', emoji:'🧪', origin:'🇩🇪 Allemagne · Livraison EU',
-    verified:true, rating:4.6, reviews:189,
-    tags:['top'],
-    cats:['peptides'],
-    desc:'Fournisseur allemand haute qualité avec contrôle qualité strict. Spécialiste des peptides GH et de régénération. Reconnu par la communauté depuis 2019.',
-    peptides:['CJC-1295','Ipamorelin','GHRP-2','GHRP-6','Sermorelin','Tesamorelin','IGF-1 LR3','Follistatin','Hexarelin'],
-    promo:{code:'PEPTEU10',discount:'-10%',desc:'10% sur commande +200€'},
-    delivery:{delai:'3-5 jours',franco:'150€',pays:'Union Européenne'},
-    url:'https://example.com/researchpep',
-    note:'ISO 9001 · Paiement crypto accepté · Support EN/DE'
-  },
-  {
-    id:3, name:'PepLab France', emoji:'🇫🇷', origin:'🇫🇷 France · Livraison nationale',
-    verified:true, rating:4.5, reviews:97,
-    tags:['new'],
-    cats:['peptides'],
-    desc:'Boutique française spécialisée avec service client francophone. Stock de peptides populaires avec délai express. Nouveau partenaire PeptideScanner.',
-    peptides:['BPC-157','TB-500','Semaglutide','Tirzepatide','PT-141','Selank','Semax','Thymosin Alpha-1'],
-    promo:{code:'PEPTFR20',discount:'-20%',desc:'20% code bienvenue'},
-    delivery:{delai:'24-48h',franco:'80€',pays:'France métropolitaine'},
-    url:'https://example.com/peplab',
-    note:'Service client FR · Livraison express · Facturation disponible'
-  },
-  {
-    id:4, name:'InjectSupply', emoji:'💉', origin:'🇧🇪 Belgique · Livraison EU',
-    verified:true, rating:4.7, reviews:445,
-    tags:['top'],
-    cats:['materiel'],
-    desc:'Spécialiste du matériel d\'injection médical. Seringues, aiguilles, eau bactériostatique, alcool isopropylique. Tout le nécessaire pour vos cures.',
-    peptides:[],
-    materiel:['Seringues U-100 (insuline)','Aiguilles 29G-31G','Eau bactériostatique','Alcool isopropylique','Coton médical','Conteneur aiguilles usagées','Gants nitrile'],
-    promo:{code:'INJECT10',discount:'-10%',desc:'10% dès 50€ d\'achat'},
-    delivery:{delai:'2-4 jours',franco:'75€',pays:'Union Européenne'},
-    url:'https://example.com/injectsupply',
-    note:'Matériel médical certifié CE · Discret · Facturation pro disponible'
-  },
-  {
-    id:5, name:'PeptideWorld', emoji:'🌍', origin:'🌐 International · Livraison mondiale',
-    verified:false, rating:4.2, reviews:78,
-    tags:[],
-    cats:['peptides'],
-    desc:'Large catalogue de peptides de recherche avec livraison mondiale. Prix compétitifs. Délais de livraison plus longs (7-14 jours). Paiement crypto.',
-    peptides:['BPC-157','TB-500','GHRP-6','GHRP-2','CJC-1295','Ipamorelin','AOD-9604','MK-677','Epithalon','Semax','Selank','Melanotan II'],
-    promo:null,
-    delivery:{delai:'7-14 jours',franco:'200€',pays:'Mondial (hors restrictions)'},
-    url:'https://example.com/peptideworld',
-    note:'Large choix · Prix attractifs · Délais plus longs · Crypto'
-  },
-  {
-    id:6, name:'LabTest Europe', emoji:'🧫', origin:'🇳🇱 Pays-Bas · Service EU',
-    verified:true, rating:4.9, reviews:156,
-    tags:['top','hot'],
-    cats:['testing'],
-    desc:'Service de test indépendant de la pureté et du dosage de vos peptides. Envoyez un échantillon, recevez un certificat d\'analyse complet sous 5-7 jours ouvrés.',
-    peptides:[],
-    services:['Test pureté HPLC','Test dosage masse spectrométrie','Détection contaminants','Certificat d\'analyse officiel','Test microbiologique'],
-    promo:{code:'LABTEST5',discount:'-5€',desc:'5€ de réduction dès le 1er test'},
-    delivery:{delai:'5-7 jours (résultats)',franco:null,pays:'Union Européenne'},
-    url:'https://example.com/labtest',
-    note:'Service indépendant · Résultats certifiés · Rapport PDF complet'
-  },
-  {
-    id:7, name:'BioResearch CH', emoji:'🇨🇭', origin:'🇨🇭 Suisse · Livraison EU/CH',
-    verified:true, rating:4.6, reviews:203,
-    tags:[],
-    cats:['peptides'],
-    desc:'Boutique suisse premium avec les plus hauts standards de qualité. Peptides anti-âge et nootropiques spécialisés. Conditionnement professionnel.',
-    peptides:['Epithalon','Thymalin','Pinealon','Cortagen','Vilon','GHK-Cu','Semax','Selank','Dihexa','Cerebrolysin'],
-    promo:{code:'BIOCH10',discount:'-10%',desc:'10% sur anti-âge'},
-    delivery:{delai:'3-5 jours',franco:'200€',pays:'EU + Suisse'},
-    url:'https://example.com/bioresearch',
-    note:'Spécialiste anti-âge · Stock stable · Emballage discret'
-  },
-  {
-    id:8, name:'MedSupply Pro', emoji:'⚕️', origin:'🇫🇷 France · Pro & particuliers',
-    verified:true, rating:4.4, reviews:67,
-    tags:['new'],
-    cats:['materiel'],
-    desc:'Fournisseur de matériel médical professionnel. Réfrigérateurs de stockage, centrifugeuses de poche, matériel de reconstitution avancé.',
-    peptides:[],
-    materiel:['Mini-réfrigérateur portable','Eau BAC water stérile','Kit reconstitution complet','Seringues multi-doses','Filtres stérilisants 0.22μm'],
-    promo:null,
-    delivery:{delai:'48h express',franco:'120€',pays:'France + Benelux'},
-    url:'https://example.com/medsupply',
-    note:'Matériel professionnel · Factures pro disponibles · SAV réactif'
-  },
-  {
-    id:9, name:'GLP1 Direct', emoji:'⚖️', origin:'🇪🇺 Europe · Spécialiste GLP-1',
-    verified:true, rating:4.7, reviews:289,
-    tags:['hot'],
-    cats:['peptides'],
-    desc:'Spécialiste exclusif des peptides GLP-1 et perte de poids. Semaglutide, Tirzepatide, Retatrutide. Protocoles d\'accompagnement inclus avec chaque commande.',
-    peptides:['Semaglutide','Tirzepatide','Retatrutide','AOD-9604','5-Amino-1MQ'],
-    promo:{code:'GLP1TRACK',discount:'-12%',desc:'12% via PeptideScanner'},
-    delivery:{delai:'3-5 jours',franco:'150€',pays:'Union Européenne'},
-    url:'https://example.com/glp1direct',
-    note:'Spécialiste poids · Protocoles inclus · Suivi personnalisé'
-  },
-  {
-    id:10, name:'NeuroBlend', emoji:'🧠', origin:'🇫🇷 France · Nootropiques',
-    verified:false, rating:4.1, reviews:44,
-    tags:['new'],
-    cats:['peptides'],
-    desc:'Boutique spécialisée en peptides nootropiques et cognitifs. Semax, Selank, P21, Dihexa. Service client spécialisé en neurosciences.',
-    peptides:['Semax','Selank','P21','Dihexa','Pinealon','Cortagen'],
-    promo:{code:'NEURO15',discount:'-15%',desc:'15% code lancement'},
-    delivery:{delai:'48-72h',franco:'90€',pays:'France'},
-    url:'https://example.com/neuroblend',
-    note:'Spécialiste cognitif · Nouveau (peu de recul) · Prix compétitifs'
-  },
-  {
-    id:11, name:'SportPep Elite', emoji:'🏆', origin:'🇩🇪 Allemagne · Sport & Performance',
-    verified:true, rating:4.5, reviews:178,
-    tags:[],
-    cats:['peptides'],
-    desc:'Orienté sport et performance physique. BPC-157, TB-500, CJC-1295, Ipamorelin en stock permanent. Populaire dans la communauté bodybuilding et crossfit.',
-    peptides:['BPC-157','TB-500','CJC-1295','Ipamorelin','GHRP-6','IGF-1 LR3','MGF','Follistatin','Hexarelin'],
-    promo:{code:'SPORT10',discount:'-10%',desc:'10% athlètes'},
-    delivery:{delai:'3-4 jours',franco:'130€',pays:'EU + UK'},
-    url:'https://example.com/sportpep',
-    note:'Stock performance · Guide inclus · Communauté active'
-  },
-  {
-    id:12, name:'Peptide Analytics', emoji:'📊', origin:'🇧🇪 Belgique · Analyse & Test',
-    verified:true, rating:4.8, reviews:92,
-    tags:['top'],
-    cats:['testing'],
-    desc:'Service analytique premium pour la vérification de la qualité de vos peptides. Partenaire officiel de plusieurs boutiques référencées.',
-    peptides:[],
-    services:['Analyse HPLC-MS/MS','Séquençage peptidique','Test endotoxines','Analyse microbiologique','Rapport d\'expertise complet'],
-    promo:null,
-    delivery:{delai:'7-10 jours',franco:null,pays:'EU'},
-    url:'https://example.com/peptideanalytics',
-    note:'Standard pharmaceutique · Partenaire officiel · Expertise reconnue'
-  }
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+
+// ── FILTRES ───────────────────────────────────────────────────────────
+var FILTERS = [
+  {key:'all',     i18n:'shops_filter_all'},
+  {key:'peptides',i18n:'shops_filter_peptides'},
+  {key:'materiel',i18n:'shops_filter_materiel'},
+  {key:'testing', i18n:'shops_filter_testing'},
+  {key:'promo',   i18n:'shops_filter_promo'},
+  {key:'eu',      i18n:'shops_filter_eu'},
+  {key:'fr',      i18n:'shops_filter_fr'},
 ];
 
-let currentCat = 'all';
-let currentSearch = '';
-let selectedShop = null;
+function renderFilters() {
+  var bar = document.getElementById('filtersBar');
+  bar.innerHTML = FILTERS.map(function(f) {
+    return '<div class="filter-chip' + (f.key === 'all' ? ' active' : '') + '" onclick="filterCat(\'' + f.key + '\',this)">' + t(f.i18n) + '</div>';
+  }).join('');
+}
+renderFilters();
+
+// ── DATA ──────────────────────────────────────────────────────────────
+var SHOPS = [
+  {id:1,name:'PurePeptides EU',emoji:'🔬',origin:'🇪🇺 Europe · FR/BE/CH',verified:true,rating:4.8,reviews:312,tags:['top','hot'],cats:['peptides'],desc_fr:'Référence européenne. Certificats HPLC pour chaque lot. Livraison 48-72h.',desc_en:'European reference. HPLC certificates for each batch. 48-72h delivery.',peptides:['BPC-157','TB-500','CJC-1295','Ipamorelin','GHRP-6','Epithalon','Semax','GHK-Cu','PT-141','AOD-9604'],promo:{code:'PEPTTRACK15',discount:'-15%',desc_fr:'15% sur votre 1ère commande',desc_en:'15% off your 1st order'},delivery:{delai:'48-72h',franco:'100€',pays:'FR/BE/CH/DE'},url:'#',note_fr:'Certificats HPLC · Paiement sécurisé · Service client FR',note_en:'HPLC certificates · Secure payment · FR customer service'},
+  {id:2,name:'ResearchPep Pro',emoji:'🧪',origin:'🇩🇪 Allemagne · EU',verified:true,rating:4.6,reviews:189,tags:['top'],cats:['peptides'],desc_fr:'Fournisseur allemand haute qualité. Spécialiste GH et régénération.',desc_en:'High quality German supplier. GH and regeneration specialist.',peptides:['CJC-1295','Ipamorelin','GHRP-2','GHRP-6','Sermorelin','Tesamorelin','IGF-1 LR3','Follistatin','Hexarelin'],promo:{code:'PEPTEU10',discount:'-10%',desc_fr:'10% sur commande +200€',desc_en:'10% on orders over €200'},delivery:{delai:'3-5j',franco:'150€',pays:'Union Européenne'},url:'#',note_fr:'ISO 9001 · Crypto accepté · Support EN/DE',note_en:'ISO 9001 · Crypto accepted · EN/DE support'},
+  {id:3,name:'PepLab France',emoji:'🇫🇷',origin:'🇫🇷 France',verified:true,rating:4.5,reviews:97,tags:['new'],cats:['peptides'],desc_fr:'Boutique française. Service client francophone. Livraison express.',desc_en:'French shop. French-speaking customer service. Express delivery.',peptides:['BPC-157','TB-500','Semaglutide','Tirzepatide','PT-141','Selank','Semax','Thymosin Alpha-1'],promo:{code:'PEPTFR20',discount:'-20%',desc_fr:'20% code bienvenue',desc_en:'20% welcome code'},delivery:{delai:'24-48h',franco:'80€',pays:'France'},url:'#',note_fr:'Service client FR · Express · Facturation dispo',note_en:'FR customer service · Express · Invoicing available'},
+  {id:4,name:'InjectSupply',emoji:'💉',origin:'🇧🇪 Belgique · EU',verified:true,rating:4.7,reviews:445,tags:['top'],cats:['materiel'],desc_fr:'Spécialiste matériel d\'injection médical. Seringues, aiguilles, eau BAC.',desc_en:'Medical injection equipment specialist. Syringes, needles, BAC water.',materiel:['Seringues U-100','Aiguilles 29G-31G','Eau bactériostatique','Alcool isopropylique','Coton médical'],promo:{code:'INJECT10',discount:'-10%',desc_fr:'10% dès 50€',desc_en:'10% from €50'},delivery:{delai:'2-4j',franco:'75€',pays:'Union Européenne'},url:'#',note_fr:'Matériel CE · Discret · Facturation pro',note_en:'CE certified · Discreet · Pro invoicing'},
+  {id:5,name:'PeptideWorld',emoji:'🌍',origin:'🌐 International',verified:false,rating:4.2,reviews:78,tags:[],cats:['peptides'],desc_fr:'Large catalogue mondial. Prix compétitifs. Délais 7-14 jours.',desc_en:'Large global catalogue. Competitive prices. 7-14 day delivery.',peptides:['BPC-157','TB-500','GHRP-6','CJC-1295','Ipamorelin','AOD-9604','MK-677','Epithalon'],promo:null,delivery:{delai:'7-14j',franco:'200€',pays:'Mondial'},url:'#',note_fr:'Large choix · Prix attractifs · Délais longs',note_en:'Large choice · Attractive prices · Longer delays'},
+  {id:6,name:'LabTest Europe',emoji:'🧫',origin:'🇳🇱 Pays-Bas · EU',verified:true,rating:4.9,reviews:156,tags:['top','hot'],cats:['testing'],desc_fr:'Test indépendant de pureté et dosage. Certificat d\'analyse en 5-7 jours.',desc_en:'Independent purity and dosage testing. Certificate of analysis in 5-7 days.',services:['Test pureté HPLC','Test dosage masse spectrométrie','Détection contaminants','Certificat d\'analyse','Test microbiologique'],promo:{code:'LABTEST5',discount:'-5€',desc_fr:'5€ sur le 1er test',desc_en:'€5 off first test'},delivery:{delai:'5-7j',franco:null,pays:'Union Européenne'},url:'#',note_fr:'Indépendant · Résultats certifiés · PDF',note_en:'Independent · Certified results · PDF'},
+  {id:7,name:'GLP1 Direct',emoji:'⚖️',origin:'🇪🇺 Europe · GLP-1',verified:true,rating:4.7,reviews:289,tags:['hot'],cats:['peptides'],desc_fr:'Spécialiste GLP-1 et perte de poids. Semaglutide, Tirzepatide, Retatrutide.',desc_en:'GLP-1 and weight loss specialist. Semaglutide, Tirzepatide, Retatrutide.',peptides:['Semaglutide','Tirzepatide','Retatrutide','AOD-9604','5-Amino-1MQ'],promo:{code:'GLP1TRACK',discount:'-12%',desc_fr:'12% via PeptideScanner',desc_en:'12% via PeptideScanner'},delivery:{delai:'3-5j',franco:'150€',pays:'Union Européenne'},url:'#',note_fr:'Spécialiste poids · Protocoles inclus',note_en:'Weight specialist · Protocols included'},
+];
+
+var currentCat = 'all';
+var currentSearch = '';
 
 // ── RENDER ────────────────────────────────────────────────────────────
 function renderShops() {
-  const list = document.getElementById('shopsList');
-  const noRes = document.getElementById('noResults');
-  const search = currentSearch.toLowerCase();
-  let count = 0;
+  var list = document.getElementById('shopsList');
+  var noRes = document.getElementById('noResults');
+  var search = currentSearch.toLowerCase();
+  var lang = PS_getLang();
+  var count = 0;
 
-  list.innerHTML = SHOPS.map(shop => {
-    const matchCat = currentCat === 'all'
-      || (currentCat === 'eu' && shop.origin.includes('🇪🇺') || shop.origin.includes('🇫🇷') || shop.origin.includes('🇩🇪') || shop.origin.includes('🇧🇪') || shop.origin.includes('🇨🇭') || shop.origin.includes('🇳🇱'))
+  list.innerHTML = SHOPS.map(function(shop) {
+    var matchCat = currentCat === 'all'
+      || (currentCat === 'eu' && (shop.origin.includes('🇪🇺') || shop.origin.includes('🇫🇷') || shop.origin.includes('🇩🇪') || shop.origin.includes('🇧🇪') || shop.origin.includes('🇳🇱')))
       || (currentCat === 'fr' && shop.origin.includes('🇫🇷'))
       || (currentCat === 'promo' && shop.promo)
       || shop.cats.includes(currentCat);
 
-    const matchSearch = !search
-      || shop.name.toLowerCase().includes(search)
-      || shop.desc.toLowerCase().includes(search)
-      || (shop.peptides && shop.peptides.some(p => p.toLowerCase().includes(search)))
-      || (shop.materiel && shop.materiel.some(m => m.toLowerCase().includes(search)));
+    var desc = lang === 'en' ? shop.desc_en : shop.desc_fr;
+    var matchSearch = !search || shop.name.toLowerCase().includes(search) || desc.toLowerCase().includes(search)
+      || (shop.peptides && shop.peptides.some(function(p){return p.toLowerCase().includes(search);}))
+      || (shop.materiel && shop.materiel.some(function(m){return m.toLowerCase().includes(search);}));
 
     if (!matchCat || !matchSearch) return '';
     count++;
 
-    const stars = '★'.repeat(Math.floor(shop.rating)) + (shop.rating % 1 >= 0.5 ? '★' : '☆');
-    const tagsHtml = shop.tags.map(t =>
-      `<span class="shop-tag ${t}">${t === 'hot' ? '🔥 Populaire' : t === 'new' ? '✨ Nouveau' : '⭐ Top'}</span>`
-    ).join('');
-
-    const promoHtml = shop.promo ? `
-      <div class="promo-row">
-        <span class="promo-label">Code promo</span>
-        <span class="promo-code">${shop.promo.code}</span>
-        <span class="promo-disc">${shop.promo.discount}</span>
-        <button class="copy-btn" onclick="copyCode(event,'${shop.promo.code}')">Copier</button>
-      </div>` : '';
-
-    const catsHtml = shop.cats.map(c => {
-      const labels = {peptides:'💊 Peptides', materiel:'🩹 Matériel', testing:'🔬 Lab Testing'};
-      const cls = {peptides:'green', materiel:'amber', testing:'purple'};
-      return `<span class="shop-cat ${cls[c]}">${labels[c]}</span>`;
+    var stars = '★'.repeat(Math.floor(shop.rating));
+    var tagsHtml = shop.tags.map(function(tag) {
+      return '<span class="shop-tag ' + tag + '">' + t('shops_tag_' + tag) + '</span>';
     }).join('');
 
-    return `
-      <div class="shop-card" id="shop-${shop.id}" onclick="openShop(${shop.id})">
-        <div class="shop-header">
-          <div class="shop-logo" style="background:var(--surface2)">${shop.emoji}</div>
-          <div class="shop-meta">
-            <div class="shop-name-row">
-              <span class="shop-name">${shop.name}</span>
-              ${shop.verified ? '<div class="verified-badge">✓ Vérifié</div>' : ''}
-            </div>
-            <div class="shop-origin">${shop.origin}</div>
-            <div class="shop-tags">${tagsHtml}</div>
-            <div class="shop-rating" style="margin-top:5px">
-              <span class="stars">${stars}</span>
-              <span class="rating-val">${shop.rating}</span>
-              <span class="rating-count">(${shop.reviews} avis)</span>
-            </div>
-          </div>
-        </div>
-        <div class="shop-body">
-          <div class="shop-desc">${shop.desc.substring(0,120)}…</div>
-          <div class="shop-cats">${catsHtml}</div>
-          ${promoHtml}
-        </div>
-        <div class="delivery-row">
-          <div class="del-item">🚚 <span>${shop.delivery.delai}</span></div>
-          ${shop.delivery.franco ? `<div class="del-item">📦 Franco <span>${shop.delivery.franco}</span></div>` : ''}
-          <div class="del-item">🌍 <span>${shop.delivery.pays}</span></div>
-        </div>
-        <div class="shop-footer">
-          <a class="shop-btn primary" href="${shop.url}" target="_blank" onclick="trackClick(event,${shop.id})">Visiter la boutique →</a>
-          <button class="shop-btn secondary" onclick="openShop(${shop.id});event.stopPropagation()">Détails</button>
-        </div>
-      </div>`;
+    var promoHtml = shop.promo ? '<div class="promo-row"><span class="promo-label">' + t('shops_promo_label') + '</span><span class="promo-code">' + shop.promo.code + '</span><span class="promo-disc">' + shop.promo.discount + '</span><button class="copy-btn" onclick="copyCode(event,\'' + shop.promo.code + '\')">' + t('shops_copy') + '</button></div>' : '';
+
+    var catsHtml = shop.cats.map(function(c) {
+      var cls = {peptides:'green',materiel:'amber',testing:'purple'};
+      return '<span class="shop-cat ' + cls[c] + '">' + t('shops_cat_' + c) + '</span>';
+    }).join('');
+
+    return '<div class="shop-card" id="shop-' + shop.id + '" onclick="openShop(' + shop.id + ')">'
+      + '<div class="shop-header"><div class="shop-logo" style="background:var(--surface2)">' + shop.emoji + '</div>'
+      + '<div class="shop-meta"><div class="shop-name-row"><span class="shop-name">' + shop.name + '</span>'
+      + (shop.verified ? '<div class="verified-badge">' + t('shops_verified') + '</div>' : '')
+      + '</div><div class="shop-origin">' + shop.origin + '</div>'
+      + '<div class="shop-tags">' + tagsHtml + '</div>'
+      + '<div class="shop-rating"><span class="stars">' + stars + '</span><span class="rating-val">' + shop.rating + '</span><span class="rating-count">(' + shop.reviews + ')</span></div>'
+      + '</div></div>'
+      + '<div class="shop-body"><div class="shop-desc">' + desc.substring(0,100) + '…</div>'
+      + '<div class="shop-cats">' + catsHtml + '</div>' + promoHtml + '</div>'
+      + '<div class="delivery-row">'
+      + '<div class="del-item">🚚 <span>' + shop.delivery.delai + '</span></div>'
+      + (shop.delivery.franco ? '<div class="del-item">📦 <span>' + shop.delivery.franco + '</span></div>' : '')
+      + '<div class="del-item">🌍 <span>' + shop.delivery.pays + '</span></div>'
+      + '</div>'
+      + '<div class="shop-footer">'
+      + '<a class="shop-btn primary" href="' + shop.url + '" target="_blank" onclick="trackClick(event,' + shop.id + ')">' + t('shops_visit') + '</a>'
+      + '<button class="shop-btn secondary" onclick="openShop(' + shop.id + ');event.stopPropagation()">' + t('shops_details') + '</button>'
+      + '</div></div>';
   }).join('');
 
   noRes.style.display = count === 0 ? 'block' : 'none';
@@ -556,7 +292,7 @@ function renderShops() {
 
 function filterCat(cat, btn) {
   currentCat = cat;
-  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-chip').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
   renderShops();
 }
@@ -568,133 +304,83 @@ function filterShops() {
 
 // ── SHOP MODAL ────────────────────────────────────────────────────────
 function openShop(id) {
-  const shop = SHOPS.find(s => s.id === id);
+  var shop = SHOPS.find(function(s){return s.id===id;});
   if (!shop) return;
-  selectedShop = shop;
+  var lang = PS_getLang();
+  var desc = lang === 'en' ? shop.desc_en : shop.desc_fr;
+  var note = lang === 'en' ? shop.note_en : shop.note_fr;
+  var stars = '★'.repeat(Math.floor(shop.rating));
 
-  const stars = '★'.repeat(Math.floor(shop.rating)) + (shop.rating % 1 >= 0.5 ? '★' : '');
+  var pepHtml = shop.peptides && shop.peptides.length ? '<div class="modal-section"><h4>' + t('shops_modal_peptides') + '</h4><div class="peptide-list">' + shop.peptides.map(function(p){return '<span class="pep-pill">'+p+'</span>';}).join('') + '</div></div>' : '';
+  var matHtml = shop.materiel ? '<div class="modal-section"><h4>' + t('shops_modal_materiel') + '</h4><div class="peptide-list">' + shop.materiel.map(function(m){return '<span class="pep-pill" style="color:var(--accent3);background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)">'+m+'</span>';}).join('') + '</div></div>' : '';
+  var svcHtml = shop.services ? '<div class="modal-section"><h4>' + t('shops_modal_services') + '</h4><div class="peptide-list">' + shop.services.map(function(s){return '<span class="pep-pill" style="color:var(--accent2);background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2)">'+s+'</span>';}).join('') + '</div></div>' : '';
+  var promoDesc = shop.promo ? (lang === 'en' ? shop.promo.desc_en : shop.promo.desc_fr) : '';
+  var promoHtml = shop.promo ? '<div class="modal-section"><h4>' + t('shops_modal_promo') + '</h4><div class="promo-row"><span class="promo-code">'+shop.promo.code+'</span><span class="promo-disc">'+shop.promo.discount+'</span><button class="copy-btn" onclick="copyCode(event,\''+shop.promo.code+'\')">'+t('shops_copy')+'</button></div><div style="font-size:.72rem;color:var(--muted);margin-top:6px">'+promoDesc+'</div></div>' : '';
 
-  const peptidesHtml = shop.peptides && shop.peptides.length > 0
-    ? `<div class="modal-section">
-        <h4>Peptides disponibles</h4>
-        <div class="peptide-list">${shop.peptides.map(p => `<span class="pep-pill">${p}</span>`).join('')}</div>
-      </div>` : '';
-
-  const materielHtml = shop.materiel
-    ? `<div class="modal-section">
-        <h4>Matériel disponible</h4>
-        <div class="peptide-list">${shop.materiel.map(m => `<span class="pep-pill" style="color:var(--accent3);background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)">${m}</span>`).join('')}</div>
-      </div>` : '';
-
-  const servicesHtml = shop.services
-    ? `<div class="modal-section">
-        <h4>Services proposés</h4>
-        <div class="peptide-list">${shop.services.map(s => `<span class="pep-pill" style="color:var(--accent2);background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2)">${s}</span>`).join('')}</div>
-      </div>` : '';
-
-  const promoHtml = shop.promo ? `
-    <div class="modal-section">
-      <h4>Code promotionnel exclusif</h4>
-      <div class="promo-row">
-        <span class="promo-code">${shop.promo.code}</span>
-        <span class="promo-disc">${shop.promo.discount}</span>
-        <button class="copy-btn" onclick="copyCode(event,'${shop.promo.code}')">Copier</button>
-      </div>
-      <div style="font-size:.72rem;color:var(--muted);margin-top:6px">${shop.promo.desc}</div>
-    </div>` : '';
-
-  document.getElementById('shopModalContent').innerHTML = `
-    <div class="sheet-handle"></div>
-    <div class="modal-shop-logo" style="background:var(--surface2)">${shop.emoji}</div>
-    <div class="modal-shop-name">${shop.name} ${shop.verified ? '<span style="font-size:.7rem;color:var(--accent)">✓</span>' : ''}</div>
-    <div class="modal-shop-origin">${shop.origin}</div>
-    <div style="display:flex;justify-content:center;align-items:center;gap:6px;margin-bottom:20px">
-      <span style="color:var(--gold);font-size:.9rem">${stars}</span>
-      <span style="font-family:Space Mono,monospace;font-weight:700;color:var(--gold)">${shop.rating}</span>
-      <span style="font-size:.72rem;color:var(--muted)">(${shop.reviews} avis)</span>
-    </div>
-
-    <div class="modal-section">
-      <h4>À propos</h4>
-      <p style="font-size:.84rem;color:var(--muted);line-height:1.6">${shop.desc}</p>
-    </div>
-
-    <div class="modal-section">
-      <h4>Infos livraison</h4>
-      <div class="info-row"><span class="info-key">Délai</span><span class="info-val">${shop.delivery.delai}</span></div>
-      ${shop.delivery.franco ? `<div class="info-row"><span class="info-key">Franco de port</span><span class="info-val">${shop.delivery.franco}</span></div>` : ''}
-      <div class="info-row"><span class="info-key">Zone de livraison</span><span class="info-val">${shop.delivery.pays}</span></div>
-      <div class="info-row"><span class="info-key">Statut</span><span class="info-val" style="color:${shop.verified ? 'var(--accent)' : 'var(--accent3)'}">${shop.verified ? '✓ Vérifié PeptideScanner' : '⚠️ Non vérifié'}</span></div>
-    </div>
-
-    ${peptidesHtml}${materielHtml}${servicesHtml}${promoHtml}
-
-    <div class="modal-section">
-      <h4>Note PeptideScanner</h4>
-      <p style="font-size:.8rem;color:var(--muted);font-style:italic">${shop.note}</p>
-    </div>
-
-    <a class="big-cta" href="${shop.url}" target="_blank" onclick="trackClick(event,${shop.id})" style="display:block;text-align:center;text-decoration:none;color:#000">Visiter ${shop.name} →</a>
-    <button style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:.86rem;cursor:pointer;margin-top:8px" onclick="closeShopModal()">Fermer</button>
-  `;
+  document.getElementById('shopModalContent').innerHTML =
+    '<div class="sheet-handle"></div>'
+    + '<div class="modal-shop-logo" style="background:var(--surface2)">' + shop.emoji + '</div>'
+    + '<div class="modal-shop-name">' + shop.name + (shop.verified ? ' <span style="font-size:.7rem;color:var(--accent)">✓</span>' : '') + '</div>'
+    + '<div class="modal-shop-origin">' + shop.origin + '</div>'
+    + '<div style="display:flex;justify-content:center;align-items:center;gap:6px;margin-bottom:20px"><span style="color:var(--gold)">' + stars + '</span><span style="font-family:Space Mono,monospace;font-weight:700;color:var(--gold)">' + shop.rating + '</span><span style="font-size:.72rem;color:var(--muted)">(' + shop.reviews + ')</span></div>'
+    + '<div class="modal-section"><h4>' + t('shops_modal_about') + '</h4><p style="font-size:.84rem;color:var(--muted);line-height:1.6">' + desc + '</p></div>'
+    + '<div class="modal-section"><h4>' + t('shops_modal_delivery') + '</h4>'
+    + '<div class="info-row"><span class="info-key">' + t('shops_delivery_delay') + '</span><span class="info-val">' + shop.delivery.delai + '</span></div>'
+    + (shop.delivery.franco ? '<div class="info-row"><span class="info-key">' + t('shops_delivery_franco') + '</span><span class="info-val">' + shop.delivery.franco + '</span></div>' : '')
+    + '<div class="info-row"><span class="info-key">' + t('shops_delivery_zone') + '</span><span class="info-val">' + shop.delivery.pays + '</span></div>'
+    + '<div class="info-row"><span class="info-key">Statut</span><span class="info-val" style="color:' + (shop.verified ? 'var(--accent)' : 'var(--accent3)') + '">' + (shop.verified ? t('shops_modal_status_ok') : t('shops_modal_status_no')) + '</span></div>'
+    + '</div>'
+    + pepHtml + matHtml + svcHtml + promoHtml
+    + '<div class="modal-section"><h4>' + t('shops_modal_note') + '</h4><p style="font-size:.8rem;color:var(--muted);font-style:italic">' + note + '</p></div>'
+    + '<a class="big-cta" href="' + shop.url + '" target="_blank" onclick="trackClick(event,' + shop.id + ')" style="display:block;text-align:center;text-decoration:none;color:#000">' + t('shops_modal_visit') + ' ' + shop.name + ' →</a>'
+    + '<button style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:.86rem;cursor:pointer;margin-top:8px" onclick="closeShopModal()">' + t('shops_modal_close') + '</button>';
 
   document.getElementById('shopModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
-function closeShopModal() {
-  document.getElementById('shopModal').classList.remove('open');
-  document.body.style.overflow = '';
-}
+function closeShopModal(){document.getElementById('shopModal').classList.remove('open');document.body.style.overflow='';}
+function closeIfOverlay(e){if(e.target===document.getElementById('shopModal'))closeShopModal();}
 
-function closeIfOverlay(e) {
-  if (e.target === document.getElementById('shopModal')) closeShopModal();
-}
-
-// ── AFFILIATE TRACKING ────────────────────────────────────────────────
-function trackClick(event, shopId) {
-  event.stopPropagation();
-  const shop = SHOPS.find(s => s.id === shopId);
-  if (!shop) return;
-  // Log click (pour analytics futures)
-  const clicks = JSON.parse(localStorage.getItem('pt_affil_clicks') || '{}');
-  clicks[shopId] = (clicks[shopId] || 0) + 1;
-  localStorage.setItem('pt_affil_clicks', JSON.stringify(clicks));
-  showToast(`Ouverture de ${shop.name} 🔗`);
-}
-
-// ── COPY CODE ─────────────────────────────────────────────────────────
-function copyCode(event, code) {
-  event.stopPropagation();
-  navigator.clipboard.writeText(code).then(() => {
-    showToast(`✓ Code "${code}" copié !`);
-  }).catch(() => {
-    showToast(`Code : ${code}`);
-  });
-}
-
-// ── PARTNER FORM ──────────────────────────────────────────────────────
+// ── PARTNER MODAL ─────────────────────────────────────────────────────
 function openPartnerForm() {
+  document.getElementById('partnerSheet').innerHTML =
+    '<div class="sheet-handle"></div>'
+    + '<div style="font-size:1.1rem;font-weight:700;margin-bottom:8px">' + t('shops_partner_modal_title') + '</div>'
+    + '<div style="font-size:.82rem;color:var(--muted);margin-bottom:20px;line-height:1.6">' + t('shops_partner_modal_sub') + '</div>'
+    + '<div class="form-field"><label>' + t('shops_partner_name') + '</label><input id="pName" placeholder="Ex: PurePeptides EU"></div>'
+    + '<div class="form-field"><label>' + t('shops_partner_url') + '</label><input id="pUrl" placeholder="https://votre-boutique.com"></div>'
+    + '<div class="form-field"><label>' + t('shops_partner_email') + '</label><input type="email" id="pEmail" placeholder="contact@boutique.com"></div>'
+    + '<div class="form-field"><label>' + t('shops_partner_country') + '</label><select id="pCountry"><option>France</option><option>Europe (UE)</option><option>International</option><option>USA</option></select></div>'
+    + '<button style="width:100%;padding:13px;border-radius:12px;border:none;background:var(--accent2);color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer" onclick="submitPartner()">' + t('shops_partner_send') + '</button>'
+    + '<button style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:.86rem;cursor:pointer;margin-top:8px" onclick="closePartnerModal()">' + t('shops_partner_cancel') + '</button>';
   document.getElementById('partnerModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-function closePartnerModal() {
-  document.getElementById('partnerModal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-function closePartnerIfOverlay(e) {
-  if (e.target === document.getElementById('partnerModal')) closePartnerModal();
-}
-function submitPartner() {
-  const name = document.getElementById('partnerName').value.trim();
-  const url = document.getElementById('partnerUrl').value.trim();
-  const email = document.getElementById('partnerEmail').value.trim();
-  if (!name || !url || !email) { showToast('⚠️ Remplir tous les champs'); return; }
+function closePartnerModal(){document.getElementById('partnerModal').classList.remove('open');document.body.style.overflow='';}
+function closePartnerIfOverlay(e){if(e.target===document.getElementById('partnerModal'))closePartnerModal();}
+function submitPartner(){
+  if(!document.getElementById('pName').value||!document.getElementById('pUrl').value||!document.getElementById('pEmail').value){showToast(t('shops_partner_fill'));return;}
   closePartnerModal();
-  showToast('✓ Demande envoyée ! Réponse sous 48h.');
+  showToast(t('shops_partner_sent'));
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────
+// ── UTILS ─────────────────────────────────────────────────────────────
+function trackClick(event, shopId){
+  event.stopPropagation();
+  var shop = SHOPS.find(function(s){return s.id===shopId;});
+  if (!shop) return;
+  var clicks = JSON.parse(localStorage.getItem('pt_affil_clicks')||'{}');
+  clicks[shopId] = (clicks[shopId]||0)+1;
+  localStorage.setItem('pt_affil_clicks',JSON.stringify(clicks));
+  showToast(t('shops_open_toast') + ' ' + shop.name + ' 🔗');
+}
+
+function copyCode(event, code){
+  event.stopPropagation();
+  navigator.clipboard.writeText(code).then(function(){showToast(t('shops_copied_toast') + ' "' + code + '"');}).catch(function(){showToast('Code: '+code);});
+}
+
 renderShops();
 </script>
 </body>

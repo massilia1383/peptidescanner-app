@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PeptideScanner — Suivi de cure peptidique</title>
+<script src="/lang.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
@@ -456,24 +457,24 @@
     PeptideScanner
   </div>
   <ul>
-    <li><a href="#peptides">Bibliothèque</a></li>
-    <li><a href="#tracker">Suivi</a></li>
-    <li><a href="#pricing">Tarifs</a></li>
-    <li><a href="#shops">Boutiques</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#peptides" data-i18n="idx_nav_biblio"></a></li>
+    <li><a href="#tracker" data-i18n="idx_nav_tracker"></a></li>
+    <li><a href="#pricing" data-i18n="idx_nav_pricing"></a></li>
+    <li><a href="#shops" data-i18n="idx_nav_shops"></a></li>
+    <li><a href="#roadmap" data-i18n="idx_nav_roadmap"></a></li>
   </ul>
-  <button class="nav-cta" onclick="window.location.href='login.html'">Essai gratuit</button>
+  <button class="nav-cta" onclick="window.location.href='login.html'" data-i18n="idx_nav_cta"></button>
 </nav>
 
 <!-- HERO -->
 <div class="hero">
   <div class="hero-left">
-    <div class="hero-badge">🧬 Révolution thérapeutique • v1.0 Beta</div>
-    <h1>Suivez vos cures<br><span>peptidiques</span><br>avec précision.</h1>
-    <p>Bibliothèque complète, calendrier de cure, suivi du poids, alertes personnalisées et liens vers les meilleures boutiques — tout en un.</p>
+    <div class="hero-badge" data-i18n="idx_hero_badge"></div>
+    <h1><span id="heroH1a"></span><br><span class="accent-span" id="heroH1b"></span><br><span id="heroH1c"></span></h1>
+    <p data-i18n="idx_hero_sub"></p>
     <div class="hero-btns">
-      <button class="btn-primary" onclick="window.location.href='login.html'">Commencer gratuitement</button>
-      <button class="btn-demo" onclick="window.location.href='demo.html'">▶ Voir la démo interactive</button>
+      <button class="btn-primary" onclick="window.location.href='login.html'" data-i18n="idx_hero_btn_start"></button>
+      <button class="btn-demo" onclick="window.location.href='demo.html'" data-i18n="idx_hero_btn_demo"></button>
     </div>
   </div>
   <div class="hero-right">
@@ -511,42 +512,42 @@
 
 <!-- FEATURES -->
 <section id="features">
-  <div class="section-eyebrow">Fonctionnalités</div>
-  <div class="section-title">Tout ce dont vous avez besoin.</div>
-  <div class="section-sub">De la bibliothèque scientifique au suivi quotidien, PeptideScanner couvre chaque étape de votre protocole.</div>
+  <div class="section-eyebrow" data-i18n="idx_feat_eyebrow"></div>
+  <div class="section-title" data-i18n="idx_feat_title"></div>
+  <div class="section-sub" data-i18n="idx_feat_sub"></div>
   <div class="features-grid">
     <div class="feature-card">
       <div class="feat-icon green">🧬</div>
-      <h3>Bibliothèque peptidique</h3>
-      <p>Plus de 80 peptides référencés : dosages, protocoles, effets, durée de cure, voie d'administration et contre-indications.</p>
+      <h3 data-i18n="idx_feat1_title"></h3>
+      <p data-i18n="idx_feat1_sub"></p>
     </div>
     <div class="feature-card">
       <div class="feat-icon purple">📅</div>
-      <h3>Calendrier de cure</h3>
-      <p>Planifiez vos cures sur un calendrier interactif. Visualisez en un coup d'œil vos jours d'injection, de repos et de fin de cycle.</p>
+      <h3 data-i18n="idx_feat2_title"></h3>
+      <p data-i18n="idx_feat2_sub"></p>
     </div>
     <div class="feature-card">
       <div class="feat-icon green">⚖️</div>
-      <h3>Suivi du poids & photos</h3>
-      <p>Enregistrez votre évolution avec graphiques, photos de progression et corrélation avec vos cures actives.</p>
+      <h3 data-i18n="idx_feat3_title"></h3>
+      <p data-i18n="idx_feat3_sub"></p>
       <span class="feat-badge">⭐ Premium</span>
     </div>
     <div class="feature-card">
       <div class="feat-icon amber">🔔</div>
-      <h3>Alertes & rappels</h3>
-      <p>Notifications push pour chaque injection, fin de flacon, conservation au réfrigérateur et prises de sang recommandées.</p>
+      <h3 data-i18n="idx_feat4_title"></h3>
+      <p data-i18n="idx_feat4_sub"></p>
       <span class="feat-badge">⭐ Premium</span>
     </div>
     <div class="feature-card">
       <div class="feat-icon purple">🤖</div>
-      <h3>Conseiller IA</h3>
-      <p>Posez vos questions sur les peptides. Recevez des recommandations de protocoles basées sur vos objectifs et votre historique.</p>
+      <h3 data-i18n="idx_feat5_title"></h3>
+      <p data-i18n="idx_feat5_sub"></p>
       <span class="feat-badge">⭐ Premium</span>
     </div>
     <div class="feature-card">
       <div class="feat-icon green">🛒</div>
-      <h3>Boutiques partenaires</h3>
-      <p>Accédez directement aux meilleures boutiques de peptides vérifiées, avec des liens affiliés et les meilleurs prix.</p>
+      <h3 data-i18n="idx_feat6_title"></h3>
+      <p data-i18n="idx_feat6_sub"></p>
     </div>
   </div>
 </section>
@@ -556,18 +557,18 @@
 <!-- DATABASE -->
 <div class="db-section" id="peptides">
   <div class="db-inner">
-    <div class="section-eyebrow">Bibliothèque</div>
-    <div class="section-title">80+ peptides référencés.</div>
-    <div class="section-sub">Chaque fiche inclut le protocole complet, les dosages, les effets attendus et un lien vers une boutique partenaire.</div>
+    <div class="section-eyebrow" data-i18n="idx_db_eyebrow"></div>
+    <div class="section-title" data-i18n="idx_db_title"></div>
+    <div class="section-sub" data-i18n="idx_db_sub"></div>
 
     <table class="peptide-table">
       <thead>
         <tr>
-          <th>Nom</th>
-          <th>Catégorie</th>
-          <th>Dosage typique</th>
-          <th>Protocole</th>
-          <th>Boutique</th>
+          <th data-i18n="idx_db_col_name"></th>
+          <th data-i18n="idx_db_col_cat"></th>
+          <th data-i18n="idx_db_col_dose"></th>
+          <th data-i18n="idx_db_col_protocol"></th>
+          <th data-i18n="idx_db_col_shop"></th>
         </tr>
       </thead>
       <tbody>
@@ -635,9 +636,9 @@
 <!-- TRACKER -->
 <div class="tracker-section" id="tracker">
   <div style="max-width:1200px;margin:0 auto;padding:80px 32px;">
-    <div class="section-eyebrow">Suivi</div>
-    <div class="section-title">Votre protocole, visualisé.</div>
-    <div class="section-sub">Un tableau de bord complet pour ne jamais rater une injection et mesurer vos progrès.</div>
+    <div class="section-eyebrow" data-i18n="idx_tracker_eyebrow"></div>
+    <div class="section-title" data-i18n="idx_tracker_title"></div>
+    <div class="section-sub" data-i18n="idx_tracker_sub"></div>
 
     <div class="tracker-grid">
       <!-- Calendar -->
@@ -747,9 +748,9 @@
 
 <!-- AI DEMO -->
 <div class="demo-section" id="ia">
-  <div class="section-eyebrow">Conseiller IA</div>
-  <div class="section-title">Posez vos questions.</div>
-  <div class="section-sub">Un assistant spécialisé en peptides répond à vos questions de protocole, dosage et stack.</div>
+  <div class="section-eyebrow" data-i18n="idx_ia_eyebrow"></div>
+  <div class="section-title" data-i18n="idx_ia_title"></div>
+  <div class="section-sub" data-i18n="idx_ia_sub"></div>
 
   <div class="demo-box">
     <div class="demo-tabs">
@@ -771,16 +772,16 @@
 <!-- PRICING -->
 <div class="pricing-section" id="pricing">
   <div class="pricing-inner">
-    <div class="section-eyebrow">Tarifs</div>
-    <div class="section-title">Simple et transparent.</div>
-    <div class="section-sub">Commencez gratuitement. Passez Premium pour débloquer le suivi complet, les alertes et l'IA.</div>
+    <div class="section-eyebrow" data-i18n="idx_pricing_eyebrow"></div>
+    <div class="section-title" data-i18n="idx_pricing_title"></div>
+    <div class="section-sub" data-i18n="idx_pricing_sub"></div>
 
     <div class="plans-grid">
       <!-- Free -->
       <div class="plan-card">
-        <div class="plan-name">Gratuit</div>
+        <div class="plan-name" data-i18n="idx_plan_free"></div>
         <div class="plan-price"><sub>€</sub>0</div>
-        <div class="plan-period">Pour toujours</div>
+        <div class="plan-period" data-i18n="idx_plan_free_period"></div>
         <ul class="plan-features">
           <li class="active"><span class="check">✓</span>Bibliothèque complète 80+ peptides</li>
           <li class="active"><span class="check">✓</span>Fiches dosage & protocole</li>
@@ -790,15 +791,15 @@
           <li><span class="cross">✗</span>Alertes & rappels</li>
           <li><span class="cross">✗</span>Conseiller IA</li>
         </ul>
-        <button class="plan-btn outline" onclick="window.location.href='login.html'">Commencer</button>
+        <button class="plan-btn outline" onclick="window.location.href='login.html'" data-i18n="idx_plan_free_btn"></button>
       </div>
 
       <!-- Premium -->
       <div class="plan-card popular">
-        <div class="popular-badge">⭐ PLUS POPULAIRE</div>
-        <div class="plan-name">Premium</div>
+        <div class="popular-badge" data-i18n="idx_plan_popular"></div>
+        <div class="plan-name" data-i18n="idx_plan_premium"></div>
         <div class="plan-price"><sub>€</sub>59</div>
-        <div class="plan-period">par an · soit 4.90 €/mois</div>
+        <div class="plan-period" data-i18n="idx_plan_prem_period"></div>
         <ul class="plan-features">
           <li class="active"><span class="check">✓</span>Tout le plan Gratuit</li>
           <li class="active"><span class="check">✓</span>Calendrier de cure illimité</li>
@@ -808,14 +809,14 @@
           <li class="active"><span class="check">✓</span>Conseiller IA illimité</li>
           <li class="active"><span class="check">✓</span>Export PDF de vos cures</li>
         </ul>
-        <button class="plan-btn main" onclick="window.location.href='lemon-checkout.html'">Démarrer Premium</button>
+        <button class="plan-btn main" onclick="window.location.href='lemon-checkout.html'" data-i18n="idx_plan_prem_btn"></button>
       </div>
 
       <!-- Pro -->
       <div class="plan-card">
-        <div class="plan-name">Professionnel</div>
+        <div class="plan-name" data-i18n="idx_plan_pro"></div>
         <div class="plan-price"><sub>€</sub>199</div>
-        <div class="plan-period">par an · pour cliniques & coaches</div>
+        <div class="plan-period" data-i18n="idx_plan_pro_period"></div>
         <ul class="plan-features">
           <li class="active"><span class="check">✓</span>Tout le plan Premium</li>
           <li class="active"><span class="check">✓</span>Gestion multi-patients</li>
@@ -825,7 +826,7 @@
           <li class="active"><span class="check">✓</span>Support prioritaire</li>
           <li class="active"><span class="check">✓</span>Personnalisation de marque</li>
         </ul>
-        <button class="plan-btn outline" onclick="window.location.href='mailto:contact@peptidescanner.app'">Contacter</button>
+        <button class="plan-btn outline" onclick="window.location.href='mailto:contact@peptidescanner.app'" data-i18n="idx_plan_pro_btn"></button>
       </div>
     </div>
   </div>
@@ -833,9 +834,9 @@
 
 <!-- AFFILIATE SHOPS -->
 <div class="affiliate-section" id="shops">
-  <div class="section-eyebrow">Boutiques partenaires</div>
-  <div class="section-title">Les meilleures sources.</div>
-  <div class="section-sub">Accédez directement aux boutiques vérifiées depuis les fiches peptides. Liens affiliés pour soutenir l'app.</div>
+  <div class="section-eyebrow" data-i18n="idx_shops_eyebrow"></div>
+  <div class="section-title" data-i18n="idx_shops_title"></div>
+  <div class="section-sub" data-i18n="idx_shops_sub"></div>
 
   <div class="shops-grid">
     <div class="shop-card">
@@ -897,8 +898,8 @@
 <!-- ROADMAP -->
 <div class="roadmap-section" id="roadmap">
   <div class="roadmap-inner">
-    <div class="section-eyebrow">Roadmap</div>
-    <div class="section-title">Ce qui arrive bientôt.</div>
+    <div class="section-eyebrow" data-i18n="idx_roadmap_eyebrow"></div>
+    <div class="section-title" data-i18n="idx_roadmap_title"></div>
     <br>
     <div class="roadmap-item">
       <div class="roadmap-dot done">✓</div>
@@ -947,12 +948,12 @@
 <!-- BANNIÈRE DÉMO -->
 <div style="background:linear-gradient(135deg,rgba(13,148,136,.08),rgba(43,108,176,.06));border-top:1px solid rgba(13,148,136,.15);border-bottom:1px solid rgba(13,148,136,.15);padding:48px 32px;text-align:center;">
   <div style="max-width:600px;margin:0 auto;">
-    <div style="font-size:.75rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;font-family:'Space Mono',monospace">▶ DÉMO INTERACTIVE</div>
-    <h2 style="font-size:1.8rem;font-weight:700;margin-bottom:12px;line-height:1.3">Voyez PeptideScanner<br>en action avant de vous inscrire</h2>
-    <p style="color:var(--muted);font-size:.95rem;margin-bottom:28px;line-height:1.6">Tour guidé de 8 écrans — Today View, calendrier, calculateur, inventaire, IA et plus. Aucune inscription requise.</p>
+    <div style="font-size:.75rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;font-family:'Space Mono',monospace" data-i18n="idx_demo_eyebrow"></div>
+    <h2 style="font-size:1.8rem;font-weight:700;margin-bottom:12px;line-height:1.3" data-i18n="idx_demo_title"></h2>
+    <p style="color:var(--muted);font-size:.95rem;margin-bottom:28px;line-height:1.6" data-i18n="idx_demo_sub"></p>
     <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-      <button onclick="window.location.href='demo.html'" style="background:var(--accent);color:#fff;padding:14px 32px;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:700;border:none;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(13,148,136,.3)">▶ Lancer la démo</button>
-      <button onclick="window.location.href='login.html'" style="background:transparent;color:var(--text);padding:14px 32px;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:600;border:2px solid var(--border);cursor:pointer;transition:all .2s">Créer un compte gratuit →</button>
+      <button onclick="window.location.href='demo.html'" style="background:var(--accent);color:#fff;padding:14px 32px;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:700;border:none;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(13,148,136,.3)" data-i18n="idx_demo_launch"></button>
+      <button onclick="window.location.href='login.html'" style="background:transparent;color:var(--text);padding:14px 32px;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:600;border:2px solid var(--border);cursor:pointer;transition:all .2s" data-i18n="idx_demo_register"></button>
     </div>
   </div>
 </div>
@@ -962,11 +963,11 @@
     <div class="logo" style="margin-bottom:8px">
       <div class="logo-dot"></div>PeptideScanner
     </div>
-    <p>La plateforme de référence pour le suivi des cures peptidiques.</p>
+    <p data-i18n="idx_footer_sub"></p>
   </div>
   <div style="text-align:right">
-    <small>PeptideScanner © 2026 · Usage éducatif uniquement</small><br>
-    <small style="color:var(--muted);font-size:.7rem">Les peptides présentés sont à usage de recherche. Consultez un professionnel de santé.</small>
+    <small data-i18n="idx_footer_legal"></small><br>
+    <small style="color:var(--muted);font-size:.7rem" data-i18n="idx_footer_disclaimer"></small>
   </div>
 </footer>
 
@@ -1026,6 +1027,24 @@ function startDemo() {
   }));
   window.location.href = "dashboard.html";
 }
+</script>
+
+<script>
+// Init lang switcher
+var lsWrap = document.createElement('div');
+lsWrap.id = 'langToggleBtn';
+lsWrap.style.cssText = 'position:fixed;top:16px;right:16px;z-index:200;';
+document.body.appendChild(lsWrap);
+PS_renderLangSwitcher();
+
+// Appliquer traductions
+PS_applyI18n();
+
+// Hero h1 (span colorée)
+document.getElementById('heroH1a').textContent = t('idx_hero_h1a');
+document.getElementById('heroH1b').textContent = t('idx_hero_h1b');
+document.getElementById('heroH1b').style.color = 'var(--accent)';
+document.getElementById('heroH1c').textContent = t('idx_hero_h1c');
 </script>
 </body>
 </html>

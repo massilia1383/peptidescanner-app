@@ -370,6 +370,8 @@
     margin-bottom:4px;
   }
   .main-badge::before { content:'●'; font-size:.55rem; }
+  .main-badge-clickable { cursor:pointer; transition:all .2s; }
+  .main-badge-clickable:hover { background:rgba(220,38,38,.1); border-color:rgba(220,38,38,.3); color:var(--danger); }
 
   /* Bouton "Définir comme principale" */
   .set-main-btn {
@@ -801,7 +803,9 @@ function renderCureData(active) {
   if (favBadge) {
     favBadge.style.display = 'block';
     if (active.is_favorite) {
-      favBadge.innerHTML = '<span class="main-badge">' + (PS_getLang()==='en' ? 'MAIN CYCLE' : 'CURE PRINCIPALE') + '</span>';
+      var label = PS_getLang()==='en' ? 'MAIN CYCLE' : 'CURE PRINCIPALE';
+      var hint  = PS_getLang()==='en' ? 'Tap to remove' : 'Appuyer pour retirer';
+      favBadge.innerHTML = '<span class="main-badge main-badge-clickable" onclick="toggleFavorite()" title="' + hint + '">' + label + ' ✕</span>';
     } else if (activeCures.length > 1) {
       favBadge.innerHTML = '<button class="set-main-btn" onclick="toggleFavorite()">⭐ ' + (PS_getLang()==='en' ? 'Set as main' : 'Définir comme principale') + '</button>';
     } else {

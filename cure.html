@@ -584,7 +584,8 @@ function selectDay(ds, clickable) {
       const done    = dayInjs.some(l => (l.notes||'').includes('slot:'+i));
       const existInj= dayInjs.find(l => (l.notes||'').includes('slot:'+i));
       const displayT= existInj ? (existInj.injected_at||'').slice(11,16) : t;
-      slotsHtml += `<div class="inj-slot ${done?'done':''}" onclick="${isPast?`handleSlotClick(event,'${ds}',${i},'${t}')`:''}"`>
+      const _onclick = isPast ? `handleSlotClick(event,'${ds}',${i},'${t}')` : '';
+      slotsHtml += `<div class="inj-slot ${done?'done':''}" onclick="${_onclick}">
         <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
         <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name} · #${i+1}</div><div class="slot-detail">${getTitrationDoseForDay(cure, dayNum) || (cure.dose_mcg ? cure.dose_mcg+' '+(cure.unit||'mg') : '')} · ${admin}</div></div>
         <input type="time" class="slot-time-input ${existInj?'saved':''}" value="${displayT}" data-inj-id="${existInj?.id||''}" data-ds="${ds}" data-slot="${i}" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;

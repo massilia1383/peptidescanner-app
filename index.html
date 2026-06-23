@@ -463,7 +463,10 @@
     <li><a href="#shops" data-i18n="idx_nav_shops"></a></li>
     <li><a href="#roadmap" data-i18n="idx_nav_roadmap"></a></li>
   </ul>
-  <button class="nav-cta" onclick="window.location.href='login.html'" data-i18n="idx_nav_cta"></button>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div id="langToggleBtn"></div>
+    <button class="nav-cta" onclick="window.location.href='login.html'" data-i18n="idx_nav_cta"></button>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -1030,11 +1033,6 @@ function startDemo() {
 </script>
 
 <script>
-// Init lang switcher
-var lsWrap = document.createElement('div');
-lsWrap.id = 'langToggleBtn';
-lsWrap.style.cssText = 'position:fixed;top:16px;right:16px;z-index:200;';
-document.body.appendChild(lsWrap);
 PS_renderLangSwitcher();
 
 // Appliquer traductions

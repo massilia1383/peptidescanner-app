@@ -554,6 +554,9 @@ function selectDay(ds, clickable) {
 
   const cure  = allCures.find(x => x.id === currentCureId);
   if (!cure) return;
+  const _startD = new Date(cure.start_date); _startD.setHours(0,0,0,0);
+  const _date   = new Date(ds); _date.setHours(0,0,0,0);
+  const dayNum  = Math.max(1, Math.floor((_date - _startD) / 86400000) + 1);
   const freq      = parseFloat(cure.frequency) || 1;
   const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
   const times     = injPerDay===1?['08:00']:injPerDay===2?['08:00','20:00']:['07:00','13:00','20:00'];

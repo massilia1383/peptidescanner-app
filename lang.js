@@ -1290,6 +1290,7 @@ window.PS_LANG = {
     dash_start_cure:      'Start cycle',
     dash_cure_ended:      'Cycle ends in',
     dash_days_suffix:     'd',
+    days_suffix:          'd',
     dash_inj_cancelled:   'Injection cancelled',
     dash_inj_saved:       '— saved!',
     freq_1x:    '1× per day',

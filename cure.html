@@ -34,6 +34,17 @@
   }
   .cure-tab.active { background:rgba(0,201,167,.12); border-color:rgba(0,201,167,.4); color:var(--accent); }
 
+  /* Selecteur de cure — remplace les onglets scrollables (UX-03) */
+  .cure-select {
+    width:100%; margin-bottom:16px; padding:12px 38px 12px 14px;
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    color:var(--text); font-family:inherit; font-size:.9rem; font-weight:600;
+    outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat; background-position:right 14px center;
+  }
+  .cure-select:focus { border-color:var(--accent); }
+
   /* CURE INFO CARD */
   .cure-info {
     background:var(--surface); border:1px solid var(--border);
@@ -457,17 +468,17 @@ function render() {
   if (endD < TODAY)   { status = 'ended';  statusLabel = t('cure_status_ended'); }
   if (startD > TODAY) { status = 'future'; statusLabel = t('cure_status_future');  }
 
-  const tabs = allCures.map(cu =>
-    `<div class="cure-tab ${cu.id===currentCureId?'active':''}" onclick="selectCure('${cu.id}')">${cu.peptide_name||cu.name}</div>`
+  const cureOptions = allCures.map(cu =>
+    `<option value="${escHtml(cu.id)}"${cu.id===currentCureId?' selected':''}>${escHtml(capFirst(cu.peptide_name||cu.name))} — ${escHtml(cureStatusOf(cu))}</option>`
   ).join('');
 
   function fmtD(d) { return d.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'}); }
 
   c.innerHTML = `
-    <div class="cure-tabs">${tabs}</div>
+    <select class="cure-select" onchange="selectCure(this.value)">${cureOptions}</select>
     <div class="cure-info">
       <div class="ci-header">
-        <div class="ci-name">${cure.peptide_name||cure.name}</div>
+        <div class="ci-name">${capFirst(cure.peptide_name||cure.name)}</div>
         <div class="ci-status ${status}">${statusLabel}</div>
       </div>
       <div class="ci-grid">
@@ -810,6 +821,25 @@ function saveNote(ds) {
   const btn = el.nextElementSibling;
   if (btn) { btn.textContent = '✓'; btn.style.background = 'var(--accent)'; setTimeout(() => { btn.textContent = t('cure_save_note'); btn.style.background = ''; }, 1500); }
   showToast(t('cure_note_saved'));
+}
+
+// Statut de n'importe quelle cure — le calcul existant ne couvrait que la cure selectionnee.
+// Meme logique de dates que le reste du fichier, pour rester coherent avec la carte.
+function cureStatusOf(cu) {
+  const s = new Date(cu.start_date); s.setHours(0,0,0,0);
+  const e = new Date(s); e.setDate(e.getDate() + (cu.duration_days||30));
+  if (e < TODAY) return t('cure_status_ended');
+  if (s > TODAY) return t('cure_status_future');
+  return t('cure_status_active');
+}
+// BUG-03 : nom saisi en minuscules par l'utilisateur — corrige a l'affichage uniquement,
+// la donnee en base n'est pas modifiee.
+function capFirst(v) {
+  const str = String(v || '');
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+}
+function escHtml(v) {
+  return String(v || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function selectCure(id) { currentCureId=id; calMonth=TODAY.getMonth(); calYear=TODAY.getFullYear(); render(); }

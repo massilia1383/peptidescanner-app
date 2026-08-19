@@ -438,7 +438,7 @@ function render() {
   if (!currentCureId || !allCures.find(x => x.id === currentCureId)) currentCureId = allCures[0].id;
 
   const cure    = allCures.find(x => x.id === currentCureId);
-  const startD  = new Date(cure.start_date); startD.setHours(0,0,0,0);
+  const startD  = localDay(cure.start_date) || new Date(0);
   const endD    = new Date(startD); endD.setDate(endD.getDate() + (cure.duration_days||30));
   const dayNum  = Math.max(1, Math.floor((TODAY - startD) / 86400000) + 1);
   const daysLeft= Math.max(0, Math.ceil((endD - TODAY) / 86400000));
@@ -531,7 +531,7 @@ function render() {
 function renderCalendar() {
   const cure   = allCures.find(x => x.id === currentCureId);
   if (!cure) return;
-  const startD = new Date(cure.start_date); startD.setHours(0,0,0,0);
+  const startD = localDay(cure.start_date) || new Date(0);
   const endD   = new Date(startD); endD.setDate(endD.getDate() + (cure.duration_days||30));
   const freq   = parseFloat(cure.frequency) || 1;
   const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
@@ -645,13 +645,13 @@ function selectDay(ds, clickable) {
 
   const cure  = allCures.find(x => x.id === currentCureId);
   if (!cure) return;
-  const _startD = new Date(cure.start_date); _startD.setHours(0,0,0,0);
-  const _date   = new Date(ds); _date.setHours(0,0,0,0);
+  const _startD = localDay(cure.start_date) || new Date(0);
+  const _date   = localDay(ds) || _startD;
   const dayNum  = Math.max(1, Math.floor((_date - _startD) / 86400000) + 1);
   const freq      = parseFloat(cure.frequency) || 1;
   const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
   const times     = injPerDay===1?['08:00']:injPerDay===2?['08:00','20:00']:['07:00','13:00','20:00'];
-  const date      = new Date(ds);
+  const date      = localDay(ds) || new Date();
   const dateLabel = date.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'long',day:'numeric',month:'long'});
   const dayInjs   = allInjections.filter(i => i.cure_id===currentCureId && (i.injected_at||'').startsWith(ds));
   const admin     = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
@@ -661,7 +661,7 @@ function selectDay(ds, clickable) {
   let slotsHtml = '';
   let isRestDay = false;
   if (freq < 1) {
-    const startD   = new Date(cure.start_date); startD.setHours(0,0,0,0);
+    const startD   = localDay(cure.start_date) || new Date(0);
     const dayIndex = Math.floor((date - startD) / 86400000);
     isRestDay = dayIndex % Math.max(1, Math.round(1/freq)) !== 0;
     const done = dayInjs.length > 0;
@@ -740,7 +740,7 @@ async function updateInjTime(input) {
   const newTime = input.value; // "HH:MM"
   if (!newTime) return;
 
-  const newISOTime = `${ds}T${newTime}:00`;
+  const newISOTime = localStamp(ds, newTime);
 
   if (injId) {
     // Injection existante → update
@@ -785,9 +785,9 @@ async function toggleInj(ds, slot, time) {
     await sb.from('injections').insert({
       user_id: userId, cure_id: currentCureId,
       peptide_name: cure?.peptide_name||cure?.name,
-      dose_mcg: (() => { const startD=new Date(cure?.start_date); startD.setHours(0,0,0,0); const dn=Math.floor((new Date(ds)-startD)/86400000)+1; const td=getTitrationDoseForDay(cure,dn); return td ? parseFloat(td) : (cure?.dose_mcg||null); })(),
+      dose_mcg: (() => { const startD=localDay(cure?.start_date)||new Date(0); const dn=Math.floor(((localDay(ds)||startD)-startD)/86400000)+1; const td=getTitrationDoseForDay(cure,dn); return td ? parseFloat(td) : (cure?.dose_mcg||null); })(),
       injection_site: site.label,
-      injected_at: new Date(`${ds}T${actualTime}`).toISOString(),
+      injected_at: localStamp(ds, actualTime),
       notes: 'slot:'+slot
     });
     // Déduire la dose du flacon correspondant
@@ -887,6 +887,36 @@ function capFirst(v) {
 }
 function escHtml(v) {
   return String(v || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── HORODATAGE LOCAL (BUG-10) ──────────────────────────────────
+// injected_at est lu partout par comparaison de chaine : .startsWith(ds) pour la
+// date, .slice(11,16) pour l'heure. Les lecteurs supposent donc de l'heure LOCALE.
+// toISOString() ecrivait de l'UTC -> decalage de 7 h en UTC+7, et une injection
+// saisie avant 07:00 basculait au jour precedent. On ecrit desormais l'heure
+// locale telle quelle, ce que fait deja le champ "modifier l'heure".
+function localStamp(dateStr, timeStr) {
+  const d = String(dateStr || '').slice(0, 10);
+  let hm = String(timeStr || '').slice(0, 5);
+  if (!/^\d{2}:\d{2}$/.test(hm)) hm = '00:00';
+  return d + 'T' + hm + ':00';
+}
+// Horodatage local de l'instant present
+function localStampNow() {
+  const n = new Date();
+  const p = v => String(v).padStart(2, '0');
+  return n.getFullYear() + '-' + p(n.getMonth()+1) + '-' + p(n.getDate())
+       + 'T' + p(n.getHours()) + ':' + p(n.getMinutes()) + ':' + p(n.getSeconds());
+}
+// Parse 'YYYY-MM-DD' en date LOCALE — new Date('YYYY-MM-DD') parse en UTC
+// et decale d'un jour selon le fuseau.
+function localDay(dateStr) {
+  const p = String(dateStr || '').slice(0, 10).split('-');
+  if (p.length !== 3) return null;
+  const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  if (isNaN(d.getTime())) return null;
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 function selectCure(id) { currentCureId=id; calMonth=TODAY.getMonth(); calYear=TODAY.getFullYear(); render(); }

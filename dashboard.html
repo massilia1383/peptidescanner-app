@@ -1039,6 +1039,36 @@ function closeInjConfirm(e) {
   if (e.target === document.getElementById('injConfirmOverlay')) closeInjConfirmModal();
 }
 
+// ── HORODATAGE LOCAL (BUG-10) ──────────────────────────────────
+// injected_at est lu partout par comparaison de chaine : .startsWith(ds) pour la
+// date, .slice(11,16) pour l'heure. Les lecteurs supposent donc de l'heure LOCALE.
+// toISOString() ecrivait de l'UTC -> decalage de 7 h en UTC+7, et une injection
+// saisie avant 07:00 basculait au jour precedent. On ecrit desormais l'heure
+// locale telle quelle, ce que fait deja le champ "modifier l'heure".
+function localStamp(dateStr, timeStr) {
+  const d = String(dateStr || '').slice(0, 10);
+  let hm = String(timeStr || '').slice(0, 5);
+  if (!/^\d{2}:\d{2}$/.test(hm)) hm = '00:00';
+  return d + 'T' + hm + ':00';
+}
+// Horodatage local de l'instant present
+function localStampNow() {
+  const n = new Date();
+  const p = v => String(v).padStart(2, '0');
+  return n.getFullYear() + '-' + p(n.getMonth()+1) + '-' + p(n.getDate())
+       + 'T' + p(n.getHours()) + ':' + p(n.getMinutes()) + ':' + p(n.getSeconds());
+}
+// Parse 'YYYY-MM-DD' en date LOCALE — new Date('YYYY-MM-DD') parse en UTC
+// et decale d'un jour selon le fuseau.
+function localDay(dateStr) {
+  const p = String(dateStr || '').slice(0, 10).split('-');
+  if (p.length !== 3) return null;
+  const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  if (isNaN(d.getTime())) return null;
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 async function confirmInjection() {
   if (!_pendingInj) return;
   const { cureId, slot, peptideName, dose, site } = _pendingInj;
@@ -1053,7 +1083,7 @@ async function confirmInjection() {
   localStorage.setItem(siteKey, nextIdx);
 
   // Construire un ISO avec la date du jour + l'heure choisie
-  const injectedAt = new Date(`${todayStr}T${chosenTime}:00`).toISOString();
+  const injectedAt = localStamp(todayStr, chosenTime);
 
   await sb.from('injections').insert({
     user_id: userId, cure_id: cureId,
@@ -1084,7 +1114,7 @@ async function quickToggleInj(cureId, slot, time, peptideName, dose, site) {
       user_id: userId, cure_id: cureId,
       peptide_name: peptideName, dose_mcg: parseFloat(dose)||null,
       injection_site: SITES[nextIdx],
-      injected_at: new Date().toISOString(),
+      injected_at: localStampNow(),
       notes: 'slot:'+slot
     });
     showToast('✓ ' + SITES[nextIdx] + ' — enregistré !');

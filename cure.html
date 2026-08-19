@@ -41,13 +41,13 @@
     text-transform:uppercase; color:var(--muted); margin:0 0 6px 2px;
   }
   .cure-select {
-    width:100%; padding:14px 42px 14px 16px;
+    width:100%; padding:14px 56px 14px 16px;
     background:rgba(13,148,136,.05);
     border:2px solid rgba(13,148,136,.28); border-radius:14px;
     color:var(--text); font-family:inherit; font-size:1rem; font-weight:700;
     outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'><path d='M2 2l6 6 6-6' stroke='%230D9488' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-    background-repeat:no-repeat; background-position:right 16px center;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'><rect width='36' height='36' rx='10' fill='%230D9488'/><path d='M12 15l6 6 6-6' stroke='%23FFFFFF' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat; background-position:right 7px center; background-size:36px 36px;
     transition:border-color .2s, background-color .2s;
   }
   .cure-select:hover { background-color:rgba(13,148,136,.09); }
@@ -100,6 +100,10 @@
   .cal-day.partial { background:rgba(245,158,11,.12); color:var(--accent3); border-color:rgba(245,158,11,.2); }
   .cal-day.missed { background:rgba(239,68,68,.08); color:var(--danger); border-color:rgba(239,68,68,.15); }
   .cal-day.rest { background:var(--surface2); color:var(--muted); }
+  .cal-day.shifted { background:rgba(245,158,11,.14); color:var(--accent3); border:1px dashed rgba(245,158,11,.45); }
+  .dd-rest-banner { text-align:center; padding:12px 12px 4px; color:var(--muted); font-size:.84rem; }
+  .dd-shift-hint  { text-align:center; padding:0 12px 10px; color:var(--accent3); font-size:.74rem; font-weight:600; }
+  .inj-slot.shifted { border-color:rgba(245,158,11,.45); }
   .cal-day.today { border-color:var(--accent) !important; box-shadow:0 0 0 1px rgba(0,201,167,.5); }
   .cal-day.future-day { color:var(--muted); background:var(--surface2); opacity:.3; cursor:default; }
   .cal-day.future-inj { 
@@ -539,6 +543,27 @@ function renderCalendar() {
   if (!cal) return;
 
   let daysHtml = '';
+  // Fenetre de tolerance pour les injections decalees : moitie de l'intervalle, plafonnee a 3 jours.
+  // Garantit qu'une meme injection ne peut jamais "sauver" deux jours prevus a la fois.
+  const _interval = freq < 1 ? Math.max(1, Math.round(1/freq)) : 1;
+  const _shiftWin = freq < 1 ? Math.min(3, Math.floor(_interval / 2)) : 0;
+  const _injIdx = new Set();
+  cureInjs.forEach(i => {
+    const p = String(i.injected_at||'').slice(0,10).split('-');
+    if (p.length !== 3) return;
+    const dx = new Date(Number(p[0]), Number(p[1])-1, Number(p[2])); dx.setHours(0,0,0,0);
+    if (!isNaN(dx.getTime())) _injIdx.add(Math.floor((dx - startD) / 86400000));
+  });
+  function hasShiftedInj(idx) {
+    for (let k = -_shiftWin; k <= _shiftWin; k++) {
+      if (k === 0) continue;
+      const j = idx + k;
+      if (j % _interval === 0) continue;   // ce jour-la est lui-meme un jour prevu
+      if (_injIdx.has(j)) return true;
+    }
+    return false;
+  }
+
   for (let i = 0; i < startDow; i++) daysHtml += `<div class="cal-day empty"></div>`;
 
   for (let d = 1; d <= lastDay.getDate(); d++) {
@@ -567,9 +592,15 @@ function renderCalendar() {
       const dayLogs = cureInjs.filter(i => (i.injected_at||'').startsWith(ds));
       const doneCt  = dayLogs.length;
       if (freq < 1) {
-        const dayIdx = Math.floor((date - startD) / 86400000);
-        if (dayIdx % Math.round(1/freq) === 0) {
-          cls += doneCt >= 1 ? ' done' : ' missed'; dot = doneCt >= 1 ? 'green' : 'red';
+        const dayIdx  = Math.floor((date - startD) / 86400000);
+        const isSched = dayIdx % _interval === 0;
+        if (doneCt >= 1) {
+          // Injection enregistree : verte, que le jour ait ete prevu ou non
+          cls += ' done'; dot = 'green';
+        } else if (isSched) {
+          const rescued = hasShiftedInj(dayIdx);
+          cls += rescued ? ' shifted' : ' missed';
+          dot  = rescued ? 'amber'    : 'red';
         } else { cls += ' rest'; }
       } else {
         if (doneCt >= injPerDay)  { cls += ' done';    dot = 'green'; }
@@ -592,6 +623,7 @@ function renderCalendar() {
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:rgba(0,201,167,.25)"></div><span data-i18n="cure_legend_done">Fait</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,.2)"></div><span data-i18n="cure_legend_partial">Partiel</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,.14);border:1px dashed rgba(245,158,11,.45)"></div><span data-i18n="cure_legend_shifted">Décalée</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:rgba(239,68,68,.15)"></div><span data-i18n="cure_legend_missed">Manqué</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:rgba(43,108,176,.15);border:1px dashed rgba(43,108,176,.4)"></div><span data-i18n="cure_legend_planned">Prévu</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--surface2)"></div><span data-i18n="cure_legend_rest">Repos</span></div>
@@ -627,16 +659,22 @@ function selectDay(ds, clickable) {
   const { site: nextSite, idx: nextIdx } = getNextSite(currentCureId, admin, ds);
 
   let slotsHtml = '';
+  let isRestDay = false;
   if (freq < 1) {
     const startD   = new Date(cure.start_date); startD.setHours(0,0,0,0);
     const dayIndex = Math.floor((date - startD) / 86400000);
-    if (dayIndex % Math.round(1/freq) !== 0) {
-      slotsHtml = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:.84rem">'+t('cure_rest_day')+'</div>';
-    } else {
-      const done = dayInjs.length > 0;
+    isRestDay = dayIndex % Math.max(1, Math.round(1/freq)) !== 0;
+    const done = dayInjs.length > 0;
+    // Jour de repos : on annonce le repos, mais on autorise quand meme la saisie
+    // d'une injection decalee sur un jour passe (ou deja enregistree).
+    if (isRestDay) {
+      slotsHtml = `<div class="dd-rest-banner">${t('cure_rest_day')}</div>`;
+      if (isPast || done) slotsHtml += `<div class="dd-shift-hint">${t('cure_shift_hint')}</div>`;
+    }
+    if (!isRestDay || isPast || done) {
       const existInj0 = dayInjs.find(l => (l.notes||'').includes('slot:0'));
       const displayTime0 = existInj0 ? (existInj0.injected_at||'').slice(11,16) : times[0];
-      slotsHtml = `<div class="inj-slot ${done?'done':''}" onclick="handleSlotClick(event,'${ds}',0,'${times[0]}')">
+      slotsHtml += `<div class="inj-slot ${done?'done':''}${isRestDay?' shifted':''}" onclick="handleSlotClick(event,'${ds}',0,'${times[0]}')">
         <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
         <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name}</div><div class="slot-detail">${getTitrationDoseForDay(cure, dayNum) || (cure.dose_mcg ? cure.dose_mcg+' '+(cure.unit||'mg') : '')} · ${admin}</div></div>
         <input type="time" class="slot-time-input ${existInj0?'saved':''}" value="${displayTime0}" data-inj-id="${existInj0?.id||''}" data-ds="${ds}" data-slot="0" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;
@@ -654,15 +692,13 @@ function selectDay(ds, clickable) {
     });
   }
 
-  // Déterminer si c'est un jour de repos
-  const isRestDay = slotsHtml.includes(t('cure_rest_day'));
 
   dd.innerHTML = `
     <div class="dd-header">
       <div class="dd-date">${dateLabel}</div>
       <button class="dd-close" onclick="document.getElementById('dayDetail').classList.remove('show')">✕</button>
     </div>
-    ${!isRestDay ? `
+    ${(!isRestDay || isPast) ? `
     <div style="background:rgba(13,148,136,.05);border:1.5px solid rgba(13,148,136,.18);border-radius:14px;padding:12px 14px;margin:10px 0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600">${t('cure_suggested_site')}</div>

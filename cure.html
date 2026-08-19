@@ -106,18 +106,19 @@
   /* Feuille de confirmation — meme style que dashboard.html */
   .inj-confirm-overlay {
     position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:500;
-    display:flex; align-items:flex-end; justify-content:center;
+    display:flex; align-items:center; justify-content:center; padding:20px;
     opacity:0; pointer-events:none; transition:opacity .2s; backdrop-filter:blur(4px);
   }
   .inj-confirm-overlay.open { opacity:1; pointer-events:all; }
   .inj-confirm-sheet {
-    width:100%; max-width:480px; background:var(--surface);
-    border-radius:24px 24px 0 0; padding:20px 20px 36px;
-    transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1);
-    box-shadow:0 -8px 40px rgba(0,0,0,.15);
+    width:100%; max-width:420px; background:var(--surface);
+    border-radius:22px; padding:24px 22px 22px;
+    transform:translateY(16px) scale(.96); opacity:0;
+    transition:transform .24s cubic-bezier(.32,.72,0,1), opacity .2s;
+    box-shadow:0 18px 50px rgba(0,0,0,.22);
   }
-  .inj-confirm-overlay.open .inj-confirm-sheet { transform:translateY(0); }
-  .inj-confirm-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 18px; }
+  .inj-confirm-overlay.open .inj-confirm-sheet { transform:translateY(0) scale(1); opacity:1; }
+  .inj-confirm-handle { display:none; }
   .inj-confirm-title { font-size:1rem; font-weight:700; margin-bottom:4px; }
   .inj-confirm-sub { font-size:.78rem; color:var(--muted); margin-bottom:18px; }
   .inj-confirm-btns { display:flex; gap:10px; }
@@ -131,6 +132,12 @@
     border-radius:12px; padding:10px 14px; margin:10px 0;
     color:var(--accent3); font-size:.8rem; font-weight:600; text-align:center;
   }
+  .dd-report-btn { display:block; margin:8px auto 0; background:none; border:none; color:var(--muted); font-family:inherit; font-size:.7rem; font-weight:600; text-decoration:underline; cursor:pointer; }
+  .dd-link { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin:10px 0; }
+  .dd-link-q { font-size:.78rem; color:var(--muted); font-weight:600; margin-bottom:8px; text-align:center; }
+  .dd-link-row { display:flex; gap:8px; }
+  .dd-link-select { flex:1; min-width:0; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:9px 11px; color:var(--text); font-family:inherit; font-size:.8rem; outline:none; cursor:pointer; }
+  .dd-link-btn { flex-shrink:0; background:var(--accent3); color:#fff; border:none; border-radius:10px; padding:9px 16px; font-family:inherit; font-size:.8rem; font-weight:700; cursor:pointer; }
   .dd-shift-hint  { text-align:center; padding:0 12px 10px; color:var(--accent3); font-size:.74rem; font-weight:600; }
   .inj-slot.shifted { border-color:rgba(245,158,11,.45); }
   .cal-day.today { border-color:var(--accent) !important; box-shadow:0 0 0 1px rgba(0,201,167,.5); }
@@ -162,7 +169,8 @@
   .day-detail.show { display:block; }
   .dd-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
   .dd-date { font-size:.95rem; font-weight:700; }
-  .dd-close { background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--muted); width:28px; height:28px; cursor:pointer; font-size:.8rem; display:flex; align-items:center; justify-content:center; }
+  .dd-close { background:var(--surface2); border:1px solid var(--border); border-radius:9px; color:var(--muted); height:30px; padding:0 12px; cursor:pointer; font-family:inherit; font-size:.76rem; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; transition:background .2s, color .2s; }
+  .dd-close:hover { background:var(--surface); color:var(--text); }
   .inj-slot {
     display:flex; align-items:center; gap:12px; padding:12px;
     background:var(--surface2); border-radius:12px; margin-bottom:8px;
@@ -503,7 +511,7 @@ function render() {
     totalExp = 0; missedCt = 0;
     for (let k = 0; k <= Math.min(dayNum - 1, totalDays); k += _iv) {
       totalExp++;
-      if (!_injSet.has(k) && !_repStats.toIdx.has(k)) missedCt++;
+      if (!_injSet.has(k) && !_repStats.toIdx.has(k)) missedCt++;   // lien explicite uniquement
     }
   } else {
     totalExp = Math.round(daysElapsed * freq);
@@ -712,11 +720,36 @@ function selectDay(ds, clickable) {
     const d = new Date(_startD); d.setDate(d.getDate() + k);
     return d.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'long',day:'numeric',month:'long'});
   };
+  const _freqNow  = parseFloat(cure.frequency) || 1;
+  const _ivNow    = _freqNow < 1 ? Math.max(1, Math.round(1/_freqNow)) : 1;
+  const _isSched  = _freqNow < 1 ? (_dayIdx % _ivNow === 0) : true;
+  const _hasInj   = dayInjs.length > 0;
+
   let reportBanner = '';
   if (_rep.toIdx.has(_dayIdx)) {
-    reportBanner = `<div class="dd-report">↷ ${t('cure_reported_to')} ${_fmtIdx(_rep.toIdx.get(_dayIdx))}</div>`;
+    // Ce jour prevu a ete explicitement reporte par l'utilisateur
+    reportBanner = `<div class="dd-report">↷ ${t('cure_reported_to')} ${_fmtIdx(_rep.toIdx.get(_dayIdx))}
+      <button class="dd-report-btn" onclick="unlinkReport('${ds}')">${t('cure_report_unlink')}</button></div>`;
   } else if (_rep.fromIdx.has(_dayIdx)) {
     reportBanner = `<div class="dd-report">↶ ${t('cure_reported_from')} ${_fmtIdx(_rep.fromIdx.get(_dayIdx))}</div>`;
+  } else if (_isSched && !_hasInj && isPast && _freqNow < 1) {
+    // Jour prevu manque : on PROPOSE, on ne decide pas
+    const cands = strayInjections(cure, _cureInjs);
+    if (cands.length) {
+      const opts = cands.map(inj => {
+        const dl = (localDay(String(inj.injected_at||'').slice(0,10)) || new Date())
+          .toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'short',day:'numeric',month:'long'});
+        return `<option value="${escHtml(inj.id)}">${escHtml(dl)} · ${escHtml(String(inj.injected_at||'').slice(11,16))}</option>`;
+      }).join('');
+      reportBanner = `<div class="dd-link">
+        <div class="dd-link-q">${t('cure_report_question')}</div>
+        <div class="dd-link-row">
+          <select class="dd-link-select" id="reportPick">${opts}</select>
+          <button class="dd-link-btn" onclick="linkReport('${ds}')">${t('cure_report_link')}</button>
+        </div></div>`;
+    } else {
+      reportBanner = `<div class="dd-link"><div class="dd-link-q" style="opacity:.7">${t('cure_report_none')}</div></div>`;
+    }
   }
 
   let slotsHtml = '';
@@ -757,7 +790,7 @@ function selectDay(ds, clickable) {
   dd.innerHTML = `
     <div class="dd-header">
       <div class="dd-date">${dateLabel}</div>
-      <button class="dd-close" onclick="document.getElementById('dayDetail').classList.remove('show')">✕</button>
+      <button class="dd-close" onclick="document.getElementById('dayDetail').classList.remove('show')">✕ ${t('back')}</button>
     </div>
     ${reportBanner}
     ${(!isRestDay || isPast) ? `
@@ -993,50 +1026,77 @@ function escHtml(v) {
 // toISOString() ecrivait de l'UTC -> decalage de 7 h en UTC+7, et une injection
 // saisie avant 07:00 basculait au jour precedent. On ecrit desormais l'heure
 // locale telle quelle, ce que fait deja le champ "modifier l'heure".
-// ── APPARIEMENT DES INJECTIONS REPORTEES ───────────────────────
-// Une injection faite hors calendrier rattrape le DERNIER jour prevu non honore
-// avant elle, dans la limite d'un intervalle. Une injection ne rattrape qu'un
-// seul jour, et un jour n'est rattrape que par une seule injection.
-// Retourne { toIdx: Map(jourPrevu -> jourInjection), fromIdx: Map(inverse) }
+// ── REPORTS D'INJECTION — LIENS EXPLICITES ─────────────────────
+// Le lien est DECIDE PAR L'UTILISATEUR, jamais deduit. Il est stocke dans le champ
+// notes de l'injection sous la forme "slot:0|report:2026-08-10", ce qui se lit
+// "cette injection couvre le jour prevu du 10 aout". Stocke en base, donc synchronise.
+function readReportTag(inj) {
+  const m = String((inj && inj.notes) || '').match(/report:(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : null;
+}
+// Ecrit (ou retire, si targetDs vaut null) le lien dans une chaine de notes
+function writeReportTag(notes, targetDs) {
+  let base = String(notes || '').replace(/\|?report:\d{4}-\d{2}-\d{2}/g, '');
+  base = base.replace(/\|+/g, '|').replace(/^\||\|$/g, '');
+  return targetDs ? (base ? base + '|report:' + targetDs : 'report:' + targetDs) : base;
+}
+// Construit les deux sens du lien, en index de jours depuis le debut de la cure
 function computeReportMap(cure, injections) {
-  const empty = { toIdx: new Map(), fromIdx: new Map() };
+  const toIdx = new Map(), fromIdx = new Map();
   const startD = localDay(cure && cure.start_date);
-  if (!startD) return empty;
-  const freq = parseFloat(cure.frequency) || 1;
-  if (freq >= 1) return empty;                       // pas de jour de repos a rattraper
-  const interval = Math.max(1, Math.round(1/freq));
-  const lastIdx  = Math.floor((TODAY - startD) / 86400000);
-  const duration = parseInt(cure.duration_days) || 30;
-
-  // Jours ou une injection existe reellement
-  const injSet = new Set();
-  (injections || []).forEach(i => {
-    const d = localDay(String(i.injected_at || '').slice(0,10));
-    if (d) injSet.add(Math.floor((d - startD) / 86400000));
-  });
-
-  // Jours prevus, ecoules, sans injection
-  const unfulfilled = [];
-  for (let k = 0; k <= Math.min(lastIdx, duration); k += interval) {
-    if (!injSet.has(k)) unfulfilled.push(k);
-  }
-  if (!unfulfilled.length) return empty;
-
-  // Injections hors calendrier, par ordre chronologique
-  const strays = [...injSet].filter(k => k % interval !== 0).sort((a,b) => a-b);
-
-  const toIdx = new Map(), fromIdx = new Map(), claimed = new Set();
-  strays.forEach(k => {
-    let best = -1;
-    unfulfilled.forEach(sIdx => {
-      if (claimed.has(sIdx)) return;
-      if (sIdx >= k) return;                         // on ne regarde qu'en arriere
-      if (k - sIdx > interval) return;               // hors fenetre
-      if (sIdx > best) best = sIdx;                  // le plus recent des candidats
-    });
-    if (best >= 0) { claimed.add(best); toIdx.set(best, k); fromIdx.set(k, best); }
+  if (!startD) return { toIdx, fromIdx };
+  const idxOf = ds => { const d = localDay(ds); return d ? Math.floor((d - startD) / 86400000) : null; };
+  (injections || []).forEach(inj => {
+    const target = readReportTag(inj);
+    if (!target) return;
+    const sIdx = idxOf(target);
+    const kIdx = idxOf(String(inj.injected_at || '').slice(0, 10));
+    if (sIdx === null || kIdx === null || sIdx === kIdx) return;
+    if (toIdx.has(sIdx)) return;                 // un jour prevu n'est couvert qu'une fois
+    toIdx.set(sIdx, kIdx); fromIdx.set(kIdx, sIdx);
   });
   return { toIdx, fromIdx };
+}
+// Injections "hors calendrier" de la cure, non encore liees — candidates a un report
+function strayInjections(cure, injections) {
+  const startD = localDay(cure && cure.start_date);
+  if (!startD) return [];
+  const freq = parseFloat(cure && cure.frequency) || 1;
+  if (freq >= 1) return [];
+  const interval = Math.max(1, Math.round(1 / freq));
+  return (injections || []).filter(inj => {
+    if (readReportTag(inj)) return false;
+    const d = localDay(String(inj.injected_at || '').slice(0, 10));
+    if (!d) return false;
+    return Math.floor((d - startD) / 86400000) % interval !== 0;
+  }).sort((a, b) => String(a.injected_at).localeCompare(String(b.injected_at)));
+}
+
+// ── ACTIONS UTILISATEUR SUR LE LIEN DE REPORT ──────────────────
+async function linkReport(missedDs) {
+  const sel = document.getElementById('reportPick');
+  if (!sel || !sel.value) return;
+  const inj = allInjections.find(i => i.id === sel.value);
+  if (!inj) return;
+  const newNotes = writeReportTag(inj.notes, missedDs);
+  const { error } = await sb.from('injections').update({ notes: newNotes }).eq('id', inj.id);
+  if (error) { showToast('\u26A0\uFE0F ' + error.message); return; }
+  inj.notes = newNotes;
+  showToast(t('cure_report_linked'));
+  render();
+  selectDay(missedDs, true);
+}
+
+async function unlinkReport(missedDs) {
+  const inj = allInjections.find(i => i.cure_id === currentCureId && readReportTag(i) === missedDs);
+  if (!inj) return;
+  const newNotes = writeReportTag(inj.notes, null);
+  const { error } = await sb.from('injections').update({ notes: newNotes }).eq('id', inj.id);
+  if (error) { showToast('\u26A0\uFE0F ' + error.message); return; }
+  inj.notes = newNotes;
+  showToast(t('cure_report_unlinked'));
+  render();
+  selectDay(missedDs, true);
 }
 
 function localStamp(dateStr, timeStr) {

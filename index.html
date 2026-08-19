@@ -53,6 +53,12 @@
   nav ul { display: flex; gap: 28px; list-style: none; }
   nav ul a { color: var(--muted); text-decoration: none; font-size: .9rem; font-weight: 500; transition: color .2s; }
   nav ul a:hover { color: var(--accent); }
+  .nav-login {
+    color: var(--text); text-decoration: none;
+    font-size: .85rem; font-weight: 600;
+    transition: color .2s; white-space: nowrap;
+  }
+  .nav-login:hover { color: var(--accent); }
   .nav-cta {
     background: var(--accent); color: #FFFFFF; padding: 8px 20px;
     border-radius: 6px; font-weight: 700; font-size: .85rem;
@@ -465,7 +471,8 @@
   </ul>
   <div style="display:flex;align-items:center;gap:12px;">
     <div id="langToggleBtn"></div>
-    <button class="nav-cta" onclick="window.location.href='login.html'" data-i18n="idx_nav_cta"></button>
+    <a class="nav-login" href="login.html" data-i18n="idx_nav_login"></a>
+    <button class="nav-cta" onclick="window.location.href='login.html?signup=1'" data-i18n="idx_nav_cta"></button>
   </div>
 </nav>
 
@@ -476,7 +483,7 @@
     <h1><span id="heroH1a"></span><br><span class="accent-span" id="heroH1b"></span><br><span id="heroH1c"></span></h1>
     <p data-i18n="idx_hero_sub"></p>
     <div class="hero-btns">
-      <button class="btn-primary" onclick="window.location.href='login.html'" data-i18n="idx_hero_btn_start"></button>
+      <button class="btn-primary" onclick="window.location.href='login.html?signup=1'" data-i18n="idx_hero_btn_start"></button>
       <button class="btn-demo" onclick="window.location.href='demo.html'" data-i18n="idx_hero_btn_demo"></button>
     </div>
   </div>
@@ -791,7 +798,7 @@
           <li><span class="cross">✗</span><span data-i18n="idx_free_f6"></span></li>
           <li><span class="cross">✗</span><span data-i18n="idx_free_f7"></span></li>
         </ul>
-        <button class="plan-btn outline" onclick="window.location.href='login.html'" data-i18n="idx_plan_free_btn"></button>
+        <button class="plan-btn outline" onclick="window.location.href='login.html?signup=1'" data-i18n="idx_plan_free_btn"></button>
       </div>
 
       <!-- Premium -->
@@ -953,7 +960,7 @@
     <p style="color:var(--muted);font-size:.95rem;margin-bottom:28px;line-height:1.6" data-i18n="idx_demo_sub"></p>
     <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
       <button onclick="window.location.href='demo.html'" style="background:var(--accent);color:#fff;padding:14px 32px;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:700;border:none;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(13,148,136,.3)" data-i18n="idx_demo_launch"></button>
-      <button onclick="window.location.href='login.html'" style="background:transparent;color:var(--text);padding:14px 32px;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:600;border:2px solid var(--border);cursor:pointer;transition:all .2s" data-i18n="idx_demo_register"></button>
+      <button onclick="window.location.href='login.html?signup=1'" style="background:transparent;color:var(--text);padding:14px 32px;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:600;border:2px solid var(--border);cursor:pointer;transition:all .2s" data-i18n="idx_demo_register"></button>
     </div>
   </div>
 </div>

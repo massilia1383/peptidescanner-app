@@ -174,6 +174,13 @@
       clearMsg();
     };
 
+    // Ouvrir directement l'onglet Inscription si l'URL contient ?signup=1
+    try {
+      if (new URLSearchParams(window.location.search).get('signup') === '1') {
+        window.switchTab('register');
+      }
+    } catch (e) {}
+
     window.handleSubmit = async function() {
       clearMsg();
       var email    = document.getElementById('email').value.trim();

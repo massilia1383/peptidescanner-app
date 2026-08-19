@@ -101,7 +101,36 @@
   .cal-day.missed { background:rgba(239,68,68,.08); color:var(--danger); border-color:rgba(239,68,68,.15); }
   .cal-day.rest { background:var(--surface2); color:var(--muted); }
   .cal-day.shifted { background:rgba(245,158,11,.14); color:var(--accent3); border:1px dashed rgba(245,158,11,.45); }
+  .day-shift { font-size:.52rem; font-weight:700; color:var(--accent3); line-height:1; margin-top:2px; letter-spacing:-.3px; }
   .dd-rest-banner { text-align:center; padding:12px 12px 4px; color:var(--muted); font-size:.84rem; }
+  /* Feuille de confirmation — meme style que dashboard.html */
+  .inj-confirm-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:500;
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity .2s; backdrop-filter:blur(4px);
+  }
+  .inj-confirm-overlay.open { opacity:1; pointer-events:all; }
+  .inj-confirm-sheet {
+    width:100%; max-width:480px; background:var(--surface);
+    border-radius:24px 24px 0 0; padding:20px 20px 36px;
+    transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1);
+    box-shadow:0 -8px 40px rgba(0,0,0,.15);
+  }
+  .inj-confirm-overlay.open .inj-confirm-sheet { transform:translateY(0); }
+  .inj-confirm-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 18px; }
+  .inj-confirm-title { font-size:1rem; font-weight:700; margin-bottom:4px; }
+  .inj-confirm-sub { font-size:.78rem; color:var(--muted); margin-bottom:18px; }
+  .inj-confirm-btns { display:flex; gap:10px; }
+  .inj-confirm-btn-cancel { flex:1; padding:13px; border-radius:12px; border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer; }
+  .inj-confirm-btn-ok { flex:2; padding:13px; border-radius:12px; border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; }
+  .inj-confirm-btn-ok:hover { opacity:.85; }
+  .inj-confirm-btn-ok.danger { background:var(--danger); }
+
+  .dd-report {
+    background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.35);
+    border-radius:12px; padding:10px 14px; margin:10px 0;
+    color:var(--accent3); font-size:.8rem; font-weight:600; text-align:center;
+  }
   .dd-shift-hint  { text-align:center; padding:0 12px 10px; color:var(--accent3); font-size:.74rem; font-weight:600; }
   .inj-slot.shifted { border-color:rgba(245,158,11,.45); }
   .cal-day.today { border-color:var(--accent) !important; box-shadow:0 0 0 1px rgba(0,201,167,.5); }
@@ -354,6 +383,19 @@
   </div>
 </div>
 
+<!-- FEUILLE DE CONFIRMATION D'INJECTION -->
+<div class="inj-confirm-overlay" id="injConfirmOverlay" onclick="closeInjConfirm(event)">
+  <div class="inj-confirm-sheet">
+    <div class="inj-confirm-handle"></div>
+    <div class="inj-confirm-title" id="injConfirmTitle"></div>
+    <div class="inj-confirm-sub" id="injConfirmSub"></div>
+    <div class="inj-confirm-btns">
+      <button class="inj-confirm-btn-cancel" onclick="closeInjConfirmModal()" data-i18n="cancel">Annuler</button>
+      <button class="inj-confirm-btn-ok" id="injConfirmOk" onclick="confirmInjAction()"></button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="/lang.js"></script>
@@ -446,9 +488,28 @@ function render() {
   const freq    = parseFloat(cure.frequency) || 1;
   const totalDays    = cure.duration_days || 30;
   const daysElapsed  = Math.min(dayNum, totalDays);
-  const totalExp     = Math.round(daysElapsed * freq);         // attendues jusqu'à aujourd'hui
-  const totalPlanned = Math.round(totalDays * freq);           // total prévues sur toute la cure
   const done         = cureInjs.length;
+  // Attendues : on compte les jours d'injection REELLEMENT ecoules, comme le calendrier,
+  // au lieu d'une multiplication qui arrondissait a cote.
+  const _repStats = computeReportMap(cure, cureInjs);
+  let totalExp, missedCt;
+  if (freq < 1) {
+    const _iv = Math.max(1, Math.round(1/freq));
+    const _injSet = new Set();
+    cureInjs.forEach(i => {
+      const d = localDay(String(i.injected_at||'').slice(0,10));
+      if (d) _injSet.add(Math.floor((d - startD) / 86400000));
+    });
+    totalExp = 0; missedCt = 0;
+    for (let k = 0; k <= Math.min(dayNum - 1, totalDays); k += _iv) {
+      totalExp++;
+      if (!_injSet.has(k) && !_repStats.toIdx.has(k)) missedCt++;
+    }
+  } else {
+    totalExp = Math.round(daysElapsed * freq);
+    missedCt = Math.max(0, totalExp - done);
+  }
+  const totalPlanned = Math.round(totalDays * freq);           // total prévues sur toute la cure
   const remaining    = Math.max(0, totalPlanned - done);       // restantes à faire
   const compPct      = totalExp > 0 ? Math.min(100, Math.round(done/totalExp*100)) : 0;
 
@@ -516,7 +577,7 @@ function render() {
       <h3>${t('cure_stats')}</h3>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_done')}</span><span class="stat-row-val" style="color:var(--accent)">${done}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_expected')}</span><span class="stat-row-val">${totalExp}</span></div>
-      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_missed')}</span><span class="stat-row-val" style="color:var(--danger)">${Math.max(0,totalExp-done)}</span></div>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_missed')}</span><span class="stat-row-val" style="color:var(--danger)">${missedCt}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_remaining')}</span><span class="stat-row-val" style="color:var(--accent2)">${remaining}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_total_planned')}</span><span class="stat-row-val">${totalPlanned}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_current_day')}</span><span class="stat-row-val">J${Math.min(dayNum,totalDays)}</span></div>
@@ -543,26 +604,8 @@ function renderCalendar() {
   if (!cal) return;
 
   let daysHtml = '';
-  // Fenetre de tolerance pour les injections decalees : moitie de l'intervalle, plafonnee a 3 jours.
-  // Garantit qu'une meme injection ne peut jamais "sauver" deux jours prevus a la fois.
   const _interval = freq < 1 ? Math.max(1, Math.round(1/freq)) : 1;
-  const _shiftWin = freq < 1 ? Math.min(3, Math.floor(_interval / 2)) : 0;
-  const _injIdx = new Set();
-  cureInjs.forEach(i => {
-    const p = String(i.injected_at||'').slice(0,10).split('-');
-    if (p.length !== 3) return;
-    const dx = new Date(Number(p[0]), Number(p[1])-1, Number(p[2])); dx.setHours(0,0,0,0);
-    if (!isNaN(dx.getTime())) _injIdx.add(Math.floor((dx - startD) / 86400000));
-  });
-  function hasShiftedInj(idx) {
-    for (let k = -_shiftWin; k <= _shiftWin; k++) {
-      if (k === 0) continue;
-      const j = idx + k;
-      if (j % _interval === 0) continue;   // ce jour-la est lui-meme un jour prevu
-      if (_injIdx.has(j)) return true;
-    }
-    return false;
-  }
+  const _report   = computeReportMap(cure, cureInjs);
 
   for (let i = 0; i < startDow; i++) daysHtml += `<div class="cal-day empty"></div>`;
 
@@ -573,7 +616,7 @@ function renderCalendar() {
     const inCure   = date >= startD && date < endD;
     const isFuture = date > TODAY;
 
-    let cls = 'cal-day', dot = '';
+    let cls = 'cal-day', dot = '', shiftTo = 0;
     if (!inCure) { cls += ' outside'; }
     else if (isFuture) {
       // Jour futur dans la cure — repère visuel selon fréquence
@@ -597,10 +640,13 @@ function renderCalendar() {
         if (doneCt >= 1) {
           // Injection enregistree : verte, que le jour ait ete prevu ou non
           cls += ' done'; dot = 'green';
+        } else if (isSched && _report.toIdx.has(dayIdx)) {
+          // Jour prevu rattrape plus tard : on affiche vers quel jour
+          const _tIdx = _report.toIdx.get(dayIdx);
+          const _tD   = new Date(startD); _tD.setDate(_tD.getDate() + _tIdx);
+          cls += ' shifted'; dot = ''; shiftTo = _tD.getDate();
         } else if (isSched) {
-          const rescued = hasShiftedInj(dayIdx);
-          cls += rescued ? ' shifted' : ' missed';
-          dot  = rescued ? 'amber'    : 'red';
+          cls += ' missed'; dot = 'red';
         } else { cls += ' rest'; }
       } else {
         if (doneCt >= injPerDay)  { cls += ' done';    dot = 'green'; }
@@ -609,7 +655,7 @@ function renderCalendar() {
       }
     }
     if (isToday) cls += ' today';
-    daysHtml += `<div class="${cls}" onclick="selectDay('${ds}',${inCure})">${d}${dot?`<div class="day-dot ${dot}"></div>`:''}</div>`;
+    daysHtml += `<div class="${cls}" onclick="selectDay('${ds}',${inCure})">${d}${shiftTo?`<div class="day-shift">→${shiftTo}</div>`:''}${dot?`<div class="day-dot ${dot}"></div>`:''}</div>`;
   }
 
   cal.innerHTML = `
@@ -658,6 +704,21 @@ function selectDay(ds, clickable) {
   const sites     = getSites(admin);
   const { site: nextSite, idx: nextIdx } = getNextSite(currentCureId, admin, ds);
 
+  // Lien de report : ce jour a-t-il ete rattrape plus tard, ou rattrape-t-il un jour prevu ?
+  const _cureInjs = allInjections.filter(i => i.cure_id === currentCureId);
+  const _rep      = computeReportMap(cure, _cureInjs);
+  const _dayIdx   = Math.floor((_date - _startD) / 86400000);
+  const _fmtIdx = k => {
+    const d = new Date(_startD); d.setDate(d.getDate() + k);
+    return d.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  };
+  let reportBanner = '';
+  if (_rep.toIdx.has(_dayIdx)) {
+    reportBanner = `<div class="dd-report">↷ ${t('cure_reported_to')} ${_fmtIdx(_rep.toIdx.get(_dayIdx))}</div>`;
+  } else if (_rep.fromIdx.has(_dayIdx)) {
+    reportBanner = `<div class="dd-report">↶ ${t('cure_reported_from')} ${_fmtIdx(_rep.fromIdx.get(_dayIdx))}</div>`;
+  }
+
   let slotsHtml = '';
   let isRestDay = false;
   if (freq < 1) {
@@ -698,6 +759,7 @@ function selectDay(ds, clickable) {
       <div class="dd-date">${dateLabel}</div>
       <button class="dd-close" onclick="document.getElementById('dayDetail').classList.remove('show')">✕</button>
     </div>
+    ${reportBanner}
     ${(!isRestDay || isPast) ? `
     <div style="background:rgba(13,148,136,.05);border:1.5px solid rgba(13,148,136,.18);border-radius:14px;padding:12px 14px;margin:10px 0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -728,8 +790,44 @@ function cycleSite(ds) {
 }
 
 // Clic sur le slot : ignorer si l'event vient de l'input time
+// ── CONFIRMATION AVANT ENREGISTREMENT / SUPPRESSION ────────────
+// Un creneau se coche d'un simple appui : sans garde-fou, un clic involontaire
+// enregistre ou EFFACE une injection en base. On passe par une feuille.
+let _pendingSlot = null;
+
 function handleSlotClick(event, ds, slot, time) {
   if (event.target.matches('.slot-time-input')) return;
+  const existing = allInjections.find(i =>
+    i.cure_id===currentCureId && (i.injected_at||'').startsWith(ds) && (i.notes||'').includes('slot:'+slot)
+  );
+  const input = document.querySelector(`.slot-time-input[data-ds="${ds}"][data-slot="${slot}"]`);
+  const shownTime = input ? input.value : time;
+  const dLbl = (localDay(ds) || new Date()).toLocaleDateString(
+    PS_getLang()==='en'?'en-US':'fr-FR', {weekday:'long', day:'numeric', month:'long'});
+
+  _pendingSlot = { ds, slot, time, isDelete: !!existing };
+
+  const okBtn = document.getElementById('injConfirmOk');
+  document.getElementById('injConfirmTitle').textContent =
+    existing ? t('cure_confirm_del_title') : t('cure_confirm_title');
+  document.getElementById('injConfirmSub').textContent =
+    existing ? `${dLbl} · ${(existing.injected_at||'').slice(11,16)}` : `${dLbl} · ${shownTime}`;
+  okBtn.textContent = existing ? t('cure_confirm_del_btn') : t('cure_confirm_ok_btn');
+  okBtn.classList.toggle('danger', !!existing);
+  document.getElementById('injConfirmOverlay').classList.add('open');
+}
+
+function closeInjConfirmModal() {
+  document.getElementById('injConfirmOverlay').classList.remove('open');
+  _pendingSlot = null;
+}
+function closeInjConfirm(e) {
+  if (e.target === document.getElementById('injConfirmOverlay')) closeInjConfirmModal();
+}
+function confirmInjAction() {
+  if (!_pendingSlot) return;
+  const { ds, slot, time } = _pendingSlot;
+  closeInjConfirmModal();
   toggleInj(ds, slot, time);
 }
 
@@ -895,6 +993,52 @@ function escHtml(v) {
 // toISOString() ecrivait de l'UTC -> decalage de 7 h en UTC+7, et une injection
 // saisie avant 07:00 basculait au jour precedent. On ecrit desormais l'heure
 // locale telle quelle, ce que fait deja le champ "modifier l'heure".
+// ── APPARIEMENT DES INJECTIONS REPORTEES ───────────────────────
+// Une injection faite hors calendrier rattrape le DERNIER jour prevu non honore
+// avant elle, dans la limite d'un intervalle. Une injection ne rattrape qu'un
+// seul jour, et un jour n'est rattrape que par une seule injection.
+// Retourne { toIdx: Map(jourPrevu -> jourInjection), fromIdx: Map(inverse) }
+function computeReportMap(cure, injections) {
+  const empty = { toIdx: new Map(), fromIdx: new Map() };
+  const startD = localDay(cure && cure.start_date);
+  if (!startD) return empty;
+  const freq = parseFloat(cure.frequency) || 1;
+  if (freq >= 1) return empty;                       // pas de jour de repos a rattraper
+  const interval = Math.max(1, Math.round(1/freq));
+  const lastIdx  = Math.floor((TODAY - startD) / 86400000);
+  const duration = parseInt(cure.duration_days) || 30;
+
+  // Jours ou une injection existe reellement
+  const injSet = new Set();
+  (injections || []).forEach(i => {
+    const d = localDay(String(i.injected_at || '').slice(0,10));
+    if (d) injSet.add(Math.floor((d - startD) / 86400000));
+  });
+
+  // Jours prevus, ecoules, sans injection
+  const unfulfilled = [];
+  for (let k = 0; k <= Math.min(lastIdx, duration); k += interval) {
+    if (!injSet.has(k)) unfulfilled.push(k);
+  }
+  if (!unfulfilled.length) return empty;
+
+  // Injections hors calendrier, par ordre chronologique
+  const strays = [...injSet].filter(k => k % interval !== 0).sort((a,b) => a-b);
+
+  const toIdx = new Map(), fromIdx = new Map(), claimed = new Set();
+  strays.forEach(k => {
+    let best = -1;
+    unfulfilled.forEach(sIdx => {
+      if (claimed.has(sIdx)) return;
+      if (sIdx >= k) return;                         // on ne regarde qu'en arriere
+      if (k - sIdx > interval) return;               // hors fenetre
+      if (sIdx > best) best = sIdx;                  // le plus recent des candidats
+    });
+    if (best >= 0) { claimed.add(best); toIdx.set(best, k); fromIdx.set(k, best); }
+  });
+  return { toIdx, fromIdx };
+}
+
 function localStamp(dateStr, timeStr) {
   const d = String(dateStr || '').slice(0, 10);
   let hm = String(timeStr || '').slice(0, 5);

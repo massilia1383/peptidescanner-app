@@ -35,15 +35,23 @@
   .cure-tab.active { background:rgba(0,201,167,.12); border-color:rgba(0,201,167,.4); color:var(--accent); }
 
   /* Selecteur de cure — remplace les onglets scrollables (UX-03) */
-  .cure-select {
-    width:100%; margin-bottom:16px; padding:12px 38px 12px 14px;
-    background:var(--surface); border:1px solid var(--border); border-radius:12px;
-    color:var(--text); font-family:inherit; font-size:.9rem; font-weight:600;
-    outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-    background-repeat:no-repeat; background-position:right 14px center;
+  .cure-select-wrap { margin-bottom:18px; }
+  .cure-select-label {
+    display:block; font-size:.66rem; font-weight:700; letter-spacing:1px;
+    text-transform:uppercase; color:var(--muted); margin:0 0 6px 2px;
   }
-  .cure-select:focus { border-color:var(--accent); }
+  .cure-select {
+    width:100%; padding:14px 42px 14px 16px;
+    background:rgba(13,148,136,.05);
+    border:2px solid rgba(13,148,136,.28); border-radius:14px;
+    color:var(--text); font-family:inherit; font-size:1rem; font-weight:700;
+    outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'><path d='M2 2l6 6 6-6' stroke='%230D9488' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat; background-position:right 16px center;
+    transition:border-color .2s, background-color .2s;
+  }
+  .cure-select:hover { background-color:rgba(13,148,136,.09); }
+  .cure-select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,.14); }
 
   /* CURE INFO CARD */
   .cure-info {
@@ -475,7 +483,10 @@ function render() {
   function fmtD(d) { return d.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'}); }
 
   c.innerHTML = `
-    <select class="cure-select" onchange="selectCure(this.value)">${cureOptions}</select>
+    <div class="cure-select-wrap">
+      <label class="cure-select-label" for="cureSelect">${t('cure_select_label')}</label>
+      <select class="cure-select" id="cureSelect" onchange="selectCure(this.value)">${cureOptions}</select>
+    </div>
     <div class="cure-info">
       <div class="ci-header">
         <div class="ci-name">${capFirst(cure.peptide_name||cure.name)}</div>

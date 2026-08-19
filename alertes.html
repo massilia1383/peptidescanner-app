@@ -222,6 +222,58 @@ const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
 const now = new Date();
 
+// ── FREQUENCE : helpers ────────────────────────────────────────
+// cure.frequency est stocke en INJECTIONS PAR JOUR :
+// 1 = 1x/j · 2 = 2x/j · 3 = 3x/j · 0.5 = tous les 2 j · 0.28 = 2x/sem · 0.14 = 1x/sem
+function parseLocalDate(v) {
+  if (!v) return null;
+  const p = String(v).slice(0,10).split('-');
+  if (p.length !== 3) return null;
+  const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  if (isNaN(d.getTime())) return null;
+  d.setHours(0,0,0,0);
+  return d;
+}
+function injPerDay(cure) {
+  const f = parseFloat(cure && cure.frequency);
+  return (isFinite(f) && f > 0) ? f : 1;
+}
+function injSlotCount(cure) {
+  return Math.max(1, Math.ceil(injPerDay(cure)));
+}
+function injIntervalDays(cure) {
+  const f = injPerDay(cure);
+  return f >= 1 ? 1 : Math.max(1, Math.round(1 / f));
+}
+function defaultTimesFor(cnt) {
+  return cnt === 1 ? ['08:00'] : cnt === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
+}
+function freqKey(cure) {
+  const f = injPerDay(cure);
+  if (f >= 3)   return 'freq_3x';
+  if (f >= 2)   return 'freq_2x';
+  if (f >= 1)   return 'freq_1x';
+  if (f >= 0.4) return 'freq_1_2d';
+  if (f >= 0.2) return 'freq_2x_w';
+  return 'freq_1x_w';
+}
+// La cure est-elle en cours aujourd'hui (fenetre debut -> fin) ?
+function cureRunningToday(cure) {
+  const s = parseLocalDate(cure && cure.start_date);
+  if (!s) return false;
+  const e = parseLocalDate(cure.start_date);
+  e.setDate(e.getDate() + (parseInt(cure.duration_days) || 30));
+  return s <= TODAY && e >= TODAY;
+}
+// Une injection tombe-t-elle aujourd'hui ? (gere les frequences < 1)
+function injectionDueToday(cure) {
+  const s = parseLocalDate(cure && cure.start_date);
+  if (!s) return false;
+  const diff = Math.round((TODAY - s) / 86400000);
+  if (diff < 0) return false;
+  return diff % injIntervalDays(cure) === 0;
+}
+
 let userId = null, allCures = [], allInjections = [];
 
 async function init() {
@@ -260,22 +312,19 @@ function renderSchedule() {
   const list = document.getElementById('scheduleList');
   const active = allCures.filter(c => {
     if (c.status !== 'active') return false;
-    const s = new Date(c.start_date); s.setHours(0,0,0,0);
-    const e = new Date(c.start_date); e.setDate(e.getDate()+(c.duration_days||30)); e.setHours(0,0,0,0);
-    return s<=TODAY && e>=TODAY && parseFloat(c.frequency||1)>=1;
+    return cureRunningToday(c) && injectionDueToday(c);
   });
   if (active.length === 0) { list.innerHTML='<div class="empty-state"><span>✅</span>'+t('alerts_no_today')+'</div>'; return; }
   let items = [];
   active.forEach(c => {
-    const freq = parseFloat(c.frequency||1);
-    const cnt  = Math.ceil(freq);
-    const times = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+    const cnt   = injSlotCount(c);
+    const times = defaultTimesFor(cnt);
     const todayInjs = allInjections.filter(i => i.cure_id===c.id && (i.injected_at||'').startsWith(todayStr));
-    times.forEach((t,i) => {
+    times.forEach((hm,i) => {
       const done = todayInjs.some(l => (l.notes||'').includes('slot:'+i));
-      const [h,m] = t.split(':').map(Number);
+      const [h,m] = hm.split(':').map(Number);
       const isDue = !done && (now.getHours()>h||(now.getHours()===h&&now.getMinutes()>=m));
-      items.push({time:t,h,name:c.peptide_name||c.name,detail:(c.dose_mcg||'')+(c.unit?' '+c.unit:''),done,isDue});
+      items.push({time:hm,h,name:c.peptide_name||c.name,detail:(c.dose_mcg||'')+(c.unit?' '+c.unit:''),done,isDue});
     });
   });
   items.sort((a,b)=>a.h-b.h);
@@ -367,32 +416,28 @@ function saveReminders(r) {
 function renderInjReminders() {
   const container = document.getElementById('injReminders');
   const reminders = getReminders();
-  const active = allCures.filter(c => {
-    if (c.status!=='active') return false;
-    const s=new Date(c.start_date); s.setHours(0,0,0,0);
-    const e=new Date(c.start_date); e.setDate(e.getDate()+(c.duration_days||30)); e.setHours(0,0,0,0);
-    return s<=TODAY && e>=TODAY && parseFloat(c.frequency||1)>=1;
-  });
+  // BUG-04 : plus de filtre sur la frequence — toute cure active en cours
+  // a droit a son reglage de rappel, y compris les cures hebdomadaires.
+  const active = allCures.filter(c => c.status === 'active' && cureRunningToday(c));
   if (active.length===0) {
     container.innerHTML='<div class="inj-reminder-card"><div class="alert-row"><div class="alert-body"><div class="alert-sub" style="text-align:center;padding:8px 0">'+t('alerts_no_active')+'</div></div></div></div>';
     return;
   }
   container.innerHTML = active.map(cure => {
-    const freq = parseFloat(cure.frequency||1);
-    const cnt  = Math.ceil(freq);
-    const defaultTimes = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+    const cnt      = injSlotCount(cure);
+    const defTimes = defaultTimesFor(cnt);
     const saved = reminders[cure.id];
     // Si pas encore de préférence sauvegardée → activé par défaut
     // Si sauvegardé → utiliser la valeur exacte (true OU false)
     const enabled = saved ? saved.enabled === true : true;
-    const times   = saved?.times || defaultTimes;
-    const timesHtml = times.map((t,i)=>`
+    const times   = saved?.times || defTimes;
+    const timesHtml = times.map((hm,i)=>`
       <div class="inj-reminder-row">
         <div class="inj-reminder-info">
-          <div class="inj-reminder-name">Injection ${cnt>1?i+1:'du jour'}</div>
-          <div class="inj-reminder-sub">${cure.dose_mcg||''} ${cure.unit||'mcg'}</div>
+          <div class="inj-reminder-name">Injection${cnt>1?' '+(i+1):''}</div>
+          <div class="inj-reminder-sub">${cure.dose_mcg||''} ${cure.unit||'mcg'} · ${t(freqKey(cure))}</div>
         </div>
-        <input class="inj-time-input" type="time" value="${t}" onchange="updateReminderTime('${cure.id}',${i},this.value)" ${!enabled?'disabled':''}>
+        <input class="inj-time-input" type="time" value="${hm}" onchange="updateReminderTime('${cure.id}',${i},this.value)" ${!enabled?'disabled':''}>
       </div>`).join('');
     return `<div class="inj-reminder-card">
       <div class="inj-reminder-header">
@@ -415,8 +460,8 @@ function updateReminderTime(cureId, idx, newTime) {
   const r = getReminders();
   const cure = allCures.find(c=>c.id===cureId);
   if (!cure) return;
-  const cnt = Math.ceil(parseFloat(cure.frequency||1));
-  const def = cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+  const cnt = injSlotCount(cure);
+  const def = defaultTimesFor(cnt);
   const cur = r[cureId]?.times ? [...r[cureId].times] : [...def];
   cur[idx] = newTime;
   r[cureId] = { ...(r[cureId] || {}), times: cur };
@@ -490,24 +535,25 @@ function disableNotifications() {
 }
 
 function scheduleAllReminders() {
-  const reminders = JSON.parse(localStorage.getItem('ps_reminders')||'{}');
+  // BUG-05 : lire la meme cle que getReminders()/saveReminders() — sinon le
+  // toggle OFF de l'utilisateur n'etait jamais pris en compte.
+  const reminders = getReminders();
   allCures.forEach(cure => {
-    const s=new Date(cure.start_date); s.setHours(0,0,0,0);
-    const e=new Date(cure.start_date); e.setDate(e.getDate()+(cure.duration_days||30));
-    if (s>TODAY||e<TODAY) return;
-    const freq=parseFloat(cure.frequency||1); if(freq<1) return;
-    const cnt=Math.ceil(freq);
-    const def=cnt===1?['08:00']:cnt===2?['08:00','20:00']:['07:00','13:00','20:00'];
+    if (cure.status !== 'active') return;
+    if (!cureRunningToday(cure)) return;
+    if (!injectionDueToday(cure)) return;
+    const cnt = injSlotCount(cure);
+    const def = defaultTimesFor(cnt);
     const saved=reminders[cure.id]; if(saved?.enabled===false) return;
     const times=saved?.times||def;
-    times.forEach((t,i) => {
-      const [h,m]=t.split(':').map(Number);
+    times.forEach((hm,i) => {
+      const [h,m]=hm.split(':').map(Number);
       const trigger=new Date(); trigger.setHours(h,m,0,0);
       const ms=trigger-now;
       if (ms>0) setTimeout(()=>{
         const todayInjs=allInjections.filter(inj=>inj.cure_id===cure.id&&(inj.injected_at||'').startsWith(todayStr));
         if (!todayInjs.some(l=>(l.notes||'').includes('slot:'+i))) {
-          new Notification(`💉 ${cure.peptide_name||cure.name}`,{body:`${cure.dose_mcg||''} ${cure.unit||'mcg'} · ${t}`,icon:'/icons/icon-192.png'});
+          new Notification(`💉 ${cure.peptide_name||cure.name}`,{body:`${cure.dose_mcg||''} ${cure.unit||'mcg'} · ${hm}`,icon:'/icons/icon-192.png'});
         }
       }, ms);
     });

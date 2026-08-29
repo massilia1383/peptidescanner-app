@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#F8F9FA">
+<meta name="theme-color" content="#FBF7F1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
@@ -90,7 +90,8 @@
   .weight-note-input::placeholder { color:var(--muted); }
   /* Sans min-width:0 les champs ne peuvent pas retrecir sous leur largeur
      intrinseque et debordent de la carte en dessous de 420px. */
-  .weight-date-input, .weight-note-input, .weight-num-input { min-width:0; }
+  .weight-note-input, .weight-num-input { min-width:0; }
+  .weight-date-input { flex:0 0 auto; min-width:150px; }
   .weight-note-input:focus, .weight-date-input:focus { border-color:var(--accent); }
 
   /* HISTORY */
@@ -117,8 +118,8 @@
   .bmi-status { font-size:.82rem; margin-top:8px; font-weight:600; }
 
 
-  .toast { position:fixed; bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:var(--accent-on,#fff); padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
-  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .ps-toast { position:fixed; bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:var(--accent-on,#fff); padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
+  .ps-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
   .empty-chart { display:flex; align-items:center; justify-content:center; height:180px; color:var(--muted); font-size:.85rem; flex-direction:column; gap:8px; }
   .empty-chart span { font-size:2rem; }
@@ -219,7 +220,7 @@
     <a class="drawer-link" href="cgu.html"><strong data-i18n="nav_legal">Pages légales</strong><span>CGU</span></a>
   </div>
 </aside></div>
-<div class="toast" id="toast"></div>
+<div class="ps-toast" id="toast"></div>
 
 <script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -404,11 +405,11 @@ function renderChart(weights) {
   const area=line+` L${pts[pts.length-1].x},${H-PB} L${PL},${H-PB} Z`;
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
   svg.innerHTML=`<defs><linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="#0D9488" stop-opacity=".2"/><stop offset="100%" stop-color="#0D9488" stop-opacity="0"/>
+    <stop offset="0%" stop-color="var(--accent)" stop-opacity=".2"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
   </linearGradient></defs>${gridHtml}
   <path d="${area}" fill="url(#aG)"/>
-  <path d="${line}" fill="none" stroke="#0D9488" stroke-width="2.5" stroke-linecap="round"/>
-  ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="#0D9488"/>`).join('')}`;
+  <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+  ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="var(--accent)"/>`).join('')}`;
   const step=Math.max(1,Math.floor(weights.length/5));
   labels.innerHTML=pts.filter((_,i)=>i%step===0||i===pts.length-1)
     .map(p=>`<span>${new Date(p.date).toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'})}</span>`).join('');

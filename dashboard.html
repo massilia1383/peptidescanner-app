@@ -8,59 +8,52 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#F8F9FA">
+<meta name="theme-color" content="#FBF7F1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<link rel="stylesheet" href="/peptidescanner.css">
+<link rel="stylesheet" href="/peptidescanner-extra.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
+     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
+     les noms propres a la page, pour que ses regles existantes prennent la
+     nouvelle palette automatiquement. */
   :root {
-    --bg: #F8F9FA; --surface: #FFFFFF; --surface2: #F4F6F8; --border: #E2E8F0;
-    --accent: #0D9488; --accent2: #2B6CB0; --accent3: #F97316;
-    --text: #1F2937; --muted: #6B7280; --danger: #EF4444; --purple: #A855F7;
-    --nav-h: 64px;
+    --purple: var(--info);
+    --surface2: var(--surface-muted);
+    --accent2:  var(--info);
+    --accent3:  var(--amber);
+    --nav-h:    var(--bottomnav-h, 64px);
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h) + 16px); }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--bottomnav-h,64px) + 32px + env(safe-area-inset-bottom)); }
 
   /* TOP BAR */
-  .topbar {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:16px 20px 12px;
-    position:sticky; top:0; z-index:100;
-    background:rgba(248,249,250,.97); backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--border);
-  }
-  .topbar-left { display:flex; flex-direction:column; }
-  .topbar-greeting { font-size:.75rem; color:var(--muted); }
-  .topbar-name { font-size:1.1rem; font-weight:700; margin-top:1px; }
-  .topbar-logo { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
-  .logo-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
-  .notif-btn { width:36px; height:36px; border-radius:10px; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; font-size:1rem; }
-  .notif-badge { position:absolute; top:6px; right:6px; width:8px; height:8px; background:var(--danger); border-radius:50%; border:2px solid var(--bg); }
 
   /* SCROLL CONTENT */
   .content { padding:20px 20px 0; max-width:480px; margin:0 auto; }
 
   /* CURE ACTIVE CARD */
   .cure-card {
-    background:linear-gradient(135deg, rgba(13,148,136,.08) 0%, rgba(43,108,176,.06) 100%);
-    border:1.5px solid rgba(13,148,136,.2); border-radius:22px;
+    background:linear-gradient(135deg, var(--accent-soft) 0%, var(--info-soft) 100%);
+    border:1.5px solid rgba(22,107,90,.2); border-radius:22px;
     padding:22px 20px; margin-bottom:16px; position:relative;
-    box-shadow:0 4px 20px rgba(13,148,136,.08);
+    box-shadow:0 4px 20px rgba(22,107,90,.08);
   }
   .cure-card::before {
     content:''; position:absolute; top:-40px; right:-40px;
     width:160px; height:160px; border-radius:50%;
-    background:radial-gradient(circle, rgba(13,148,136,.06) 0%, transparent 70%);
+    background:radial-gradient(circle, rgba(22,107,90,.06) 0%, transparent 70%);
   }
   .cure-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
   .cure-label { font-size:.68rem; color:var(--accent); text-transform:uppercase; letter-spacing:1.5px; font-family:'Space Mono',monospace; margin-bottom:4px; }
   .cure-name { font-size:1.3rem; font-weight:700; color:var(--text); }
   .cure-sub { font-size:.78rem; color:var(--muted); margin-top:2px; }
   .cure-day-badge {
-    background:rgba(13,148,136,.1); border:1px solid rgba(13,148,136,.25);
+    background:var(--accent-soft); border:1px solid rgba(22,107,90,.25);
     border-radius:10px; padding:6px 12px; text-align:center; flex-shrink:0;
   }
   .cure-day-num { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--accent); line-height:1; }
@@ -103,7 +96,7 @@
   .stat-card-val.amber { color:var(--accent3); }
   .stat-card-val.purple { color:var(--purple); }
   .stat-card-sub { font-size:.7rem; color:var(--muted); margin-top:4px; display:flex; align-items:center; gap:4px; }
-  .trend-up { color:#22C55E; }
+  .trend-up { color:var(--accent); }
   .trend-down { color:var(--danger); }
 
   /* MINI WEIGHT CHART */
@@ -133,10 +126,10 @@
     display:flex; align-items:center; justify-content:center;
     font-size:.9rem; flex-shrink:0;
   }
-  .alert-icon.green { background:rgba(13,148,136,.12); }
-  .alert-icon.amber { background:rgba(245,158,11,.12); }
-  .alert-icon.red { background:rgba(239,68,68,.12); }
-  .alert-icon.purple { background:rgba(99,102,241,.12); }
+  .alert-icon.green { background:var(--accent-soft); }
+  .alert-icon.amber { background:var(--amber-soft); }
+  .alert-icon.red { background:var(--danger-soft); }
+  .alert-icon.purple { background:var(--info-soft); }
   .alert-text { flex:1; }
   .alert-title { font-size:.84rem; font-weight:600; margin-bottom:2px; }
   .alert-sub { font-size:.72rem; color:var(--muted); }
@@ -144,8 +137,8 @@
 
   /* TODAY VIEW */
   .today-view-header {
-    background:linear-gradient(135deg, rgba(13,148,136,.08), rgba(43,108,176,.06));
-    border:1.5px solid rgba(13,148,136,.18); border-radius:18px;
+    background:linear-gradient(135deg, var(--accent-soft), var(--info-soft));
+    border:1.5px solid rgba(22,107,90,.18); border-radius:18px;
     padding:16px 18px; margin-bottom:12px;
     display:flex; align-items:center; justify-content:space-between;
   }
@@ -156,9 +149,10 @@
   .today-score-label { font-size:.65rem; color:var(--muted); margin-top:2px; }
 
   .today-progress-bar { height:6px; background:var(--surface2); border-radius:100px; overflow:hidden; margin-top:10px; }
-  .today-progress-fill { height:100%; border-radius:100px; background:linear-gradient(90deg, var(--accent), #14b8a6); transition:width .5s ease; }
+  .today-progress-fill { height:100%; border-radius:100px; background:linear-gradient(90deg, var(--accent), var(--accent)); transition:width .5s ease; }
 
   .today-card {
+    padding:0;
     background:var(--surface); border:1px solid var(--border);
     border-radius:16px; overflow:hidden; margin-bottom:4px;
     box-shadow:0 2px 8px rgba(0,0,0,.04);
@@ -178,7 +172,7 @@
   }
   .injection-item:last-child { border-bottom:none; }
   .injection-item:active { background:var(--surface2); }
-  .injection-item.done-item { background:rgba(13,148,136,.03); }
+  .injection-item.done-item { background:var(--accent-soft); }
 
   .inj-check {
     width:32px; height:32px; border-radius:10px; flex-shrink:0;
@@ -186,18 +180,18 @@
     cursor:pointer; transition:all .2s; font-size:.9rem;
     border:2px solid var(--border); background:transparent;
   }
-  .inj-check.done { background:rgba(13,148,136,.15); border-color:var(--accent); color:var(--accent); }
+  .inj-check.done { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
   .inj-check.pending { border-color:var(--border); }
   .inj-check.due { border-color:var(--accent3); animation:pulseCheck 1.5s infinite; }
   @keyframes pulseCheck {
-    0%,100%{ box-shadow:0 0 0 0 rgba(249,115,22,.3); }
-    50%{ box-shadow:0 0 0 5px rgba(249,115,22,0); }
+    0%,100%{ box-shadow:0 0 0 0 rgba(128,91,0,.3); }
+    50%{ box-shadow:0 0 0 5px transparent; }
   }
 
   .inj-info { flex:1; min-width:0; }
   .inj-name { font-size:.86rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .inj-detail { font-size:.72rem; color:var(--muted); margin-top:2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  .inj-site { background:rgba(13,148,136,.08); border-radius:5px; padding:1px 6px; color:var(--accent); font-size:.66rem; font-weight:600; }
+  .inj-site { background:var(--accent-soft); border-radius:5px; padding:1px 6px; color:var(--accent); font-size:.66rem; font-weight:600; }
 
   .inj-time { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); flex-shrink:0; text-align:right; }
   .inj-time.due { color:var(--accent3); font-weight:700; }
@@ -213,34 +207,15 @@
   .section-head a { font-size:.75rem; color:var(--accent); text-decoration:none; font-weight:600; }
 
   /* BOTTOM NAV */
-  .bottom-nav {
-    position:fixed; bottom:0; left:0; right:0; z-index:200;
-    background:rgba(255,255,255,.97); backdrop-filter:blur(16px);
-    border-top:1px solid var(--border);
-    display:flex; align-items:center; justify-content:space-around;
-    height:var(--nav-h); padding:0 8px;
-    padding-bottom:env(safe-area-inset-bottom);
-  }
-  .nav-item {
-    display:flex; flex-direction:column; align-items:center; gap:4px;
-    padding:8px 14px; border-radius:12px; cursor:pointer;
-    text-decoration:none; color:var(--muted); transition:all .2s;
-    min-width:56px;
-  }
-  .nav-item.active { color:var(--accent); }
-  .nav-item:hover { color:var(--text); }
-  .nav-icon { font-size:1.3rem; line-height:1; }
-  .nav-label { font-size:.6rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
-  .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
 
   /* TOAST */
-  .toast {
+  .ps-toast {
     position:fixed; bottom:calc(var(--nav-h) + 16px); left:50%; transform:translateX(-50%) translateY(20px);
     background:var(--accent); color:#fff; padding:10px 20px; border-radius:100px;
     font-size:.82rem; font-weight:700; opacity:0; pointer-events:none;
     transition:all .3s; z-index:300; white-space:nowrap;
   }
-  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .ps-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
   /* MODAL CONFIRMATION INJECTION */
   .inj-confirm-overlay {
@@ -305,7 +280,7 @@
 
   /* DISCLAIMER JURIDIQUE */
   .legal-disclaimer {
-    background:rgba(249,115,22,.06); border:1px solid rgba(249,115,22,.2);
+    background:var(--amber-soft); border:1px solid rgba(128,91,0,.2);
     border-radius:12px; padding:12px 16px; margin:12px 0;
     display:flex; gap:10px; align-items:flex-start;
   }
@@ -314,12 +289,12 @@
   .legal-disclaimer-text { font-size:.72rem; color:#92400E; line-height:1.5; }
   .legal-disclaimer-text strong { color:#78350F; }
   .phase-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700; }
-  .phase-established  { background:rgba(13,148,136,.1);  color:#065F46; border:1px solid rgba(13,148,136,.2); }
-  .phase-preclinical  { background:rgba(43,108,176,.1);  color:#1E3A5F; border:1px solid rgba(43,108,176,.2); }
-  .phase-phase1       { background:rgba(245,158,11,.1);  color:#78350F; border:1px solid rgba(245,158,11,.2); }
-  .phase-phase2       { background:rgba(249,115,22,.1);  color:#7C2D12; border:1px solid rgba(249,115,22,.2); }
-  .phase-phase3       { background:rgba(139,92,246,.1);  color:#4C1D95; border:1px solid rgba(139,92,246,.2); }
-  .phase-experimental { background:rgba(220,38,38,.08);  color:#7F1D1D; border:1px solid rgba(220,38,38,.15); }
+  .phase-established  { background:var(--accent-soft);  color:#065F46; border:1px solid rgba(22,107,90,.2); }
+  .phase-preclinical  { background:var(--info-soft);  color:var(--info); border:1px solid rgba(53,92,154,.2); }
+  .phase-phase1       { background:var(--amber-soft);  color:#78350F; border:1px solid rgba(128,91,0,.2); }
+  .phase-phase2       { background:var(--amber-soft);  color:#7C2D12; border:1px solid rgba(128,91,0,.2); }
+  .phase-phase3       { background:var(--info-soft);  color:#4C1D95; border:1px solid rgba(53,92,154,.2); }
+  .phase-experimental { background:var(--danger-soft);  color:#7F1D1D; border:1px solid rgba(161,50,40,.15); }
 
   /* ── CAROUSEL CURES ─────────────────────────────────────── */
   .carousel-wrap { position:relative; margin-bottom:16px; padding:0 18px; }
@@ -348,20 +323,20 @@
   .carousel-nav:hover { border-color:var(--accent); color:var(--accent); }
   .carousel-nav.prev { left:-14px; }
   .carousel-nav.next { right:-14px; }
-  .carousel-nav.hidden { opacity:0; pointer-events:none; }
+  .carousel-nav.nav-off { opacity:0; pointer-events:none; }
 
   /* Slide animation */
   .cure-card {
-    background:linear-gradient(135deg, rgba(13,148,136,.08) 0%, rgba(43,108,176,.06) 100%);
-    border:1.5px solid rgba(13,148,136,.2); border-radius:22px;
+    background:linear-gradient(135deg, var(--accent-soft) 0%, var(--info-soft) 100%);
+    border:1.5px solid rgba(22,107,90,.2); border-radius:22px;
     padding:22px 20px; position:relative;
-    box-shadow:0 4px 20px rgba(13,148,136,.08);
+    box-shadow:0 4px 20px rgba(22,107,90,.08);
     transition:transform .35s cubic-bezier(.4,0,.2,1), opacity .35s ease;
   }
   .cure-card::before {
     content:''; position:absolute; top:-40px; right:-40px;
     width:160px; height:160px; border-radius:50%;
-    background:radial-gradient(circle, rgba(13,148,136,.06) 0%, transparent 70%);
+    background:radial-gradient(circle, rgba(22,107,90,.06) 0%, transparent 70%);
     pointer-events:none; overflow:hidden;
   }
   .cure-card.slide-out-left  { transform:translateX(-60px); opacity:0; }
@@ -372,7 +347,7 @@
   /* Badge cure principale */
   .main-badge {
     display:inline-flex; align-items:center; gap:5px;
-    background:rgba(13,148,136,.15); border:1px solid rgba(13,148,136,.3);
+    background:var(--accent-soft); border:1px solid rgba(22,107,90,.3);
     color:var(--accent); border-radius:100px;
     font-size:.65rem; font-weight:700; padding:3px 10px;
     font-family:'Space Mono',monospace; letter-spacing:.5px;
@@ -380,7 +355,7 @@
   }
   .main-badge::before { content:'●'; font-size:.55rem; }
   .main-badge-clickable { cursor:pointer; transition:all .2s; }
-  .main-badge-clickable:hover { background:rgba(220,38,38,.1); border-color:rgba(220,38,38,.3); color:var(--danger); }
+  .main-badge-clickable:hover { background:var(--danger-soft); border-color:rgba(161,50,40,.3); color:var(--danger); }
 
   /* Bouton "Définir comme principale" */
   .set-main-btn {
@@ -404,16 +379,21 @@
 <body>
 
 <!-- TOP BAR -->
-<div class="topbar">
-  <div class="topbar-left">
-    <span class="topbar-greeting" data-i18n="dash_greeting">Bonjour 👋</span>
-    <span class="topbar-name" id="userName">Chargement…</span>
+<header class="app-topbar">
+  <div class="topbar-inner">
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner"><img class="brand-symbol" src="/brand/brand-mark.svg" alt="" width="36" height="36"></a>
+    <div class="brand-name">PeptideScanner</div>
+    <div class="page-title-wrap"><h1 class="page-title" data-i18n="dash_greeting">Bonjour</h1> <span class="page-title" id="userName" style="color:var(--muted);font-weight:600">…</span></div>
+    <div id="langToggleBtn"></div>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6 2.5 6.5 2.5 6.5H4s2.5-.5 2.5-6.5M9.5 19a2.8 2.8 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">J</button>
   </div>
-  <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <div id="langToggleBtn"></div>
-  <div class="notif-btn" onclick="window.location='alertes.html'">
-    🔔<div class="notif-badge" id="notifBadge"></div>
-  </div>
+</header>
+<div class="menu-popover" id="avatarMenu" hidden>
+  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <a class="menu-item" href="lemon-checkout.html" data-i18n="nav_subscription">Abonnement</a>
+  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
 </div>
 
 <!-- CONTENT -->
@@ -432,7 +412,7 @@
 
   <!-- Carousel wrap -->
   <div class="carousel-wrap" id="carouselWrap">
-    <button class="carousel-nav prev hidden" id="carouselPrev" onclick="carouselMove(-1)">‹</button>
+    <button class="carousel-nav prev nav-off" id="carouselPrev" onclick="carouselMove(-1)">‹</button>
     <div class="cure-card" id="cureCard">
       <!-- Badge / bouton principale -->
       <div id="favBadge" style="display:none"></div>
@@ -477,7 +457,7 @@
         <button class="cure-btn secondary" onclick="openAddCure()"><span data-i18n="dash_new_cure">＋ Nouvelle cure</span></button>
       </div>
     </div>
-    <button class="carousel-nav next hidden" id="carouselNext" onclick="carouselMove(1)">›</button>
+    <button class="carousel-nav next nav-off" id="carouselNext" onclick="carouselMove(1)">›</button>
   </div>
 
   <!-- STATS -->
@@ -518,13 +498,13 @@
       <svg id="miniChart" viewBox="0 0 400 80" preserveAspectRatio="none">
         <defs>
           <linearGradient id="wGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#00C9A7" stop-opacity=".25"/>
-            <stop offset="100%" stop-color="#00C9A7" stop-opacity="0"/>
+            <stop offset="0%" stop-color="var(--accent)" stop-opacity=".25"/>
+            <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
           </linearGradient>
         </defs>
-        <text x="200" y="44" fill="#6B7A99" font-size="12" font-family="Space Grotesk" text-anchor="middle" id="chartEmpty">—</text>
+        <text x="200" y="44" fill="var(--muted)" font-size="12" font-family="Space Grotesk" text-anchor="middle" id="chartEmpty">—</text>
         <path id="chartArea" d="" fill="url(#wGrad)"/>
-        <path id="chartLine" d="" fill="none" stroke="#00C9A7" stroke-width="2" stroke-linecap="round"/>
+        <path id="chartLine" d="" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </div>
   </div>
@@ -550,33 +530,26 @@
 </div><!-- /content -->
 
 <!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <a class="nav-item active" href="dashboard.html">
-    <span class="nav-icon">🏠</span>
-    <span class="nav-label" data-i18n="nav_home">Accueil</span>
-    <div class="nav-dot"></div>
-  </a>
-  <a class="nav-item" href="cure.html">
-    <span class="nav-icon">📅</span>
-    <span class="nav-label" data-i18n="nav_cure">Cure</span>
-  </a>
-  <a class="nav-item" href="poids.html">
-    <span class="nav-icon">⚖️</span>
-    <span class="nav-label" data-i18n="nav_weight">Poids</span>
-  </a>
-  <a class="nav-item" href="alertes.html">
-    <span class="nav-icon">🔔</span>
-    <span class="nav-label" data-i18n="nav_alerts">Alertes</span>
-  </a>
-  <a class="nav-item" href="inventaire.html">
-    <span class="nav-icon">🧪</span>
-    <span class="nav-label" data-i18n="nav_stock">Stock</span>
-  </a>
-  <a class="nav-item" href="profil.html">
-    <span class="nav-icon">👤</span>
-    <span class="nav-label" data-i18n="nav_profile">Profil</span>
-  </a>
-</nav>
+<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
+  <a class="nav-item is-active" href="dashboard.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item" href="poids.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18V6m0 12h16M7 14l4-4 3 2 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_weight">Poids</span></a>
+  <a class="nav-item" href="inventaire.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4H8zM7 7h10l2 4v9H5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_stock">Stock</span></a>
+  <button class="nav-item" type="button" data-more-open><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg><span class="nav-label" data-i18n="nav_more">Plus</span></button>
+</div></nav>
+<div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
+  <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
+  <div class="drawer-grid">
+    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>80+ peptides</span></a>
+    <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
+    <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
+    <a class="drawer-link" href="ia.html"><strong data-i18n="nav_ia">IA</strong><span>Conseiller</span></a>
+    <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
+    <a class="drawer-link" href="lemon-checkout.html"><strong data-i18n="nav_subscription">Abonnement</strong><span>Premium</span></a>
+    <a class="drawer-link" href="boutiques.html"><strong data-i18n="nav_shops">Boutiques</strong><span>Partenaires</span></a>
+    <a class="drawer-link" href="cgu.html"><strong data-i18n="nav_legal">Pages legales</strong><span>CGU</span></a>
+  </div>
+</aside></div>
 
 <!-- ADD CURE MODAL -->
 <div class="modal-overlay" id="addCureModal" onclick="closeIfOverlay(event)">
@@ -649,7 +622,7 @@
 </div>
 
 <!-- TOAST -->
-<div class="toast" id="toast"></div>
+<div class="ps-toast" id="toast"></div>
 
 <script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -734,8 +707,8 @@ function renderCarousel() {
     // Aucune cure active
     cureCard.style.display = 'none';
     dots.innerHTML = '';
-    prevBtn.classList.add('hidden');
-    nextBtn.classList.add('hidden');
+    prevBtn.classList.add('nav-off');
+    nextBtn.classList.add('nav-off');
     // Afficher message vide
     let noCard = document.getElementById('noCureCard');
     if (!noCard) {
@@ -764,8 +737,8 @@ function renderCarousel() {
   ).join('');
 
   // Flèches
-  prevBtn.classList.toggle('hidden', activeCures.length <= 1 || carouselIdx === 0);
-  nextBtn.classList.toggle('hidden', activeCures.length <= 1 || carouselIdx === activeCures.length - 1);
+  prevBtn.classList.toggle('nav-off', activeCures.length <= 1 || carouselIdx === 0);
+  nextBtn.classList.toggle('nav-off', activeCures.length <= 1 || carouselIdx === activeCures.length - 1);
 
   // Swipe mobile
   cureCard.ontouchstart = e => { _swipeStartX = e.touches[0].clientX; };
@@ -1193,7 +1166,58 @@ async function saveCure() {
 }
 
 // ── LANCER ─────────────────────────────────────────────────────
+
+// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
+const _drawer = document.getElementById('moreDrawer');
+function setDrawer(open) {
+  if (!_drawer) return;
+  _drawer.classList.toggle('is-open', open);
+  _drawer.setAttribute('aria-hidden', String(!open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
+document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
+if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
+
+const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
+if (_avaBtn && _avaMenu) {
+  _avaBtn.addEventListener('click', () => {
+    const open = _avaMenu.hidden;
+    _avaMenu.hidden = !open;
+    _avaBtn.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', e => {
+    if (!_avaMenu.hidden && !_avaMenu.contains(e.target) && !_avaBtn.contains(e.target)) {
+      _avaMenu.hidden = true; _avaBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+const _themeBtn = document.getElementById('themeToggle');
+if (_themeBtn) _themeBtn.addEventListener('click', () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme === 'dark' ||
+               (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('ps_theme', root.dataset.theme); } catch(e) {}
+  if (_avaMenu) _avaMenu.hidden = true;
+});
+try { const _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch(e) {}
+
+async function psLogout() {
+  try { await sb.auth.signOut(); } catch(e) {}
+  window.location.href = '/login.html';
+}
+function psFillAvatar() {
+  sb.auth.getUser().then(({data}) => {
+    const n = data?.user?.user_metadata?.full_name || data?.user?.email || '';
+    const btn = document.getElementById('avatarButton');
+    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
+  }).catch(()=>{});
+}
+
 init().then(() => {
+  psFillAvatar();
   PS_applyI18n();
   PS_renderLangSwitcher();
   const _ce = document.getElementById('chartEmpty');

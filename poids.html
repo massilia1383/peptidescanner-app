@@ -32,7 +32,9 @@
   /* Topbar, navigation basse et tiroir viennent desormais de peptidescanner.css */
 
   /* UX-02 : trois paliers de largeur au lieu des 480px figes */
-  .content { padding:16px 20px 0; max-width:100%; margin:0 auto; }
+  .content { padding:16px 20px 0; width:100%; max-width:100%; margin:0 auto; }
+  @media (min-width: 768px)  { .content { max-width: 720px; } }
+  @media (min-width: 1024px) { .content { max-width: var(--content-desktop, 1100px); } }
   @media (min-width:768px)  { .content { max-width:var(--content-tablet,720px); } }
   @media (min-width:1024px) { .content { max-width:var(--content-desktop,1100px); } }
 
@@ -95,6 +97,17 @@
   .weight-note-input:focus, .weight-date-input:focus { border-color:var(--accent); }
 
   /* HISTORY */
+  @media (min-width: 1024px) {
+    .content { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);
+               column-gap:22px; align-content:start; }
+    .period-tabs      { grid-column:1 / -1; grid-row:1; }
+    .weight-stats     { grid-column:1; grid-row:2; align-self:start; }
+    .chart-card       { grid-column:1; grid-row:3 / span 2; align-self:start; }
+    .add-weight-card  { grid-column:2; grid-row:2; }
+    .bmi-card         { grid-column:2; grid-row:3; align-self:start; }
+    .history-card     { grid-column:1 / -1; grid-row:5; }
+  }
+
   .history-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
   .history-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
   .hist-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
@@ -131,7 +144,7 @@
   <div class="topbar-inner">
     <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner"><img class="brand-symbol" src="/brand/brand-mark.svg" alt="" width="36" height="36"></a>
     <div class="brand-name">PeptideScanner</div>
-    <div class="page-title-wrap"><h1 class="page-title" data-i18n="weight_title">Suivi du poids</h1></div>
+    <div class="page-title-wrap"><h1 class="page-title" data-i18n="nav_weight">Poids</h1></div>
     <div id="langToggleBtn"></div>
     <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6 2.5 6.5 2.5 6.5H4s2.5-.5 2.5-6.5M9.5 19a2.8 2.8 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
     <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">J</button>

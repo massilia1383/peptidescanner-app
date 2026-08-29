@@ -33,7 +33,10 @@
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
   .topbar h1 { font-size:1rem; font-weight:700; }
 
-  .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
+  .content, #statsBar, .page-band { width:100%; max-width:100%; margin:0 auto; }
+  .content { padding:16px 20px 0; }
+  @media (min-width: 768px)  { .content, #statsBar, .page-band { max-width: 720px; } }
+  @media (min-width: 1024px) { .content, #statsBar, .page-band { max-width: var(--content-desktop, 1100px); } }
 
   /* SECTION LABEL */
   .section-label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:10px; margin-top:4px; }
@@ -129,6 +132,12 @@
   .peremption-banner-text { font-size:.78rem; line-height:1.6; }
   .peremption-banner-text strong { color:var(--danger); display:block; margin-bottom:2px; }
 
+  .ps-toast { position:fixed; bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom)); left:50%;
+             transform:translateX(-50%) translateY(20px); background:var(--accent); color:var(--accent-on,#fff);
+             padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0;
+             pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
+  .ps-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
   /* MODAL */
   .modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.4); backdrop-filter:blur(4px); display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
   .modal-overlay.show { opacity:1; pointer-events:all; }
@@ -206,7 +215,7 @@
 </div>
 
 <!-- STATS BAR -->
-<div id="statsBar" style="display:flex;gap:10px;padding:12px 20px 0;max-width:480px;margin:0 auto"></div>
+<div id="statsBar" style="display:flex;gap:10px;padding:12px 20px 0;margin:0 auto"></div>
 
 <!-- GRILLE FLACONS -->
 <div class="content" id="mainContent"></div>
@@ -312,7 +321,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="ps-toast" id="toast"></div>
 
 <script src="/lang.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -472,7 +481,7 @@ function render() {
   }
 
   // Grille de flacons
-  container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;padding:16px 16px 0;max-width:480px;margin:0 auto">
+  container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;padding:16px 16px 0;margin:0 auto">
     ${allInventory.map(f => {
       const remaining = f.remaining_units ?? f.vial_qty_mg ?? 0;
       const total     = f.vial_qty_mg ?? 1;
@@ -721,7 +730,7 @@ document.addEventListener('visibilitychange', () => {
 });
 </script>
 
-<div style="padding:0 16px 8px"><div class="legal-disclaimer compact">
+<div class="page-band" style="padding:0 16px 8px"><div class="legal-disclaimer compact">
   <span class="legal-disclaimer-icon">⚠️</span>
   <div class="legal-disclaimer-text">
     <strong data-i18n="disclaimer_title">Usage éducatif uniquement</strong> — <span data-i18n="disclaimer_short">Peptides de recherche non approuvés à usage humain.</span>

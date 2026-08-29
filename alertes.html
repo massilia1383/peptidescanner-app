@@ -30,7 +30,9 @@
   body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--bottomnav-h,64px) + 32px + env(safe-area-inset-bottom)); }
   .topbar h1 { font-size:1.1rem; font-weight:700; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
-  .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
+  .content { padding:16px 20px 0; width:100%; max-width:100%; margin:0 auto; }
+  @media (min-width: 768px)  { .content { max-width: 720px; } }
+  @media (min-width: 1024px) { .content { max-width: var(--content-desktop, 1100px); } }
   .section-title { font-size:.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:12px; }
   .alert-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:10px; }
   .alert-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); transition:background .15s; }
@@ -65,6 +67,14 @@
   .submit-btn { width:100%; padding:12px; border-radius:10px; border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; margin-top:4px; }
 
   /* NOTIFICATIONS INTELLIGENTES */
+  .col-main, .col-side { display: contents; }
+  @media (min-width: 1024px) {
+    .content { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+               column-gap:22px; align-items:start; }
+    .notif-banner { grid-column:1 / -1; }
+    .col-main, .col-side { display:block; min-width:0; }
+  }
+
   .notif-banner {
     display:flex; align-items:center; gap:12px; padding:14px 16px;
     background:linear-gradient(135deg, var(--accent-soft), var(--info-soft));
@@ -96,7 +106,7 @@
   .inj-time-input {
     background:var(--surface2); border:1.5px solid var(--border); border-radius:8px;
     padding:6px 10px; font-family:'Space Mono',monospace; font-size:.8rem;
-    color:var(--text); outline:none; width:112px; text-align:center;
+    color:var(--text); outline:none; width:134px; text-align:center;
     transition:border-color .2s;
   }
   .inj-time-input:focus { border-color:var(--accent); }
@@ -174,6 +184,7 @@
   </div>
 
   <!-- RAPPELS D'INJECTION PAR CURE -->
+  <div class="col-main">
   <div class="section-title"><span data-i18n="alerts_reminders">Rappels d'injection</span></div>
   <div id="injReminders"></div>
 
@@ -185,6 +196,9 @@
   </div>
 
   <!-- ALERTES AUTO -->
+  </div>
+
+  <div class="col-side">
   <div class="section-title"><span data-i18n="alerts_auto">Alertes actives</span></div>
   <div id="autoAlertsList"></div>
 
@@ -220,6 +234,7 @@
     <button class="submit-btn" onclick="addAlert()"><span data-i18n="alerts_save_btn">Enregistrer le rappel</span></button>
   </div>
 
+  </div>
 </div>
 <nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
   <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>

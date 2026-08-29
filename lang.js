@@ -2306,7 +2306,7 @@ window.PS_renderLangSwitcher = function() {
     ['fr','en'].forEach((lang, i) => {
       const btn = document.createElement('button');
       const isActive = current === lang;
-      btn.innerHTML = (lang === 'fr' ? '🇫🇷' : '🇬🇧') + '<span class="lang-code">' + lang.toUpperCase() + '</span>';
+      btn.textContent = lang === 'fr' ? '🇫🇷 FR' : '🇬🇧 EN';
       btn.style.cssText = [
         'padding:5px 10px',
         'font-family:inherit',

@@ -330,11 +330,3 @@ body:not(.public-page) { padding-top: var(--topbar-h, 64px); }
 .ps-fab:active { transform: translateY(0); }
 .ps-fab svg { width: 24px; height: 24px; }
 @media (min-width: 1024px) { .ps-fab { right: calc((100vw - var(--content-desktop, 1100px)) / 2 + 18px); } }
-
-/* Selecteur de langue : en dessous de 430px on ne garde que le drapeau,
-   sinon le titre de page est tronque dans la topbar. */
-#langToggleBtn .lang-code { margin-left: 5px; }
-@media (max-width: 430px) {
-  #langToggleBtn .lang-code { display: none; }
-  #langToggleBtn button { padding: 0 9px !important; }
-}

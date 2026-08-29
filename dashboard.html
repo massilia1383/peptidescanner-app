@@ -34,7 +34,18 @@
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
 
   /* SCROLL CONTENT */
-  .content { padding:20px 20px 0; max-width:480px; margin:0 auto; }
+  .content, .page-band { width:100%; max-width:100%; margin:0 auto; }
+  .content { padding:20px 20px 0; }
+  @media (min-width: 768px)  { .content, .page-band { max-width: 720px; } }
+  @media (min-width: 1024px) { .content, .page-band { max-width: var(--content-desktop, 1100px); } }
+
+  /* Colonnes : transparentes sur mobile, reelles a partir de 1024px */
+  .col-main, .col-side { display: contents; }
+  @media (min-width: 1024px) {
+    .content { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);
+               column-gap:22px; align-items:start; }
+    .col-main, .col-side { display:block; min-width:0; }
+  }
 
   /* CURE ACTIVE CARD */
   .cure-card {
@@ -398,6 +409,7 @@
 
 <!-- CONTENT -->
 <div class="content">
+  <div class="col-main">
 
   <!-- CURE ACTIVE CAROUSEL -->
   <div style="margin-bottom:8px">
@@ -460,6 +472,16 @@
     <button class="carousel-nav next nav-off" id="carouselNext" onclick="carouselMove(1)">›</button>
   </div>
 
+  <!-- TODAY VIEW -->
+  <div class="section-head">
+    <h2 data-i18n="dash_today_section">Aujourd'hui</h2>
+    <a href="cure.html" data-i18n="dash_calendar_link">Calendrier →</a>
+  </div>
+  <div id="todayViewContainer"></div>
+
+  </div>
+
+  <div class="col-side">
   <!-- STATS -->
   <div class="section-head">
     <h2 data-i18n="dash_summary">Résumé</h2>
@@ -509,13 +531,6 @@
     </div>
   </div>
 
-  <!-- TODAY VIEW -->
-  <div class="section-head">
-    <h2 data-i18n="dash_today_section">Aujourd'hui</h2>
-    <a href="cure.html" data-i18n="dash_calendar_link">Calendrier →</a>
-  </div>
-  <div id="todayViewContainer"></div>
-
   <!-- ALERTES -->
   <div class="section-head" style="margin-top:4px">
     <h2 data-i18n="dash_alerts_section">Alertes récentes</h2>
@@ -527,6 +542,7 @@
     </div>
   </div>
 
+  </div>
 </div><!-- /content -->
 
 <!-- BOTTOM NAV -->
@@ -1225,7 +1241,7 @@ init().then(() => {
 }).catch(console.error);
 </script>
 
-<div style="padding:0 16px 8px"><div class="legal-disclaimer compact">
+<div class="page-band" style="padding:0 16px 8px"><div class="legal-disclaimer compact">
   <span class="legal-disclaimer-icon">⚠️</span>
   <div class="legal-disclaimer-text">
     <strong data-i18n="disclaimer_title">Usage éducatif uniquement</strong> — <span data-i18n="disclaimer_short">Peptides de recherche non approuvés à usage humain. Consultez un professionnel de santé. PeptideScanner décline toute responsabilité.</span>

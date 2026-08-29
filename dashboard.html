@@ -811,17 +811,41 @@ function renderCureData(active) {
     }
   }
 
-  const start    = new Date(active.start_date); start.setHours(0,0,0,0);
+  const start    = localDay(active.start_date) || new Date(0);
   const dur      = active.duration_days || 30;
   const dayNum   = Math.floor((TODAY - start) / 86400000) + 1;
   const pct      = Math.min(100, Math.round((dayNum / dur) * 100));
-  const daysLeft = Math.max(0, dur - dayNum);
   const endDate  = new Date(start); endDate.setDate(endDate.getDate() + dur);
+  // Meme formule que cure.html et que l'alerte de fin de cure : on compte les jours
+  // jusqu'a la date de fin, pas la difference entre la duree et le numero du jour.
+  const daysLeft = Math.max(0, Math.ceil((endDate - TODAY) / 86400000));
   const cureInjs = allInjections.filter(i => i.cure_id === active.id);
   const freq     = parseFloat(active.frequency) || 1;
-  const totalExp = Math.round(dayNum * freq);
   const done     = cureInjs.length;
-  const injPct   = totalExp > 0 ? Math.min(100, Math.round((done / totalExp) * 100)) : 0;
+
+  // Statistiques identiques a celles de cure.html : « faites » ne compte que les
+  // creneaux prevus reellement couverts, report explicite inclus. Sans ca l'accueil
+  // et la page Cure affichaient deux chiffres differents pour la meme cure.
+  const _rep = computeReportMap(active, cureInjs);
+  let totalExp, missedCt;
+  if (freq < 1) {
+    const _iv = Math.max(1, Math.round(1 / freq));
+    const _injSet = new Set();
+    cureInjs.forEach(i => {
+      const d = localDay(String(i.injected_at || '').slice(0, 10));
+      if (d) _injSet.add(Math.floor((d - start) / 86400000));
+    });
+    totalExp = 0; missedCt = 0;
+    for (let k = 0; k <= Math.min(dayNum - 1, dur); k += _iv) {
+      totalExp++;
+      if (!_injSet.has(k) && !_rep.toIdx.has(k)) missedCt++;
+    }
+  } else {
+    totalExp = Math.round(Math.min(dayNum, dur) * freq);
+    missedCt = Math.max(0, totalExp - done);
+  }
+  const onPlan   = Math.max(0, totalExp - missedCt);
+  const injPct   = totalExp > 0 ? Math.min(100, Math.round((onPlan / totalExp) * 100)) : 0;
   const freqLabel= freq >= 1 ? freq + '×/' + t('days_suffix') : '1×/' + Math.round(1/freq) + t('days_suffix');
 
   document.getElementById('cureName').textContent     = active.peptide_name || active.name;
@@ -831,7 +855,7 @@ function renderCureData(active) {
   document.getElementById('ringPct').textContent      = pct + '%';
   document.getElementById('daysLeft').textContent     = daysLeft + ' ' + t('dash_days_suffix');
   document.getElementById('endDate').textContent      = formatDate(endDate);
-  document.getElementById('injDone').textContent      = done + ' / ' + totalExp;
+  document.getElementById('injDone').textContent      = onPlan + ' / ' + totalExp;
   document.getElementById('injBar').style.width       = injPct + '%';
   document.getElementById('compliance').textContent   = injPct + '%';
 
@@ -1065,6 +1089,28 @@ function localDay(dateStr) {
   if (isNaN(d.getTime())) return null;
   d.setHours(0, 0, 0, 0);
   return d;
+}
+
+// Lecture du lien de report pose manuellement par l'utilisateur (meme format que cure.html)
+function readReportTag(inj) {
+  const m = String((inj && inj.notes) || '').match(/report:(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : null;
+}
+function computeReportMap(cure, injections) {
+  const toIdx = new Map(), fromIdx = new Map();
+  const startD = localDay(cure && cure.start_date);
+  if (!startD) return { toIdx, fromIdx };
+  const idxOf = ds => { const d = localDay(ds); return d ? Math.floor((d - startD) / 86400000) : null; };
+  (injections || []).forEach(inj => {
+    const target = readReportTag(inj);
+    if (!target) return;
+    const sIdx = idxOf(target);
+    const kIdx = idxOf(String(inj.injected_at || '').slice(0, 10));
+    if (sIdx === null || kIdx === null || sIdx === kIdx) return;
+    if (toIdx.has(sIdx)) return;
+    toIdx.set(sIdx, kIdx); fromIdx.set(kIdx, sIdx);
+  });
+  return { toIdx, fromIdx };
 }
 
 async function confirmInjection() {

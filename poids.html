@@ -12,30 +12,34 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<link rel="stylesheet" href="/peptidescanner.css">
+<link rel="stylesheet" href="/peptidescanner-extra.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
+     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
+     les noms propres a cette page, pour que TOUTES ses regles existantes prennent
+     automatiquement la nouvelle palette. */
   :root {
-    --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0;
-    --accent:#0D9488; --accent2:#2B6CB0; --accent3:#F97316;
-    --text:#1F2937; --muted:#6B7280; --danger:#DC2626; --nav-h:64px;
+    --surface2: var(--surface-muted);
+    --accent2:  var(--info);
+    --accent3:  var(--amber);
+    --nav-h:    var(--bottomnav-h, 64px);
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:120px; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--bottomnav-h,64px) + 32px + env(safe-area-inset-bottom)); }
 
-  .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:rgba(248,249,250,.97); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; backdrop-filter:blur(12px); }
-  .topbar h1 { font-size:1.1rem; font-weight:700; }
-  .topbar-logo { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
-  .logo-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
-  .topbar-actions { display:flex; align-items:center; gap:10px; }
-  .add-btn { width:36px; height:36px; background:var(--accent); border-radius:10px; border:none; color:#000; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  /* Topbar, navigation basse et tiroir viennent desormais de peptidescanner.css */
 
-  .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
+  /* UX-02 : trois paliers de largeur au lieu des 480px figes */
+  .content { padding:16px 20px 0; max-width:100%; margin:0 auto; }
+  @media (min-width:768px)  { .content { max-width:var(--content-tablet,720px); } }
+  @media (min-width:1024px) { .content { max-width:var(--content-desktop,1100px); } }
 
   /* PERIOD TABS */
   .period-tabs { display:flex; gap:6px; margin-bottom:16px; }
   .period-tab { flex:1; padding:8px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--muted); font-size:.78rem; font-weight:600; cursor:pointer; text-align:center; transition:all .2s; }
-  .period-tab.active { background:rgba(0,201,167,.12); border-color:rgba(0,201,167,.4); color:var(--accent); }
+  .period-tab.active { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
 
   /* STATS */
   .weight-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
@@ -78,24 +82,27 @@
   }
   .weight-num-input:focus { border-color:var(--accent); }
   .weight-unit { font-family:'Space Mono',monospace; font-size:1rem; color:var(--muted); flex-shrink:0; }
-  .weight-add-btn { background:var(--accent); color:#000; border:none; border-radius:12px; padding:14px 20px; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; flex-shrink:0; }
+  .weight-add-btn { background:var(--accent); color:var(--accent-on,#fff); border:none; border-radius:12px; padding:14px 20px; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; flex-shrink:0; }
   .weight-add-btn:hover { opacity:.85; }
   .weight-date-row { display:flex; gap:10px; align-items:center; margin-top:10px; }
   .weight-date-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:inherit; font-size:.84rem; outline:none; }
   .weight-note-input { flex:2; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:inherit; font-size:.84rem; outline:none; }
   .weight-note-input::placeholder { color:var(--muted); }
+  /* Sans min-width:0 les champs ne peuvent pas retrecir sous leur largeur
+     intrinseque et debordent de la carte en dessous de 420px. */
+  .weight-date-input, .weight-note-input, .weight-num-input { min-width:0; }
   .weight-note-input:focus, .weight-date-input:focus { border-color:var(--accent); }
 
   /* HISTORY */
   .history-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
   .history-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
-  .hist-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(30,45,69,.5); }
+  .hist-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
   .hist-item:last-child { border-bottom:none; padding-bottom:0; }
   .hist-date { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); flex-shrink:0; width:56px; }
   .hist-val { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; color:var(--accent); }
   .hist-diff { font-size:.75rem; margin-left:4px; }
   .hist-diff.up { color:var(--danger); }
-  .hist-diff.down { color:#22C55E; }
+  .hist-diff.down { color:var(--accent); }
   .hist-note { font-size:.75rem; color:var(--muted); flex:1; margin-left:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .hist-del { background:transparent; border:none; color:var(--border); cursor:pointer; font-size:.85rem; padding:4px; transition:color .2s; flex-shrink:0; }
   .hist-del:hover { color:var(--danger); }
@@ -109,15 +116,8 @@
   .bmi-labels { display:flex; justify-content:space-between; font-size:.65rem; color:var(--muted); }
   .bmi-status { font-size:.82rem; margin-top:8px; font-weight:600; }
 
-  /* BOTTOM NAV */
-  .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(255,255,255,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 8px; }
-  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 14px; border-radius:12px; cursor:pointer; text-decoration:none; color:var(--muted); transition:all .2s; min-width:56px; }
-  .nav-item.active { color:var(--accent); }
-  .nav-icon { font-size:1.3rem; line-height:1; }
-  .nav-label { font-size:.6rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
-  .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
 
-  .toast { position:fixed; bottom:calc(var(--nav-h)+16px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#000; padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
+  .toast { position:fixed; bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:var(--accent-on,#fff); padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
   .empty-chart { display:flex; align-items:center; justify-content:center; height:180px; color:var(--muted); font-size:.85rem; flex-direction:column; gap:8px; }
@@ -126,13 +126,21 @@
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <h1 data-i18n="weight_title">Suivi du poids</h1>
-  <div class="topbar-actions">
+<header class="app-topbar">
+  <div class="topbar-inner">
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner"><img class="brand-symbol" src="/brand/brand-mark.svg" alt="" width="36" height="36"></a>
+    <div class="brand-name">PeptideScanner</div>
+    <div class="page-title-wrap"><h1 class="page-title" data-i18n="weight_title">Suivi du poids</h1></div>
     <div id="langToggleBtn"></div>
-    <button class="add-btn" onclick="focusInput()">＋</button>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6 2.5 6.5 2.5 6.5H4s2.5-.5 2.5-6.5M9.5 19a2.8 2.8 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">J</button>
   </div>
+</header>
+<div class="menu-popover" id="avatarMenu" hidden>
+  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <a class="menu-item" href="lemon-checkout.html" data-i18n="nav_subscription">Abonnement</a>
+  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
 </div>
 
 <div class="content">
@@ -190,18 +198,27 @@
 
 </div>
 
-<nav class="bottom-nav">
-  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
-  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label">Biblio</span></a>
-  <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span></a>
-  <a class="nav-item active" href="poids.html"><span class="nav-icon">⚖️</span><span class="nav-label">Poids</span><div class="nav-dot"></div></a>
-  <a class="nav-item" href="alertes.html"><span class="nav-icon">🔔</span><span class="nav-label">Alertes</span></a>
-  <a class="nav-item" href="inventaire.html">
-    <span class="nav-icon">🧪</span>
-    <span class="nav-label" data-i18n="nav_stock">Stock</span>
-  </a>
-  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
-</nav>
+<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
+  <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item is-active" href="poids.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18V6m0 12h16M7 14l4-4 3 2 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_weight">Poids</span></a>
+  <a class="nav-item" href="inventaire.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4H8zM7 7h10l2 4v9H5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_stock">Stock</span></a>
+  <button class="nav-item" type="button" data-more-open><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg><span class="nav-label" data-i18n="nav_more">Plus</span></button>
+</div></nav>
+
+<div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
+  <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">×</button></div>
+  <div class="drawer-grid">
+    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>80+ peptides</span></a>
+    <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span data-i18n="calc_subtitle">Dose &amp; reconstitution</span></a>
+    <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span data-i18n="nav_analyse">Analyse</span></a>
+    <a class="drawer-link" href="ia.html"><strong data-i18n="nav_ia">IA</strong><span data-i18n="nav_ia">IA</span></a>
+    <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span data-i18n="nav_profile">Profil</span></a>
+    <a class="drawer-link" href="lemon-checkout.html"><strong data-i18n="nav_subscription">Abonnement</strong><span>Premium</span></a>
+    <a class="drawer-link" href="boutiques.html"><strong data-i18n="nav_shops">Boutiques</strong><span data-i18n="nav_shops">Boutiques</span></a>
+    <a class="drawer-link" href="cgu.html"><strong data-i18n="nav_legal">Pages légales</strong><span>CGU</span></a>
+  </div>
+</aside></div>
 <div class="toast" id="toast"></div>
 
 <script src="/lang.js"></script>
@@ -247,7 +264,7 @@ function showHeightPrompt() {
   if (existing) return;
   const el = document.createElement('div');
   el.id = 'heightPrompt';
-  el.style.cssText = 'background:rgba(13,148,136,.07);border:1.5px solid rgba(13,148,136,.2);border-radius:14px;padding:16px;margin-bottom:12px;';
+  el.style.cssText = 'background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:14px;padding:16px;margin-bottom:12px;';
   el.innerHTML = `
     <div style="font-size:.84rem;font-weight:700;margin-bottom:4px;color:var(--accent)">${t('weight_height_title')}</div>
     <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">${t('weight_height_sub')}</div>
@@ -367,7 +384,9 @@ function renderChart(weights) {
   const labels=document.getElementById('chartLabels');
   if(weights.length<2){svg.style.display='none';empty.style.display='flex';labels.innerHTML='';return;}
   svg.style.display='block';empty.style.display='none';
-  const W=400,H=180,PL=32,PR=10,PT=10,PB=20;
+  const _cw = document.getElementById('chartWrap');
+  const W = Math.max(320, Math.round(_cw ? _cw.clientWidth : 400));
+  const H=180,PL=32,PR=10,PT=10,PB=20;
   const vals=weights.map(w=>w.weight_kg);
   const mn=Math.min(...vals)-0.5,mx=Math.max(...vals)+0.5;
   const pts=vals.map((v,i)=>({
@@ -378,8 +397,8 @@ function renderChart(weights) {
   let gridHtml='';
   for(let i=0;i<=4;i++){
     const y=PT+i*(H-PT-PB)/4;
-    gridHtml+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#E2E8F0" stroke-width="1"/>
-    <text x="${PL-4}" y="${y+4}" fill="#6B7280" font-size="9" text-anchor="end" font-family="Space Mono">${(mx-(mx-mn)*i/4).toFixed(1)}</text>`;
+    gridHtml+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="var(--border)" stroke-width="1"/>
+    <text x="${PL-4}" y="${y+4}" fill="var(--muted)" font-size="9" text-anchor="end" font-family="Space Mono">${(mx-(mx-mn)*i/4).toFixed(1)}</text>`;
   }
   const line=pts.map((p,i)=>i===0?`M${p.x},${p.y}`:`L${p.x},${p.y}`).join(' ');
   const area=line+` L${pts[pts.length-1].x},${H-PB} L${PL},${H-PB} Z`;
@@ -408,7 +427,7 @@ function renderHistory(all) {
       <span class="hist-val">${w.weight_kg} kg${diffHtml}</span>
       ${w.notes?`<span class="hist-note">${w.notes}</span>`:'<span class="hist-note"></span>'}
       <div style="display:flex;gap:4px">
-        <button class="hist-del" onclick="startEdit('${w.id}',${w.weight_kg},'${w.notes||''}')" title="Modifier" style="background:rgba(13,148,136,.1);color:var(--accent);border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:.8rem">✏️</button>
+        <button class="hist-del" onclick="startEdit('${w.id}',${w.weight_kg},'${w.notes||''}')" title="Modifier" style="background:var(--accent-soft);color:var(--accent);border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:.8rem">✏️</button>
         <button class="hist-del" onclick="deleteWeight('${w.id}')">🗑</button>
       </div>
     </div>`;
@@ -423,7 +442,7 @@ function renderBMI(all) {
   const h=heightCm/100;
   const bmi=(latest.weight_kg/(h*h)).toFixed(1);
   let status,color,pct;
-  if(bmi<18.5){status=t('weight_bmi_under');color='#3B82F6';pct=Math.max(5,(bmi/40)*100);}
+  if(bmi<18.5){status=t('weight_bmi_under');color='var(--info)';pct=Math.max(5,(bmi/40)*100);}
   else if(bmi<25){status=t('weight_bmi_normal');color='var(--accent)';pct=(bmi/40)*100;}
   else if(bmi<30){status=t('weight_bmi_over');color='var(--accent3)';pct=(bmi/40)*100;}
   else{status=t('weight_bmi_obese');color='var(--danger)';pct=Math.min(95,(bmi/40)*100);}
@@ -435,9 +454,63 @@ function renderBMI(all) {
     <div style="font-size:.72rem;color:var(--muted);margin-top:4px">${t('weight_bmi_height')} ${heightCm} ${t('weight_bmi_unit')} ${latest.weight_kg} kg</div>`;
 }
 
+// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
+const _drawer = document.getElementById('moreDrawer');
+function setDrawer(open) {
+  if (!_drawer) return;
+  _drawer.classList.toggle('is-open', open);
+  _drawer.setAttribute('aria-hidden', String(!open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
+document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
+if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
+
+const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
+if (_avaBtn && _avaMenu) {
+  _avaBtn.addEventListener('click', () => {
+    const open = _avaMenu.hidden;
+    _avaMenu.hidden = !open;
+    _avaBtn.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', e => {
+    if (!_avaMenu.hidden && !_avaMenu.contains(e.target) && !_avaBtn.contains(e.target)) {
+      _avaMenu.hidden = true; _avaBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+const _themeBtn = document.getElementById('themeToggle');
+if (_themeBtn) _themeBtn.addEventListener('click', () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme === 'dark' ||
+               (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('ps_theme', root.dataset.theme); } catch(e) {}
+  if (_avaMenu) _avaMenu.hidden = true;
+});
+try { const _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch(e) {}
+
+let _rzT;
+window.addEventListener('resize', () => {
+  clearTimeout(_rzT);
+  _rzT = setTimeout(() => { if (allWeights.length) render(); }, 180);
+});
+
+async function psLogout() {
+  try { await sb.auth.signOut(); } catch(e) {}
+  window.location.href = '/login.html';
+}
+
 init().then(()=>{
   PS_applyI18n();
   PS_renderLangSwitcher();
+  // Initiale du prenom dans l'avatar
+  sb.auth.getUser().then(({data}) => {
+    const n = data?.user?.user_metadata?.full_name || data?.user?.email || '';
+    const btn = document.getElementById('avatarButton');
+    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
+  }).catch(()=>{});
 });
 </script>
 </body>

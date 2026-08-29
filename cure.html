@@ -405,7 +405,7 @@
       <!-- Section paliers -->
       <div class="titration-section" id="titrationSection">
         <!-- Palier 1 = dosage principal + durée configurable -->
-        <div class="titration-palier" style="margin-bottom:8px;background:rgba(13,148,136,.06);border-color:rgba(13,148,136,.2)">
+        <div class="titration-palier" style="margin-bottom:8px;background:var(--accent-soft);border-color:rgba(22,107,90,.2)">
           <div class="titration-palier-header">
             <span class="titration-palier-num" id="palier1Label">Palier 1</span>
           </div>
@@ -718,11 +718,11 @@ function renderCalendar() {
     <div class="cal-days-header">${DAYS_SHORT().map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>
     <div class="cal-grid">${daysHtml}</div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(0,201,167,.25)"></div><span data-i18n="cure_legend_done">Fait</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,.2)"></div><span data-i18n="cure_legend_partial">Partiel</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,.14);border:1px dashed rgba(245,158,11,.45)"></div><span data-i18n="cure_legend_shifted">Décalée</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(239,68,68,.15)"></div><span data-i18n="cure_legend_missed">Manqué</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(43,108,176,.15);border:1px dashed rgba(43,108,176,.4)"></div><span data-i18n="cure_legend_planned">Prévu</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-soft);border:1px solid rgba(22,107,90,.2)"></div><span data-i18n="cure_legend_done">Fait</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber-soft);border:1px solid rgba(128,91,0,.2)"></div><span data-i18n="cure_legend_partial">Partiel</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber-soft);border:1px dashed rgba(128,91,0,.45)"></div><span data-i18n="cure_legend_shifted">Décalée</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--danger-soft);border:1px solid rgba(161,50,40,.15)"></div><span data-i18n="cure_legend_missed">Manqué</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--info-soft);border:1.5px solid rgba(53,92,154,.4)"></div><span data-i18n="cure_legend_planned">Prévu</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--surface2)"></div><span data-i18n="cure_legend_rest">Repos</span></div>
     </div>`;
 }
@@ -837,7 +837,7 @@ function selectDay(ds, clickable) {
     </div>
     ${reportBanner}
     ${(!isRestDay || isPast) ? `
-    <div style="background:rgba(13,148,136,.05);border:1.5px solid rgba(13,148,136,.18);border-radius:14px;padding:12px 14px;margin:10px 0">
+    <div style="background:var(--accent-soft);border:1.5px solid rgba(22,107,90,.18);border-radius:14px;padding:12px 14px;margin:10px 0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600">${t('cure_suggested_site')}</div>
         <button onclick="cycleSite('${ds}')" style="font-size:.68rem;color:var(--accent);background:none;border:none;cursor:pointer;font-weight:600">${t('cure_change_site')}</button>
@@ -920,7 +920,7 @@ async function updateInjTime(input) {
     // Injection existante → update
     const { error } = await sb.from('injections').update({ injected_at: newISOTime }).eq('id', injId);
     if (error) {
-      showToast('⚠️ Erreur sauvegarde'); input.style.borderColor='#EF4444';
+      showToast('⚠️ Erreur sauvegarde'); input.style.borderColor='var(--danger)';
       setTimeout(() => input.style.borderColor='', 1500);
     } else {
       input.classList.add('saved');

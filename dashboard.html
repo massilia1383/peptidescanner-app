@@ -108,7 +108,7 @@
   .stat-card-val.purple { color:var(--purple); }
   .stat-card-sub { font-size:.7rem; color:var(--muted); margin-top:4px; display:flex; align-items:center; gap:4px; }
   .trend-up { color:var(--accent); }
-  .trend-down { color:var(--danger); }
+  .trend-down { color:var(--terra); }
 
   /* MINI WEIGHT CHART */
   .weight-card {
@@ -915,7 +915,9 @@ function renderStats() {
     if (allWeights.length > 1) {
       const diff = (latest.weight_kg - allWeights[0].weight_kg).toFixed(1);
       const sign = diff > 0 ? '+' : '';
-      const cls  = diff > 0 ? 'trend-up' : 'trend-down';
+      // Meme convention que la page Poids : une baisse est verte, une hausse en
+      // terre cuite. L'accueil affichait exactement l'inverse.
+      const cls  = Number(diff) < 0 ? 'trend-up' : Number(diff) > 0 ? 'trend-down' : '';
       document.getElementById('weightDiff').innerHTML = `<span class="${cls}">${sign}${diff} kg</span> ${t('dash_since_start')}`;
     } else {
       document.getElementById('weightDiff').textContent = t('dash_first_measure');

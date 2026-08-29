@@ -330,3 +330,6 @@ body:not(.public-page) { padding-top: var(--topbar-h, 64px); }
 .ps-fab:active { transform: translateY(0); }
 .ps-fab svg { width: 24px; height: 24px; }
 @media (min-width: 1024px) { .ps-fab { right: calc((100vw - var(--content-desktop, 1100px)) / 2 + 18px); } }
+/* Des qu'il y a de la marge, le bouton flottant sort de la colonne : sinon il
+   recouvre la derniere carte, qui ne peut pas defiler sous lui. */
+@media (min-width: 1280px) { .ps-fab { right: calc((100vw - var(--content-desktop, 1100px)) / 2 - 72px); } }

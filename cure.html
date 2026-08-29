@@ -554,9 +554,14 @@ function render() {
     totalExp = Math.round(daysElapsed * freq);
     missedCt = Math.max(0, totalExp - done);
   }
+  // « Faites » ne compte que les creneaux prevus reellement couverts. Une injection
+  // enregistree hors planning et non rattachee ne gonfle plus le total ni la compliance :
+  // elle apparait sur sa propre ligne, ce qui signale qu'il y a un report a faire.
+  const onPlan       = Math.max(0, totalExp - missedCt);       // creneaux prevus couverts
+  const offPlan      = Math.max(0, done - onPlan);             // injections hors planning
   const totalPlanned = Math.round(totalDays * freq);           // total prévues sur toute la cure
-  const remaining    = Math.max(0, totalPlanned - done);       // restantes à faire
-  const compPct      = totalExp > 0 ? Math.min(100, Math.round(done/totalExp*100)) : 0;
+  const remaining    = Math.max(0, totalPlanned - totalExp);   // creneaux encore a venir
+  const compPct      = totalExp > 0 ? Math.min(100, Math.round(onPlan/totalExp*100)) : 0;
 
   // Calculer les paliers si titration active
   const hasTitration = (cure.notes||'').includes('titration:[');
@@ -620,9 +625,10 @@ function render() {
     <div class="day-detail" id="dayDetail"></div>
     <div class="stats-section">
       <h3>${t('cure_stats')}</h3>
-      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_done')}</span><span class="stat-row-val" style="color:var(--accent)">${done}</span></div>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_done')}</span><span class="stat-row-val" style="color:var(--accent)">${onPlan}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_expected')}</span><span class="stat-row-val">${totalExp}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_missed')}</span><span class="stat-row-val" style="color:var(--danger)">${missedCt}</span></div>
+      ${offPlan > 0 ? `<div class="stat-row"><span class="stat-row-key">${t('cure_inj_offplan')}</span><span class="stat-row-val" style="color:var(--accent3)">${offPlan}</span></div>` : ''}
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_remaining')}</span><span class="stat-row-val" style="color:var(--accent2)">${remaining}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_total_planned')}</span><span class="stat-row-val">${totalPlanned}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_current_day')}</span><span class="stat-row-val">J${Math.min(dayNum,totalDays)}</span></div>

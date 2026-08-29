@@ -8,29 +8,36 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#F8F9FA">
+<meta name="theme-color" content="#FBF7F1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<link rel="stylesheet" href="/peptidescanner.css">
+<link rel="stylesheet" href="/peptidescanner-extra.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-  :root { --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0; --accent:#0D9488; --accent2:#2B6CB0; --accent3:#F97316; --text:#1F2937; --muted:#6B7280; --danger:#DC2626; --nav-h:64px; }
+  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
+     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
+     les noms propres a cette page. */
+  :root {
+    --surface2: var(--surface-muted);
+    --accent2:  var(--info);
+    --accent3:  var(--amber);
+    --nav-h:    var(--bottomnav-h, 64px);
+  }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:120px; }
-  .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:rgba(248,249,250,.97); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; backdrop-filter:blur(12px); }
-  .topbar h1 { font-size:1.1rem; font-weight:700; }
-  .topbar-logo { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
-  .logo-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
-  .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
+  .content { padding:16px 20px 0; width:100%; max-width:100%; margin:0 auto; }
+  @media (min-width: 768px)  { .content { max-width: 720px; } }
+  @media (min-width: 1024px) { .content { max-width: var(--content-desktop, 1100px); } }
 
   /* AVATAR */
   .avatar-section { display:flex; flex-direction:column; align-items:center; padding:24px 0 20px; }
-  .avatar { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:2rem; margin-bottom:12px; border:3px solid rgba(0,201,167,.3); }
+  .avatar { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:2rem; margin-bottom:12px; border:3px solid rgba(22,107,90,.3); }
   .avatar-name { font-size:1.2rem; font-weight:700; margin-bottom:4px; }
   .avatar-plan { padding:4px 14px; border-radius:100px; font-size:.72rem; font-weight:700; font-family:'Space Mono',monospace; }
-  .plan-free { background:rgba(107,122,153,.1); color:var(--muted); border:1px solid var(--border); }
-  .plan-premium { background:rgba(245,158,11,.12); color:var(--accent3); border:1px solid rgba(245,158,11,.3); }
+  .plan-free { background:var(--neutral-soft); color:var(--muted); border:1px solid var(--border); }
+  .plan-premium { background:var(--amber-soft); color:var(--accent3); border:1px solid rgba(128,91,0,.3); }
 
   /* SECTION */
   .section-label { font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin:16px 0 8px; }
@@ -38,7 +45,7 @@
   .settings-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid rgba(30,45,69,.5); transition:background .15s; cursor:pointer; }
   .settings-row:last-child { border-bottom:none; }
   .settings-row:hover { background:rgba(255,255,255,.02); }
-  .settings-row.editing { background:rgba(0,201,167,.04); }
+  .settings-row.editing { background:var(--accent-soft); }
   .row-icon { width:36px; height:36px; border-radius:10px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:.95rem; flex-shrink:0; }
   .row-info { flex:1; }
   .row-label { font-size:.84rem; font-weight:600; margin-bottom:2px; }
@@ -48,8 +55,8 @@
 
   /* PREMIUM CARD */
   .premium-card {
-    background:linear-gradient(135deg, rgba(0,201,167,.1) 0%, rgba(99,102,241,.1) 100%);
-    border:1px solid rgba(0,201,167,.25); border-radius:18px; padding:20px; margin-bottom:4px;
+    background:linear-gradient(135deg, var(--accent-soft) 0%, var(--info-soft) 100%);
+    border:1px solid rgba(22,107,90,.25); border-radius:18px; padding:20px; margin-bottom:4px;
   }
   .premium-card h3 { font-size:1rem; font-weight:700; margin-bottom:6px; }
   .premium-card p { font-size:.82rem; color:var(--muted); line-height:1.6; margin-bottom:16px; }
@@ -76,7 +83,7 @@
     padding:10px 12px; background:var(--surface2); border-radius:10px;
     border:1.5px solid var(--border); transition:all .2s;
   }
-  .syringe-toggle.active { border-color:var(--accent); background:rgba(13,148,136,.06); }
+  .syringe-toggle.active { border-color:var(--accent); background:var(--accent-soft); }
   .syringe-toggle-info { display:flex; align-items:center; gap:10px; }
   .syringe-toggle-label { font-size:.84rem; font-weight:600; }
   .syringe-toggle-sub { font-size:.68rem; color:var(--muted); margin-top:2px; }
@@ -85,25 +92,31 @@
   .toggle-slider { position:absolute; inset:0; border-radius:24px; background:var(--border); cursor:pointer; transition:.3s; }
   .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; border-radius:50%; background:#fff; transition:.3s; box-shadow:0 1px 4px rgba(0,0,0,.15); }
   .toggle input:checked + .toggle-slider { background:var(--accent); }
-  .toggle input:checked + .toggle-slider::before { transform:translateX(20px); } width:100%; padding:12px; border-radius:10px; border:1px solid rgba(239,68,68,.3); background:rgba(239,68,68,.06); color:var(--danger); font-family:inherit; font-size:.86rem; font-weight:600; cursor:pointer; transition:all .2s; margin-bottom:8px; }
-  .danger-btn:hover { background:rgba(239,68,68,.12); }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(20px); } width:100%; padding:12px; border-radius:10px; border:1px solid rgba(161,50,40,.3); background:var(--danger-soft); color:var(--danger); font-family:inherit; font-size:.86rem; font-weight:600; cursor:pointer; transition:all .2s; margin-bottom:8px; }
+  .danger-btn:hover { background:var(--danger-soft); }
 
   /* BOTTOM NAV */
   .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(255,255,255,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 8px; }
-  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 14px; border-radius:12px; cursor:pointer; text-decoration:none; color:var(--muted); transition:all .2s; min-width:56px; }
-  .nav-item.active { color:var(--accent); }
-  .nav-icon { font-size:1.3rem; line-height:1; }
-  .nav-label { font-size:.6rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
-  .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
   .toast { position:fixed; bottom:calc(var(--nav-h)+16px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#000; padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <h1 data-i18n="profil_title">Mon profil</h1>
-  <div id="langToggleBtn"></div>
+<header class="app-topbar">
+  <div class="topbar-inner">
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner"><img class="brand-symbol" src="/brand/brand-mark.svg" alt="" width="36" height="36"></a>
+    <div class="brand-name">PeptideScanner</div>
+    <div class="page-title-wrap"><h1 class="page-title" data-i18n="nav_profile">Profil</h1></div>
+    <div id="langToggleBtn"></div>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6 2.5 6.5 2.5 6.5H4s2.5-.5 2.5-6.5M9.5 19a2.8 2.8 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">J</button>
+  </div>
+</header>
+<div class="menu-popover" id="avatarMenu" hidden>
+  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <a class="menu-item" href="lemon-checkout.html" data-i18n="nav_subscription">Abonnement</a>
+  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
 </div>
 
 <div class="content">
@@ -124,7 +137,7 @@
     </div>
     <div class="settings-row" onclick="editField('age','Âge')">
       <div class="row-icon">🎂</div>
-      <div class="row-info"><div class="row-label" data-i18n="profil_age">Âge</div><div class="row-val" id="val-age">—</div></div>
+      <div class="row-info"><div class="row-label" data-i18n="profil_experience">Expérience</div><div class="row-val" id="val-age">—</div></div>
       <div class="row-arrow">›</div>
     </div>
     <div class="settings-row" onclick="editField('taille','Taille (cm)')">
@@ -170,9 +183,9 @@
     <div style="padding:14px 16px">
       <div style="font-size:.8rem;font-weight:700;margin-bottom:4px"><span data-i18n="profil_solvent">💧 Solvant de reconstitution préféré</span></div>
       <select class="form-select" id="solventPreference" onchange="saveEquipment()" style="margin-top:8px">
-        <option value="bac">${t('solvent_bac')}</option>
-        <option value="water">${t('solvent_water')}</option>
-        <option value="saline">${t('solvent_saline')}</option>
+        <option value="bac" data-i18n="solvent_bac">Eau bactériostatique (BAC) — Recommandé</option>
+        <option value="water" data-i18n="solvent_water">Eau stérile pour injection</option>
+        <option value="saline" data-i18n="solvent_saline">Sérum physiologique 0.9%</option>
       </select>
     </div>
   </div>
@@ -204,7 +217,7 @@
 
   <!-- DANGER -->
   <div class="section-label"><span data-i18n="profil_danger">Zone de danger</span></div>
-  <button class="danger-btn" onclick="logout()" style="border-color:rgba(43,108,176,.3);background:rgba(43,108,176,.06);color:#2B6CB0"><span data-i18n="profil_logout">🚪 Se déconnecter</span></button>
+  <button class="danger-btn" onclick="logout()" style="border-color:rgba(53,92,154,.3);background:var(--info-soft);color:var(--info)"><span data-i18n="profil_logout">🚪 Se déconnecter</span></button>
   <button class="danger-btn" onclick="resetData()"><span data-i18n="profil_reset">🗑 Supprimer toutes mes données</span></button>
 
   <div style="text-align:center;padding:20px 0;color:var(--muted);font-size:.72rem;font-family:'Space Mono',monospace">
@@ -212,14 +225,26 @@
   </div>
 </div>
 
-<nav class="bottom-nav">
-  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></a>
-  <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label">Cure</span></a>
-  <a class="nav-item" href="calculateur.html"><span class="nav-icon">🧮</span><span class="nav-label">Calcul</span></a>
-  <a class="nav-item" href="inventaire.html"><span class="nav-icon">🧪</span><span class="nav-label">Stock</span></a>
-  <a class="nav-item" href="alertes.html"><span class="nav-icon">🔔</span><span class="nav-label">Alertes</span></a>
-  <a class="nav-item active" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label">Profil</span><div class="nav-dot"></div></a>
-</nav>
+<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
+  <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item" href="poids.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18V6m0 12h16M7 14l4-4 3 2 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_weight">Poids</span></a>
+  <a class="nav-item" href="inventaire.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4H8zM7 7h10l2 4v9H5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_stock">Stock</span></a>
+  <button class="nav-item is-active" type="button" data-more-open><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg><span class="nav-label" data-i18n="nav_more">Plus</span></button>
+</div></nav>
+<div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
+  <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
+  <div class="drawer-grid">
+    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>80+ peptides</span></a>
+    <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
+    <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
+    <a class="drawer-link" href="ia.html"><strong data-i18n="nav_ia">IA</strong><span>Conseiller</span></a>
+    <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
+    <a class="drawer-link" href="lemon-checkout.html"><strong data-i18n="nav_subscription">Abonnement</strong><span>Premium</span></a>
+    <a class="drawer-link" href="boutiques.html"><strong data-i18n="nav_shops">Boutiques</strong><span>Partenaires</span></a>
+    <a class="drawer-link" href="mentions-legales.html"><strong data-i18n="nav_legal">Mentions</strong><span>Legal</span></a>
+  </div>
+</aside></div>
 <div class="toast" id="toast"></div>
 
 <script src="/lang.js"></script>
@@ -262,7 +287,7 @@ async function init() {
 function showPseudoPrompt() {
   const banner = document.createElement('div');
   banner.id = 'pseudoBanner';
-  banner.style.cssText = 'background:rgba(13,148,136,.08);border:1.5px solid rgba(13,148,136,.2);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;';
+  banner.style.cssText = 'background:var(--accent-soft);border:1.5px solid rgba(22,107,90,.2);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;';
   banner.innerHTML = `
     <span style="font-size:1.4rem">👋</span>
     <div style="flex:1">
@@ -298,8 +323,7 @@ function render() {
 
   const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val||t('profil_not_filled'); };
   set('val-prenom',  profil.full_name);
-  set('val-age',     profil.experience ? profil.experience + ' ans' : null);
-  set('val-taille',  profil.weight_kg ? null : (profil.goal || null)); // taille stockée dans goal temporairement
+  set('val-age',     profil.experience || null);
   // Chercher taille dans metadata
   const taille = profil.height_cm || localStorage.getItem('ps_height_cm');
   set('val-taille', taille ? taille + ' cm' : null);
@@ -493,6 +517,63 @@ init().then(() => {
   const lv = document.getElementById('langVal');
   if(lv) lv.textContent = PS_getLang()==='fr'?'Français':'English';
 });
+
+// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
+const _drawer = document.getElementById('moreDrawer');
+function setDrawer(open) {
+  if (!_drawer) return;
+  _drawer.classList.toggle('is-open', open);
+  _drawer.setAttribute('aria-hidden', String(!open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
+document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
+if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
+
+const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
+if (_avaBtn && _avaMenu) {
+  _avaBtn.addEventListener('click', () => {
+    const open = _avaMenu.hidden;
+    _avaMenu.hidden = !open;
+    _avaBtn.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', e => {
+    if (!_avaMenu.hidden && !_avaMenu.contains(e.target) && !_avaBtn.contains(e.target)) {
+      _avaMenu.hidden = true; _avaBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+const _themeBtn = document.getElementById('themeToggle');
+if (_themeBtn) _themeBtn.addEventListener('click', () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme === 'dark' ||
+               (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('ps_theme', root.dataset.theme); } catch(e) {}
+  if (_avaMenu) _avaMenu.hidden = true;
+});
+try { const _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch(e) {}
+
+async function psLogout() {
+  try { await sb.auth.signOut(); } catch(e) {}
+  window.location.href = '/login.html';
+}
+function psFillAvatar() {
+  if (typeof sb === 'undefined' || !sb.auth) return;
+  sb.auth.getUser().then(({data}) => {
+    const n = (data && data.user && (data.user.user_metadata && data.user.user_metadata.full_name)) ||
+              (data && data.user && data.user.email) || '';
+    const btn = document.getElementById('avatarButton');
+    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
+  }).catch(function(){});
+}
+document.addEventListener('DOMContentLoaded', function () {
+  psFillAvatar();
+  if (window.PS_applyI18n) PS_applyI18n();
+  if (window.PS_renderLangSwitcher) PS_renderLangSwitcher();
+});
+
 </script>
 </body>
 </html>

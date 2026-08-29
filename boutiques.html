@@ -8,28 +8,31 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#F8F9FA">
+<meta name="theme-color" content="#FBF7F1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
 <script src="/lang.js"></script>
+<link rel="stylesheet" href="/peptidescanner.css">
+<link rel="stylesheet" href="/peptidescanner-extra.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
+     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
+     les noms propres a cette page. */
   :root {
-    --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0;
-    --accent:#0D9488; --accent2:#2B6CB0; --accent3:#F97316;
-    --text:#1F2937; --muted:#6B7280; --danger:#DC2626;
-    --gold:#F59E0B; --nav-h:64px;
+    --surface2: var(--surface-muted);
+    --accent2:  var(--info);
+    --accent3:  var(--amber);
+    --nav-h:    var(--bottomnav-h, 64px);
+    --gold:     var(--amber);
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
-  .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; }
-  .topbar h1 { font-size:1.05rem; font-weight:700; }
-  .topbar-logo { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:6px; }
-  .logo-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
-  .content { padding:16px 20px 0; max-width:480px; margin:0 auto; }
-  .hero-banner { background:linear-gradient(135deg,rgba(13,148,136,.1) 0%,rgba(99,102,241,.08) 100%); border:1px solid rgba(13,148,136,.2); border-radius:18px; padding:18px; margin-bottom:16px; position:relative; overflow:hidden; }
+  .content { padding:16px 20px 0; width:100%; max-width:100%; margin:0 auto; }
+  @media (min-width: 768px)  { .content { max-width: 720px; } }
+  @media (min-width: 1024px) { .content { max-width: var(--content-desktop, 1100px); } }
+  .hero-banner { background:linear-gradient(135deg,var(--accent-soft) 0%,var(--info-soft) 100%); border:1px solid rgba(22,107,90,.2); border-radius:18px; padding:18px; margin-bottom:16px; position:relative; overflow:hidden; }
   .hero-banner::after { content:'🛒'; position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:3rem; opacity:.15; }
   .hero-banner h2 { font-size:1rem; font-weight:700; margin-bottom:4px; }
   .hero-banner p { font-size:.78rem; color:var(--muted); line-height:1.5; }
@@ -44,23 +47,23 @@
   .filters { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; scrollbar-width:none; }
   .filters::-webkit-scrollbar { display:none; }
   .filter-chip { padding:7px 14px; border-radius:100px; border:1px solid var(--border); background:var(--surface); color:var(--muted); font-size:.78rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0; }
-  .filter-chip.active { background:rgba(13,148,136,.12); border-color:rgba(13,148,136,.4); color:var(--accent); }
+  .filter-chip.active { background:var(--accent-soft); border-color:rgba(22,107,90,.4); color:var(--accent); }
   .section-label { font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:10px; }
   .shop-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden; margin-bottom:12px; transition:all .2s; cursor:pointer; }
-  .shop-card:hover { border-color:rgba(13,148,136,.3); transform:translateY(-2px); }
+  .shop-card:hover { border-color:rgba(22,107,90,.3); transform:translateY(-2px); }
   .shop-card.hidden { display:none; }
   .shop-header { padding:16px 16px 12px; display:flex; align-items:flex-start; gap:14px; }
   .shop-logo { width:52px; height:52px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.6rem; border:1px solid var(--border); }
   .shop-meta { flex:1; min-width:0; }
   .shop-name-row { display:flex; align-items:center; gap:8px; margin-bottom:3px; flex-wrap:wrap; }
   .shop-name { font-size:.95rem; font-weight:700; }
-  .verified-badge { display:flex; align-items:center; gap:3px; padding:2px 7px; background:rgba(13,148,136,.1); border-radius:100px; font-size:.62rem; font-weight:700; color:var(--accent); flex-shrink:0; border:1px solid rgba(13,148,136,.2); }
+  .verified-badge { display:flex; align-items:center; gap:3px; padding:2px 7px; background:var(--accent-soft); border-radius:100px; font-size:.62rem; font-weight:700; color:var(--accent); flex-shrink:0; border:1px solid rgba(22,107,90,.2); }
   .shop-origin { font-size:.72rem; color:var(--muted); margin-bottom:6px; }
   .shop-tags { display:flex; gap:5px; flex-wrap:wrap; }
   .shop-tag { padding:2px 8px; border-radius:6px; font-size:.65rem; font-weight:600; background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
-  .shop-tag.hot { background:rgba(239,68,68,.08); color:var(--danger); border-color:rgba(239,68,68,.2); }
-  .shop-tag.new { background:rgba(99,102,241,.08); color:var(--accent2); border-color:rgba(99,102,241,.2); }
-  .shop-tag.top { background:rgba(245,158,11,.08); color:var(--gold); border-color:rgba(245,158,11,.2); }
+  .shop-tag.hot { background:var(--danger-soft); color:var(--danger); border-color:rgba(161,50,40,.2); }
+  .shop-tag.new { background:var(--info-soft); color:var(--accent2); border-color:rgba(53,92,154,.2); }
+  .shop-tag.top { background:var(--amber-soft); color:var(--gold); border-color:rgba(128,91,0,.2); }
   .shop-rating { display:flex; align-items:center; gap:4px; margin-top:4px; }
   .stars { color:var(--gold); font-size:.8rem; letter-spacing:1px; }
   .rating-val { font-family:'Space Mono',monospace; font-size:.75rem; font-weight:700; color:var(--gold); }
@@ -69,15 +72,15 @@
   .shop-desc { font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:10px; }
   .shop-cats { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
   .shop-cat { padding:3px 10px; border-radius:100px; font-size:.68rem; font-weight:600; background:var(--surface2); color:var(--muted); }
-  .shop-cat.green { background:rgba(13,148,136,.08); color:var(--accent); }
-  .shop-cat.purple { background:rgba(99,102,241,.08); color:var(--accent2); }
-  .shop-cat.amber { background:rgba(245,158,11,.08); color:var(--gold); }
-  .promo-row { display:flex; align-items:center; gap:8px; padding:10px 12px; background:rgba(13,148,136,.06); border-radius:10px; border:1px dashed rgba(13,148,136,.3); margin-bottom:10px; }
+  .shop-cat.green { background:var(--accent-soft); color:var(--accent); }
+  .shop-cat.purple { background:var(--info-soft); color:var(--accent2); }
+  .shop-cat.amber { background:var(--amber-soft); color:var(--gold); }
+  .promo-row { display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--accent-soft); border-radius:10px; border:1px dashed rgba(22,107,90,.3); margin-bottom:10px; }
   .promo-label { font-size:.68rem; color:var(--muted); flex-shrink:0; }
   .promo-code { font-family:'Space Mono',monospace; font-size:.82rem; font-weight:700; color:var(--accent); flex:1; letter-spacing:1px; }
   .promo-disc { font-size:.72rem; color:var(--accent3); font-weight:700; flex-shrink:0; }
-  .copy-btn { background:rgba(13,148,136,.15); border:none; color:var(--accent); padding:4px 10px; border-radius:6px; font-size:.7rem; font-weight:700; cursor:pointer; flex-shrink:0; transition:all .2s; font-family:inherit; }
-  .copy-btn:hover { background:rgba(13,148,136,.25); }
+  .copy-btn { background:var(--accent-soft); border:none; color:var(--accent); padding:4px 10px; border-radius:6px; font-size:.7rem; font-weight:700; cursor:pointer; flex-shrink:0; transition:all .2s; font-family:inherit; }
+  .copy-btn:hover { background:var(--accent-soft); }
   .shop-footer { display:flex; gap:8px; padding:0 16px 14px; }
   .shop-btn { flex:1; padding:10px; border-radius:10px; border:none; font-family:inherit; font-size:.82rem; font-weight:700; cursor:pointer; transition:all .2s; text-decoration:none; text-align:center; display:block; }
   .shop-btn.primary { background:var(--accent); color:#000; }
@@ -87,7 +90,7 @@
   .delivery-row { display:flex; gap:12px; padding:8px 16px; border-top:1px solid var(--border); }
   .del-item { display:flex; align-items:center; gap:5px; font-size:.68rem; color:var(--muted); }
   .del-item span { color:var(--text); font-weight:600; }
-  .partner-card { background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(13,148,136,.06)); border:1px solid rgba(99,102,241,.2); border-radius:18px; padding:20px; margin-bottom:16px; text-align:center; }
+  .partner-card { background:linear-gradient(135deg,var(--info-soft),var(--accent-soft)); border:1px solid rgba(53,92,154,.2); border-radius:18px; padding:20px; margin-bottom:16px; text-align:center; }
   .partner-card h3 { font-size:1rem; font-weight:700; margin-bottom:8px; }
   .partner-card p { font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:16px; }
   .partner-features { display:flex; flex-direction:column; gap:7px; margin-bottom:16px; text-align:left; }
@@ -95,13 +98,7 @@
   .partner-feat::before { content:'✓'; color:var(--accent); font-weight:700; flex-shrink:0; }
   .partner-btn { width:100%; padding:12px; border-radius:10px; border:none; background:var(--accent2); color:#fff; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; }
   .partner-btn:hover { opacity:.85; }
-  .affil-disclaimer { background:rgba(107,122,153,.06); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:16px; font-size:.72rem; color:var(--muted); line-height:1.5; text-align:center; }
-  .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(255,255,255,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 8px; }
-  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 10px; border-radius:12px; cursor:pointer; text-decoration:none; color:var(--muted); transition:all .2s; min-width:48px; }
-  .nav-item.active { color:var(--accent); }
-  .nav-icon { font-size:1.2rem; line-height:1; }
-  .nav-label { font-size:.55rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
-  .nav-dot { width:4px; height:4px; background:var(--accent); border-radius:50%; margin-top:2px; }
+  .affil-disclaimer { background:var(--neutral-soft); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:16px; font-size:.72rem; color:var(--muted); line-height:1.5; text-align:center; }
   .toast { position:fixed; bottom:calc(var(--nav-h)+16px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#000; padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:400; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .25s; backdrop-filter:blur(4px); }
@@ -115,7 +112,7 @@
   .modal-section { margin-bottom:16px; }
   .modal-section h4 { font-size:.72rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:10px; }
   .peptide-list { display:flex; flex-wrap:wrap; gap:6px; }
-  .pep-pill { padding:4px 12px; border-radius:100px; font-size:.72rem; font-weight:600; background:rgba(13,148,136,.1); color:var(--accent); border:1px solid rgba(13,148,136,.2); }
+  .pep-pill { padding:4px 12px; border-radius:100px; font-size:.72rem; font-weight:600; background:var(--accent-soft); color:var(--accent); border:1px solid rgba(22,107,90,.2); }
   .info-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(30,45,69,.5); font-size:.84rem; }
   .info-row:last-child { border-bottom:none; }
   .info-key { color:var(--muted); }
@@ -131,10 +128,21 @@
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <h1 data-i18n="shops_title"></h1>
-  <div id="langToggleBtn"></div>
+<header class="app-topbar">
+  <div class="topbar-inner">
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner"><img class="brand-symbol" src="/brand/brand-mark.svg" alt="" width="36" height="36"></a>
+    <div class="brand-name">PeptideScanner</div>
+    <div class="page-title-wrap"><h1 class="page-title" data-i18n="nav_shops">Boutiques</h1></div>
+    <div id="langToggleBtn"></div>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6 2.5 6.5 2.5 6.5H4s2.5-.5 2.5-6.5M9.5 19a2.8 2.8 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">J</button>
+  </div>
+</header>
+<div class="menu-popover" id="avatarMenu" hidden>
+  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <a class="menu-item" href="lemon-checkout.html" data-i18n="nav_subscription">Abonnement</a>
+  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
 </div>
 
 <div class="content">
@@ -189,15 +197,26 @@
   <div class="modal-sheet" id="partnerSheet"></div>
 </div>
 
-<nav class="bottom-nav">
-  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label" data-i18n="nav_home"></span></a>
-  <a class="nav-item" href="peptide-database.html"><span class="nav-icon">🧬</span><span class="nav-label" data-i18n="nav_biblio"></span></a>
-  <a class="nav-item" href="cure.html"><span class="nav-icon">📅</span><span class="nav-label" data-i18n="nav_cure"></span></a>
-  <a class="nav-item" href="ia.html"><span class="nav-icon">🤖</span><span class="nav-label" data-i18n="nav_ia"></span></a>
-  <a class="nav-item active" href="boutiques.html"><span class="nav-icon">🛒</span><span class="nav-label" data-i18n="nav_stock"></span><div class="nav-dot"></div></a>
-  <a class="nav-item" href="inventaire.html"><span class="nav-icon">🧪</span><span class="nav-label" data-i18n="nav_stock"></span></a>
-  <a class="nav-item" href="profil.html"><span class="nav-icon">👤</span><span class="nav-label" data-i18n="nav_profile"></span></a>
-</nav>
+<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
+  <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item" href="poids.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18V6m0 12h16M7 14l4-4 3 2 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_weight">Poids</span></a>
+  <a class="nav-item" href="inventaire.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4H8zM7 7h10l2 4v9H5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_stock">Stock</span></a>
+  <button class="nav-item is-active" type="button" data-more-open><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg><span class="nav-label" data-i18n="nav_more">Plus</span></button>
+</div></nav>
+<div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
+  <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
+  <div class="drawer-grid">
+    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>80+ peptides</span></a>
+    <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
+    <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
+    <a class="drawer-link" href="ia.html"><strong data-i18n="nav_ia">IA</strong><span>Conseiller</span></a>
+    <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
+    <a class="drawer-link" href="lemon-checkout.html"><strong data-i18n="nav_subscription">Abonnement</strong><span>Premium</span></a>
+    <a class="drawer-link" href="boutiques.html"><strong data-i18n="nav_shops">Boutiques</strong><span>Partenaires</span></a>
+    <a class="drawer-link" href="mentions-legales.html"><strong data-i18n="nav_legal">Mentions</strong><span>Legal</span></a>
+  </div>
+</aside></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -320,8 +339,8 @@ function openShop(id) {
   var stars = '★'.repeat(Math.floor(shop.rating));
 
   var pepHtml = shop.peptides && shop.peptides.length ? '<div class="modal-section"><h4>' + t('shops_modal_peptides') + '</h4><div class="peptide-list">' + shop.peptides.map(function(p){return '<span class="pep-pill">'+p+'</span>';}).join('') + '</div></div>' : '';
-  var matHtml = shop.materiel ? '<div class="modal-section"><h4>' + t('shops_modal_materiel') + '</h4><div class="peptide-list">' + shop.materiel.map(function(m){return '<span class="pep-pill" style="color:var(--accent3);background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)">'+m+'</span>';}).join('') + '</div></div>' : '';
-  var svcHtml = shop.services ? '<div class="modal-section"><h4>' + t('shops_modal_services') + '</h4><div class="peptide-list">' + shop.services.map(function(s){return '<span class="pep-pill" style="color:var(--accent2);background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2)">'+s+'</span>';}).join('') + '</div></div>' : '';
+  var matHtml = shop.materiel ? '<div class="modal-section"><h4>' + t('shops_modal_materiel') + '</h4><div class="peptide-list">' + shop.materiel.map(function(m){return '<span class="pep-pill" style="color:var(--accent3);background:var(--amber-soft);border-color:rgba(128,91,0,.2)">'+m+'</span>';}).join('') + '</div></div>' : '';
+  var svcHtml = shop.services ? '<div class="modal-section"><h4>' + t('shops_modal_services') + '</h4><div class="peptide-list">' + shop.services.map(function(s){return '<span class="pep-pill" style="color:var(--accent2);background:var(--info-soft);border-color:rgba(53,92,154,.2)">'+s+'</span>';}).join('') + '</div></div>' : '';
   var promoDesc = shop.promo ? (lang === 'en' ? shop.promo.desc_en : shop.promo.desc_fr) : '';
   var promoHtml = shop.promo ? '<div class="modal-section"><h4>' + t('shops_modal_promo') + '</h4><div class="promo-row"><span class="promo-code">'+shop.promo.code+'</span><span class="promo-disc">'+shop.promo.discount+'</span><button class="copy-btn" onclick="copyCode(event,\''+shop.promo.code+'\')">'+t('shops_copy')+'</button></div><div style="font-size:.72rem;color:var(--muted);margin-top:6px">'+promoDesc+'</div></div>' : '';
 
@@ -390,6 +409,63 @@ function copyCode(event, code){
 }
 
 renderShops();
+
+// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
+const _drawer = document.getElementById('moreDrawer');
+function setDrawer(open) {
+  if (!_drawer) return;
+  _drawer.classList.toggle('is-open', open);
+  _drawer.setAttribute('aria-hidden', String(!open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
+document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
+if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
+
+const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
+if (_avaBtn && _avaMenu) {
+  _avaBtn.addEventListener('click', () => {
+    const open = _avaMenu.hidden;
+    _avaMenu.hidden = !open;
+    _avaBtn.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', e => {
+    if (!_avaMenu.hidden && !_avaMenu.contains(e.target) && !_avaBtn.contains(e.target)) {
+      _avaMenu.hidden = true; _avaBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+const _themeBtn = document.getElementById('themeToggle');
+if (_themeBtn) _themeBtn.addEventListener('click', () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme === 'dark' ||
+               (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('ps_theme', root.dataset.theme); } catch(e) {}
+  if (_avaMenu) _avaMenu.hidden = true;
+});
+try { const _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch(e) {}
+
+async function psLogout() {
+  try { await sb.auth.signOut(); } catch(e) {}
+  window.location.href = '/login.html';
+}
+function psFillAvatar() {
+  if (typeof sb === 'undefined' || !sb.auth) return;
+  sb.auth.getUser().then(({data}) => {
+    const n = (data && data.user && (data.user.user_metadata && data.user.user_metadata.full_name)) ||
+              (data && data.user && data.user.email) || '';
+    const btn = document.getElementById('avatarButton');
+    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
+  }).catch(function(){});
+}
+document.addEventListener('DOMContentLoaded', function () {
+  psFillAvatar();
+  if (window.PS_applyI18n) PS_applyI18n();
+  if (window.PS_renderLangSwitcher) PS_renderLangSwitcher();
+});
+
 </script>
 </body>
 </html>

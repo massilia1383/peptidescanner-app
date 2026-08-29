@@ -269,8 +269,23 @@
     width:100%; background:var(--surface); border-radius:24px 24px 0 0;
     padding:24px 20px 40px; transform:translateY(100%); transition:transform .3s;
     max-width:480px; margin:0 auto;
+    /* sans ces deux lignes, un formulaire plus haut que l'ecran n'etait pas
+       defilable et sa fin restait inatteignable */
+    max-height:88vh; overflow-y:auto;
   }
   .modal-overlay.open .modal-sheet { transform:translateY(0); }
+  /* Bureau : la feuille se centre. Collee en bas, son bouton de validation
+     sortait de la fenetre et n'etait plus atteignable. */
+  @media (min-width: 768px) {
+    .modal-overlay { align-items: center; padding: 24px; }
+    .modal-sheet {
+      border-radius: 22px;
+      padding-bottom: 24px;
+      max-height: min(86vh, 780px);
+      overflow-y: auto;
+    }
+  }
+
   .sheet-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
   .sheet-title { font-size:1.1rem; font-weight:700; margin-bottom:20px; }
   .form-group { margin-bottom:16px; }
@@ -1200,11 +1215,12 @@ function openAddCure() {
   document.getElementById('addCureModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
+function closeAddCure() {
+  document.getElementById('addCureModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
 function closeIfOverlay(e) {
-  if (e.target === document.getElementById('addCureModal')) {
-    document.getElementById('addCureModal').classList.remove('open');
-    document.body.style.overflow = '';
-  }
+  if (e.target === document.getElementById('addCureModal')) closeAddCure();
 }
 async function saveCure() {
   const peptide   = document.getElementById('newCurePeptide').value;
@@ -1242,7 +1258,12 @@ function setDrawer(open) {
 document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
 document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
 if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const m = document.getElementById('addCureModal');
+  if (m && m.classList.contains('open')) { closeAddCure(); return; }
+  setDrawer(false);
+});
 
 const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
 if (_avaBtn && _avaMenu) {

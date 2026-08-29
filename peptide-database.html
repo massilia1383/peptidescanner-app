@@ -9,25 +9,23 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#F8F9FA">
+<meta name="theme-color" content="#FBF7F1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<link rel="stylesheet" href="/peptidescanner.css">
+<link rel="stylesheet" href="/peptidescanner-extra.css">
 <style>
+  body { padding-bottom: calc(var(--bottomnav-h, 64px) + 28px); }
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
+  /* Les jetons partages viennent de peptidescanner.css et suivent le mode sombre.
+     On n'alias ici que les noms propres a cette page. */
   :root {
-    --bg: #F8F9FA;
-    --surface: #FFFFFF;
-    --surface2: #F4F6F8;
-    --border: #E2E8F0;
-    --accent: #0D9488;
-    --accent2: #2B6CB0;
-    --accent3: #F97316;
-    --text: #1F2937;
-    --muted: #6B7280;
-    --danger: #EF4444;
-    --purple: #A855F7;
+    --surface2: var(--surface-muted);
+    --accent2:  var(--info);
+    --accent3:  var(--amber);
+    --nav-h:    var(--bottomnav-h, 64px);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -41,17 +39,15 @@
     backdrop-filter: blur(12px);
   }
   .logo { font-family: 'Space Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-  .logo-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
   .nav-back { color: var(--muted); font-size: .85rem; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color .2s; }
   .nav-back:hover { color: var(--accent); }
 
   /* HEADER */
   .page-header {
-    max-width: 1300px; margin: 0 auto; padding: 48px 28px 32px;
+    max-width: var(--content-desktop, 1100px); margin: 0 auto; padding: 48px 28px 32px;
   }
   .page-eyebrow { font-family: 'Space Mono', monospace; font-size: .72rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-  .page-title { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 700; margin-bottom: 10px; }
+  .db-hero-title { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 700; margin-bottom: 10px; }
   .page-sub { color: var(--muted); font-size: .95rem; line-height: 1.6; }
   .stats-row { display: flex; gap: 28px; margin-top: 24px; flex-wrap: wrap; }
   .stat { display: flex; flex-direction: column; }
@@ -60,7 +56,7 @@
 
   /* CONTROLS */
   .controls {
-    max-width: 1300px; margin: 0 auto; padding: 0 28px 28px;
+    max-width: var(--content-desktop, 1100px); margin: 0 auto; padding: 0 28px 28px;
     display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
   }
   .search-wrap { position: relative; flex: 1; min-width: 220px; }
@@ -78,24 +74,24 @@
     font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .2s;
     white-space: nowrap;
   }
-  .filter-btn:hover, .filter-btn.active { background: rgba(0,201,167,.1); border-color: rgba(0,201,167,.4); color: var(--accent); }
-  .filter-btn.active { background: rgba(0,201,167,.15); }
+  .filter-btn:hover, .filter-btn.active { background: var(--accent-soft); border-color: rgba(22,107,90,.4); color: var(--accent); }
+  .filter-btn.active { background: var(--accent-soft); }
 
   /* CATEGORY COLORS */
   .cat { padding: 3px 10px; border-radius: 100px; font-size: .7rem; font-weight: 700; display: inline-block; white-space: nowrap; }
-  .cat-gh { background: rgba(0,201,167,.12); color: var(--accent); }
-  .cat-recov { background: rgba(99,102,241,.12); color: var(--accent2); }
-  .cat-anti { background: rgba(245,158,11,.12); color: var(--accent3); }
-  .cat-neuro { background: rgba(239,68,68,.12); color: var(--danger); }
-  .cat-fat { background: rgba(168,85,247,.12); color: var(--purple); }
+  .cat-gh { background: var(--accent-soft); color: var(--accent); }
+  .cat-recov { background: var(--info-soft); color: var(--accent2); }
+  .cat-anti { background: var(--amber-soft); color: var(--accent3); }
+  .cat-neuro { background: var(--danger-soft); color: var(--danger); }
+  .cat-fat { background: var(--info-soft); color: var(--purple); }
   .cat-sex { background: rgba(236,72,153,.12); color: #EC4899; }
-  .cat-immun { background: rgba(20,184,166,.12); color: #14B8A6; }
-  .cat-cardio { background: rgba(59,130,246,.12); color: #3B82F6; }
+  .cat-immun { background: var(--accent-soft); color: var(--accent); }
+  .cat-cardio { background: var(--info-soft); color: var(--info); }
   .cat-skin { background: rgba(251,146,60,.12); color: #FB923C; }
 
   /* GRID */
   .db-grid {
-    max-width: 1300px; margin: 0 auto; padding: 0 28px 60px;
+    max-width: var(--content-desktop, 1100px); margin: 0 auto; padding: 0 28px 60px;
     display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 18px;
   }
@@ -106,7 +102,7 @@
     border-radius: 18px; overflow: hidden; cursor: pointer;
     transition: all .25s; position: relative;
   }
-  .pep-card:hover { border-color: rgba(0,201,167,.35); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.4); }
+  .pep-card:hover { border-color: rgba(22,107,90,.35); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.4); }
   .pep-card.hidden { display: none; }
 
   .card-top {
@@ -141,12 +137,12 @@
   .stack-val { font-size: .78rem; color: var(--accent2); font-weight: 600; }
   .shop-btn {
     padding: 6px 14px; border-radius: 7px;
-    background: rgba(0,201,167,.1); color: var(--accent);
-    font-size: .75rem; font-weight: 700; border: 1px solid rgba(0,201,167,.2);
+    background: var(--accent-soft); color: var(--accent);
+    font-size: .75rem; font-weight: 700; border: 1px solid rgba(22,107,90,.2);
     cursor: pointer; transition: all .2s; font-family: inherit;
     text-decoration: none; display: inline-block;
   }
-  .shop-btn:hover { background: rgba(0,201,167,.2); }
+  .shop-btn:hover { background: var(--accent-soft); }
 
   /* MODAL */
   .modal-overlay {
@@ -197,14 +193,14 @@
     padding: 4px 12px; border-radius: 7px; font-size: .78rem;
     background: var(--surface2); border: 1px solid var(--border);
   }
-  .modal-section ul li.pos { border-color: rgba(0,201,167,.25); color: var(--accent); background: rgba(0,201,167,.07); }
-  .modal-section ul li.neg { border-color: rgba(239,68,68,.25); color: var(--danger); background: rgba(239,68,68,.07); }
-  .modal-section ul li.stack { border-color: rgba(99,102,241,.25); color: var(--accent2); background: rgba(99,102,241,.07); }
-  .modal-section ul li.warn { border-color: rgba(245,158,11,.25); color: var(--accent3); background: rgba(245,158,11,.07); }
+  .modal-section ul li.pos { border-color: rgba(22,107,90,.25); color: var(--accent); background: var(--accent-soft); }
+  .modal-section ul li.neg { border-color: rgba(161,50,40,.25); color: var(--danger); background: var(--danger-soft); }
+  .modal-section ul li.stack { border-color: rgba(53,92,154,.25); color: var(--accent2); background: var(--info-soft); }
+  .modal-section ul li.warn { border-color: rgba(128,91,0,.25); color: var(--accent3); background: var(--amber-soft); }
 
   .modal-cta {
     margin-top: 24px; padding: 14px; border-radius: 10px;
-    background: rgba(0,201,167,.08); border: 1px solid rgba(0,201,167,.2);
+    background: var(--accent-soft); border: 1px solid rgba(22,107,90,.2);
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
   }
   .modal-cta p { font-size: .82rem; color: var(--muted); }
@@ -218,7 +214,7 @@
 
   .disclaimer {
     margin-top: 14px; padding: 10px 14px; border-radius: 8px;
-    background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.2);
+    background: var(--amber-soft); border: 1px solid rgba(128,91,0,.2);
     font-size: .75rem; color: var(--muted); line-height: 1.5;
   }
 
@@ -244,7 +240,7 @@
 
   /* DISCLAIMER JURIDIQUE */
   .legal-disclaimer {
-    background:rgba(249,115,22,.06); border:1px solid rgba(249,115,22,.2);
+    background:var(--amber-soft); border:1px solid rgba(128,91,0,.2);
     border-radius:12px; padding:12px 16px; margin:12px 0;
     display:flex; gap:10px; align-items:flex-start;
   }
@@ -260,10 +256,10 @@
     flex:1; height:6px; border-radius:3px; background:var(--border);
     transition:background .3s;
   }
-  .phase-step.active-red    { background:#EF4444; }
-  .phase-step.active-orange { background:#F97316; }
+  .phase-step.active-red    { background:var(--danger); }
+  .phase-step.active-orange { background:var(--amber); }
   .phase-step.active-yellow { background:#EAB308; }
-  .phase-step.active-green  { background:#22C55E; }
+  .phase-step.active-green  { background:var(--accent); }
   .phase-step.active-teal   { background:var(--accent); }
   .phase-label {
     display:flex; align-items:center; gap:6px;
@@ -276,14 +272,26 @@
 </head>
 <body>
 
-<nav>
-  <div class="logo"><div class="logo-dot"></div>PeptideScanner</div>
-  <div style="display:flex;align-items:center;gap:12px"><div id="langToggleBtn"></div><a href="dashboard.html" class="nav-back" data-i18n="back">← Retour</a></div>
-</nav>
+<header class="app-topbar">
+  <div class="topbar-inner">
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner"><img class="brand-symbol" src="/brand/brand-mark.svg" alt="" width="36" height="36"></a>
+    <div class="brand-name">PeptideScanner</div>
+    <div class="page-title-wrap"><h1 class="page-title" data-i18n="db_nav_title">Bibliothèque</h1></div>
+    <div id="langToggleBtn"></div>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6 2.5 6.5 2.5 6.5H4s2.5-.5 2.5-6.5M9.5 19a2.8 2.8 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">J</button>
+  </div>
+</header>
+<div class="menu-popover" id="avatarMenu" hidden>
+  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <a class="menu-item" href="lemon-checkout.html" data-i18n="nav_subscription">Abonnement</a>
+  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
+</div>
 
 <div class="page-header">
   <div class="page-eyebrow" data-i18n="db_eyebrow">Bibliothèque · Base de données</div>
-  <div class="page-title" data-i18n="db_title">Référentiel peptidique complet</div>
+  <div class="db-hero-title" data-i18n="db_title">Référentiel peptidique complet</div>
   <div class="page-sub" data-i18n="db_sub">Chaque peptide référencé avec ses dosages, protocoles, effets et stacks recommandés.</div>
   <div class="stats-row">
     <div class="stat"><span class="stat-val" id="totalCount">52</span><span class="stat-label" data-i18n="db_stat_peptides">Peptides référencés</span></div>
@@ -309,16 +317,16 @@
   <button class="filter-btn" onclick="filterCat('Peau', this)" data-i18n="db_cat_skin">Peau</button>
 </div>
 
-<div style="max-width:1300px;margin:0 auto;padding:0 28px 16px">
+<div style="max-width:var(--content-desktop,1100px);margin:0 auto;padding:0 28px 16px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
     <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px"><span data-i18n="db_guide_title">📊 Guide — Avancement de la recherche</span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#6B7280"><span data-i18n="phase_exp_label">⚪ Données limitées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_exp_desc">Très peu d'études disponibles</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EF4444;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EF4444"><span data-i18n="phase_pre_label">🔴 Recherche animale</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_pre_desc">Testé uniquement sur des animaux</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#F97316;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#F97316"><span data-i18n="phase_p1_label">🟠 Premiers tests humains</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p1_desc">Sécurité vérifiée sur quelques personnes</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--neutral)"><span data-i18n="phase_exp_label">⚪ Données limitées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_exp_desc">Très peu d'études disponibles</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--danger);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--danger)"><span data-i18n="phase_pre_label">🔴 Recherche animale</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_pre_desc">Testé uniquement sur des animaux</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--amber)"><span data-i18n="phase_p1_label">🟠 Premiers tests humains</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p1_desc">Sécurité vérifiée sur quelques personnes</span></div></div></div>
       <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EAB308;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EAB308"><span data-i18n="phase_p2_label">🟡 Études en cours</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p2_desc">Efficacité testée sur des centaines de personnes</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#22C55E;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#22C55E"><span data-i18n="phase_p3_label">🟢 Études avancées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p3_desc">Testé sur des milliers — proche du marché</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#0D9488;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#0D9488"><span data-i18n="phase_est_label">✅ Largement utilisé</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_est_desc">Retours abondants, profil bien documenté</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--accent)"><span data-i18n="phase_p3_label">🟢 Études avancées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p3_desc">Testé sur des milliers — proche du marché</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--accent)"><span data-i18n="phase_est_label">✅ Largement utilisé</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_est_desc">Retours abondants, profil bien documenté</span></div></div></div>
     </div>
   </div>
 </div>
@@ -326,16 +334,16 @@
 <div class="db-grid" id="dbGrid"></div>
 
 <!-- LEGENDE + DISCLAIMER -->
-<div style="max-width:1300px;margin:0 auto;padding:0 28px 20px">
+<div style="max-width:var(--content-desktop,1100px);margin:0 auto;padding:0 28px 20px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px;margin-bottom:16px">
     <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px"><span data-i18n="db_guide_title">📊 Guide — Avancement de la recherche</span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#6B7280"><span data-i18n="phase_exp_label">⚪ Données limitées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_exp_desc">Très peu d'études disponibles</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EF4444;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EF4444"><span data-i18n="phase_pre_label">🔴 Recherche animale</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_pre_desc">Testé uniquement sur des animaux</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#F97316;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#F97316"><span data-i18n="phase_p1_label">🟠 Premiers tests humains</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p1_desc">Sécurité vérifiée sur quelques personnes</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--neutral)"><span data-i18n="phase_exp_label">⚪ Données limitées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_exp_desc">Très peu d'études disponibles</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--danger);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--danger)"><span data-i18n="phase_pre_label">🔴 Recherche animale</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_pre_desc">Testé uniquement sur des animaux</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--amber)"><span data-i18n="phase_p1_label">🟠 Premiers tests humains</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p1_desc">Sécurité vérifiée sur quelques personnes</span></div></div></div>
       <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EAB308;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EAB308"><span data-i18n="phase_p2_label">🟡 Études en cours</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p2_desc">Efficacité testée sur des centaines de personnes</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#22C55E;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#22C55E"><span data-i18n="phase_p3_label">🟢 Études avancées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p3_desc">Testé sur des milliers — proche du marché</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#0D9488;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#0D9488"><span data-i18n="phase_est_label">✅ Largement utilisé</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_est_desc">Retours abondants, profil bien documenté</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--accent)"><span data-i18n="phase_p3_label">🟢 Études avancées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p3_desc">Testé sur des milliers — proche du marché</span></div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--accent)"><span data-i18n="phase_est_label">✅ Largement utilisé</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_est_desc">Retours abondants, profil bien documenté</span></div></div></div>
     </div>
   </div>
   <div class="legal-disclaimer"><span class="legal-disclaimer-icon">⚠️</span><div class="legal-disclaimer-text"><strong data-i18n="db_disclaimer_title">Avertissement légal — Usage éducatif et informatif uniquement.</strong> <span data-i18n="db_disclaimer_body">Les peptides présentés sont des peptides de recherche. Leur acquisition, détention ou usage à des fins autres que la recherche scientifique peut être illégal dans votre pays. Les informations fournies ne constituent pas un avis médical ni une prescription. Consultez un professionnel de santé qualifié avant tout protocole. PeptideScanner décline toute responsabilité quant aux conséquences liées à l'usage des informations disponibles sur cette application.</span></div></div>
@@ -1234,11 +1242,11 @@ function translateDuration(str) {
 
 function getPhaseData() { return {
   'experimental': { emoji:'⚪', label:t('phase_exp_label'), desc:t('phase_exp_desc_dot'), color:'#9CA3AF', steps:0 },
-  'preclinical':  { emoji:'🔴', label:t('phase_pre_label'), desc:t('phase_pre_desc_dot'), color:'#EF4444', steps:1 },
-  'phase1':       { emoji:'🟠', label:t('phase_p1_label'),  desc:t('phase_p1_desc_dot'),  color:'#F97316', steps:2 },
+  'preclinical':  { emoji:'🔴', label:t('phase_pre_label'), desc:t('phase_pre_desc_dot'), color:'var(--danger)', steps:1 },
+  'phase1':       { emoji:'🟠', label:t('phase_p1_label'),  desc:t('phase_p1_desc_dot'),  color:'var(--amber)', steps:2 },
   'phase2':       { emoji:'🟡', label:t('phase_p2_label'),  desc:t('phase_p2_desc_dot'),  color:'#EAB308', steps:3 },
-  'phase3':       { emoji:'🟢', label:t('phase_p3_label'),  desc:t('phase_p3_desc_dot'),  color:'#22C55E', steps:4 },
-  'established':  { emoji:'✅', label:t('phase_est_label'), desc:t('phase_est_desc_dot'), color:'#0D9488', steps:5 },
+  'phase3':       { emoji:'🟢', label:t('phase_p3_label'),  desc:t('phase_p3_desc_dot'),  color:'var(--accent)', steps:4 },
+  'established':  { emoji:'✅', label:t('phase_est_label'), desc:t('phase_est_desc_dot'), color:'var(--accent)', steps:5 },
 }; }
 const PHASE_STEPS = () => [t('phase_step1'),t('phase_step2'),t('phase_step3'),t('phase_step4'),t('phase_step5')];
 
@@ -1252,7 +1260,7 @@ function phaseVisualFull(phase) {
   const steps = PHASE_STEPS().map((lbl, i) => {
     const active = i < d.steps;
     return '<div style="flex:1;text-align:center">'
-      + '<div style="height:5px;border-radius:3px;margin-bottom:3px;background:'+(active?d.color:'#E2E8F0')+'"></div>'
+      + '<div style="height:5px;border-radius:3px;margin-bottom:3px;background:'+(active?d.color:'var(--border)')+'"></div>'
       + '<div style="font-size:.52rem;color:'+(active?d.color:'#9CA3AF')+';font-weight:'+(active?'700':'400')+'">'+lbl+'</div>'
       + '</div>';
   }).join('');
@@ -1262,7 +1270,7 @@ function phaseVisualFull(phase) {
     + '<span style="font-size:.75rem;font-weight:700;color:'+d.color+'">'+d.emoji+' '+d.label+'</span>'
     + '</div>'
     + '<div style="display:flex;gap:3px;margin-bottom:5px">'+steps+'</div>'
-    + '<div style="font-size:.68rem;color:#6B7280;font-style:italic">'+d.desc+'</div>'
+    + '<div style="font-size:.68rem;color:var(--neutral);font-style:italic">'+d.desc+'</div>'
     + '</div>';
 }
 
@@ -1294,6 +1302,83 @@ window.addEventListener('load', () => {
   initPage();
   loadPhases().then(() => initPage());
 });
+
+// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
+const _drawer = document.getElementById('moreDrawer');
+function setDrawer(open) {
+  if (!_drawer) return;
+  _drawer.classList.toggle('is-open', open);
+  _drawer.setAttribute('aria-hidden', String(!open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
+document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
+if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
+
+const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
+if (_avaBtn && _avaMenu) {
+  _avaBtn.addEventListener('click', () => {
+    const open = _avaMenu.hidden;
+    _avaMenu.hidden = !open;
+    _avaBtn.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', e => {
+    if (!_avaMenu.hidden && !_avaMenu.contains(e.target) && !_avaBtn.contains(e.target)) {
+      _avaMenu.hidden = true; _avaBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+const _themeBtn = document.getElementById('themeToggle');
+if (_themeBtn) _themeBtn.addEventListener('click', () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme === 'dark' ||
+               (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('ps_theme', root.dataset.theme); } catch(e) {}
+  if (_avaMenu) _avaMenu.hidden = true;
+});
+try { const _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch(e) {}
+
+async function psLogout() {
+  try { await sb.auth.signOut(); } catch(e) {}
+  window.location.href = '/login.html';
+}
+function psFillAvatar() {
+  if (typeof sb === 'undefined' || !sb.auth) return;
+  sb.auth.getUser().then(({data}) => {
+    const n = (data && data.user && (data.user.user_metadata && data.user.user_metadata.full_name)) ||
+              (data && data.user && data.user.email) || '';
+    const btn = document.getElementById('avatarButton');
+    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
+  }).catch(function(){});
+}
+document.addEventListener('DOMContentLoaded', function () {
+  psFillAvatar();
+  if (window.PS_applyI18n) PS_applyI18n();
+  if (window.PS_renderLangSwitcher) PS_renderLangSwitcher();
+});
+
 </script>
+<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
+  <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item" href="poids.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18V6m0 12h16M7 14l4-4 3 2 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_weight">Poids</span></a>
+  <a class="nav-item" href="inventaire.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4H8zM7 7h10l2 4v9H5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_stock">Stock</span></a>
+  <button class="nav-item is-active" type="button" data-more-open><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg><span class="nav-label" data-i18n="nav_more">Plus</span></button>
+</div></nav>
+<div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
+  <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
+  <div class="drawer-grid">
+    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>80+ peptides</span></a>
+    <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
+    <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
+    <a class="drawer-link" href="ia.html"><strong data-i18n="nav_ia">IA</strong><span>Conseiller</span></a>
+    <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
+    <a class="drawer-link" href="lemon-checkout.html"><strong data-i18n="nav_subscription">Abonnement</strong><span>Premium</span></a>
+    <a class="drawer-link" href="boutiques.html"><strong data-i18n="nav_shops">Boutiques</strong><span>Partenaires</span></a>
+    <a class="drawer-link" href="mentions-legales.html"><strong data-i18n="nav_legal">Mentions</strong><span>Legal</span></a>
+  </div>
+</aside></div>
 </body>
 </html>

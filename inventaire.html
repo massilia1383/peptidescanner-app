@@ -143,6 +143,18 @@
   .modal-overlay.show { opacity:1; pointer-events:all; }
   .modal-sheet { background:var(--surface); border-radius:22px 22px 0 0; padding:24px 20px 40px; width:100%; max-width:520px; transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); max-height:92vh; overflow-y:auto; }
   .modal-overlay.show .modal-sheet { transform:translateY(0); }
+  /* Bureau : la feuille se centre. Collee en bas, son bouton de validation
+     sortait de la fenetre et n'etait plus atteignable. */
+  @media (min-width: 768px) {
+    .modal-overlay { align-items: center; padding: 24px; }
+    .modal-sheet {
+      border-radius: 22px;
+      padding-bottom: 24px;
+      max-height: min(86vh, 780px);
+      overflow-y: auto;
+    }
+  }
+
   .modal-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
   .modal-title { font-size:1.1rem; font-weight:700; margin-bottom:18px; }
 
@@ -685,7 +697,12 @@ function setDrawer(open) {
 document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
 document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
 if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const m = document.getElementById('flaconModal');
+  if (m && m.classList.contains('show')) { closeModal(); return; }
+  setDrawer(false);
+});
 
 const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
 if (_avaBtn && _avaMenu) {

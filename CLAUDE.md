@@ -5,7 +5,7 @@ Ce fichier complète `~/.claude/CLAUDE.md` (la méthode de James), qui prime en 
 ## À lire avant tout : ce qui fait le plus mal si on l'oublie
 - **Un seul environnement réel : la prod Vercel** (`peptidescanner.app`), alimentée par `main`. **Une même base Supabase et une même clé anon, embarquée en clair dans chaque page.** Toute écriture de test crée de vraies lignes dans la base de prod. Un test n'est réel qu'une fois poussé sur `main`, rendu par Vercel, et fait avec un vrai compte.
 - **`lang.js` est le fichier le plus fragile** : clés dans le mauvais bloc de langue, 99 doublons FR (JavaScript garde la dernière définition, donc corriger la première copie ne fait rien). **Vérifier la parité FR/EN après chaque édition.**
-- **Il y a 10 fichiers modifiés non enregistrés depuis le 29/08** (pages HTML, `lang.js`, CSS) : au premier retour sur ce projet, `git status` et décider avec James avant tout autre geste.
+- **Dix fichiers non suivis par git traînent à la racine** (`.bak_lotB/`, `_to_delete/`, `SETUP-SUPABASE.md`, `ia.txt`, `ia_usage.sql`, `supabase-schema.sql`, `supabase/.temp/`, des `.DS_Store`) — vérifié le 16/09 : aucun fichier modifié en attente, le dépôt est propre. Ne pas les ajouter sans décision de James ; `supabase-schema.sql` mérite peut-être d'être versionné, à lui de dire.
 
 ## Ce qu'est PeptideScanner
 PWA de suivi de protocole peptidique (studio Labs1307) : journal de reconstitution, flacons, calculateur de dose, suivi de poids et de cure. Particuliers qui suivent une cure ; FR/EN ; thème « Carnet de protocole ». Monétisation prévue : abonnement + boutiques affiliées (Lemon Squeezy).

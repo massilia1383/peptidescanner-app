@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Connexion — PeptideScanner</title>
   <script src="/lang.js"></script>
+<script src="/ps-app.js"></script>
   <script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -150,8 +151,34 @@
     applyLoginI18n();
   </script>
 
-  <script type="module">
-    import { signIn, signUp, supabase, migrateLocalStorageToSupabase, formatError } from '/supabase.js';
+  <script src="/vendor/supabase-2.117.3.umd.js"></script>
+  <script>
+    // Lot 2 (14/10/2026) : la page passe en UMD comme toutes les autres (fin de l'exception
+    // « login en module »). supabase.js (ESM via esm.sh) est archivé dans _archive/.
+    // L'ancienne migration localStorage → Supabase après connexion est retirée : elle servait
+    // aux comptes de l'époque localStorage, il n'en existe plus.
+    var supabase = window.supabase.createClient(
+      'https://dkwztwlkjewdzfichkgk.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk'
+    );
+    async function signUp(email, password) {
+      var res = await supabase.auth.signUp({ email: email, password: password });
+      return { user: (res.data && res.data.user) || null, error: res.error };
+    }
+    async function signIn(email, password) {
+      var res = await supabase.auth.signInWithPassword({ email: email, password: password });
+      return { user: (res.data && res.data.user) || null, session: (res.data && res.data.session) || null, error: res.error };
+    }
+    function formatError(error) {
+      if (!error) return null;
+      var fr = PS_getLang() === 'fr';
+      var messages = {
+        'Invalid login credentials': fr ? 'Email ou mot de passe incorrect.' : 'Wrong email or password.',
+        'Email not confirmed':       fr ? 'Confirme ton email avant de te connecter.' : 'Please confirm your email before signing in.',
+        'User already registered':   fr ? 'Un compte existe déjà avec cet email.' : 'An account already exists with this email.'
+      };
+      return messages[error.message] || error.message || (fr ? 'Une erreur est survenue.' : 'Something went wrong.');
+    }
 
     (async () => {
       const { data } = await supabase.auth.getSession();
@@ -194,7 +221,6 @@
       if (window.currentTab === 'login') {
         var { user, error } = await signIn(email, password);
         if (error) { showMsg(formatError(error), 'error'); setLoading(false); return; }
-        await migrateLocalStorageToSupabase(user.id);
         window.location.href = '/dashboard.html';
       } else {
         var { user, error } = await signUp(email, password);

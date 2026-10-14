@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/peptidescanner.css">
 <link rel="stylesheet" href="/peptidescanner-extra.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
   /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
      viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
      les noms propres a la page, pour que ses regles existantes prennent la
@@ -452,7 +452,8 @@
 <div class="ps-toast" id="toast"></div>
 
 <script src="/lang.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="/ps-app.js"></script>
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
@@ -520,7 +521,51 @@ async function loadData() {
   ]);
   allCures      = cRes.data || [];
   allInjections = iRes.data || [];
+  await loadDayNotes();
   render();
+}
+
+// ── NOTES DU JOUR (BUG-09, 14/10/2026) ─────────────────────────
+// Avant : uniquement dans le téléphone (localStorage 'ps_note_<cure>_<jour>').
+// Maintenant : table Supabase day_notes (script docs/sql/2026-10-15_notes_du_jour.sql).
+// Tant que la table n'existe pas, on garde l'ancien fonctionnement : rien ne casse.
+// Dès qu'elle existe, les notes restées dans le téléphone y sont recopiées puis retirées du téléphone.
+let dayNotes = {};            // clé : '<cureId>_<AAAA-MM-JJ>' → texte
+let dayNotesRemote = false;   // true si la table day_notes répond
+async function loadDayNotes() {
+  dayNotes = {};
+  try {
+    const { data, error } = await sb.from('day_notes').select('cure_id, day, note').eq('user_id', userId);
+    if (error) throw error;
+    dayNotesRemote = true;
+    (data || []).forEach(n => { dayNotes[n.cure_id + '_' + String(n.day).slice(0, 10)] = n.note || ''; });
+  } catch (e) {
+    dayNotesRemote = false;
+    return;
+  }
+  // Reprise des notes restées dans le téléphone
+  const ids = new Set(allCures.map(c => c.id));
+  const rows = [], keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    const m = k && /^ps_note_(.+)_(\d{4}-\d{2}-\d{2})$/.exec(k);
+    if (!m || !ids.has(m[1])) continue;
+    const note = localStorage.getItem(k) || '';
+    if (!note.trim()) { keys.push(k); continue; }
+    if (dayNotes[m[1] + '_' + m[2]] === undefined) rows.push({ user_id: userId, cure_id: m[1], day: m[2], note });
+    keys.push(k);
+  }
+  if (rows.length) {
+    const { error } = await sb.from('day_notes').upsert(rows, { onConflict: 'user_id,cure_id,day' });
+    if (error) return;   // on garde les notes dans le téléphone, on réessaiera au prochain chargement
+    rows.forEach(r => { dayNotes[r.cure_id + '_' + r.day] = r.note; });
+  }
+  keys.forEach(k => localStorage.removeItem(k));
+}
+function getDayNote(ds) {
+  const k = currentCureId + '_' + ds;
+  if (dayNotes[k] !== undefined) return dayNotes[k];
+  return localStorage.getItem('ps_note_' + k) || '';
 }
 
 // ── RENDER ─────────────────────────────────────────────────────
@@ -856,7 +901,7 @@ function selectDay(ds, clickable) {
       </div>
     </div>` : ''}
     ${slotsHtml}
-    <textarea class="note-area" id="dayNote" rows="2" placeholder="${t('cure_note_ph')}">${localStorage.getItem('ps_note_'+currentCureId+'_'+ds)||''}</textarea>
+    <textarea class="note-area" id="dayNote" rows="2" placeholder="${t('cure_note_ph')}">${escHtml(getDayNote(ds))}</textarea>
     <button class="save-note-btn" onclick="saveNote('${ds}')">${t('cure_save_note')}</button>`;
 
   dd.classList.add('show');
@@ -1034,7 +1079,7 @@ async function updateStockAfterInjection(cure, direction) {
     remaining_units:  Math.round(newRemaining * 1000) / 1000,
     notes:            direction === -1 ? newNotes : flacon.notes,
     reconstituted_at: (direction === -1 && !flacon.reconstituted_at)
-      ? new Date().toISOString().split('T')[0]
+      ? psDayStr()
       : flacon.reconstituted_at,
   }).eq('id', flaconId);
 
@@ -1042,10 +1087,18 @@ async function updateStockAfterInjection(cure, direction) {
   else console.log('[Stock] ✓ Stock mis à jour, restant:', newRemaining);
 }
 
-function saveNote(ds) {
+async function saveNote(ds) {
   const el = document.getElementById('dayNote');
   if (!el) return;
-  localStorage.setItem('ps_note_'+currentCureId+'_'+ds, el.value);
+  const k = currentCureId + '_' + ds;
+  let savedRemote = false;
+  if (dayNotesRemote) {
+    const { error } = await sb.from('day_notes').upsert(
+      { user_id: userId, cure_id: currentCureId, day: ds, note: el.value },
+      { onConflict: 'user_id,cure_id,day' });
+    if (!error) { savedRemote = true; dayNotes[k] = el.value; localStorage.removeItem('ps_note_' + k); }
+  }
+  if (!savedRemote) localStorage.setItem('ps_note_' + k, el.value);
   // Feedback visuel sur le bouton
   const btn = el.nextElementSibling;
   if (btn) { btn.textContent = '✓'; btn.style.background = 'var(--accent)'; setTimeout(() => { btn.textContent = t('cure_save_note'); btn.style.background = ''; }, 1500); }
@@ -1055,7 +1108,7 @@ function saveNote(ds) {
 // Statut de n'importe quelle cure — le calcul existant ne couvrait que la cure selectionnee.
 // Meme logique de dates que le reste du fichier, pour rester coherent avec la carte.
 function cureStatusOf(cu) {
-  const s = new Date(cu.start_date); s.setHours(0,0,0,0);
+  const s = psDay(cu.start_date); s.setHours(0,0,0,0);
   const e = new Date(s); e.setDate(e.getDate() + (cu.duration_days||30));
   if (e < TODAY) return t('cure_status_ended');
   if (s > TODAY) return t('cure_status_future');

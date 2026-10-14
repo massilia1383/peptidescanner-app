@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/peptidescanner.css">
 <link rel="stylesheet" href="/peptidescanner-extra.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
   /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
      viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
      les noms propres a la page, pour que ses regles existantes prennent la
@@ -652,7 +652,8 @@
 <div class="ps-toast" id="toast"></div>
 
 <script src="/lang.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="/ps-app.js"></script>
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
 // ── INIT SUPABASE ──────────────────────────────────────────────
 const SUPABASE_URL     = 'https://dkwztwlkjewdzfichkgk.supabase.co';
@@ -702,16 +703,24 @@ async function loadAll() {
   allInjections = iRes.data  || [];
   allWeights    = wRes.data  || [];
 
+  // Lot 2 : dans l'appli installée, on remet à jour les rappels du téléphone à chaque
+  // chargement (ouverture, injection notée…) si l'utilisateur les a activés.
+  if (window.PS_isNativeApp && PS_isNativeApp() && localStorage.getItem('ps_notif_choice') === 'on') {
+    let _rem = {};
+    try { _rem = JSON.parse(localStorage.getItem('ps_reminders_' + userId) || '{}'); } catch (e) {}
+    PS_scheduleReminders(PS_buildInjectionPlan(allCures, allInjections, _rem, 7), false);
+  }
+
   // Cures actives : favorite en premier, puis par date début décroissante
   activeCures = allCures.filter(c => {
     if (c.status !== 'active') return false;
-    const start = new Date(c.start_date); start.setHours(0,0,0,0);
-    const end   = new Date(c.start_date); end.setDate(end.getDate() + (c.duration_days||30)); end.setHours(0,0,0,0);
+    const start = psDay(c.start_date); start.setHours(0,0,0,0);
+    const end   = psDay(c.start_date); end.setDate(end.getDate() + (c.duration_days||30)); end.setHours(0,0,0,0);
     return start <= TODAY && end >= TODAY;
   }).sort((a, b) => {
     if (a.is_favorite && !b.is_favorite) return -1;
     if (!a.is_favorite && b.is_favorite) return 1;
-    return new Date(b.start_date) - new Date(a.start_date);
+    return psDay(b.start_date) - psDay(a.start_date);
   });
 
   // Garder l'index courant si possible, sinon revenir à 0
@@ -940,7 +949,7 @@ function renderStats() {
   }
   const completed = allCures.filter(c => {
     if (!c.start_date || !c.duration_days) return false;
-    const end = new Date(c.start_date); end.setDate(end.getDate() + c.duration_days); end.setHours(0,0,0,0);
+    const end = psDay(c.start_date); end.setDate(end.getDate() + c.duration_days); end.setHours(0,0,0,0);
     return end < TODAY;
   });
   document.getElementById('curesCount').textContent = completed.length;
@@ -971,8 +980,8 @@ function renderTodayView() {
   const dateLabel  = `${dayNames[now.getDay()]} ${now.getDate()} ${monthNames[now.getMonth()]}`;
   const activeCures = allCures.filter(c => {
     if (c.status !== 'active') return false;
-    const start = new Date(c.start_date); start.setHours(0,0,0,0);
-    const end   = new Date(c.start_date); end.setDate(end.getDate() + (c.duration_days||30)); end.setHours(0,0,0,0);
+    const start = psDay(c.start_date); start.setHours(0,0,0,0);
+    const end   = psDay(c.start_date); end.setDate(end.getDate() + (c.duration_days||30)); end.setHours(0,0,0,0);
     return start <= now && end > now;
   });
   const todayInjs = allInjections.filter(i => (i.injected_at||'').startsWith(todayStr));
@@ -1007,7 +1016,7 @@ function renderTodayView() {
   const SITES = [t('site_abd_g'),t('site_abd_d'),t('site_thigh_g'),t('site_thigh_d'),t('site_glute_g'),t('site_glute_d')];
   activeCures.forEach(cure => {
     const freq = parseFloat(cure.frequency) || 1;
-    const start = new Date(cure.start_date); start.setHours(0,0,0,0);
+    const start = psDay(cure.start_date); start.setHours(0,0,0,0);
     const dayNum = Math.floor((now - start) / 86400000) + 1;
     const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
     const times = injPerDay === 1 ? ['08:00'] : injPerDay === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
@@ -1185,8 +1194,8 @@ function renderAlerts() {
   const autoAlerts = [];
   allCures.forEach(c => {
     if (!c.start_date || !c.duration_days) return;
-    const end = new Date(c.start_date); end.setDate(end.getDate() + c.duration_days); end.setHours(0,0,0,0);
-    const start = new Date(c.start_date); start.setHours(0,0,0,0);
+    const end = psDay(c.start_date); end.setDate(end.getDate() + c.duration_days); end.setHours(0,0,0,0);
+    const start = psDay(c.start_date); start.setHours(0,0,0,0);
     if (start <= TODAY && end >= TODAY) {
       const daysLeft = Math.ceil((end - TODAY) / 86400000);
       if (daysLeft <= 5) autoAlerts.push({ icon:'⚠️', type:'amber', title:`${t('dash_cure_ended')} ${daysLeft}${t('dash_days_suffix')}`, sub: c.peptide_name||c.name, time:'Auto' });

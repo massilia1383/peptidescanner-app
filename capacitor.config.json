@@ -1,0 +1,13 @@
+{
+  "appId": "app.peptidescanner",
+  "appName": "PeptideScanner",
+  "webDir": "www",
+  "backgroundColor": "#FBF7F1",
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": false,
+      "backgroundColor": "#FBF7F1",
+      "style": "LIGHT"
+    }
+  }
+}

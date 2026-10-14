@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/peptidescanner.css">
 <link rel="stylesheet" href="/peptidescanner-extra.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
   /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
      viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
      les noms propres a cette page, pour que TOUTES ses regles existantes prennent
@@ -232,7 +232,8 @@
 <div class="ps-toast" id="toast"></div>
 
 <script src="/lang.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="/ps-app.js"></script>
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';

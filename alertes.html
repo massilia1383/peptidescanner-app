@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/peptidescanner.css">
 <link rel="stylesheet" href="/peptidescanner-extra.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
   /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
      viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
      les noms propres a la page, pour que ses regles existantes prennent la
@@ -254,7 +254,8 @@
 </aside></div>
 <div class="ps-toast" id="toast"></div>
 <script src="/lang.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="/ps-app.js"></script>
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
@@ -347,7 +348,12 @@ async function init() {
   renderInjReminders();
   setTimeout(() => {
     updateNotifBanner();
-    if (Notification.permission === 'granted') scheduleAllReminders();
+    // Lot 2 : dans l'appli installée, Notification n'existe pas (WebView) → rappels du téléphone
+    if (window.PS_isNativeApp && PS_isNativeApp()) {
+      if (localStorage.getItem('ps_notif_choice') === 'on') scheduleAllReminders();
+    } else if ('Notification' in window && Notification.permission === 'granted') {
+      scheduleAllReminders();
+    }
   }, 100);
 }
 
@@ -386,8 +392,8 @@ function renderAutoAlerts() {
   const alerts = [];
   allCures.forEach(cure => {
     if (!cure.start_date || !cure.duration_days) return;
-    const s = new Date(cure.start_date); s.setHours(0,0,0,0);
-    const e = new Date(cure.start_date); e.setDate(e.getDate()+cure.duration_days); e.setHours(0,0,0,0);
+    const s = psDay(cure.start_date); s.setHours(0,0,0,0);
+    const e = psDay(cure.start_date); e.setDate(e.getDate()+cure.duration_days); e.setHours(0,0,0,0);
     if (s<=TODAY && e>=TODAY) {
       const daysLeft = Math.ceil((e-TODAY)/86400000);
       if (daysLeft<=5) alerts.push({icon:'⚠️',cls:'ai-amber',title:`${t('alerts_cure_end')} ${daysLeft}j`,sub:cure.peptide_name||cure.name});
@@ -455,6 +461,8 @@ function getReminders() {
 function saveReminders(r) {
   const key = 'ps_reminders_' + (userId || 'anon');
   localStorage.setItem(key, JSON.stringify(r));
+  // Appli installée : un réglage modifié → rappels du téléphone reprogrammés
+  if (window.PS_isNativeApp && PS_isNativeApp()) scheduleAllReminders();
 }
 
 function renderInjReminders() {
@@ -515,6 +523,10 @@ function updateReminderTime(cureId, idx, newTime) {
 
 // ── NOTIFICATIONS ──────────────────────────────────────────────
 function updateNotifBanner() {
+  if (window.PS_isNativeApp && PS_isNativeApp()) {
+    setNotifBtn(localStorage.getItem('ps_notif_choice') === 'on' ? 'granted' : 'default');
+    return;
+  }
   if (!('Notification' in window)) {
     const banner = document.getElementById('notifBanner');
     if (banner) banner.style.display = 'none';
@@ -557,6 +569,21 @@ function setNotifBtn(state) {
 }
 
 function requestNotifPermission() {
+  if (window.PS_isNativeApp && PS_isNativeApp()) {
+    // Appli installée : la demande d'autorisation est faite par le téléphone
+    PS_scheduleReminders(PS_buildInjectionPlan(allCures, allInjections, getReminders(), 7), true).then(ok => {
+      if (ok) {
+        localStorage.setItem('ps_notif_choice', 'on');
+        setNotifBtn('granted');
+        showToast(t('alerts_notif_activated'));
+      } else {
+        localStorage.removeItem('ps_notif_choice');
+        setNotifBtn('denied');
+        showToast(t('alerts_notif_refused'));
+      }
+    });
+    return;
+  }
   if (!('Notification' in window)) { showToast(t('alerts_notif_unsupported')); return; }
   Notification.requestPermission().then(p => {
     if (p === 'granted') {
@@ -574,6 +601,7 @@ function requestNotifPermission() {
 
 function disableNotifications() {
   localStorage.setItem('ps_notif_choice', 'off');
+  if (window.PS_cancelReminders) PS_cancelReminders();
   setNotifBtn('default');
   showToast(t('alerts_notif_disabled'));
 }
@@ -582,6 +610,13 @@ function scheduleAllReminders() {
   // BUG-05 : lire la meme cle que getReminders()/saveReminders() — sinon le
   // toggle OFF de l'utilisateur n'etait jamais pris en compte.
   const reminders = getReminders();
+  // Lot 2 : appli installée → le téléphone programme les rappels des 7 prochains jours
+  // (ils partent même appli fermée). Le code ci-dessous reste pour le navigateur.
+  if (window.PS_isNativeApp && PS_isNativeApp()) {
+    if (localStorage.getItem('ps_notif_choice') === 'off') return;
+    PS_scheduleReminders(PS_buildInjectionPlan(allCures, allInjections, reminders, 7), false);
+    return;
+  }
   allCures.forEach(cure => {
     if (cure.status !== 'active') return;
     if (!cureRunningToday(cure)) return;
@@ -659,7 +694,9 @@ init().then(()=>{
   PS_applyI18n();
   // Initialiser le bouton notif
 // Initialiser le bouton notif
-const _perm = ('Notification' in window) ? Notification.permission : 'default';
+const _native = !!(window.PS_isNativeApp && PS_isNativeApp());
+const _perm = _native ? (localStorage.getItem('ps_notif_choice') === 'on' ? 'granted' : 'default')
+                      : (('Notification' in window) ? Notification.permission : 'default');
 const _choice = localStorage.getItem('ps_notif_choice');
 if (_perm === 'granted' && _choice !== 'off') {
   setNotifBtn('granted');

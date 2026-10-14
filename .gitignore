@@ -7,3 +7,6 @@ _to_delete/
 # Secrets : ne jamais envoyer
 .env
 .env.*
+# Dossiers fabriqués (Capacitor) : refaits par « npm run www » et « npm install »
+www/
+node_modules/

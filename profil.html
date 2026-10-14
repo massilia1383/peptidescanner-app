@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/peptidescanner.css">
 <link rel="stylesheet" href="/peptidescanner-extra.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
   /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
      viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
      les noms propres a cette page. */
@@ -245,7 +245,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="/lang.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="/ps-app.js"></script>
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
@@ -339,7 +340,7 @@ function renderStats() {
   const totalInj  = allInjections.length;
   const completed = allCures.filter(c => {
     if (!c.start_date||!c.duration_days) return false;
-    const e=new Date(c.start_date); e.setDate(e.getDate()+c.duration_days); return e<new Date();
+    const e=psDay(c.start_date); e.setDate(e.getDate()+c.duration_days); return e<new Date();
   });
   const wLost = allWeights.length>1
     ? (allWeights[allWeights.length-1].weight_kg - allWeights[0].weight_kg).toFixed(1)
@@ -489,7 +490,7 @@ async function exportData() {
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='peptidescanner-export-'+new Date().toISOString().split('T')[0]+'.json';
+  a.download='peptidescanner-export-'+psDayStr()+'.json';
   a.click();
   showToast(t('profil_export_done'));
 }

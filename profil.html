@@ -92,7 +92,11 @@
   .toggle-slider { position:absolute; inset:0; border-radius:24px; background:var(--border); cursor:pointer; transition:.3s; }
   .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; border-radius:50%; background:#fff; transition:.3s; box-shadow:0 1px 4px rgba(0,0,0,.15); }
   .toggle input:checked + .toggle-slider { background:var(--accent); }
-  .toggle input:checked + .toggle-slider::before { transform:translateX(20px); } width:100%; padding:12px; border-radius:10px; border:1px solid rgba(161,50,40,.3); background:var(--danger-soft); color:var(--danger); font-family:inherit; font-size:.86rem; font-weight:600; cursor:pointer; transition:all .2s; margin-bottom:8px; }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
+  /* (14/10/2026) Ici traînait la fin d'une ancienne règle .danger-btn sans son sélecteur : elle avalait la règle suivante. Retirée. */
+  /* Style de base des boutons de la zone de danger : il manquait depuis la migration
+     (les boutons s'affichaient comme des boutons bruts du navigateur). 14/10/2026 */
+  .danger-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:48px; margin-bottom:10px; padding:12px 16px; border-radius:10px; border:1px solid var(--danger); background:var(--surface); color:var(--danger); font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:background .18s; }
   .danger-btn:hover { background:var(--danger-soft); }
 
   /* BOTTOM NAV */
@@ -114,7 +118,6 @@
 </header>
 <div class="menu-popover" id="avatarMenu" hidden>
   <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
-  <a class="menu-item" href="lemon-checkout.html" data-i18n="nav_subscription">Abonnement</a>
   <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
   <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
 </div>
@@ -195,7 +198,7 @@
   <div class="settings-card">
     <div class="settings-row" onclick="window.location='peptide-database.html'">
       <div class="row-icon">🧬</div>
-      <div class="row-info"><div class="row-label"><span data-i18n="profil_biblio_link">Bibliothèque peptides</span></div><div class="row-val"><span data-i18n="profil_biblio_count">52 peptides référencés</span></div></div>
+      <div class="row-info"><div class="row-label"><span data-i18n="profil_biblio_link">Bibliothèque peptides</span></div><div class="row-val"><span data-i18n="profil_biblio_count">48 peptides référencés</span></div></div>
       <div class="row-arrow">›</div>
     </div>
     <div class="settings-row" onclick="toggleLang()">
@@ -208,17 +211,14 @@
       <div class="row-info"><div class="row-label"><span data-i18n="profil_export">Exporter mes données</span></div><div class="row-val"><span data-i18n="profil_export_sub">JSON — toutes mes cures et mesures</span></div></div>
       <div class="row-arrow">›</div>
     </div>
-    <div class="settings-row" onclick="window.location='index.html'">
-      <div class="row-icon">🏠</div>
-      <div class="row-info"><div class="row-label"><span data-i18n="profil_home_link">Page d'accueil</span></div><div class="row-val"><span data-i18n="profil_home_sub">Retour à la landing page</span></div></div>
-      <div class="row-arrow">›</div>
-    </div>
   </div>
 
   <!-- DANGER -->
   <div class="section-label"><span data-i18n="profil_danger">Zone de danger</span></div>
   <button class="danger-btn" onclick="logout()" style="border-color:rgba(53,92,154,.3);background:var(--info-soft);color:var(--info)"><span data-i18n="profil_logout">🚪 Se déconnecter</span></button>
   <button class="danger-btn" onclick="resetData()"><span data-i18n="profil_reset">🗑 Supprimer toutes mes données</span></button>
+  <button class="danger-btn" onclick="deleteAccount()" style="background:var(--danger);color:#fff;border-color:var(--danger)"><span data-i18n="profil_delete_account">Supprimer mon compte</span></button>
+  <p style="font-size:.72rem;color:var(--muted);margin:6px 2px 0;line-height:1.5"><span data-i18n="profil_delete_account_sub">Efface définitivement votre compte et toutes vos données. Action irréversible.</span></p>
 
   <div style="text-align:center;padding:20px 0;color:var(--muted);font-size:.72rem;font-family:'Space Mono',monospace">
     <span data-i18n="profil_version">PeptideScanner v1.0 · Usage éducatif uniquement</span>
@@ -235,13 +235,10 @@
 <div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
   <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
   <div class="drawer-grid">
-    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>80+ peptides</span></a>
+    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>48 peptides</span></a>
     <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
     <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
-    <a class="drawer-link" href="ia.html"><strong data-i18n="nav_ia">IA</strong><span>Conseiller</span></a>
     <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
-    <a class="drawer-link" href="lemon-checkout.html"><strong data-i18n="nav_subscription">Abonnement</strong><span>Premium</span></a>
-    <a class="drawer-link" href="boutiques.html"><strong data-i18n="nav_shops">Boutiques</strong><span>Partenaires</span></a>
     <a class="drawer-link" href="mentions-legales.html"><strong data-i18n="nav_legal">Mentions</strong><span>Legal</span></a>
   </div>
 </aside></div>
@@ -361,11 +358,12 @@ function renderPremium(isPremium) {
   if (!c) return;
   if (isPremium) {
     c.innerHTML = `<h3>${t('profil_prem_active')}</h3><p>${t('profil_prem_active_sub')}</p>
-    <ul class="features-list"><li>${t('profil_feat5')}</li><li>${t('profil_feat6')}</li><li>${t('profil_feat3')}</li><li>${t('profil_feat7')}</li></ul>`;
+    <ul class="features-list"><li>${t('profil_feat5')}</li><li>${t('profil_feat6')}</li><li>${t('profil_feat3')}</li></ul>`;
   } else {
-    c.innerHTML = `<h3>${t('profil_upgrade')}</h3><p>${t('profil_upgrade_sub')}</p>
-    <ul class="features-list"><li>${t('profil_feat1')}</li><li>${t('profil_feat2')}</li><li>Alertes & rappels push</li><li>${t('profil_feat4')}</li></ul>
-    <button class="premium-btn" onclick="activatePremium()">⭐ S'abonner — 59 € / an</button>`;
+    // Pas d'achat ici tant que RevenueCat n'est pas branché (achats Apple / Google).
+    // L'ancien bouton passait le profil en Premium sans paiement : retiré le 14/10/2026.
+    c.innerHTML = `<h3>${t('profil_prem_soon')}</h3><p>${t('profil_prem_soon_sub')}</p>
+    <ul class="features-list"><li>${t('profil_feat1')}</li><li>${t('profil_feat2')}</li><li>${t('profil_feat3')}</li></ul>`;
   }
 }
 
@@ -417,11 +415,22 @@ async function saveField(key) {
   render();
 }
 
-async function activatePremium() {
-  await sb.from('profiles').update({premium:true}).eq('id',userId);
-  profil.premium=true;
-  showToast(t('profil_prem_activated'));
-  render();
+// Suppression du compte (exigée par Apple 5.1.1(v) et Google Play).
+// La fonction serveur « delete-account » supprime l'utilisateur de l'authentification ;
+// la base efface ensuite profil, cures, injections, poids, stock et alertes en cascade.
+async function deleteAccount() {
+  if (!confirm(t('profil_delete_confirm1'))) return;
+  if (!confirm(t('profil_delete_confirm2'))) return;
+  try {
+    const { error } = await sb.functions.invoke('delete-account', { body: {} });
+    if (error) throw error;
+  } catch (e) {
+    showToast(t('profil_delete_error'));
+    return;
+  }
+  try { await sb.auth.signOut(); } catch (e) {}
+  try { localStorage.removeItem('ps_display_name'); localStorage.removeItem('ps_height_cm'); } catch (e) {}
+  window.location.href = '/login.html';
 }
 
 // ── ÉQUIPEMENT ─────────────────────────────────────────────────
@@ -499,6 +508,7 @@ async function resetData() {
     sb.from('cures').delete().eq('user_id',userId),
     sb.from('weight_logs').delete().eq('user_id',userId),
     sb.from('inventory').delete().eq('user_id',userId),
+    sb.from('alerts').delete().eq('user_id',userId),
   ]);
   showToast(t('profil_reset_done'));
   setTimeout(()=>window.location='dashboard.html',1500);

@@ -434,7 +434,6 @@
 </header>
 <div class="menu-popover" id="avatarMenu" hidden>
   <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
-  <a class="menu-item" href="lemon-checkout.html" data-i18n="nav_subscription">Abonnement</a>
   <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
   <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
 </div>
@@ -454,7 +453,6 @@
   <div class="module-tabs">
     <button class="module-tab active" onclick="switchModule('reconstitution',this)"><span data-i18n="calc_tab_recon">🧪 Reconstitution</span></button>
     <button class="module-tab" onclick="switchModule('dosage',this)"><span data-i18n="calc_tab_dosage">💉 Dosage</span></button>
-    <button class="module-tab" onclick="switchModule('titration',this)"><span data-i18n="calc_tab_titration">📈 Titration</span></button>
     <button class="module-tab" onclick="switchModule('guide',this)"><span data-i18n="calc_tab_guide">📋 Guide injection</span></button>
   </div>
 
@@ -745,16 +743,6 @@
             <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:'Space Mono',monospace;font-size:.88rem;color:var(--muted)">IU</div>
           </div>
         </div>
-        <div class="form-group" style="margin-top:6px">
-          <label class="form-label">Peptide / référence rapide</label>
-          <select class="form-select" id="iuPreset" onchange="applyIUPreset()">
-            <option value="">Choisir un preset…</option>
-            <option value="hgh_2iu_1ml">HGH — 2 IU/jour · flacon 10 IU + 1 mL BAC</option>
-            <option value="hgh_4iu_2ml">HGH — 4 IU/jour · flacon 10 IU + 2 mL BAC</option>
-            <option value="hcg_500_2ml">HCG — 500 IU/dose · flacon 5000 IU + 2 mL BAC</option>
-            <option value="hcg_250_2ml">HCG — 250 IU/dose · flacon 5000 IU + 2 mL BAC</option>
-          </select>
-        </div>
       </div>
 
       <div class="form-group">
@@ -968,46 +956,14 @@
       <h4>🛑 Règles de sécurité absolues</h4>
       <div class="safety-item"><div class="safety-dot"></div><span>Vérifiez TOUJOURS votre calcul deux fois avant d'injecter</span></div>
       <div class="safety-item"><div class="safety-dot"></div><span>Si le résultat vous semble anormal, ne pas injecter — recalculez</span></div>
-      <div class="safety-item"><div class="safety-dot"></div><span>Commencez toujours avec la dose minimale recommandée</span></div>
       <div class="safety-item"><div class="safety-dot"></div><span>Utilisez toujours une aiguille neuve à chaque injection</span></div>
     </div>
 
   </div>
 
-  <!-- ══════════════════════════════════════════
-       MODULE 3 — TITRATION
-  ══════════════════════════════════════════ -->
-  <div class="module-panel" id="panel-titration">
-
-    <div class="section-title"><span data-i18n="calc_titration_section">Plan de titration progressive</span></div>
-
-    <div class="calc-card">
-      <h3>📈 Choisir votre peptide</h3>
-      <p>Sélectionnez votre peptide pour voir le plan de titration recommandé semaine par semaine.</p>
-      <select class="form-select" id="titrationPeptide" onchange="showTitration()">
-        <option value="">Choisir un peptide…</option>
-        <option value="semaglutide">Semaglutide (Ozempic/Wegovy)</option>
-        <option value="tirzepatide">Tirzepatide (Mounjaro)</option>
-        <option value="retatrutide">Retatrutide</option>
-        <option value="cjc_ipa">CJC-1295 + Ipamorelin</option>
-        <option value="bpc157">BPC-157</option>
-        <option value="tb500">TB-500</option>
-        <option value="epithalon">Epithalon</option>
-      </select>
-    </div>
-
-    <div id="titration-content" style="display:none">
-      <div class="titration-wrap" id="titration-steps"></div>
-      <div class="safety-card">
-        <h4>⚠️ Règles de titration</h4>
-        <div class="safety-item"><div class="safety-dot"></div><span>Ne jamais augmenter la dose si les effets secondaires sont importants</span></div>
-        <div class="safety-item"><div class="safety-dot"></div><span>Rester à la dose minimale efficace — plus haut n'est pas toujours mieux</span></div>
-        <div class="safety-item"><div class="safety-dot"></div><span>Consulter un médecin avant toute augmentation de dose</span></div>
-        <div class="safety-item"><div class="safety-dot"></div><span>En cas d'effets indésirables sévères — arrêter immédiatement</span></div>
-      </div>
-    </div>
-
-  </div>
+  <!-- Module 3 « Titration » retiré le 14/10/2026 (version store) : il proposait un plan
+       de doses semaine par semaine. Le code JS (getTitrations/showTitration) reste plus bas,
+       inutilisé ; la version complète est dans l'historique Git. -->
 
   <!-- ══════════════════════════════════════════
        MODULE 4 — GUIDE INJECTION
@@ -1158,13 +1114,10 @@
 <div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
   <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
   <div class="drawer-grid">
-    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>80+ peptides</span></a>
+    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>48 peptides</span></a>
     <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
     <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
-    <a class="drawer-link" href="ia.html"><strong data-i18n="nav_ia">IA</strong><span>Conseiller</span></a>
     <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
-    <a class="drawer-link" href="lemon-checkout.html"><strong data-i18n="nav_subscription">Abonnement</strong><span>Premium</span></a>
-    <a class="drawer-link" href="boutiques.html"><strong data-i18n="nav_shops">Boutiques</strong><span>Partenaires</span></a>
     <a class="drawer-link" href="mentions-legales.html"><strong data-i18n="nav_legal">Mentions</strong><span>Legal</span></a>
   </div>
 </aside></div>

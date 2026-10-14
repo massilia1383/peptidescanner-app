@@ -284,7 +284,6 @@
 </header>
 <div class="menu-popover" id="avatarMenu" hidden>
   <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
-  <a class="menu-item" href="lemon-checkout.html" data-i18n="nav_subscription">Abonnement</a>
   <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
   <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
 </div>
@@ -294,7 +293,7 @@
   <div class="db-hero-title" data-i18n="db_title">Référentiel peptidique complet</div>
   <div class="page-sub" data-i18n="db_sub">Chaque peptide référencé avec ses dosages, protocoles, effets et stacks recommandés.</div>
   <div class="stats-row">
-    <div class="stat"><span class="stat-val" id="totalCount">52</span><span class="stat-label" data-i18n="db_stat_peptides">Peptides référencés</span></div>
+    <div class="stat"><span class="stat-val" id="totalCount">48</span><span class="stat-label" data-i18n="db_stat_peptides">Peptides référencés</span></div>
     <div class="stat"><span class="stat-val">9</span><span class="stat-label" data-i18n="db_stat_categories">Catégories</span></div>
     <div class="stat"><span class="stat-val" id="shownCount">52</span><span class="stat-label" data-i18n="db_stat_shown">Affichés</span></div>
   </div>
@@ -806,7 +805,7 @@ const PEPTIDES = [
 
   // ── PEAU / COSMÉTIQUE ─────────────────────────────────────────────────
   {
-    id: 35, name: "Melanotan II", alias: "MT-II / Barbie drug",
+    id: 35, name: "Melanotan II", alias: "MT-II",
     cat: "Peau", catClass: "cat-skin",
     dosage: "0.25–1 mg / dose", admin: "SC", duree: "Variable (selon teinte voulue)",
     frequence: "Quotidien (phase charge) → 2–3×/sem (entretien)",
@@ -1041,6 +1040,14 @@ function getCatClass(cat) {
   return map[cat] || "cat-gh";
 }
 
+// Fiches masquées pour la version store (14/10/2026) : la fiche « Stack » et la fiche
+// « relance » décrivent des protocoles, 49 et 52 sont des doublons (GHK-Cu, SS-31).
+// Les données restent ci-dessus ; elles ne sont simplement plus affichées.
+// Dosage, fréquence, durée, protocole, stacks et note ne sont plus affichés non plus
+// (règles Apple 1.4.1/1.4.2 et Google « contenu santé ») : l'appli documente, elle ne prescrit pas.
+const HIDDEN_IDS = [45, 48, 49, 52];
+const PEPTIDES_SHOWN = PEPTIDES.filter(p => !HIDDEN_IDS.includes(p.id));
+
 let currentCat = 'all';
 let currentSearch = '';
 
@@ -1051,14 +1058,13 @@ function renderCards() {
 
   grid.innerHTML = '';
 
-  PEPTIDES.forEach(p => {
+  PEPTIDES_SHOWN.forEach(p => {
     const matchCat = currentCat === 'all' || p.cat === currentCat;
     const matchSearch = !search ||
       p.name.toLowerCase().includes(search) ||
       p.alias.toLowerCase().includes(search) ||
       p.cat.toLowerCase().includes(search) ||
-      p.effets.some(e => e.toLowerCase().includes(search)) ||
-      p.stacks.some(s => s.toLowerCase().includes(search));
+      p.effets.some(e => e.toLowerCase().includes(search));
 
     if (!matchCat || !matchSearch) return;
     shown++;
@@ -1082,25 +1088,10 @@ function renderCards() {
         </div>
       </div>
       <div class="card-body">
-        <div class="info-row">
-          <span class="info-label">${t('db_dosage')}</span>
-          <span class="info-val mono">${p.dosage}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">${t('db_duration')}</span>
-          <span class="info-val" style="font-size:.82rem">${translateDuration(p.duree)}</span>
-        </div>
         <div class="effects-list">
           ${p.effets.slice(0,4).map(e => `<span class="effect-tag">${translateEffect(e)}</span>`).join('')}
           ${p.effets.length > 4 ? `<span class="effect-tag" style="color:var(--accent)">+${p.effets.length-4}</span>` : ''}
         </div>
-      </div>
-      <div class="card-footer">
-        <div>
-          <div class="stack-label">${t('db_stack_with')}</div>
-          <div class="stack-val">${p.stacks.slice(0,2).join(' · ')}</div>
-        </div>
-        <a class="shop-btn" href="boutiques.html" onclick="event.stopPropagation()">${t('db_buy')}</a>
       </div>
     `;
     grid.appendChild(card);
@@ -1141,28 +1132,9 @@ function openModal(id) {
     </div>
     ${phaseVisualFull(phase)}
     <div class="modal-body">
-      <div class="modal-grid">
-        <div class="modal-info-box">
-          <div class="lbl">${t('db_modal_dosage')}</div>
-          <div class="val green">${p.dosage}</div>
-        </div>
-        <div class="modal-info-box">
-          <div class="lbl">${t('db_modal_admin')}</div>
-          <div class="val">${p.admin}</div>
-        </div>
-        <div class="modal-info-box">
-          <div class="lbl">${t('db_modal_duration')}</div>
-          <div class="val">${p.duree}</div>
-        </div>
-        <div class="modal-info-box">
-          <div class="lbl">${t('db_modal_freq')}</div>
-          <div class="val">${p.frequence}</div>
-        </div>
-      </div>
-
       <div class="modal-section">
-        <h4>${t('db_modal_protocol')}</h4>
-        <p>${p.protocole}</p>
+        <h4>${t('db_modal_admin')}</h4>
+        <p>${p.admin}</p>
       </div>
 
       <div class="modal-section">
@@ -1176,23 +1148,8 @@ function openModal(id) {
       </div>
 
       <div class="modal-section">
-        <h4>${t('db_modal_stacks')}</h4>
-        <ul>${p.stacks.map(s => `<li class="stack">${s}</li>`).join('')}</ul>
-      </div>
-
-      <div class="modal-section">
         <h4>${t('db_modal_contra')}</h4>
         <ul><li class="warn">${p.contreindications}</li></ul>
-      </div>
-
-      <div class="modal-section">
-        <h4>${t('db_modal_note')}</h4>
-        <p style="color:var(--muted);font-style:italic">${p.note}</p>
-      </div>
-
-      <div class="modal-cta">
-        <p>${t('db_modal_find').replace('{name}', p.name)}</p>
-        <a href="boutiques.html">${t('db_modal_shops')}</a>
       </div>
 
       <div class="disclaimer">
@@ -1219,7 +1176,7 @@ document.addEventListener('keydown', e => {
 });
 
 // Init — charger les phases depuis Supabase puis render
-document.getElementById('totalCount').textContent = PEPTIDES.length;
+document.getElementById('totalCount').textContent = PEPTIDES_SHOWN.length;
 
 
 function translateEffect(str) {
@@ -1275,8 +1232,8 @@ function phaseVisualFull(phase) {
 }
 
 // Render immédiat + traductions
-document.getElementById('shownCount').textContent = PEPTIDES.length;
-document.getElementById('totalCount').textContent = PEPTIDES.length;
+document.getElementById('shownCount').textContent = PEPTIDES_SHOWN.length;
+document.getElementById('totalCount').textContent = PEPTIDES_SHOWN.length;
 
 function initPage() {
   renderCards();
@@ -1294,7 +1251,7 @@ function initPage() {
   });
   PS_renderLangSwitcher();
   document.getElementById('shownCount').textContent =
-    document.querySelectorAll('.pep-card:not(.hidden)').length || PEPTIDES.length;
+    document.querySelectorAll('.pep-card:not(.hidden)').length || PEPTIDES_SHOWN.length;
 }
 
 // Init immédiat
@@ -1370,13 +1327,10 @@ document.addEventListener('DOMContentLoaded', function () {
 <div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
   <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
   <div class="drawer-grid">
-    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>80+ peptides</span></a>
+    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>48 peptides</span></a>
     <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
     <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
-    <a class="drawer-link" href="ia.html"><strong data-i18n="nav_ia">IA</strong><span>Conseiller</span></a>
     <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
-    <a class="drawer-link" href="lemon-checkout.html"><strong data-i18n="nav_subscription">Abonnement</strong><span>Premium</span></a>
-    <a class="drawer-link" href="boutiques.html"><strong data-i18n="nav_shops">Boutiques</strong><span>Partenaires</span></a>
     <a class="drawer-link" href="mentions-legales.html"><strong data-i18n="nav_legal">Mentions</strong><span>Legal</span></a>
   </div>
 </aside></div>

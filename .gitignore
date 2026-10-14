@@ -1,0 +1,9 @@
+# Fichiers techniques du Mac
+.DS_Store
+# Fichiers locaux de l'outil Supabase (lien vers le projet, cache)
+supabase/.temp/
+# Corbeille locale : jamais envoyée sur GitHub
+_to_delete/
+# Secrets : ne jamais envoyer
+.env
+.env.*

@@ -1,7 +1,7 @@
 {
   "name": "PeptideScanner",
   "short_name": "PeptideScanner",
-  "description": "Suivi de cure peptidique — bibliothèque, calendrier, poids, alertes et conseiller IA",
+  "description": "Suivi de cure peptidique — bibliothèque, calendrier, poids, stock et alertes",
   "start_url": "/dashboard.html",
   "display": "standalone",
   "orientation": "portrait",
@@ -88,14 +88,8 @@
       "description": "Rechercher un peptide",
       "url": "/peptide-database.html",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Conseiller IA",
-      "short_name": "IA",
-      "description": "Poser une question à l'IA",
-      "url": "/ia.html",
-      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     }
+
   ],
   "related_applications": [],
   "prefer_related_applications": false

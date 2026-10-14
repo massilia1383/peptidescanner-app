@@ -48,8 +48,11 @@
     .msg.success{display:block;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-border);}
     .forgot{text-align:right;}
     .forgot a{font-size:13px;color:var(--info);text-decoration:none;font-weight:600;}
-    .terms{font-size:12px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.5;}
-    .terms a{color:var(--info);text-decoration:none;}
+    /* Lot 3 : case obligatoire à l'inscription (18 ans et plus + CGU + confidentialité) */
+    .terms-check{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-muted);cursor:pointer;}
+    .terms-check input{width:20px;height:20px;flex-shrink:0;margin:1px 0 0;accent-color:var(--accent);}
+    .terms-check span{font-size:13px;line-height:1.5;color:var(--text);}
+    .terms-check a{color:var(--info);text-decoration:none;font-weight:600;}
     #confirmScreen{display:none;text-align:center;padding:8px 0;}
     .confirm-icon{width:56px;height:56px;margin:0 auto 16px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;}
     .confirm-title{font-size:20px;font-weight:700;margin-bottom:10px;color:var(--text);}
@@ -105,12 +108,12 @@
         <label for="passwordConfirm" id="labelConfirmPw"></label>
         <input type="password" id="passwordConfirm" autocomplete="new-password" />
       </div>
+      <label class="terms-check" id="termsRow" style="display:none;">
+        <input type="checkbox" id="termsBox">
+        <span><span id="termsText"></span>
+        <a href="/cgu.html" id="termsCgu"></a><span id="termsAnd"> et notre </span><a href="/privacy.html" id="termsPrivacy"></a>.</span>
+      </label>
       <button class="auth-submit" id="submitBtn" onclick="handleSubmit()"></button>
-      <p class="terms" id="termsRow" style="display:none;">
-        <span id="termsText"></span>
-        <a href="/cgu.html" id="termsCgu"></a> <span id="termsAnd"> et notre </span>
-        <a href="/privacy.html" id="termsPrivacy"></a>.
-      </p>
     </div>
   </div>
 
@@ -195,7 +198,7 @@
       document.getElementById('nameGroup').style.display    = isRegister ? 'grid' : 'none';
       document.getElementById('confirmGroup').style.display = isRegister ? 'grid' : 'none';
       document.getElementById('forgotRow').style.display    = isRegister ? 'none'  : 'block';
-      document.getElementById('termsRow').style.display     = isRegister ? 'block' : 'none';
+      document.getElementById('termsRow').style.display     = isRegister ? 'flex' : 'none';
       setTabTexts(tab);
       clearMsg();
     };
@@ -216,6 +219,7 @@
       if (window.currentTab === 'register') {
         var confirm = document.getElementById('passwordConfirm').value;
         if (password !== confirm) { showMsg(t('login_pw_mismatch'), 'error'); return; }
+        if (!document.getElementById('termsBox').checked) { showMsg(t('login_terms_required'), 'error'); return; }
       }
       setLoading(true);
       if (window.currentTab === 'login') {

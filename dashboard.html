@@ -574,7 +574,7 @@
     <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
     <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
     <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
-    <a class="drawer-link" href="cgu.html"><strong data-i18n="nav_legal">Pages legales</strong><span>CGU</span></a>
+    <a class="drawer-link" href="cgu.html"><strong data-i18n="nav_legal">Pages légales</strong><span>CGU · Confidentialité</span></a>
   </div>
 </aside></div>
 
@@ -683,6 +683,12 @@ async function init() {
   const { data } = await sb.auth.getSession();
   if (!data?.session) { window.location.href = '/login.html'; return; }
   userId = data.session.user.id;
+
+  // Lot 3 (15/10/2026) : l'avertissement d'utilisation doit avoir été accepté (avertissement.html).
+  const _meta = data.session.user.user_metadata || {};
+  if (!_meta.disclaimer_accepted_at || Number(_meta.disclaimer_version) < 1) {
+    window.location.replace('/avertissement.html'); return;
+  }
 
   // Profil
   const { data: profil } = await sb.from('profiles').select('*').eq('id', userId).single();

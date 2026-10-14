@@ -239,7 +239,7 @@
     <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
     <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
     <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
-    <a class="drawer-link" href="mentions-legales.html"><strong data-i18n="nav_legal">Mentions</strong><span>Legal</span></a>
+    <a class="drawer-link" href="cgu.html"><strong data-i18n="nav_legal">Pages légales</strong><span>CGU · Confidentialité</span></a>
   </div>
 </aside></div>
 <div class="toast" id="toast"></div>
@@ -370,10 +370,10 @@ function renderPremium(isPremium) {
 
 // ── EDIT CHAMPS ────────────────────────────────────────────────
 const FIELD_MAP = {
-  'prenom':  { db: 'full_name',   label: 'Prénom / Pseudo' },
-  'age':     { db: 'experience',  label: 'Âge' },
+  'prenom':  { db: 'full_name',   label: t('profil_name') },
+  'age':     { db: 'experience',  label: t('profil_experience') },   // le champ « age » stocke l'expérience (pas de colonne âge)
   'taille':  { db: null,          label: t('profil_height') },   // stocké en localStorage + profiles
-  'objectif':{ db: 'goal',        label: 'Objectif' },
+  'objectif':{ db: 'goal',        label: t('profil_goal') },
 };
 
 function editField(key, label) {

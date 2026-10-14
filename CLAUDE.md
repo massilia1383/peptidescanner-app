@@ -52,6 +52,9 @@ Schéma et procédure Supabase : `docs/supabase/`. Scripts SQL datés : `docs/sq
 ## Pièges connus
 1. **`lang.js`** : valeurs EN dans le bloc FR ; toute nouvelle clé dans les DEUX blocs. Doublons retirés le 14/10
    (contenu vérifié identique) : une clé = une ligne par bloc, garder ça.
+9. **Avertissement d'utilisation** : `dashboard.html` renvoie vers `avertissement.html` tant que
+   `user_metadata.disclaimer_accepted_at` manque (version 1). Changer le texte de façon importante = augmenter
+   `WARN_VERSION` dans `avertissement.html` ET le seuil dans `dashboard.html`.
 8. **Dans l'appli installée, `Notification` n'existe pas** : passer par `PS_isNativeApp()` et les rappels de `ps-app.js`.
 2. **Dates** : jamais `toISOString()` ni `new Date('AAAA-MM-JJ')` (décalage d'un jour selon le fuseau).
    Utiliser `psDay()` et `psDayStr()` de `ps-app.js`. BUG-11 corrigé le 14/10 (27 endroits).
@@ -68,6 +71,8 @@ Schéma et procédure Supabase : `docs/supabase/`. Scripts SQL datés : `docs/sq
 `dashboard.html` · `cure.html` (BUG-09 ouvert) · `poids.html` · `inventaire.html` · `alertes.html` ·
 `analytics.html` · `calculateur.html` (sans titration ni presets depuis le 14/10) ·
 `peptide-database.html` (48 fiches affichées, sans dosage ni protocole) · `profil.html` (suppression de compte) ·
+`avertissement.html` (premier écran, accord 18+ et données de santé) · `cgu.html`, `privacy.html`,
+`mentions-legales.html` + `legal.css` (réécrites le 15/10, [À compléter] à remplir par James) ·
 `index.html` (simple renvoi vers l'accueil) · `peptidescanner.css` + `peptidescanner-extra.css` · `ps-app.js` ·
 `vendor/` · `fonts/` · `package.json` · `capacitor.config.json` · `scripts/build-www.sh` ·
 `sw.js` · `manifest.json` · `ps-admin-x7k9m/admin.html`.

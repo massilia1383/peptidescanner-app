@@ -3,9 +3,9 @@
 // Cache offline + mise à jour automatique
 // ═══════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'peptidescanner-v1.3';
-const CACHE_STATIC = 'peptidescanner-static-v1.3';
-const CACHE_DYNAMIC = 'peptidescanner-dynamic-v1.3';
+const CACHE_NAME = 'peptidescanner-v1.4';
+const CACHE_STATIC = 'peptidescanner-static-v1.4';
+const CACHE_DYNAMIC = 'peptidescanner-dynamic-v1.4';
 
 // ── FICHIERS À METTRE EN CACHE (core app shell) ────────────────
 const STATIC_ASSETS = [
@@ -22,6 +22,11 @@ const STATIC_ASSETS = [
   '/calculateur.html',
   '/analytics.html',
   '/reset-password.html',
+  '/avertissement.html',
+  '/cgu.html',
+  '/privacy.html',
+  '/mentions-legales.html',
+  '/legal.css',
   '/lang.js',
   '/ps-app.js',
   '/peptidescanner.css',

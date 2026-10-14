@@ -3,370 +3,191 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PeptideScanner — Politique de Confidentialité</title>
+<title>Politique de confidentialité — PeptideScanner</title>
+<script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#F8F9FA">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="PeptideScanner">
-<style>
-  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
-  :root {
-    
-    --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0; --accent:#0D9488; --accent2:#2B6CB0; --text:#1F2937; --muted:#6B7280;
-    --danger:#EF4444;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
-
-  .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100;  }
-  .logo { font-family:'Space Mono',monospace; font-size:.95rem; font-weight:700; color:var(--accent); }
-  .back-link { font-size:.82rem; color:var(--muted); text-decoration:none; transition:color .2s; }
-  .back-link:hover { color:var(--accent); }
-
-  .container { max-width:720px; margin:0 auto; padding:40px 24px 80px; }
-
-  .doc-header { margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
-  .doc-badge { display:inline-block; padding:4px 12px; border-radius:100px; background:rgba(99,102,241,.1); border:1px solid rgba(99,102,241,.2); font-size:.72rem; font-weight:700; color:var(--accent2); font-family:'Space Mono',monospace; margin-bottom:14px; }
-  .doc-title { font-size:2rem; font-weight:700; margin-bottom:8px; }
-  .doc-meta { font-size:.82rem; color:var(--muted); }
-
-  /* PRIVACY HERO */
-  .privacy-hero {
-    display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:32px;
-  }
-  .privacy-pillar {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:14px; padding:16px; text-align:center;
-  }
-  .privacy-pillar-icon { font-size:1.8rem; margin-bottom:8px; }
-  .privacy-pillar-title { font-size:.82rem; font-weight:700; margin-bottom:4px; }
-  .privacy-pillar-text { font-size:.7rem; color:var(--muted); line-height:1.4; }
-
-  .toc { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:40px; }
-  .toc h3 { font-size:.82rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:12px; }
-  .toc ol { padding-left:18px; }
-  .toc li { margin-bottom:6px; }
-  .toc a { color:var(--accent); text-decoration:none; font-size:.88rem; }
-
-  .section { margin-bottom:40px; }
-  .section h2 { font-size:1.05rem; font-weight:700; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border); color:var(--accent); font-family:'Space Mono',monospace; }
-  .section h3 { font-size:.92rem; font-weight:600; margin:18px 0 10px; color:var(--text); }
-  .section p { font-size:.88rem; color:var(--muted); margin-bottom:12px; }
-  .section p strong { color:var(--text); }
-  .section ul { padding-left:20px; margin-bottom:12px; }
-  .section li { font-size:.88rem; color:var(--muted); margin-bottom:6px; }
-  .section li strong { color:var(--text); }
-
-  /* DATA TABLE */
-  .data-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:.82rem; }
-  .data-table th { text-align:left; padding:10px 12px; background:var(--surface2); color:var(--muted); font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.8px; border-bottom:1px solid var(--border); }
-  .data-table td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--muted); vertical-align:top; }
-  .data-table td strong { color:var(--text); }
-  .data-table tr:hover td { background:rgba(255,255,255,.02); }
-
-  /* RIGHTS GRID */
-  .rights-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
-  .right-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; }
-  .right-card-icon { font-size:1.2rem; margin-bottom:8px; }
-  .right-card-title { font-size:.84rem; font-weight:700; margin-bottom:4px; }
-  .right-card-text { font-size:.75rem; color:var(--muted); line-height:1.4; }
-
-  .green-box { background:rgba(13,148,136,.05); border:1px solid rgba(13,148,136,.15); border-radius:12px; padding:16px 18px; margin:16px 0; }
-  .green-box p { color:var(--text); margin-bottom:0; font-size:.85rem; }
-
-  .warning-box { background:rgba(239,68,68,.06); border:1px solid rgba(239,68,68,.2); border-radius:12px; padding:16px 18px; margin:16px 0; }
-  .warning-box p { color:#991b1b; margin-bottom:0; font-size:.85rem; }
-
-  .footer-legal { border-top:1px solid var(--border); padding-top:24px; margin-top:40px; font-size:.78rem; color:var(--muted); text-align:center; line-height:1.6; }
-  .footer-legal a { color:var(--accent); text-decoration:none; }
-  .legal-nav { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
-  .legal-nav a { font-size:.8rem; color:var(--muted); text-decoration:none; transition:color .2s; }
-  .legal-nav a:hover { color:var(--accent); }
-</style>
+<meta name="theme-color" content="#FBF7F1">
+<link rel="stylesheet" href="/peptidescanner.css">
+<link rel="stylesheet" href="/legal.css">
+<!--
+  Réécrite le 15/10/2026 (lot 3). Doit rester EXACTEMENT alignée sur ce que fait l'appli :
+  les fiches « confidentialité » d'Apple (App Privacy) et de Google (Data safety) seront remplies d'après ce texte.
+  Retirés : Lemon Squeezy, Anthropic / conseiller IA, historique IA, boutiques, « données dans le téléphone »,
+  newsletter, analytics (l'appli n'en a pas).
+  Ajoutés : RevenueCat (sous-traitant des abonnements, à garder en phase avec le futur lot RevenueCat),
+  notifications locales, suppression de compte dans l'appli, consentement explicite pour les données de santé.
+  Région d'hébergement Supabase : à vérifier dans le tableau de bord Supabase (Settings → General).
+  Texte rédigé sans avis juridique : à faire relire avant publication.
+-->
 </head>
 <body>
 
-<div class="topbar">
-  <div class="logo">PeptideScanner</div>
-  <a href="dashboard.html" class="back-link">← Retour à l'app</a>
-</div>
+<header class="legal-topbar">
+  <a class="legal-brand" href="/dashboard.html"><img src="/brand/brand-mark.svg" alt="" width="28" height="28">PeptideScanner</a>
+  <a class="legal-back" href="/dashboard.html" onclick="if (history.length > 1) { history.back(); return false; }">← Retour</a>
+</header>
 
-<div class="container">
+<main class="legal-wrap">
 
-  <div class="doc-header">
-    <div class="doc-badge">RGPD · Privacy</div>
-    <div class="doc-title">Politique de Confidentialité</div>
-    <div class="doc-meta">Dernière mise à jour : 18 juin 2026 · Conforme RGPD (UE) 2016/679</div>
+  <div class="legal-head">
+    <div class="legal-eyebrow">Données personnelles</div>
+    <h1 class="legal-title">Politique de confidentialité</h1>
+    <div class="legal-meta">Dernière mise à jour : 15 octobre 2026 · Règlement (UE) 2016/679 (RGPD)</div>
   </div>
 
-  <!-- PRIVACY PILLARS -->
-  <div class="privacy-hero">
-    <div class="privacy-pillar">
-      <div class="privacy-pillar-icon">🔒</div>
-      <div class="privacy-pillar-title">Chiffré</div>
-      <div class="privacy-pillar-text">Toutes vos données sont chiffrées en transit et au repos</div>
-    </div>
-    <div class="privacy-pillar">
-      <div class="privacy-pillar-icon">🚫</div>
-      <div class="privacy-pillar-title">Non vendu</div>
-      <div class="privacy-pillar-text">Vos données de santé ne sont jamais vendues à des tiers</div>
-    </div>
-    <div class="privacy-pillar">
-      <div class="privacy-pillar-icon">📤</div>
-      <div class="privacy-pillar-title">Exportable</div>
-      <div class="privacy-pillar-text">Téléchargez ou supprimez vos données à tout moment</div>
-    </div>
+  <div class="legal-box is-ok">
+    <p><strong>L'essentiel</strong> : vos données servent uniquement à faire fonctionner l'application. Elles ne sont jamais vendues, ne servent à aucune publicité, et vous pouvez les exporter ou les supprimer vous-même depuis l'application.</p>
   </div>
 
-  <div class="toc">
-    <h3>Sommaire</h3>
+  <nav class="legal-toc" aria-label="Sommaire">
+    <h2>Sommaire</h2>
     <ol>
       <li><a href="#p1">Responsable du traitement</a></li>
       <li><a href="#p2">Données collectées</a></li>
       <li><a href="#p3">Finalités et bases légales</a></li>
-      <li><a href="#p4">Partage des données</a></li>
-      <li><a href="#p5">Hébergement et transferts</a></li>
-      <li><a href="#p6">Durée de conservation</a></li>
-      <li><a href="#p7">Vos droits RGPD</a></li>
-      <li><a href="#p8">Cookies et traceurs</a></li>
-      <li><a href="#p9">Données de santé — protection renforcée</a></li>
-      <li><a href="#p10">Contact DPO</a></li>
+      <li><a href="#p4">Données de santé</a></li>
+      <li><a href="#p5">Destinataires et sous-traitants</a></li>
+      <li><a href="#p6">Hébergement et transferts</a></li>
+      <li><a href="#p7">Durée de conservation</a></li>
+      <li><a href="#p8">Vos droits</a></li>
+      <li><a href="#p9">Stockage sur l'appareil et notifications</a></li>
+      <li><a href="#p10">Sécurité</a></li>
+      <li><a href="#p11">Contact</a></li>
     </ol>
-  </div>
+  </nav>
 
-  <!-- ARTICLE 1 -->
-  <div class="section" id="p1">
-    <h2>1 — Responsable du traitement</h2>
-    <p>Le responsable du traitement des données personnelles est :</p>
+  <section class="legal-section" id="p1">
+    <h2>1. Responsable du traitement</h2>
     <ul>
-      <li><strong>Nom :</strong> [Votre nom / raison sociale]</li>
-      <li><strong>Email :</strong> privacy@peptidescanner.app</li>
-      <li><strong>Application :</strong> PeptideScanner (peptidescanner.app)</li>
+      <li><strong>Rivage Labs</strong>, micro-entreprise — <span class="legal-todo">[Nom et prénom — À compléter]</span></li>
+      <li>Adresse : <span class="legal-todo">[À compléter]</span></li>
+      <li>Email : privacy@peptidescanner.app</li>
     </ul>
-  </div>
+  </section>
 
-  <!-- ARTICLE 2 -->
-  <div class="section" id="p2">
-    <h2>2 — Données collectées</h2>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Catégorie</th>
-          <th>Données</th>
-          <th>Obligatoire</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Compte</strong></td>
-          <td>Email, mot de passe (hashé), prénom</td>
-          <td>Oui</td>
-        </tr>
-        <tr>
-          <td><strong>Profil</strong></td>
-          <td>Âge, taille, objectif, préférences notifications</td>
-          <td>Non</td>
-        </tr>
-        <tr>
-          <td><strong>Cures</strong></td>
-          <td>Peptide, dosage, dates, fréquence, notes</td>
-          <td>Non</td>
-        </tr>
-        <tr>
-          <td><strong>Injections</strong></td>
-          <td>Date, heure, slot, cure associée</td>
-          <td>Non</td>
-        </tr>
-        <tr>
-          <td><strong>Poids</strong></td>
-          <td>Date, valeur en kg, note</td>
-          <td>Non</td>
-        </tr>
-        <tr>
-          <td><strong>Alertes</strong></td>
-          <td>Message, date, heure, priorité</td>
-          <td>Non</td>
-        </tr>
-        <tr>
-          <td><strong>IA</strong></td>
-          <td>Historique des conversations (20 derniers messages)</td>
-          <td>Non</td>
-        </tr>
-        <tr>
-          <td><strong>Technique</strong></td>
-          <td>Adresse IP (temporaire), type d'appareil, langue</td>
-          <td>Oui (technique)</td>
-        </tr>
-        <tr>
-          <td><strong>Paiement</strong></td>
-          <td>Géré exclusivement par Lemon Squeezy — nous ne stockons aucune donnée bancaire</td>
-          <td>Premium uniquement</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- ARTICLE 3 -->
-  <div class="section" id="p3">
-    <h2>3 — Finalités et bases légales</h2>
-    <table class="data-table">
-      <thead>
-        <tr><th>Finalité</th><th>Base légale</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Fourniture du service (compte, cures, alertes)</td><td>Exécution du contrat</td></tr>
-        <tr><td>Traitement des paiements (via Lemon Squeezy)</td><td>Exécution du contrat</td></tr>
-        <tr><td>Amélioration du service (analytics anonymes)</td><td>Intérêt légitime</td></tr>
-        <tr><td>Envoi d'emails transactionnels</td><td>Exécution du contrat</td></tr>
-        <tr><td>Conformité légale et fiscale</td><td>Obligation légale</td></tr>
-        <tr><td>Newsletter (optionnelle)</td><td>Consentement</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- ARTICLE 4 -->
-  <div class="section" id="p4">
-    <h2>4 — Partage des données</h2>
-    <div class="warning-box">
-      <p>🚫 <strong>Nous ne vendons jamais vos données personnelles</strong>, notamment vos données de santé, à des tiers à des fins commerciales.</p>
+  <section class="legal-section" id="p2">
+    <h2>2. Données collectées</h2>
+    <div class="legal-table-wrap">
+      <table class="legal-table">
+        <thead><tr><th>Catégorie</th><th>Données</th><th>Obligatoire</th></tr></thead>
+        <tbody>
+          <tr><td>Compte</td><td>Adresse email, mot de passe (stocké sous forme chiffrée irréversible par Supabase), prénom</td><td>Email et mot de passe : oui</td></tr>
+          <tr><td>Profil</td><td>Niveau d'expérience, taille, objectif, langue, seringues possédées</td><td>Non</td></tr>
+          <tr><td>Avertissement</td><td>Date d'acceptation de l'avertissement d'utilisation</td><td>Oui</td></tr>
+          <tr><td>Cures</td><td>Peptide, dose saisie, dates, fréquence, notes</td><td>Non</td></tr>
+          <tr><td>Injections</td><td>Date, heure, créneau, cure associée</td><td>Non</td></tr>
+          <tr><td>Notes du jour</td><td>Texte libre saisi par l'utilisateur</td><td>Non</td></tr>
+          <tr><td>Poids</td><td>Date, valeur, note</td><td>Non</td></tr>
+          <tr><td>Stock</td><td>Flacons, quantités, reconstitution, conservation</td><td>Non</td></tr>
+          <tr><td>Alertes</td><td>Rappels et alertes créés par l'utilisateur</td><td>Non</td></tr>
+          <tr><td>Abonnement</td><td>Statut Premium, identifiant d'achat transmis par Apple ou Google via RevenueCat (aucune donnée bancaire)</td><td>Abonnés uniquement</td></tr>
+          <tr><td>Technique</td><td>Adresse IP et informations de connexion conservées dans les journaux du serveur</td><td>Oui (technique)</td></tr>
+        </tbody>
+      </table>
     </div>
-    <p>Vos données peuvent être partagées uniquement avec :</p>
+    <p>L'application ne contient <strong>aucun outil de mesure d'audience, aucune publicité et aucun traceur</strong>.</p>
+  </section>
+
+  <section class="legal-section" id="p3">
+    <h2>3. Finalités et bases légales</h2>
+    <div class="legal-table-wrap">
+      <table class="legal-table">
+        <thead><tr><th>Finalité</th><th>Base légale</th></tr></thead>
+        <tbody>
+          <tr><td>Créer et gérer votre compte</td><td>Exécution du contrat (CGU)</td></tr>
+          <tr><td>Enregistrer et afficher vos cures, injections, poids, stock et notes</td><td>Votre consentement explicite (données de santé, voir §4)</td></tr>
+          <tr><td>Gérer l'abonnement Premium</td><td>Exécution du contrat</td></tr>
+          <tr><td>Emails liés au compte (confirmation, mot de passe oublié)</td><td>Exécution du contrat</td></tr>
+          <tr><td>Sécurité et journaux techniques</td><td>Intérêt légitime</td></tr>
+          <tr><td>Obligations comptables et fiscales (abonnés)</td><td>Obligation légale</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="legal-section" id="p4">
+    <h2>4. Données de santé</h2>
+    <p>Les informations sur vos cures, injections, notes et votre poids sont des <strong>données de santé</strong> au sens du RGPD. Elles ne sont traitées qu'avec votre <strong>consentement explicite</strong>, recueilli à la première ouverture de l'application. Vous pouvez retirer ce consentement à tout moment en supprimant vos données ou votre compte.</p>
     <ul>
-      <li><strong>Supabase</strong> — hébergement base de données (UE)</li>
-      <li><strong>Lemon Squeezy LLC</strong> — traitement des paiements (email uniquement)</li>
-      <li><strong>Anthropic</strong> — traitement des requêtes IA (messages envoyés au conseiller uniquement, anonymisés)</li>
-      <li><strong>Autorités légales</strong> — uniquement sur réquisition judiciaire</li>
+      <li>Elles ne sont <strong>jamais vendues</strong>, ni utilisées à des fins publicitaires ou commerciales.</li>
+      <li>Elles ne sont <strong>jamais partagées</strong> avec un employeur, un assureur ou un organisme de santé.</li>
+      <li>Chaque utilisateur n'accède qu'à ses propres données (règles d'accès appliquées par la base de données).</li>
     </ul>
-    <p>Les boutiques partenaires accessibles via les liens affiliés ont leurs propres politiques de confidentialité. PeptideScanner ne partage aucune donnée personnelle avec ces boutiques.</p>
-  </div>
-
-  <!-- ARTICLE 5 -->
-  <div class="section" id="p5">
-    <h2>5 — Hébergement et transferts internationaux</h2>
-    <div class="green-box">
-      <p>✅ <strong>Vos données sont hébergées dans l'Union Européenne</strong> (Supabase — région Frankfurt, Allemagne). Aucun transfert vers des pays tiers sans garanties appropriées.</p>
+    <div class="legal-box is-warning">
+      <p>Ces données ne constituent pas un dossier médical. PeptideScanner n'est pas un dispositif médical.</p>
     </div>
-    <p>Pour les requêtes adressées au conseiller IA, les messages sont traités par Anthropic (USA). Ce transfert est encadré par les clauses contractuelles types de la Commission Européenne (CCT).</p>
-  </div>
+  </section>
 
-  <!-- ARTICLE 6 -->
-  <div class="section" id="p6">
-    <h2>6 — Durée de conservation</h2>
-    <table class="data-table">
-      <thead>
-        <tr><th>Données</th><th>Durée de conservation</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Compte actif</td><td>Durée de l'abonnement + 3 ans</td></tr>
-        <tr><td>Données de cures et poids</td><td>Durée du compte</td></tr>
-        <tr><td>Historique IA</td><td>20 derniers messages uniquement</td></tr>
-        <tr><td>Logs techniques</td><td>90 jours maximum</td></tr>
-        <tr><td>Données de paiement</td><td>Conservées par Lemon Squeezy selon leurs CGU</td></tr>
-        <tr><td>Après suppression du compte</td><td>Suppression définitive sous 30 jours</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- ARTICLE 7 -->
-  <div class="section" id="p7">
-    <h2>7 — Vos droits RGPD</h2>
-    <div class="rights-grid">
-      <div class="right-card">
-        <div class="right-card-icon">👁</div>
-        <div class="right-card-title">Droit d'accès</div>
-        <div class="right-card-text">Obtenir une copie de toutes vos données personnelles</div>
-      </div>
-      <div class="right-card">
-        <div class="right-card-icon">✏️</div>
-        <div class="right-card-title">Droit de rectification</div>
-        <div class="right-card-text">Corriger des données inexactes ou incomplètes</div>
-      </div>
-      <div class="right-card">
-        <div class="right-card-icon">🗑</div>
-        <div class="right-card-title">Droit à l'effacement</div>
-        <div class="right-card-text">Supprimer vos données ("droit à l'oubli")</div>
-      </div>
-      <div class="right-card">
-        <div class="right-card-icon">📤</div>
-        <div class="right-card-title">Droit à la portabilité</div>
-        <div class="right-card-text">Exporter vos données en format JSON depuis votre profil</div>
-      </div>
-      <div class="right-card">
-        <div class="right-card-icon">🚫</div>
-        <div class="right-card-title">Droit d'opposition</div>
-        <div class="right-card-text">Vous opposer au traitement pour intérêt légitime</div>
-      </div>
-      <div class="right-card">
-        <div class="right-card-icon">⏸</div>
-        <div class="right-card-title">Droit de limitation</div>
-        <div class="right-card-text">Suspendre le traitement de vos données</div>
-      </div>
-    </div>
-    <p>Pour exercer vos droits : <strong>privacy@peptidescanner.app</strong> — Délai de réponse : 30 jours maximum.</p>
-    <p>En cas de litige non résolu, vous pouvez saisir la <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés) — cnil.fr.</p>
-  </div>
-
-  <!-- ARTICLE 8 -->
-  <div class="section" id="p8">
-    <h2>8 — Cookies et traceurs</h2>
-    <p>PeptideScanner utilise uniquement :</p>
+  <section class="legal-section" id="p5">
+    <h2>5. Destinataires et sous-traitants</h2>
+    <p>Vos données ne sont accessibles qu'à l'éditeur et aux prestataires strictement nécessaires :</p>
     <ul>
-      <li><strong>localStorage</strong> — stockage local des préférences et données (ne quitte pas votre appareil)</li>
-      <li><strong>Cookies de session Supabase</strong> — authentification (nécessaires, durée de session)</li>
+      <li><strong>Supabase</strong> — hébergement de la base de données et des comptes ;</li>
+      <li><strong>RevenueCat</strong> — gestion du statut des abonnements (reçoit un identifiant de compte et les informations d'achat transmises par Apple ou Google, jamais vos données de santé) ;</li>
+      <li><strong>Apple</strong> et <strong>Google</strong> — distribution de l'application et paiement des abonnements, selon leurs propres politiques ;</li>
+      <li>les autorités, uniquement sur demande légale.</li>
     </ul>
-    <p>Aucun cookie publicitaire, aucun cookie de tracking tiers, aucune régie publicitaire.</p>
-    <div class="green-box">
-      <p>✅ <strong>PeptideScanner est une application sans publicité.</strong> Nous ne collectons aucune donnée à des fins publicitaires.</p>
+  </section>
+
+  <section class="legal-section" id="p6">
+    <h2>6. Hébergement et transferts</h2>
+    <p>La base de données est hébergée dans l'<strong>Union européenne</strong> (Supabase). Certains prestataires (RevenueCat, Apple, Google) sont établis aux États-Unis ; les transferts éventuels sont encadrés par les garanties prévues par le RGPD (clauses contractuelles types de la Commission européenne ou cadre de protection des données UE–États-Unis).</p>
+  </section>
+
+  <section class="legal-section" id="p7">
+    <h2>7. Durée de conservation</h2>
+    <div class="legal-table-wrap">
+      <table class="legal-table">
+        <thead><tr><th>Données</th><th>Durée</th></tr></thead>
+        <tbody>
+          <tr><td>Compte et données de suivi</td><td>Tant que le compte existe</td></tr>
+          <tr><td>Après « Supprimer mon compte »</td><td>Effacement immédiat de la base ; disparition des copies de sauvegarde techniques sous 30 jours au plus</td></tr>
+          <tr><td>Journaux techniques</td><td>90 jours au plus</td></tr>
+          <tr><td>Pièces comptables (abonnés)</td><td>Durée légale (10 ans)</td></tr>
+        </tbody>
+      </table>
     </div>
-  </div>
+  </section>
 
-  <!-- ARTICLE 9 -->
-  <div class="section" id="p9">
-    <h2>9 — Données de santé — protection renforcée</h2>
-    <p>Les données relatives à vos cures peptidiques, injections et évolution du poids constituent des <strong>données de santé</strong> au sens du RGPD, bénéficiant d'une protection renforcée.</p>
-    <p>Ces données sont traitées avec les garanties suivantes :</p>
+  <section class="legal-section" id="p8">
+    <h2>8. Vos droits</h2>
+    <p>Vous disposez des droits d'accès, de rectification, d'effacement, de portabilité, de limitation et d'opposition, ainsi que du droit de retirer votre consentement à tout moment. Plusieurs se font directement dans l'application :</p>
     <ul>
-      <li>Chiffrement en transit (TLS 1.3) et au repos (AES-256)</li>
-      <li>Accès limité au strict nécessaire (Row Level Security Supabase)</li>
-      <li>Jamais utilisées à des fins commerciales ou publicitaires</li>
-      <li>Jamais partagées avec des employeurs, assureurs ou organismes de santé</li>
-      <li>Statistiques communautaires uniquement sur données 100% anonymisées et agrégées</li>
+      <li><strong>Exporter vos données</strong> : Profil → Exporter mes données (fichier JSON) ;</li>
+      <li><strong>Supprimer vos données de suivi</strong> : Profil → Zone de danger → Supprimer toutes mes données ;</li>
+      <li><strong>Supprimer votre compte</strong> : Profil → Zone de danger → Supprimer mon compte.</li>
     </ul>
-    <div class="warning-box">
-      <p>⚠️ Ces données ne constituent pas un dossier médical. PeptideScanner n'est pas un dispositif médical au sens de la réglementation européenne MDR.</p>
-    </div>
-  </div>
+    <p>Pour toute autre demande : <strong>privacy@peptidescanner.app</strong> (réponse sous 30 jours). Vous pouvez aussi introduire une réclamation auprès de la CNIL (cnil.fr).</p>
+  </section>
 
-  <!-- ARTICLE 10 -->
-  <div class="section" id="p10">
-    <h2>10 — Contact</h2>
-    <p>Pour toute question relative à la protection de vos données :</p>
-    <ul>
-      <li><strong>Email :</strong> privacy@peptidescanner.app</li>
-      <li><strong>Objet :</strong> [RGPD] + votre demande</li>
-      <li><strong>Délai de réponse :</strong> 30 jours maximum (légal)</li>
-    </ul>
-    <p>Vous pouvez également exercer vos droits directement depuis l'application :</p>
-    <ul>
-      <li><strong>Export de données :</strong> Profil → Exporter mes données</li>
-      <li><strong>Suppression de compte :</strong> Profil → Zone de danger → Supprimer</li>
-    </ul>
-  </div>
+  <section class="legal-section" id="p9">
+    <h2>9. Stockage sur l'appareil et notifications</h2>
+    <p>L'application enregistre sur votre téléphone quelques réglages (langue, thème clair ou sombre, réglages des rappels) et la session de connexion. Ces informations ne servent qu'au fonctionnement de l'application.</p>
+    <p>Les <strong>rappels d'injection</strong> sont programmés localement par votre téléphone, avec votre autorisation ; aucun service de notification extérieur n'est utilisé. Vous pouvez les désactiver dans l'application ou dans les réglages du téléphone.</p>
+  </section>
 
-  <div class="footer-legal">
-    <p>© 2026 PeptideScanner — Politique de confidentialité conforme RGPD</p>
-    <div class="legal-nav">
-      <a href="cgu.html">CGU</a>
-      <a href="privacy.html">Politique de confidentialité</a>
-      <a href="mentions-legales.html">Mentions légales</a>
-      <a href="dashboard.html">Retour à l'app</a>
-    </div>
-  </div>
+  <section class="legal-section" id="p10">
+    <h2>10. Sécurité</h2>
+    <p>Les échanges entre l'application et le serveur sont chiffrés (HTTPS). Les données sont chiffrées au repos par l'hébergeur et protégées par des règles d'accès par utilisateur. Aucune clé secrète n'est présente dans l'application.</p>
+  </section>
 
-</div>
+  <section class="legal-section" id="p11">
+    <h2>11. Contact</h2>
+    <p>Données personnelles : <strong>privacy@peptidescanner.app</strong> — objet : [RGPD] + votre demande.</p>
+  </section>
+
+  <footer class="legal-footer">
+    <div>© 2026 Rivage Labs — PeptideScanner</div>
+    <nav>
+      <a href="/cgu.html">CGU</a>
+      <a href="/privacy.html">Confidentialité</a>
+      <a href="/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </footer>
+
+</main>
 </body>
 </html>

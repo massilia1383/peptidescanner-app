@@ -11,10 +11,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-PAGES="index.html login.html reset-password.html dashboard.html cure.html poids.html inventaire.html
+PAGES="index.html login.html reset-password.html avertissement.html dashboard.html cure.html poids.html inventaire.html
 alertes.html analytics.html calculateur.html peptide-database.html profil.html
 cgu.html privacy.html mentions-legales.html"
-FILES="manifest.json lang.js ps-app.js peptidescanner.css peptidescanner-extra.css favicon.svg favicon.ico apple-touch-icon.png"
+FILES="manifest.json lang.js ps-app.js peptidescanner.css peptidescanner-extra.css legal.css favicon.svg favicon.ico apple-touch-icon.png"
 DIRS="fonts vendor brand icons"
 
 rm -rf www

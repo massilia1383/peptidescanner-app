@@ -3,286 +3,175 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PeptideScanner — Conditions Générales d'Utilisation</title>
+<title>Conditions générales d'utilisation — PeptideScanner</title>
+<script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#F8F9FA">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="PeptideScanner">
-<style>
-  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
-  :root {
-    --bg:#F8F9FA; --surface:#FFFFFF; --surface2:#F4F6F8; --border:#E2E8F0;
-    --accent:#0D9488; --text:#1F2937; --muted:#6B7280;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
-
-  .topbar {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 24px; background:var(--surface);
-    border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100;
-    
-  }
-  .logo { font-family:'Space Mono',monospace; font-size:.95rem; font-weight:700; color:var(--accent); }
-  .back-link { font-size:.82rem; color:var(--muted); text-decoration:none; transition:color .2s; }
-  .back-link:hover { color:var(--accent); }
-
-  .container { max-width:720px; margin:0 auto; padding:40px 24px 80px; }
-
-  .doc-header { margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
-  .doc-badge {
-    display:inline-block; padding:4px 12px; border-radius:100px;
-    background:rgba(13,148,136,.08); border:1px solid rgba(13,148,136,.2);
-    font-size:.72rem; font-weight:700; color:var(--accent);
-    font-family:'Space Mono',monospace; margin-bottom:14px;
-  }
-  .doc-title { font-size:2rem; font-weight:700; margin-bottom:8px; }
-  .doc-meta { font-size:.82rem; color:var(--muted); }
-
-  .toc {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:14px; padding:20px 24px; margin-bottom:40px;
-  }
-  .toc h3 { font-size:.82rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:12px; }
-  .toc ol { padding-left:18px; }
-  .toc li { margin-bottom:6px; }
-  .toc a { color:var(--accent); text-decoration:none; font-size:.88rem; transition:opacity .2s; }
-  .toc a:hover { opacity:.7; }
-
-  .section { margin-bottom:40px; }
-  .section h2 {
-    font-size:1.1rem; font-weight:700; margin-bottom:16px;
-    padding-bottom:10px; border-bottom:1px solid var(--border);
-    color:var(--accent);
-    font-family:'Space Mono',monospace;
-  }
-  .section h3 { font-size:.95rem; font-weight:600; margin:20px 0 10px; }
-  .section p { font-size:.88rem; color:var(--muted); margin-bottom:12px; }
-  .section p strong { color:var(--text); }
-  .section ul, .section ol { padding-left:20px; margin-bottom:12px; }
-  .section li { font-size:.88rem; color:var(--muted); margin-bottom:6px; }
-  .section li strong { color:var(--text); }
-
-  .warning-box {
-    background:rgba(239,68,68,.06); border:1px solid rgba(239,68,68,.2);
-    border-radius:12px; padding:16px 18px; margin:16px 0;
-  }
-  .warning-box p { color:#991b1b; margin-bottom:0; }
-
-  .info-box {
-    background:rgba(13,148,136,.05); border:1px solid rgba(13,148,136,.15);
-    border-radius:12px; padding:16px 18px; margin:16px 0;
-  }
-  .info-box p { color:var(--text); margin-bottom:0; font-size:.85rem; }
-
-  .footer-legal {
-    border-top:1px solid var(--border); padding-top:24px; margin-top:40px;
-    font-size:.78rem; color:var(--muted); text-align:center; line-height:1.6;
-  }
-  .footer-legal a { color:var(--accent); text-decoration:none; }
-
-  .legal-nav {
-    display:flex; gap:16px; justify-content:center; flex-wrap:wrap;
-    margin-top:16px;
-  }
-  .legal-nav a { font-size:.8rem; color:var(--muted); text-decoration:none; transition:color .2s; }
-  .legal-nav a:hover { color:var(--accent); }
-</style>
+<meta name="theme-color" content="#FBF7F1">
+<link rel="stylesheet" href="/peptidescanner.css">
+<link rel="stylesheet" href="/legal.css">
+<!--
+  Réécrite le 15/10/2026 (lot 3) : design Carnet + contenu conforme au cap « appli stores uniquement ».
+  Retirés : Lemon Squeezy, garantie 30 jours, prix en dur, boutiques et liens affiliés, conseiller IA,
+  version web/PWA. Texte rédigé sans avis juridique : à faire relire avant publication.
+  Les mentions [À compléter] doivent être remplies par James.
+-->
 </head>
 <body>
 
-<div class="topbar">
-  <div class="logo">PeptideScanner</div>
-  <a href="dashboard.html" class="back-link">← Retour à l'app</a>
-</div>
+<header class="legal-topbar">
+  <a class="legal-brand" href="/dashboard.html"><img src="/brand/brand-mark.svg" alt="" width="28" height="28">PeptideScanner</a>
+  <a class="legal-back" href="/dashboard.html" onclick="if (history.length > 1) { history.back(); return false; }">← Retour</a>
+</header>
 
-<div class="container">
+<main class="legal-wrap">
 
-  <div class="doc-header">
-    <div class="doc-badge">Document légal</div>
-    <div class="doc-title">Conditions Générales d'Utilisation</div>
-    <div class="doc-meta">Dernière mise à jour : 18 juin 2026 · Version 1.0</div>
+  <div class="legal-head">
+    <div class="legal-eyebrow">Document légal</div>
+    <h1 class="legal-title">Conditions générales d'utilisation</h1>
+    <div class="legal-meta">Dernière mise à jour : 15 octobre 2026 · Version 2.0</div>
   </div>
 
-  <div class="info-box">
-    <p>📋 Ces CGU régissent l'utilisation de l'application PeptideScanner accessible sur <strong>peptidescanner.app</strong>. En utilisant l'application, vous acceptez l'intégralité de ces conditions.</p>
+  <div class="legal-box">
+    <p>Ces conditions régissent l'utilisation de l'application mobile PeptideScanner, disponible sur l'App Store et Google Play. En créant un compte ou en utilisant l'application, vous les acceptez dans leur intégralité.</p>
   </div>
 
-  <div class="toc">
-    <h3>Sommaire</h3>
+  <nav class="legal-toc" aria-label="Sommaire">
+    <h2>Sommaire</h2>
     <ol>
-      <li><a href="#article1">Présentation et éditeur</a></li>
-      <li><a href="#article2">Objet et acceptation</a></li>
-      <li><a href="#article3">Description du service</a></li>
-      <li><a href="#article4">Avertissement médical</a></li>
-      <li><a href="#article5">Inscription et compte utilisateur</a></li>
-      <li><a href="#article6">Plans et abonnements</a></li>
-      <li><a href="#article7">Propriété intellectuelle</a></li>
-      <li><a href="#article8">Données personnelles</a></li>
-      <li><a href="#article9">Responsabilité</a></li>
-      <li><a href="#article10">Modification et résiliation</a></li>
-      <li><a href="#article11">Droit applicable</a></li>
-      <li><a href="#article12">Contact</a></li>
+      <li><a href="#a1">Éditeur</a></li>
+      <li><a href="#a2">Objet et acceptation</a></li>
+      <li><a href="#a3">Description du service</a></li>
+      <li><a href="#a4">Avertissement médical</a></li>
+      <li><a href="#a5">Compte utilisateur</a></li>
+      <li><a href="#a6">Abonnement Premium</a></li>
+      <li><a href="#a7">Propriété intellectuelle</a></li>
+      <li><a href="#a8">Données personnelles</a></li>
+      <li><a href="#a9">Responsabilité</a></li>
+      <li><a href="#a10">Modification et résiliation</a></li>
+      <li><a href="#a11">Droit applicable</a></li>
+      <li><a href="#a12">Contact</a></li>
     </ol>
-  </div>
+  </nav>
 
-  <!-- ARTICLE 1 -->
-  <div class="section" id="article1">
-    <h2>Article 1 — Présentation et éditeur</h2>
-    <p>L'application <strong>PeptideScanner</strong> (ci-après "l'Application") est éditée par :</p>
+  <section class="legal-section" id="a1">
+    <h2>1. Éditeur</h2>
+    <p>L'application PeptideScanner (ci-après « l'Application ») est éditée par :</p>
     <ul>
-      <li><strong>Éditeur :</strong> [Votre nom ou raison sociale]</li>
-      <li><strong>Adresse :</strong> [Votre adresse]</li>
-      <li><strong>Email :</strong> contact@peptidescanner.app</li>
-      <li><strong>Site :</strong> peptidescanner.app</li>
+      <li><strong>Rivage Labs</strong>, micro-entreprise de droit français</li>
+      <li>Entrepreneur : <span class="legal-todo">[Nom et prénom — À compléter]</span></li>
+      <li>SIRET : <span class="legal-todo">[À compléter]</span></li>
+      <li>Adresse : <span class="legal-todo">[À compléter]</span></li>
+      <li>Email : contact@peptidescanner.app</li>
     </ul>
-    <p>Les paiements sont traités par <strong>Lemon Squeezy LLC</strong>, marchand de référence, dont le siège est établi aux États-Unis. Lemon Squeezy agit en tant que revendeur officiel des abonnements PeptideScanner.</p>
-  </div>
+  </section>
 
-  <!-- ARTICLE 2 -->
-  <div class="section" id="article2">
-    <h2>Article 2 — Objet et acceptation</h2>
-    <p>Les présentes CGU ont pour objet de définir les conditions d'accès et d'utilisation de l'Application PeptideScanner.</p>
-    <p>L'utilisation de l'Application implique l'acceptation pleine et entière des présentes CGU. Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser l'Application.</p>
-    <p>L'éditeur se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés de toute modification significative par email ou notification dans l'Application.</p>
-  </div>
+  <section class="legal-section" id="a2">
+    <h2>2. Objet et acceptation</h2>
+    <p>Les présentes conditions définissent les règles d'accès et d'utilisation de l'Application. Si vous ne les acceptez pas, vous ne devez pas utiliser l'Application.</p>
+    <p>L'éditeur peut modifier ces conditions. En cas de modification importante, vous en serez informé dans l'Application avant son entrée en vigueur.</p>
+  </section>
 
-  <!-- ARTICLE 3 -->
-  <div class="section" id="article3">
-    <h2>Article 3 — Description du service</h2>
-    <p>PeptideScanner est une application de suivi et d'information sur les peptides de recherche. Elle propose :</p>
+  <section class="legal-section" id="a3">
+    <h2>3. Description du service</h2>
+    <p>PeptideScanner est un outil personnel d'organisation et de suivi. Il permet notamment :</p>
     <ul>
-      <li>Une <strong>bibliothèque de référence</strong> sur les peptides (dosages, protocoles, effets)</li>
-      <li>Un <strong>calendrier de cure</strong> pour planifier et suivre les protocoles</li>
-      <li>Un <strong>suivi du poids</strong> et de l'évolution corporelle</li>
-      <li>Des <strong>alertes et rappels</strong> personnalisables</li>
-      <li>Un <strong>conseiller IA</strong> spécialisé (plan Premium)</li>
-      <li>Des <strong>liens vers des boutiques partenaires</strong></li>
-      <li>Un <strong>moteur d'analyse et de corrélation</strong> des données</li>
+      <li>de planifier et suivre ses cures (calendrier, injections réalisées ou manquées, notes) ;</li>
+      <li>de gérer un stock de flacons (reconstitution, quantités restantes) ;</li>
+      <li>de convertir une dose saisie par l'utilisateur en volume et en unités de seringue ;</li>
+      <li>de suivre son poids et d'en visualiser l'évolution ;</li>
+      <li>de recevoir des rappels programmés sur son téléphone ;</li>
+      <li>de consulter une bibliothèque documentaire sur des peptides (stade de la recherche, effets étudiés, effets indésirables, contre-indications).</li>
     </ul>
-    <p>L'Application est disponible en version web (peptidescanner.app) et sous forme de Progressive Web App (PWA) installable sur appareils mobiles.</p>
-  </div>
+    <p>L'Application <strong>ne recommande aucune dose</strong>, ne vend aucun produit et ne renvoie vers aucun vendeur.</p>
+  </section>
 
-  <!-- ARTICLE 4 -->
-  <div class="section" id="article4">
-    <h2>Article 4 — Avertissement médical important</h2>
-    <div class="warning-box">
-      <p>⚠️ <strong>PeptideScanner est une application à usage éducatif et informatif uniquement.</strong> Les informations fournies ne constituent en aucun cas un avis médical, un diagnostic ou une prescription.</p>
+  <section class="legal-section" id="a4">
+    <h2>4. Avertissement médical</h2>
+    <div class="legal-box is-warning">
+      <p><strong>PeptideScanner est un outil d'information et d'organisation.</strong> Il ne fournit ni avis médical, ni diagnostic, ni prescription, et ne remplace pas un professionnel de santé.</p>
     </div>
-    <p>Les peptides présentés dans l'Application sont des peptides de recherche. Leur usage à des fins autres que la recherche scientifique peut être soumis à des réglementations spécifiques selon les pays.</p>
-    <p><strong>L'utilisateur s'engage à :</strong></p>
+    <p>Certains peptides présentés ne sont pas autorisés comme médicaments ; leur achat, leur détention ou leur usage peut être interdit ou encadré selon les pays. Les informations de la bibliothèque sont fournies à titre documentaire et peuvent être incomplètes ou dépassées.</p>
+    <p>L'utilisateur s'engage à :</p>
     <ul>
-      <li>Consulter un professionnel de santé qualifié avant tout usage de peptide</li>
-      <li>Ne pas utiliser les informations de l'Application comme substitut à un avis médical</li>
-      <li>Respecter les législations en vigueur dans son pays de résidence</li>
-      <li>Assumer l'entière responsabilité de l'usage qu'il fait des informations fournies</li>
+      <li>consulter un professionnel de santé qualifié avant toute décision concernant sa santé ;</li>
+      <li>vérifier lui-même toute valeur saisie ou calculée avant de l'utiliser ;</li>
+      <li>respecter la réglementation de son pays de résidence.</li>
     </ul>
-    <p>L'éditeur décline toute responsabilité pour les conséquences liées à l'usage des informations contenues dans l'Application.</p>
-  </div>
+    <p>Le calculateur effectue des conversions à partir des valeurs saisies par l'utilisateur ; il ne valide pas la pertinence d'une dose.</p>
+  </section>
 
-  <!-- ARTICLE 5 -->
-  <div class="section" id="article5">
-    <h2>Article 5 — Inscription et compte utilisateur</h2>
-    <h3>5.1 Création de compte</h3>
-    <p>L'accès à certaines fonctionnalités nécessite la création d'un compte. L'utilisateur doit fournir une adresse email valide et un mot de passe sécurisé.</p>
-    <p>L'utilisateur doit être âgé d'au moins <strong>18 ans</strong> pour créer un compte.</p>
-    <h3>5.2 Responsabilité du compte</h3>
-    <p>L'utilisateur est seul responsable de la confidentialité de ses identifiants. Toute utilisation du compte est présumée faite par le titulaire. En cas de compromission, l'utilisateur doit immédiatement contacter l'équipe PeptideScanner.</p>
-    <h3>5.3 Suppression de compte</h3>
-    <p>L'utilisateur peut supprimer son compte à tout moment depuis la page Profil. La suppression entraîne l'effacement définitif de toutes les données dans un délai de 30 jours.</p>
-  </div>
+  <section class="legal-section" id="a5">
+    <h2>5. Compte utilisateur</h2>
+    <h3>5.1 Création</h3>
+    <p>L'Application est réservée aux personnes <strong>âgées de 18 ans ou plus</strong>. La création d'un compte nécessite une adresse email valide et un mot de passe. L'utilisateur confirme avoir 18 ans ou plus et accepter les présentes conditions lors de l'inscription.</p>
+    <h3>5.2 Sécurité</h3>
+    <p>L'utilisateur est responsable de la confidentialité de ses identifiants. En cas d'utilisation non autorisée de son compte, il doit prévenir l'éditeur sans délai.</p>
+    <h3>5.3 Suppression</h3>
+    <p>L'utilisateur peut supprimer son compte à tout moment depuis l'Application : <strong>Profil → Zone de danger → Supprimer mon compte</strong>. Le compte et les données associées sont alors effacés (voir la Politique de confidentialité).</p>
+  </section>
 
-  <!-- ARTICLE 6 -->
-  <div class="section" id="article6">
-    <h2>Article 6 — Plans et abonnements</h2>
-    <h3>6.1 Plan gratuit</h3>
-    <p>L'accès à la bibliothèque peptidique et aux fonctionnalités de base est gratuit et sans limitation de durée.</p>
-    <h3>6.2 Plan Premium</h3>
-    <p>Le plan Premium est proposé :</p>
+  <section class="legal-section" id="a6">
+    <h2>6. Abonnement Premium</h2>
+    <p>Une partie des fonctionnalités est gratuite. Certaines fonctionnalités peuvent être réservées à un abonnement Premium. Le contenu de l'offre, son prix et, le cas échéant, la durée d'une période d'essai sont affichés dans l'Application avant tout achat.</p>
     <ul>
-      <li><strong>Annuel :</strong> 59,00 € / an (soit 4,90 € / mois)</li>
-      <li><strong>Mensuel :</strong> 9,90 € / mois</li>
+      <li><strong>Achat</strong> : l'abonnement est acheté via l'App Store (Apple) ou Google Play (Google), qui encaissent le paiement selon leurs propres conditions.</li>
+      <li><strong>Renouvellement</strong> : l'abonnement se renouvelle automatiquement à la fin de chaque période, sauf résiliation au moins 24 heures avant son terme.</li>
+      <li><strong>Résiliation</strong> : depuis les réglages de votre compte Apple ou Google. L'accès Premium reste actif jusqu'à la fin de la période déjà payée.</li>
+      <li><strong>Remboursement</strong> : les demandes sont traitées par Apple ou Google selon leurs procédures.</li>
+      <li><strong>Restauration</strong> : un abonnement en cours peut être restauré depuis l'Application sur un nouvel appareil utilisant le même compte Apple ou Google.</li>
     </ul>
-    <p>Les paiements sont traités par Lemon Squeezy LLC. Les prix incluent toutes taxes applicables.</p>
-    <h3>6.3 Renouvellement et résiliation</h3>
-    <p>L'abonnement se renouvelle automatiquement à échéance. L'utilisateur peut annuler à tout moment depuis son espace client Lemon Squeezy, sans pénalité. L'accès Premium reste actif jusqu'à la fin de la période payée.</p>
-    <h3>6.4 Remboursement</h3>
-    <p>PeptideScanner offre une <strong>garantie satisfait ou remboursé de 30 jours</strong>. Pour tout remboursement, contacter contact@peptidescanner.app dans les 30 jours suivant l'achat.</p>
-  </div>
+  </section>
 
-  <!-- ARTICLE 7 -->
-  <div class="section" id="article7">
-    <h2>Article 7 — Propriété intellectuelle</h2>
-    <p>L'ensemble des éléments de l'Application (code, design, textes, base de données peptidique, logo, marque "PeptideScanner") est la propriété exclusive de l'éditeur et est protégé par les lois relatives à la propriété intellectuelle.</p>
-    <p>Toute reproduction, modification, distribution ou exploitation commerciale sans autorisation écrite préalable est strictement interdite.</p>
-    <p>L'utilisateur dispose d'un droit d'usage personnel, non exclusif et non transférable de l'Application.</p>
-  </div>
+  <section class="legal-section" id="a7">
+    <h2>7. Propriété intellectuelle</h2>
+    <p>L'Application, son code, son design, ses textes, sa bibliothèque documentaire, son nom et son logo sont la propriété de l'éditeur. Toute reproduction ou exploitation sans autorisation écrite est interdite.</p>
+    <p>L'utilisateur bénéficie d'un droit d'usage personnel, non exclusif et non transférable. Les données qu'il saisit lui appartiennent.</p>
+  </section>
 
-  <!-- ARTICLE 8 -->
-  <div class="section" id="article8">
-    <h2>Article 8 — Données personnelles</h2>
-    <p>Le traitement des données personnelles est régi par notre <a href="privacy.html" style="color:var(--accent)">Politique de Confidentialité</a>, conforme au Règlement Général sur la Protection des Données (RGPD).</p>
-    <p>En résumé :</p>
+  <section class="legal-section" id="a8">
+    <h2>8. Données personnelles</h2>
+    <p>Le traitement des données est décrit dans la <a href="/privacy.html">Politique de confidentialité</a>. En résumé : vos données ne sont jamais vendues, ne servent à aucune publicité, et vous pouvez les exporter ou les supprimer depuis l'Application.</p>
+  </section>
+
+  <section class="legal-section" id="a9">
+    <h2>9. Responsabilité</h2>
+    <p>L'éditeur s'efforce d'assurer le bon fonctionnement de l'Application sans pouvoir garantir une disponibilité permanente. Dans les limites permises par la loi, l'éditeur ne saurait être tenu responsable :</p>
     <ul>
-      <li>Vos données de santé ne sont <strong>jamais vendues</strong> à des tiers</li>
-      <li>Vous pouvez <strong>exporter ou supprimer</strong> vos données à tout moment</li>
-      <li>Les données sont <strong>hébergées en Europe</strong> (Supabase EU)</li>
-      <li>Le chiffrement SSL protège toutes les transmissions</li>
+      <li>des décisions prises par l'utilisateur concernant sa santé ;</li>
+      <li>des effets liés à l'usage de toute substance ;</li>
+      <li>d'erreurs résultant de valeurs mal saisies ;</li>
+      <li>d'interruptions dues à la maintenance, au réseau ou à un cas de force majeure.</li>
     </ul>
-  </div>
+    <p>Rien dans ces conditions ne limite les droits que la loi reconnaît aux consommateurs.</p>
+  </section>
 
-  <!-- ARTICLE 9 -->
-  <div class="section" id="article9">
-    <h2>Article 9 — Responsabilité et limitation</h2>
-    <p>L'éditeur s'efforce d'assurer la disponibilité de l'Application mais ne peut garantir un accès ininterrompu. Des maintenances peuvent entraîner des interruptions temporaires.</p>
-    <p>L'éditeur ne saurait être tenu responsable :</p>
-    <ul>
-      <li>Des décisions médicales prises sur la base des informations de l'Application</li>
-      <li>Des effets indésirables liés à l'usage de peptides</li>
-      <li>Des pertes de données liées à des cas de force majeure</li>
-      <li>Du contenu des boutiques partenaires liées via les liens affiliés</li>
-    </ul>
-    <p>La responsabilité de l'éditeur est limitée au montant des sommes effectivement payées par l'utilisateur au cours des 12 derniers mois.</p>
-  </div>
+  <section class="legal-section" id="a10">
+    <h2>10. Modification et résiliation</h2>
+    <p>L'éditeur peut faire évoluer, suspendre ou arrêter l'Application, avec un préavis raisonnable sauf urgence. En cas de manquement grave aux présentes conditions, l'éditeur peut suspendre le compte concerné.</p>
+  </section>
 
-  <!-- ARTICLE 10 -->
-  <div class="section" id="article10">
-    <h2>Article 10 — Modification et résiliation</h2>
-    <p>L'éditeur se réserve le droit de modifier, suspendre ou interrompre l'Application à tout moment, avec un préavis raisonnable sauf en cas d'urgence.</p>
-    <p>En cas de violation des présentes CGU, l'éditeur pourra suspendre ou supprimer le compte de l'utilisateur sans préavis ni remboursement.</p>
-  </div>
+  <section class="legal-section" id="a11">
+    <h2>11. Droit applicable</h2>
+    <p>Les présentes conditions sont soumises au droit français. Le consommateur résidant dans l'Union européenne conserve la protection des dispositions impératives de son pays de résidence. En cas de litige, une solution amiable sera recherchée avant toute action ; le consommateur peut recourir gratuitement à un médiateur de la consommation <span class="legal-todo">[nom du médiateur — À compléter]</span>.</p>
+  </section>
 
-  <!-- ARTICLE 11 -->
-  <div class="section" id="article11">
-    <h2>Article 11 — Droit applicable et juridiction</h2>
-    <p>Les présentes CGU sont soumises au <strong>droit français</strong>. Tout litige relatif à leur interprétation ou exécution sera soumis aux tribunaux compétents de France, sauf disposition légale contraire.</p>
-    <p>Pour les consommateurs résidant dans l'Union Européenne, les dispositions impératives de protection des consommateurs du pays de résidence restent applicables.</p>
-  </div>
+  <section class="legal-section" id="a12">
+    <h2>12. Contact</h2>
+    <p>Pour toute question : <strong>contact@peptidescanner.app</strong></p>
+  </section>
 
-  <!-- ARTICLE 12 -->
-  <div class="section" id="article12">
-    <h2>Article 12 — Contact</h2>
-    <p>Pour toute question relative aux présentes CGU :</p>
-    <ul>
-      <li><strong>Email :</strong> contact@peptidescanner.app</li>
-      <li><strong>Délai de réponse :</strong> 48h ouvrées</li>
-    </ul>
-  </div>
+  <footer class="legal-footer">
+    <div>© 2026 Rivage Labs — PeptideScanner</div>
+    <nav>
+      <a href="/cgu.html">CGU</a>
+      <a href="/privacy.html">Confidentialité</a>
+      <a href="/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </footer>
 
-  <div class="footer-legal">
-    <p>© 2026 PeptideScanner — Tous droits réservés</p>
-    <div class="legal-nav">
-      <a href="cgu.html">CGU</a>
-      <a href="privacy.html">Politique de confidentialité</a>
-      <a href="mentions-legales.html">Mentions légales</a>
-      <a href="dashboard.html">Retour à l'app</a>
-    </div>
-  </div>
-
-</div>
+</main>
 </body>
 </html>

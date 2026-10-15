@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Bienvenue — PeptideScanner</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
+<link rel="stylesheet" href="/peptidescanner.css">
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
+<!--
+  Créée le 15/10/2026 (refonte « Clarté ») : parcours d'arrivée = maquettes « onboarding » + « onboarding-2 » du kit.
+  Ouverte après l'avertissement (avertissement.html) tant que user_metadata.onboarding_done est absent.
+  Étape 1 : matériel utilisé (seringue / stylo prérempli / stylo rechargeable) → user_metadata.device_pref
+            (mêmes valeurs que l'étiquette dev: des cures : syringe | prefilled | refillable).
+  Étape 2 (#preferences) : expérience et objectif, facultatifs → profiles.experience / profiles.goal,
+            mêmes codes que l'écran Profil (experience : none | new | familiar ; goal : organize | history | none).
+  Aucune autorisation de notification n'est demandée ici.
+  « Je renseignerai cela plus tard » enregistre aussi onboarding_done, pour ne plus revoir ce parcours.
+  Pas de SQL : tout passe par user_metadata et les colonnes existantes de profiles.
+-->
+<style>
+  .view{display:grid;gap:18px}
+  .view[hidden]{display:none}
+  .lang-switch{flex:0 0 auto;padding:3px;gap:3px;flex-wrap:nowrap}
+  .lang-switch button{flex:0 0 auto;min-width:44px;min-height:44px;padding:6px 10px;font-size:var(--text-sm)}
+  .page-intro + .progress{margin-top:0}
+  /* Choix du matériel : toute la carte est la zone à toucher (bouton radio étendu à la carte) */
+  fieldset.onboarding-options{border:0;margin:0;padding:0;min-width:0}
+  .onboarding-options label{position:relative;cursor:pointer}
+  .onboarding-options input[type=radio]{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+  .onboarding-options .radio-dot{flex:0 0 22px;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border-control);background:var(--surface);display:grid;place-items:center}
+  .onboarding-options input:checked + .radio-dot{border:2px solid var(--accent)}
+  .onboarding-options input:checked + .radio-dot::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--accent)}
+  .onboarding-options input:focus-visible + .radio-dot{outline:3px solid var(--focus);outline-offset:3px}
+  .onboarding-options .grow{display:grid;gap:10px;min-width:0}
+  .onboarding-options .equipment{width:100%;height:auto;max-height:96px}
+  .field-error[hidden]{display:none}
+  #s1Msg:empty,#s2Msg:empty{display:none}
+  .rem-card p{margin-top:8px}
+</style>
+</head>
+<body data-no-profile="1">
+<a class="sr-only" href="#main" data-i18n="onb2_skip">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content no-tabs" tabindex="-1">
+    <div id="loading"></div>
+
+    <!-- ═══ Étape 1 : votre matériel (maquette onboarding) ═══ -->
+    <div class="view" id="step1" hidden>
+      <div class="page-intro">
+        <h1 data-i18n="onb2_s1_title">Votre matériel</h1>
+        <p class="muted small" data-i18n="onb2_s1_sub">Étape 1 sur 2 · pour adapter votre espace</p>
+      </div>
+      <div id="s1Progress"></div>
+      <form id="deviceForm" class="stack" novalidate>
+        <fieldset class="onboarding-options" id="deviceOptions" aria-describedby="device-err">
+          <legend class="sr-only" data-i18n="onb2_s1_legend">Le matériel que vous utilisez</legend>
+        </fieldset>
+        <p class="error-text field-error" id="device-err" hidden></p>
+        <div id="s1Msg" aria-live="polite"></div>
+        <button class="btn full" type="submit" id="s1Btn" data-i18n="onb2_continue">Continuer</button>
+      </form>
+      <button class="btn ghost full" type="button" id="laterBtn" data-i18n="onb2_later">Je renseignerai cela plus tard</button>
+    </div>
+
+    <!-- ═══ Étape 2 : à votre rythme (maquette onboarding-2) ═══ -->
+    <div class="view" id="step2" hidden>
+      <div class="page-intro">
+        <h1 data-i18n="onb2_s2_title">À votre rythme</h1>
+        <p class="muted small" data-i18n="onb2_s2_sub">Étape 2 sur 2 · préférences facultatives</p>
+      </div>
+      <div id="s2Progress"></div>
+      <form id="prefsForm" class="stack" novalidate>
+        <div class="field">
+          <label class="label" for="onbExperience" data-i18n="onb2_exp_label">Votre expérience du suivi</label>
+          <select class="select" id="onbExperience">
+            <option value="none" data-i18n="onb2_exp_none">Je préfère ne pas répondre</option>
+            <option value="new" data-i18n="onb2_exp_new">Je découvre le suivi</option>
+            <option value="familiar" data-i18n="onb2_exp_familiar">Je connais déjà ce type de suivi</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="onbGoal" data-i18n="onb2_goal_label">Ce que vous souhaitez suivre</label>
+          <select class="select" id="onbGoal">
+            <option value="organize" data-i18n="onb2_goal_organize">Mon planning et mon matériel</option>
+            <option value="history" data-i18n="onb2_goal_history">Mon historique</option>
+            <option value="none" data-i18n="onb2_goal_none">Je préfère ne pas répondre</option>
+          </select>
+        </div>
+        <section class="card rem-card">
+          <h2 data-i18n="onb2_rem_title">Les rappels, quand vous voulez</h2>
+          <p class="small muted" data-i18n="onb2_rem_text">Vous pourrez les activer après avoir créé votre planning. Aucun accès aux notifications n’est demandé maintenant.</p>
+        </section>
+        <div id="s2Msg" aria-live="polite"></div>
+        <button class="btn full" type="submit" id="s2Btn" data-i18n="onb2_open">Ouvrir mon carnet</button>
+      </form>
+      <button class="btn ghost full" type="button" id="backBtn" data-i18n="onb2_back">Revenir à l’étape 1</button>
+    </div>
+  </main>
+</div>
+
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
+<script>
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const P = window.PS;   // outils communs (ps-app.js)
+const $ = function (id) { return document.getElementById(id); };
+let userId = null;
+let fromStep1 = false;   // étape 2 ouverte depuis l'étape 1 (retour = historique)
+
+// Matériel : valeur enregistrée = valeur de l'étiquette dev: des cures ; dessin du kit
+const DEVICES = [['syringe', 'onb2_dev_syringe', 'syringe-50'], ['prefilled', 'onb2_dev_prefilled', 'pen-prefilled'], ['refillable', 'onb2_dev_refillable', 'pen-refillable']];
+const EXP_CODES = ['none', 'new', 'familiar'], GOAL_CODES = ['organize', 'history', 'none'];
+
+PS_initShell();
+function renderLangSwitch() {
+  const head = $('psHeader'); if (!head) return;
+  let box = head.querySelector('.lang-switch');
+  if (!box) { box = document.createElement('div'); box.className = 'segmented lang-switch'; box.setAttribute('role', 'group'); head.appendChild(box); }
+  box.setAttribute('aria-label', t('onb2_lang'));
+  const cur = PS_getLang();
+  box.innerHTML = ['fr', 'en'].map(function (l) {
+    return '<button type="button" lang="' + l + '" data-lang="' + l + '" aria-pressed="' + (cur === l) + '" aria-label="' + (l === 'fr' ? 'Français' : 'English') + '">' + l.toUpperCase() + '</button>';
+  }).join('');
+  box.querySelectorAll('button').forEach(function (b) {
+    b.onclick = function () { if (b.dataset.lang !== PS_getLang()) PS_setLang(b.dataset.lang); };
+  });
+}
+document.documentElement.lang = PS_getLang();
+renderLangSwitch();
+document.title = t('onb2_doc');
+$('loading').innerHTML = P.skeleton();
+
+// Contenu construit une seule fois (dessins du kit, barres de progression)
+$('s1Progress').innerHTML = P.progress(50, t('onb2_s1_progress'));
+$('s2Progress').innerHTML = P.progress(100, t('onb2_s2_progress'));
+$('deviceOptions').insertAdjacentHTML('beforeend', DEVICES.map(function (d) {
+  return '<label><input type="radio" name="onboarding-device" value="' + d[0] + '" aria-label="' + P.esc(t(d[1])) + '"><span class="radio-dot" aria-hidden="true"></span>' +
+    '<span class="grow"><strong>' + P.esc(t(d[1])) + '</strong>' + P.asset(d[2]) + '</span></label>';
+}).join(''));
+// Les dessins sont décoratifs : le nom du matériel est déjà écrit
+document.querySelectorAll('#deviceOptions svg.equipment').forEach(function (s) { s.setAttribute('aria-hidden', 'true'); s.setAttribute('focusable', 'false'); });
+PS_applyI18n();
+
+function showStep(n, focus) {
+  $('loading').innerHTML = '';
+  $('step1').hidden = n !== 1; $('step2').hidden = n !== 2;
+  if (focus) { const h = document.querySelector('#step' + n + ' h1'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); } window.scrollTo(0, 0); }
+}
+function stepFromUrl() { return location.hash === '#preferences' ? 2 : 1; }
+window.addEventListener('hashchange', function () { if (userId) showStep(stepFromUrl(), true); });
+
+function selectedDevice() { const r = document.querySelector('input[name="onboarding-device"]:checked'); return r ? r.value : null; }
+function setBusy(btn, on, idleKey) {
+  btn.disabled = on;
+  if (on) { btn.setAttribute('aria-busy', 'true'); btn.textContent = t('onb2_busy'); }
+  else { btn.removeAttribute('aria-busy'); btn.textContent = t(idleKey); }
+}
+
+async function init() {
+  const session = await P.requireSession(sb);   // avertissement vérifié
+  if (!session) return;
+  userId = session.user.id;
+  const meta = session.user.user_metadata || {};
+  // Reprise des choix déjà faits (parcours rouvert)
+  if (meta.device_pref) { const r = document.querySelector('input[name="onboarding-device"][value="' + meta.device_pref + '"]'); if (r) r.checked = true; }
+  try {
+    const { data: profil } = await sb.from('profiles').select('*').eq('id', userId).single();
+    if (profil) {
+      PS_loadLangFromProfile(sb, userId, profil.lang);
+      if (EXP_CODES.indexOf(profil.experience) >= 0) $('onbExperience').value = profil.experience;
+      if (GOAL_CODES.indexOf(profil.goal) >= 0) $('onbGoal').value = profil.goal;
+    }
+  } catch (e) {}
+  showStep(stepFromUrl(), false);
+}
+
+// Étape 1 → étape 2
+document.querySelectorAll('input[name="onboarding-device"]').forEach(function (r) {
+  r.addEventListener('change', function () { $('device-err').hidden = true; $('device-err').textContent = ''; });
+});
+$('deviceForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  if (!selectedDevice()) {
+    $('device-err').textContent = t('onb2_err_device'); $('device-err').hidden = false;
+    const first = document.querySelector('input[name="onboarding-device"]'); if (first) first.focus();
+    return;
+  }
+  fromStep1 = true;
+  location.hash = 'preferences';
+});
+$('backBtn').addEventListener('click', function () {
+  if (fromStep1) { fromStep1 = false; history.back(); }
+  else { history.replaceState(null, '', location.pathname + location.search); showStep(1, true); }
+});
+
+// « Plus tard » : parcours marqué comme fait, sans matériel
+$('laterBtn').addEventListener('click', async function () {
+  const btn = this;
+  $('s1Msg').innerHTML = '';
+  setBusy(btn, true, 'onb2_later');
+  let res;
+  try { res = await sb.auth.updateUser({ data: { onboarding_done: true } }); } catch (err) { res = { error: err }; }
+  if (res.error) { setBusy(btn, false, 'onb2_later'); $('s1Msg').innerHTML = P.notice(t('onb2_err_save'), 'error'); return; }
+  location.replace('/dashboard.html');
+});
+
+// Étape 2 : enregistrement puis carnet
+$('prefsForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const btn = $('s2Btn');
+  $('s2Msg').innerHTML = '';
+  setBusy(btn, true, 'onb2_open');
+  const data = { onboarding_done: true };
+  const device = selectedDevice();
+  if (device) data.device_pref = device;
+  let failed = false;
+  try {
+    const r1 = await sb.auth.updateUser({ data: data });
+    if (r1.error) failed = true;
+    if (!failed) {
+      const r2 = await sb.from('profiles').update({ experience: $('onbExperience').value, goal: $('onbGoal').value }).eq('id', userId);
+      if (r2 && r2.error) failed = true;
+    }
+  } catch (err) { failed = true; }
+  if (failed) { setBusy(btn, false, 'onb2_open'); $('s2Msg').innerHTML = P.notice(t('onb2_err_save'), 'error'); return; }
+  location.replace('/dashboard.html');
+});
+
+init().catch(function (e) {
+  console.error(e);
+  $('step1').hidden = true; $('step2').hidden = true;
+  $('loading').innerHTML = P.errorState(function () { location.reload(); });
+});
+</script>
+</body>
+</html>

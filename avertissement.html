@@ -1,116 +1,149 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Avant de commencer — PeptideScanner</title>
-  <script src="/lang.js"></script>
-  <script src="/assets/assets-bundle.js"></script>
-<script src="/ps-app.js"></script>
-  <script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Avant de commencer — PeptideScanner</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
-  <link rel="stylesheet" href="/peptidescanner.css">
-  <!--
-    Créée le 15/10/2026 (lot 3). Premier écran après la connexion, tant que l'avertissement
-    n'a pas été accepté. Recueille aussi le consentement explicite pour les données de santé (RGPD art. 9).
-    L'acceptation est enregistrée sur le compte lui-même (user_metadata.disclaimer_accepted_at,
-    version 1) : pas de colonne, donc pas de SQL. dashboard.html renvoie ici si elle manque.
-    Pensée pour devenir le premier écran du futur tunnel d'arrivée.
-  -->
-  <style>
-    body{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(64px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));}
-    .w-logo{display:flex;align-items:center;gap:10px;margin-bottom:22px;}
-    .w-logo img{width:40px;height:40px;}
-    .w-logo span{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.3px;}
-    .w-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:100%;max-width:460px;}
-    .w-icon{width:48px;height:48px;border-radius:50%;background:var(--amber-soft);color:var(--amber);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
-    .w-title{font-size:22px;font-weight:700;letter-spacing:-.4px;color:var(--text);margin:0 0 14px;}
-    .w-list{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:10px;}
-    .w-list li{position:relative;padding-left:20px;font-size:15px;line-height:1.55;color:var(--text-soft);}
-    .w-list li::before{content:'';position:absolute;left:4px;top:.6em;width:6px;height:6px;border-radius:50%;background:var(--accent);}
-    .w-check{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-muted);cursor:pointer;margin-bottom:16px;}
-    .w-check input{width:22px;height:22px;flex-shrink:0;margin:1px 0 0;accent-color:var(--accent);}
-    .w-check span{font-size:14px;line-height:1.5;color:var(--text);}
-    .w-check a{color:var(--info);}
-    .w-btn{width:100%;min-height:48px;padding:12px;border:none;border-radius:10px;background:var(--accent);color:var(--accent-on);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
-    .w-btn:disabled{opacity:.45;cursor:not-allowed;}
-    .w-msg{display:none;margin-top:12px;padding:10px 12px;border-radius:10px;font-size:14px;background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger);}
-    .w-out{display:block;margin-top:16px;text-align:center;font-size:14px;color:var(--muted);text-decoration:none;background:none;border:none;font-family:inherit;cursor:pointer;width:100%;}
-    .lang-wrap{position:fixed;top:calc(12px + env(safe-area-inset-top));right:16px;z-index:10;}
-  </style>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
+<link rel="stylesheet" href="/peptidescanner.css">
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
+<!--
+  Refonte « Clarté » (15/10/2026) : maquette « warning » du kit (Avant de commencer).
+  Premier écran après la connexion, tant que l'avertissement n'a pas été accepté. Recueille aussi le
+  consentement explicite pour les données de santé (RGPD art. 9) — texte de consentement inchangé.
+  L'acceptation est enregistrée sur le compte lui-même (user_metadata.disclaimer_accepted_at +
+  disclaimer_version = WARN_VERSION) : pas de colonne, donc pas de SQL. requireSession() renvoie ici si elle manque.
+  Ensuite : onboarding.html si le parcours d'arrivée n'est pas fait (user_metadata.onboarding_done), sinon dashboard.html.
+-->
+<style>
+  .lang-switch{flex:0 0 auto;padding:3px;gap:3px;flex-wrap:nowrap}
+  .lang-switch button{flex:0 0 auto;min-width:44px;min-height:44px;padding:6px 10px;font-size:var(--text-sm)}
+  /* Lignes de repères : séparateurs entre les lignes, comme la maquette */
+  .warn-rows .list-row{align-items:center;border-bottom:1px solid var(--border);padding:16px 0}
+  .warn-rows .list-row:first-child{padding-top:4px}
+  .warn-rows .list-row:last-child{border-bottom:0;padding-bottom:4px}
+  .warn-rows .list-row .icon{color:var(--text);flex:0 0 24px}
+  .warn-rows .list-row .muted{font-weight:400;margin-top:2px}
+  /* Case de consentement avec lien en ligne */
+  p.checkline{margin:0;color:var(--text)}
+  .checkline label{cursor:pointer}
+  #msgBox:empty{display:none}
+</style>
 </head>
-<body>
-  <div class="lang-wrap" id="langToggleBtn"></div>
-
-  <div class="w-logo"><span class="brand-logo" data-ps-logo style="width:40px;height:40px;color:var(--accent)"></span><span>PeptideScanner</span></div>
-
-  <main class="w-card">
-    <div class="w-icon"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Zm0 6v5m0 3v.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <h1 class="w-title" data-i18n="warn_title">Avant de commencer</h1>
-    <ul class="w-list">
-      <li data-i18n="warn_p1">PeptideScanner est un outil d'organisation et d'information. Il ne fournit ni avis médical, ni diagnostic, ni prescription, et ne recommande aucune dose.</li>
-      <li data-i18n="warn_p2">Certains peptides ne sont pas autorisés comme médicaments : leur usage peut être interdit ou encadré dans votre pays.</li>
-      <li data-i18n="warn_p3">Vérifiez toujours vous-même les valeurs saisies et calculées, et consultez un professionnel de santé avant toute décision.</li>
-      <li data-i18n="warn_p4">Vos cures, injections et votre poids sont des données de santé : elles sont enregistrées uniquement pour faire fonctionner l'appli, jamais vendues ni partagées.</li>
-    </ul>
-    <label class="w-check">
-      <input type="checkbox" id="acceptBox">
-      <span><span data-i18n="warn_accept">J'ai 18 ans ou plus, j'ai compris cet avertissement et j'accepte que mes données de suivi soient enregistrées selon la</span> <a href="/privacy.html" data-i18n="warn_privacy_link">politique de confidentialité</a>.</span>
-    </label>
-    <button class="w-btn" id="continueBtn" type="button" disabled data-i18n="warn_continue">Continuer</button>
-    <div class="w-msg" id="msgBox"></div>
-    <button class="w-out" id="logoutBtn" type="button" data-i18n="profil_logout">Se déconnecter</button>
+<body data-no-profile="1">
+<a class="sr-only" href="#main" data-i18n="auth2_skip">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content no-tabs" tabindex="-1">
+    <div class="page-intro">
+      <h1 data-i18n="auth2_warn_title">Avant de commencer</h1>
+      <p class="muted small" data-i18n="auth2_warn_sub">Quelques repères pour utiliser votre carnet.</p>
+    </div>
+    <section class="card">
+      <div class="warn-rows">
+        <div class="list-row"><span data-ps-i="pencil-square"></span><div class="grow"><strong data-i18n="auth2_warn_r1_t">Un outil de suivi</strong><div class="muted small" data-i18n="auth2_warn_r1_s">L’application enregistre les informations que vous saisissez.</div></div></div>
+        <div class="list-row"><span data-ps-i="information-circle"></span><div class="grow"><strong data-i18n="auth2_warn_r2_t">Aucun conseil médical</strong><div class="muted small" data-i18n="auth2_warn_r2_s">Elle ne propose jamais de dose et ne remplace pas un professionnel de santé.</div></div></div>
+        <div class="list-row"><span data-ps-i="shield-check"></span><div class="grow"><strong data-i18n="auth2_warn_r3_t">Vos données restent personnelles</strong><div class="muted small" data-i18n="auth2_warn_r3_s">Vos données de santé ne sont jamais vendues.</div></div></div>
+        <div class="list-row"><span data-ps-i="exclamation-circle"></span><div class="grow"><strong data-i18n="auth2_warn_r4_t">Réglementation</strong><div class="muted small" data-i18n="auth2_warn_r4_s">Certains peptides ne sont pas autorisés comme médicaments : leur usage peut être interdit ou encadré dans votre pays.</div></div></div>
+      </div>
+    </section>
+    <p class="small muted" data-i18n="auth2_warn_consult">Pour toute décision médicale, consultez un professionnel de santé.</p>
+    <form id="warningForm" class="stack" novalidate>
+      <p class="checkline">
+        <input type="checkbox" id="acceptBox" aria-describedby="acceptHint">
+        <span><label for="acceptBox" data-i18n="auth2_warn_accept">J’ai 18 ans ou plus, j’ai compris cet avertissement et j’accepte que mes données de suivi soient enregistrées selon la</label> <a href="/privacy.html" data-i18n="auth2_privacy_link">politique de confidentialité</a>.</span>
+      </p>
+      <button type="submit" class="btn full" id="continueBtn" disabled data-i18n="auth2_warn_continue">Continuer</button>
+      <p class="help" id="acceptHint" data-i18n="auth2_warn_hint">Cochez la case pour continuer.</p>
+      <div id="msgBox" aria-live="polite"></div>
+    </form>
+    <button class="btn ghost full" id="logoutBtn" type="button" data-i18n="auth2_logout">Se déconnecter</button>
   </main>
+</div>
 
 <script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
-const SUPABASE_URL = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const P = window.PS;
 const WARN_VERSION = 1;   // à augmenter si le texte change de façon importante : l'écran sera redemandé
+const $ = function (id) { return document.getElementById(id); };
+let meta = {};
 
-const box = document.getElementById('acceptBox');
-const btn = document.getElementById('continueBtn');
-box.addEventListener('change', function () { btn.disabled = !box.checked; });
+PS_initShell();
+function renderLangSwitch() {
+  const head = $('psHeader'); if (!head) return;
+  let box = head.querySelector('.lang-switch');
+  if (!box) { box = document.createElement('div'); box.className = 'segmented lang-switch'; box.setAttribute('role', 'group'); head.appendChild(box); }
+  box.setAttribute('aria-label', t('auth2_lang'));
+  const cur = PS_getLang();
+  box.innerHTML = ['fr', 'en'].map(function (l) {
+    return '<button type="button" lang="' + l + '" data-lang="' + l + '" aria-pressed="' + (cur === l) + '" aria-label="' + (l === 'fr' ? 'Français' : 'English') + '">' + l.toUpperCase() + '</button>';
+  }).join('');
+  box.querySelectorAll('button').forEach(function (b) {
+    b.onclick = function () { if (b.dataset.lang !== PS_getLang()) PS_setLang(b.dataset.lang); };
+  });
+}
+document.documentElement.lang = PS_getLang();
+renderLangSwitch();
+PS_applyI18n();
+document.title = t('auth2_doc_warning');
+
+// Horodatage local avec décalage horaire (AAAA-MM-JJTHH:MM:SS+HH:MM), sans toISOString()
+function stampNow() {
+  const d = new Date(), off = -d.getTimezoneOffset(), a = Math.abs(off);
+  return psDayStr(d) + 'T' + P.pad(d.getHours()) + ':' + P.pad(d.getMinutes()) + ':' + P.pad(d.getSeconds()) +
+    (off >= 0 ? '+' : '-') + P.pad(Math.floor(a / 60)) + ':' + P.pad(a % 60);
+}
+function nextPage() { return meta.onboarding_done ? '/dashboard.html' : '/onboarding.html'; }
+
+const box = $('acceptBox'), btn = $('continueBtn');
+box.addEventListener('change', function () { btn.disabled = !box.checked; $('acceptHint').hidden = box.checked; });
 
 async function initWarn() {
-  const { data } = await sb.auth.getSession();
-  if (!data || !data.session) { window.location.href = '/login.html'; return; }
-  const meta = data.session.user.user_metadata || {};
-  if (meta.disclaimer_accepted_at && Number(meta.disclaimer_version) >= WARN_VERSION) {
-    window.location.replace('/dashboard.html');
-  }
+  const session = await P.requireSession(sb, { disclaimer: false });
+  if (!session) return;
+  meta = session.user.user_metadata || {};
+  if (meta.disclaimer_accepted_at && Number(meta.disclaimer_version) >= WARN_VERSION) { location.replace(nextPage()); return; }
+  try {
+    const r = await sb.from('profiles').select('lang').eq('id', session.user.id).single();
+    if (r && r.data) PS_loadLangFromProfile(sb, session.user.id, r.data.lang);
+  } catch (e) {}
 }
 
-btn.addEventListener('click', async function () {
+$('warningForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
   if (!box.checked) return;
-  btn.disabled = true;
-  const { error } = await sb.auth.updateUser({
-    data: { disclaimer_accepted_at: new Date().toISOString(), disclaimer_version: WARN_VERSION }
-  });
-  if (error) {
-    const m = document.getElementById('msgBox');
-    m.textContent = t('warn_error'); m.style.display = 'block';
-    btn.disabled = false;
+  $('msgBox').innerHTML = '';
+  btn.disabled = true; box.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = t('auth2_warn_busy');
+  let res;
+  try { res = await sb.auth.updateUser({ data: { disclaimer_accepted_at: stampNow(), disclaimer_version: WARN_VERSION } }); }
+  catch (err) { res = { error: err }; }
+  if (res.error) {
+    $('msgBox').innerHTML = P.notice(t('auth2_warn_error'), 'error');
+    btn.disabled = false; box.disabled = false; btn.removeAttribute('aria-busy'); btn.textContent = t('auth2_warn_continue');
     return;
   }
-  window.location.replace('/dashboard.html');
+  const u = res.data && res.data.user;
+  if (u && u.user_metadata) meta = Object.assign({}, meta, u.user_metadata);
+  location.replace(nextPage());
 });
 
-document.getElementById('logoutBtn').addEventListener('click', async function () {
-  try { await sb.auth.signOut(); } catch (e) {}
-  window.location.href = '/login.html';
-});
+$('logoutBtn').addEventListener('click', function () { P.logout(sb); });
 
-PS_applyI18n();
-PS_renderLangSwitcher();
-PS_initShell();
-initWarn();
+initWarn().catch(function (e) { console.error(e); });
 </script>
 </body>
 </html>

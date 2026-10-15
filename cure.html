@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
 <title>PeptideScanner — Cure</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -10,520 +11,176 @@
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
-<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <link rel="stylesheet" href="/peptidescanner.css">
-<link rel="stylesheet" href="/peptidescanner-extra.css">
-<style>
-  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
-  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
-     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
-     les noms propres a la page, pour que ses regles existantes prennent la
-     nouvelle palette automatiquement. */
-  :root {
-    --surface2: var(--surface-muted);
-    --accent2:  var(--info);
-    --accent3:  var(--amber);
-    --nav-h:    var(--bottomnav-h, 64px);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:var(--font-ui); background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--bottomnav-h,64px) + 32px + env(safe-area-inset-bottom)); }
-
-  .topbar h1 { font-size:1.1rem; font-weight:700; }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
-
-  .content { padding:16px 20px 0; width:100%; max-width:100%; margin:0 auto; }
-  @media (min-width: 768px)  { .content { max-width: 720px; } }
-  @media (min-width: 1024px) { .content { max-width: var(--content-desktop, 1100px); } }
-
-  /* CURE SELECTOR */
-  .cure-tabs { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; scrollbar-width:none; }
-  .cure-tabs::-webkit-scrollbar { display:none; }
-  .cure-tab {
-    padding:8px 16px; border-radius:100px; border:1px solid var(--border);
-    background:var(--surface); color:var(--muted); font-size:.8rem; font-weight:600;
-    cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0;
-  }
-  .cure-tab.active { background:var(--accent-soft); border-color:rgba(36,87,214,.4); color:var(--accent); }
-
-  /* Selecteur de cure — remplace les onglets scrollables (UX-03) */
-  .cure-select-wrap { margin-bottom:18px; }
-  .cure-select-label {
-    display:block; font-size:.66rem; font-weight:700; letter-spacing:1px;
-    text-transform:uppercase; color:var(--muted); margin:0 0 6px 2px;
-  }
-  .cure-select {
-    width:100%; padding:14px 56px 14px 16px;
-    background:var(--accent-soft);
-    border:2px solid rgba(36,87,214,.28); border-radius:14px;
-    color:var(--text); font-family:inherit; font-size:1rem; font-weight:700;
-    outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'><rect width='36' height='36' rx='10' fill='%230D9488'/><path d='M12 15l6 6 6-6' stroke='%23FFFFFF' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-    background-repeat:no-repeat; background-position:right 7px center; background-size:36px 36px;
-    transition:border-color .2s, background-color .2s;
-  }
-  .cure-select:hover { background-color:var(--accent-soft); }
-  .cure-select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(36,87,214,.14); }
-
-  /* CURE INFO CARD */
-  .cure-info {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:18px; padding:18px; margin-bottom:16px;
-  }
-  .ci-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
-  .ci-name { font-size:1.1rem; font-weight:700; }
-  .ci-status {
-    padding:4px 10px; border-radius:100px; font-size:.7rem; font-weight:700;
-    font-family:var(--font-data);font-variant-numeric:tabular-nums;
-  }
-  .ci-status.active { background:var(--accent-soft); color:var(--accent); }
-  .ci-status.ended { background:rgba(107,122,153,.1); color:var(--muted); }
-  .ci-status.future { background:var(--info-soft); color:var(--accent2); }
-  .ci-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
-  .ci-box { background:var(--surface2); border-radius:10px; padding:10px; }
-  .ci-box-label { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:4px; }
-  .ci-box-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.88rem; font-weight:700; color:var(--accent); }
-
-  /* COMPLIANCE BAR */
-  .compliance-row { display:flex; justify-content:space-between; align-items:center; margin-top:14px; margin-bottom:6px; }
-  .compliance-row span { font-size:.75rem; color:var(--muted); }
-  .compliance-row strong { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.85rem; color:var(--accent); }
-  .comp-bar { height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
-  .comp-fill { height:100%; border-radius:3px; background:linear-gradient(90deg, var(--accent), var(--accent2)); transition:width .5s ease; }
-
-  /* CALENDAR */
-  .cal-section { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
-  .cal-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-  .cal-nav button { background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); width:32px; height:32px; cursor:pointer; font-size:.9rem; transition:all .2s; }
-  .cal-nav button:hover { border-color:var(--accent); color:var(--accent); }
-  .cal-month { font-size:.95rem; font-weight:700; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
-  .cal-days-header { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; margin-bottom:6px; }
-  .cal-day-label { text-align:center; font-size:.65rem; color:var(--muted); font-weight:600; padding:4px 0; }
-  .cal-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; }
-  .cal-day {
-    aspect-ratio:1; border-radius:8px; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; cursor:pointer;
-    font-size:.75rem; font-weight:600; transition:all .15s; position:relative;
-    border:1px solid transparent;
-  }
-  .cal-day.cal-empty { cursor:default; }
-  .cal-day.outside { color:var(--border); cursor:default; }
-  .cal-day.done { background:var(--status-done-soft); color:var(--status-done); }
-  .cal-day.partial { background:var(--status-partial-soft); color:var(--status-partial); }
-  .cal-day.missed { background:var(--status-missed-soft); color:var(--status-missed); }
-  .cal-day.rest { background:var(--surface2); color:var(--muted); }
-  .cal-day.shifted { background:var(--status-shifted-soft); color:var(--status-shifted); border:1px dashed var(--status-shifted); }
-  .day-shift { font-size:.52rem; font-weight:700; color:var(--status-shifted); line-height:1; margin-top:2px; letter-spacing:-.3px; }
-  .dd-rest-banner { text-align:center; padding:12px 12px 4px; color:var(--muted); font-size:.84rem; }
-  /* Feuille de confirmation — meme style que dashboard.html */
-  .inj-confirm-overlay {
-    position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:500;
-    display:flex; align-items:center; justify-content:center; padding:20px;
-    opacity:0; pointer-events:none; transition:opacity .2s; backdrop-filter:blur(4px);
-  }
-  .inj-confirm-overlay.open { opacity:1; pointer-events:all; }
-  .inj-confirm-sheet {
-    width:100%; max-width:420px; background:var(--surface);
-    border-radius:22px; padding:24px 22px 22px;
-    transform:translateY(16px) scale(.96); opacity:0;
-    transition:transform .24s cubic-bezier(.32,.72,0,1), opacity .2s;
-    box-shadow:0 18px 50px rgba(0,0,0,.22);
-  }
-  .inj-confirm-overlay.open .inj-confirm-sheet { transform:translateY(0) scale(1); opacity:1; }
-  .inj-confirm-handle { display:none; }
-  .inj-confirm-title { font-size:1rem; font-weight:700; margin-bottom:4px; }
-  .inj-confirm-sub { font-size:.78rem; color:var(--muted); margin-bottom:18px; }
-  .inj-confirm-btns { display:flex; gap:10px; }
-  .inj-confirm-btn-cancel { flex:1; padding:13px; border-radius:12px; border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer; }
-  .inj-confirm-btn-ok { flex:2; padding:13px; border-radius:12px; border:none; background:var(--accent); color:var(--accent-on); font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; }
-  .inj-confirm-btn-ok:hover { opacity:.85; }
-  .inj-confirm-btn-ok.danger { background:var(--danger); }
-
-  .dd-report {
-    background:var(--amber-soft); border:1px solid rgba(128,80,0,.35);
-    border-radius:12px; padding:10px 14px; margin:10px 0;
-    color:var(--accent3); font-size:.8rem; font-weight:600; text-align:center;
-  }
-  .dd-report-btn { display:block; margin:8px auto 0; background:none; border:none; color:var(--muted); font-family:inherit; font-size:.7rem; font-weight:600; text-decoration:underline; cursor:pointer; }
-  .dd-link { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin:10px 0; }
-  .dd-link-q { font-size:.78rem; color:var(--muted); font-weight:600; margin-bottom:8px; text-align:center; }
-  .dd-link-row { display:flex; gap:8px; }
-  .dd-link-select { flex:1; min-width:0; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:9px 11px; color:var(--text); font-family:inherit; font-size:.8rem; outline:none; cursor:pointer; }
-  .dd-link-btn { flex-shrink:0; background:var(--accent); color:var(--accent-on); border:none; border-radius:10px; padding:9px 16px; font-family:inherit; font-size:.8rem; font-weight:700; cursor:pointer; }
-  .dd-shift-hint  { text-align:center; padding:0 12px 10px; color:var(--accent3); font-size:.74rem; font-weight:600; }
-  .inj-slot.shifted { border-color:rgba(128,80,0,.45); }
-  .cal-day.today { border-color:var(--accent) !important; box-shadow:0 0 0 1px rgba(36,87,214,.5); }
-  .cal-day.future-day { color:var(--muted); background:var(--surface2); opacity:.3; cursor:default; }
-  .cal-day.future-inj { 
-    color:var(--info); 
-    background:var(--info-soft); 
-    border:1.5px solid rgba(36,87,214,.4);
-    font-weight:700;
-    cursor:default; 
-  }
-  .day-dot { position:absolute; bottom:2px; font-size:.5rem; font-weight:800; line-height:1; }
-  .day-dot.green::after { content:'\2713'; color:var(--status-done); }
-  .day-dot.amber::after { content:'\25D0'; color:var(--status-partial); }
-  .day-dot.red::after   { content:'\2014'; color:var(--status-missed); }
-  .day-dot.blue::after  { content:'\25CB'; color:var(--status-planned); }
-
-  /* LEGEND */
-  .legend { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
-  .legend-item { display:flex; align-items:center; gap:5px; font-size:.68rem; color:var(--muted); }
-  .legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
-
-  /* Bureau : calendrier dominant a gauche, resume et stats a droite.
-     Placement explicite -> l'ordre mobile n'est pas touche. */
-  @media (min-width: 1024px) {
-    .content { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
-               column-gap:22px; align-content:start; }
-    .cure-select-wrap { grid-column:1 / -1; grid-row:1; }
-    .cal-section      { grid-column:1; grid-row:2 / span 2; align-self:start; }
-    .cure-info        { grid-column:2; grid-row:2; }
-    .stats-section    { grid-column:2; grid-row:3; align-self:start; }
-    .day-detail       { grid-column:1 / -1; grid-row:4; }
-  }
-
-  /* DAY DETAIL */
-  .day-detail {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:18px; padding:18px; margin-bottom:16px;
-    display:none;
-  }
-  .day-detail.show { display:block; }
-  .dd-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
-  .dd-date { font-size:.95rem; font-weight:700; }
-  .dd-close { background:var(--surface2); border:1px solid var(--border); border-radius:9px; color:var(--muted); height:30px; padding:0 12px; cursor:pointer; font-family:inherit; font-size:.76rem; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; transition:background .2s, color .2s; }
-  .dd-close:hover { background:var(--surface); color:var(--text); }
-  .inj-slot {
-    display:flex; align-items:center; gap:12px; padding:12px;
-    background:var(--surface2); border-radius:12px; margin-bottom:8px;
-    cursor:pointer; transition:all .2s; border:1px solid var(--border);
-  }
-  .inj-slot:hover { border-color:rgba(36,87,214,.3); }
-  .inj-slot.done { border-color:rgba(36,87,214,.25); background:var(--accent-soft); }
-  .slot-check {
-    width:32px; height:32px; border-radius:9px; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center; font-size:.9rem;
-    transition:all .2s;
-  }
-  .slot-check.checked { background:var(--accent-soft); border:2px solid var(--accent); color:var(--accent); }
-  .slot-check.unchecked { background:var(--border); border:2px solid var(--border); color:transparent; }
-  .slot-info { flex:1; }
-  .slot-name { font-size:.86rem; font-weight:600; }
-  .slot-detail { font-size:.72rem; color:var(--muted); margin-top:2px; }
-  .slot-time { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.72rem; color:var(--muted); }
-  .slot-time-input {
-    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.72rem; color:var(--muted);
-    border:1px solid transparent; border-radius:6px; padding:3px 6px;
-    background:transparent; cursor:pointer; transition:all .2s; width:82px;
-    -webkit-appearance:none;
-  }
-  .slot-time-input:hover { border-color:var(--border); background:var(--surface); }
-  .slot-time-input:focus { outline:none; border-color:var(--accent); background:var(--surface); color:var(--accent); box-shadow:0 0 0 2px rgba(36,87,214,.12); }
-  .slot-time-input.saved { border-color:rgba(36,87,214,.4); color:var(--accent); }
-
-  /* NOTES */
-  .note-area { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-family:inherit; font-size:.84rem; resize:none; outline:none; margin-top:10px; transition:border-color .2s; }
-  .note-area:focus { border-color:var(--accent); }
-  .save-note-btn { margin-top:8px; padding:8px 18px; background:var(--accent); color:var(--accent-on); border:none; border-radius:8px; font-family:inherit; font-size:.8rem; font-weight:700; cursor:pointer; }
-
-  /* STATS SECTION */
-  .stats-section { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
-  .stats-section h3 { font-size:.82rem; font-weight:700; margin-bottom:14px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
-  .stat-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(30,45,69,.5); }
-  .stat-row:last-child { border-bottom:none; }
-  .stat-row-key { font-size:.84rem; color:var(--muted); }
-  .stat-row-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.88rem; font-weight:700; }
-
-  /* BOTTOM NAV */
-
-  /* TOAST */
-
-  /* EMPTY STATE */
-  .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
-  .empty-state span { font-size:2.5rem; display:block; margin-bottom:12px; }
-  .empty-state p { font-size:.9rem; line-height:1.6; margin-bottom:20px; }
-  .empty-btn { background:var(--accent); color:var(--accent-on); border:none; padding:12px 24px; border-radius:10px; font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; }
-
-  /* ADD CURE MODAL */
-  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:400; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .25s; backdrop-filter:blur(4px); }
-  .modal-overlay.open { opacity:1; pointer-events:all; }
-  .modal-sheet { width:100%; background:var(--surface); border-radius:24px 24px 0 0; padding:24px 20px 40px; transform:translateY(100%); transition:transform .3s; max-width:480px; margin:0 auto; max-height:85vh; overflow-y:auto; }
-  .modal-overlay.open .modal-sheet { transform:translateY(0); }
-  /* Bureau : la feuille se centre. Collee en bas, son bouton de validation
-     sortait de la fenetre et n'etait plus atteignable. */
-  @media (min-width: 768px) {
-    .modal-overlay { align-items: center; padding: 24px; }
-    .modal-sheet {
-      border-radius: 22px;
-      padding-bottom: 24px;
-      max-height: min(86vh, 780px);
-      overflow-y: auto;
-    }
-  }
-
-  .sheet-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
-  .sheet-title { font-size:1.1rem; font-weight:700; margin-bottom:20px; }
-  .form-group { margin-bottom:14px; }
-  .form-label { font-size:.73rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; display:block; }
-  .form-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:11px 14px; color:var(--text); font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s; }
-  .form-input:focus { border-color:var(--accent); }
-  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .submit-btn { width:100%; padding:14px; border-radius:12px; border:none; background:var(--accent); color:var(--accent-on); font-family:inherit; font-size:.95rem; font-weight:700; cursor:pointer; margin-top:6px; }
-  .delete-btn { width:100%; padding:12px; border-radius:12px; border:1px solid rgba(180,35,56,.3); background:var(--danger-soft); color:var(--danger); font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; margin-top:8px; }
-
-  /* DISCLAIMER JURIDIQUE */
-  .legal-disclaimer {
-    background:var(--amber-soft); border:1px solid rgba(128,80,0,.2);
-    border-radius:12px; padding:12px 16px; margin:12px 0;
-    display:flex; gap:10px; align-items:flex-start;
-  }
-  .legal-disclaimer.compact { padding:8px 12px; margin:8px 0; border-radius:8px; }
-  .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
-  .legal-disclaimer-text { font-size:.72rem; color:var(--warning); line-height:1.5; }
-  .legal-disclaimer-text strong { color:var(--warning); }
-  .phase-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700; }
-  .phase-established  { background:var(--success-bg); color:var(--success); }
-  .phase-preclinical  { background:var(--accent-soft); color:var(--accent); }
-  .phase-phase1       { background:var(--warning-bg); color:var(--warning); }
-  .phase-phase2       { background:var(--warning-bg); color:var(--warning); }
-  .phase-phase3       { background:var(--status-partial-soft); color:var(--status-partial); }
-  .phase-experimental { background:var(--error-bg); color:var(--error); }
-
-  /* ── TITRATION ─────────────────────────────────────────── */
-  .titration-toggle { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:var(--accent-soft); border:1px solid rgba(36,87,214,.2); border-radius:12px; cursor:pointer; }
-  .titration-toggle-label { font-size:.85rem; font-weight:600; color:var(--accent); }
-  .titration-toggle-sub { font-size:.72rem; color:var(--muted); margin-top:2px; }
-  .titration-toggle-switch { width:36px; height:20px; background:var(--border); border-radius:100px; position:relative; transition:background .2s; flex-shrink:0; }
-  .titration-toggle-switch.on { background:var(--accent); }
-  .titration-toggle-switch::after { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; background:#fff; border-radius:50%; transition:transform .2s; }
-  .titration-toggle-switch.on::after { transform:translateX(16px); }
-  .titration-section { display:none; margin-top:10px; }
-  .titration-section.visible { display:block; }
-  .titration-palier { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:8px; }
-  .titration-palier-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-  .titration-palier-num { font-size:.72rem; font-weight:700; color:var(--accent); font-family:var(--font-data);font-variant-numeric:tabular-nums; background:var(--accent-soft); padding:2px 8px; border-radius:100px; }
-  .titration-palier-remove { background:none; border:none; color:var(--muted); cursor:pointer; font-size:.9rem; padding:2px 6px; border-radius:6px; }
-  .titration-palier-remove:hover { color:var(--danger); }
-  .titration-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .titration-add-btn { width:100%; padding:10px; border:1.5px dashed rgba(36,87,214,.3); background:transparent; color:var(--accent); border-radius:10px; font-family:inherit; font-size:.82rem; font-weight:600; cursor:pointer; margin-top:4px; }
-  .titration-add-btn:disabled { opacity:.4; cursor:not-allowed; }
-
-</style>
-</head>
-<body>
-
-<header class="app-topbar">
-  <div class="topbar-inner">
-    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
-    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
-    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
-  </div>
-</header>
-<div class="menu-popover" id="avatarMenu" hidden>
-  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
-  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
-  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
-  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
-  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
-</div>
-
-<div class="content" style="padding-bottom:0">
-<div class="page-intro"><h1 data-i18n="nav_cure">Cure</h1><p data-i18n="intro_cure_sub">Calendrier et notes personnelles</p></div>
-</div>
-<div class="content" id="mainContent">  <!-- Généré par JS -->
-</div>
-
-<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
-  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
-  <a class="nav-item is-active" href="cure.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
-  <a class="nav-item" href="inventaire.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
-  <a class="nav-item" href="poids.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
-  <a class="nav-item" href="peptide-database.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
-</div></nav>
-<button class="ps-fab" type="button" onclick="openAddCure()" aria-label="Nouvelle cure"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
-
-<div class="modal-overlay" id="addCureModal" onclick="closeIfOverlay(event)">
-  <div class="modal-sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" id="modalTitle">Nouvelle cure</div>
-    <div class="form-group">
-      <label class="form-label" data-i18n="dash_peptide">Peptide</label>
-      <select class="form-input" id="newCurePeptide"><option value="">Choisir…</option></select>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label" data-i18n="cure_dosage">Dosage</label>
-        <input class="form-input" id="newCureDosage" placeholder="ex: 0.25 mg">
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="dash_admin">Admin.</label>
-        <select class="form-input" id="newCureAdmin" data-i18n-target="admin_options">
-          <option value="SC" data-i18n="admin_sc">SC</option>
-          <option value="IM" data-i18n="admin_im">IM</option>
-          <option value="Oral" data-i18n="admin_oral">Oral</option>
-          <option value="Nasal" data-i18n="admin_nasal">Nasal</option>
-          <option value="IV" data-i18n="admin_iv">IV</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label" data-i18n="cure_start">Date de début</label>
-        <input class="form-input" id="newCureStart" type="date">
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="cure_duration">Durée (jours)</label>
-        <input class="form-input" id="newCureDuration" type="number" placeholder="30" min="1" max="365">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label" data-i18n="cure_frequency">Fréquence</label>
-      <select class="form-input" id="newCureFreq">
-        <option value="1" data-i18n="freq_1x">1× par jour</option>
-        <option value="2" data-i18n="freq_2x">2× par jour</option>
-        <option value="3" data-i18n="freq_3x">3× par jour</option>
-        <option value="0.5" data-i18n="freq_1_2d">1× tous les 2 jours</option>
-        <option value="0.28" data-i18n="freq_2x_w">2× par semaine</option>
-        <option value="0.14" data-i18n="freq_1x_w">1× par semaine</option>
-      </select>
-    </div>
-
-    <!-- TITRATION TOGGLE -->
-    <div class="form-group" id="titrationToggleWrap">
-      <div class="titration-toggle" onclick="toggleTitration()">
-        <div>
-          <div class="titration-toggle-label">📈 <span data-i18n="titration_title">Titration progressive</span></div>
-          <div class="titration-toggle-sub" data-i18n="titration_sub">Palier 1 = dosage · Ajoutez Palier 2, 3, 4…</div>
-        </div>
-        <div class="titration-toggle-switch" id="titrationSwitch"></div>
-      </div>
-      <!-- Section paliers -->
-      <div class="titration-section" id="titrationSection">
-        <!-- Palier 1 = dosage principal + durée configurable -->
-        <div class="titration-palier" style="margin-bottom:8px;background:var(--accent-soft);border-color:rgba(36,87,214,.2)">
-          <div class="titration-palier-header">
-            <span class="titration-palier-num" id="palier1Label">Palier 1</span>
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label" style="font-size:.72rem" data-i18n="titration_duration">Durée (jours)</label>
-            <input class="form-input" type="number" id="palier1Days" style="font-size:.85rem;padding:8px 10px" placeholder="7" min="1" max="90" value="7" oninput="updateTotalDuration()">
-          </div>
-        </div>
-        <!-- Paliers suivants (2, 3, 4) -->
-        <div id="titrationPaliers"></div>
-        <button class="titration-add-btn" id="titrationAddBtn" onclick="addPalier()">＋ <span data-i18n="titration_add_palier">Ajouter un palier</span></button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label" data-i18n="cure_notes">Notes (optionnel)</label>
-      <input class="form-input" id="newCureNotes" placeholder="Objectif, remarques…">
-    </div>
-    <button class="submit-btn" id="modalSubmit" onclick="saveCure()">Démarrer la cure</button>
-    <button class="delete-btn" id="modalDelete" style="display:none" onclick="deleteCure()" data-i18n="cure_delete_btn">Supprimer cette cure</button>
-  </div>
-</div>
-
-<!-- FEUILLE DE CONFIRMATION D'INJECTION -->
-<div class="inj-confirm-overlay" id="injConfirmOverlay" onclick="closeInjConfirm(event)">
-  <div class="inj-confirm-sheet">
-    <div class="inj-confirm-handle"></div>
-    <div class="inj-confirm-title" id="injConfirmTitle"></div>
-    <div class="inj-confirm-sub" id="injConfirmSub"></div>
-    <div class="inj-confirm-btns">
-      <button class="inj-confirm-btn-cancel" onclick="closeInjConfirmModal()" data-i18n="cancel">Annuler</button>
-      <button class="inj-confirm-btn-ok" id="injConfirmOk" onclick="confirmInjAction()"></button>
-    </div>
-  </div>
-</div>
-
-<div class="ps-toast" id="toast"></div>
-
 <script src="/lang.js"></script>
 <script src="/assets/assets-bundle.js"></script>
 <script src="/ps-app.js"></script>
+<style>
+  /* Styles propres à l'onglet Cure — jetons du kit uniquement */
+  #view{display:grid;gap:18px}
+  .cal-row{display:contents}
+  .cal-pad{min-height:56px}
+  .calendar-card .cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .calendar-card .cal-head h2{text-align:center;flex:1}
+  .calendar-card .cal-head .icon-btn{color:var(--accent)}
+  .calendar-card .help{padding:0 6px}
+  .calendar-agenda{padding:0 6px}
+  .calendar-agenda button{display:grid;gap:6px;width:100%;color:var(--text)}
+  .calendar-agenda .marks{display:flex;flex-wrap:wrap;gap:6px 12px}
+  .legend .status{font-size:.75rem}
+  .day .more{font-size:.75rem;line-height:1}
+  .day-card .day-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
+  .day-card .list-row .status{flex:none}
+  .day-card .list-row strong{display:block}
+  .day-card .note-block{margin-top:14px}
+  .day-card .note-block .btn{margin-top:8px}
+  .day-card .day-msg{margin:10px 0 4px}
+  .slot-meta{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .site-line{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-md)}
+  .site-line strong{display:block}
+  .dow-set{border:1px solid var(--border);border-radius:var(--radius-md);padding:4px 14px 6px;margin:0;min-width:0}
+  .dow-set legend{font-size:var(--text-sm);font-weight:600;padding:0 4px}
+  .time-row{display:flex;gap:8px;align-items:flex-end}
+  .time-row .field{flex:1;min-width:0}
+  .time-row .icon-btn{color:var(--text-secondary);margin-bottom:2px}
+  .date-list .list-row{padding:4px 0;min-height:48px}
+  .date-add{display:flex;gap:8px;align-items:flex-end}
+  .date-add .field{flex:1;min-width:0}
+  .date-add .btn{flex:none}
+  details.stats summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:650}
+  details.stats summary::-webkit-details-marker{display:none}
+  details.stats summary .icon{transition:transform var(--duration-base) var(--ease)}
+  details.stats[open] summary .icon{transform:rotate(90deg)}
+  details.stats .footnote{margin-top:10px}
+  #main:focus{outline:none}
+  .grid2 .field,.grid2 .input-wrap{min-width:0}
+  .grid2 input[type=date].input{padding-right:10px;max-width:100%}
+  /* Cases à cocher : zone tactile 44 px, case dessinée 22 px (jetons du kit) */
+  .dow-set input[type=checkbox]{appearance:none;-webkit-appearance:none;width:44px;height:44px;flex:0 0 44px;margin:-11px;border:11px solid transparent;border-radius:17px;background:var(--surface);background-clip:padding-box;box-shadow:inset 0 0 0 2px var(--border-control)}
+  .dow-set input[type=checkbox]:checked{background-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent),inset 0 0 0 5px var(--surface)}
+  .dow-set input[type=checkbox]:focus-visible{outline:3px solid var(--focus);outline-offset:-8px}
+  .dow-set .checkline{align-items:center}
+</style>
+</head>
+<body data-tab="cure">
+<a class="sr-only" href="#main">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content" tabindex="-1">
+    <div id="view"></div>
+  </main>
+  <nav id="psTabbar"></nav>
+</div>
+
 <script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const P = window.PS;   // outils communs (ps-app.js)
+const esc = P.esc;
+let userId = null;
 
-function showToast(m) {
-  const t = document.getElementById('toast');
-  t.textContent = m; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+/* ══════════════ État de la page ══════════════ */
+let allCures = [], allInjs = [], inventory = [];
+let currentCureId = null;
+let calY = 0, calM = 0, selDs = null;
+let statsOpen = false;
+let dayStates = [];            // créneaux du jour sélectionné (pour les feuilles)
+let formDates = [], formDow = []; // réglages en cours de saisie
+let loaded = false;
+
+const todayStr = () => psDayStr();
+function fmtStr(key, map) { let s = t(key); Object.keys(map || {}).forEach(k => { s = s.split('{' + k + '}').join(map[k]); }); return s; }
+function capFirst(v) { const s = String(v || ''); return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+function months() { return (PS_LANG[PS_getLang()] && PS_LANG[PS_getLang()].months) || PS_LANG.fr.months; }
+function daysShort() { return (PS_LANG[PS_getLang()] && PS_LANG[PS_getLang()].days_short) || PS_LANG.fr.days_short; }
+// Noms complets des jours (lundi → dimanche) dans la langue de l'appli
+function weekdayNames() {
+  const out = [];
+  for (let i = 0; i < 7; i++) out.push(capFirst(new Date(2026, 0, 5 + i).toLocaleDateString(P.locale(), { weekday: 'long' })));
+  return out;
+}
+function dayLong(ds) { return P.fmtDate(ds, { day: 'numeric', month: 'long', year: 'numeric' }); }
+function dayShort(ds) { return P.fmtDate(ds, { day: 'numeric', month: 'long' }); }
+function dayWeek(ds) { return capFirst(P.fmtDate(ds, { weekday: 'long', day: 'numeric', month: 'long' })); }
+function curCure() { return allCures.find(c => c.id === currentCureId) || null; }
+function cureInjs(id) { return allInjs.filter(i => i.cure_id === id); }
+function cureTitle(c) { return capFirst((c && (c.name || c.peptide_name)) || ''); }
+function cureStatusText(m) { return m.state === 'ended' ? t('cure_status_ended') : m.state === 'future' ? t('cure_status_future') : t('cure_status_active'); }
+// Dose toujours affichée en mg (ancienne unité mcg convertie)
+function doseMg(c) {
+  const v = parseFloat(c && c.dose_mcg); if (!isFinite(v) || v <= 0) return null;
+  return String((c.unit || 'mg')).toLowerCase() === 'mcg' ? v / 1000 : v;
+}
+function mgLabel(v) { return (v === null || v === undefined || !isFinite(v)) ? '' : P.fmtNum(v, 3) + ' mg'; }
+
+/* ══════════════ Rotation des sites (mémoire du téléphone, comme avant) ══════════════ */
+function sitesFor(admin) {
+  return String(admin || '').toUpperCase() === 'IM'
+    ? [['deltoid_g', 'site_deltoid_g'], ['deltoid_d', 'site_deltoid_d'], ['quad_g', 'site_quad_g'], ['quad_d', 'site_quad_d']]
+    : [['abd_g', 'site_abd_g'], ['abd_d', 'site_abd_d'], ['cuisse_g', 'site_thigh_g'], ['cuisse_d', 'site_thigh_d'], ['fesse_g', 'site_glute_g'], ['fesse_d', 'site_glute_d']];
+}
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+function siteKey(cureId, ds, slot) { return 'ps_site_' + cureId + '_' + ds + (slot ? '_' + slot : ''); }
+function nextSite(cure, ds, slot) {
+  const sites = sitesFor(P.cure(cure).admin);
+  const stored = lsGet(siteKey(cure.id, ds, slot));
+  let idx = stored !== null ? parseInt(stored, 10) : parseInt(lsGet('ps_site_global_' + cure.id) || '0', 10);
+  if (!isFinite(idx) || idx < 0) idx = 0;
+  idx = idx % sites.length;
+  return { idx, label: t(sites[idx][1]) };
+}
+function cycleSite(cure, ds, slot) {
+  const sites = sitesFor(P.cure(cure).admin);
+  const cur = nextSite(cure, ds, slot).idx;
+  lsSet(siteKey(cure.id, ds, slot), String((cur + 1) % sites.length));
+}
+function commitSite(cure, ds, slot, idx) {
+  const sites = sitesFor(P.cure(cure).admin);
+  lsSet(siteKey(cure.id, ds, slot), String(idx));
+  lsSet('ps_site_global_' + cure.id, String((idx + 1) % sites.length));
 }
 
-const TODAY    = new Date(); TODAY.setHours(0,0,0,0);
-const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
-const MONTHS     = () => t('months') instanceof Array ? t('months') : PS_LANG[PS_getLang()].months;
-const DAYS_SHORT = () => PS_LANG[PS_getLang()].days_short;
+/* ══════════════ Chargement ══════════════ */
+PS_initShell();
+document.getElementById('view').innerHTML = P.skeleton();
 
-let userId = null, currentCureId = null, editCureId = null;
-let calYear = TODAY.getFullYear(), calMonth = TODAY.getMonth();
-let allCures = [], allInjections = [];
-
-function getSITES_SC() { return [
-  { id:'abd_g',    label:t('site_abd_g'),    icon:'🫃', zone:t('zone_abdomen') },
-  { id:'abd_d',    label:t('site_abd_d'),    icon:'🫃', zone:t('zone_abdomen') },
-  { id:'cuisse_g', label:t('site_thigh_g'), icon:'🦵', zone:t('zone_thigh') },
-  { id:'cuisse_d', label:t('site_thigh_d'), icon:'🦵', zone:t('zone_thigh') },
-  { id:'fesse_g',  label:t('site_glute_g'), icon:'🍑', zone:t('zone_glute') },
-  { id:'fesse_d',  label:t('site_glute_d'), icon:'🍑', zone:t('zone_glute') },
-]; }
-function getSITES_IM() { return [
-  { id:'deltoid_g', label:t('site_deltoid_g'), icon:'💪', zone:t('zone_shoulder') },
-  { id:'deltoid_d', label:t('site_deltoid_d'), icon:'💪', zone:t('zone_shoulder') },
-  { id:'quad_g',    label:t('site_quad_g'),    icon:'🦵', zone:t('zone_thigh') },
-  { id:'quad_d',    label:t('site_quad_d'),    icon:'🦵', zone:t('zone_thigh') },
-]; }
-function getSites(admin) { return (admin||'').toUpperCase() === 'IM' ? getSITES_IM() : getSITES_SC(); }
-function getNextSite(cureId, admin, ds) {
-  const sites = getSites(admin);
-  const key = 'ps_site_'+cureId+'_'+(ds||'');
-  const stored = localStorage.getItem(key);
-  // Si un site a été choisi pour cette date, l'utiliser
-  if (stored !== null) {
-    const idx = parseInt(stored) % sites.length;
-    return { site: sites[idx], idx };
-  }
-  // Sinon, calculer le prochain site dans la rotation globale
-  const globalKey = 'ps_site_global_'+cureId;
-  const idx = Math.max(0, parseInt(localStorage.getItem(globalKey)||'0') % sites.length);
-  return { site: sites[idx], idx };
-}
-
-// ── INIT ───────────────────────────────────────────────────────
 async function init() {
-  const { data } = await sb.auth.getSession();
-  if (!data?.session) { window.location.href = '/login.html'; return; }
-  userId = data.session.user.id;
-  const { data: _lp } = await sb.from('profiles').select('lang').eq('id', userId).single();
-  if(_lp) PS_loadLangFromProfile(sb, userId, _lp.lang);
+  const session = await P.requireSession(sb);
+  if (!session) return;
+  userId = session.user.id;
+  const { data: profil } = await sb.from('profiles').select('lang').eq('id', userId).single();
+  if (profil) PS_loadLangFromProfile(sb, userId, profil.lang);
   await loadData();
+  loaded = true;
+  route();
 }
-
 async function loadData() {
-  const [cRes, iRes] = await Promise.all([
+  const [cRes, iRes, vRes] = await Promise.all([
     sb.from('cures').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-    sb.from('injections').select('*').eq('user_id', userId).limit(1000)
+    sb.from('injections').select('*').eq('user_id', userId).limit(1000),
+    sb.from('inventory').select('id, peptide_name, notes, remaining_units, vial_qty_mg').eq('user_id', userId).order('created_at', { ascending: false })
   ]);
-  allCures      = cRes.data || [];
-  allInjections = iRes.data || [];
+  if (cRes.error) throw cRes.error;
+  if (iRes.error) throw iRes.error;
+  allCures  = cRes.data || [];
+  allInjs   = iRes.data || [];
+  inventory = (vRes && vRes.data) || [];
   await loadDayNotes();
-  render();
 }
 
-// ── NOTES DU JOUR (BUG-09, 14/10/2026) ─────────────────────────
-// Avant : uniquement dans le téléphone (localStorage 'ps_note_<cure>_<jour>').
-// Maintenant : table Supabase day_notes (script docs/sql/2026-10-15_notes_du_jour.sql).
-// Tant que la table n'existe pas, on garde l'ancien fonctionnement : rien ne casse.
-// Dès qu'elle existe, les notes restées dans le téléphone y sont recopiées puis retirées du téléphone.
-let dayNotes = {};            // clé : '<cureId>_<AAAA-MM-JJ>' → texte
-let dayNotesRemote = false;   // true si la table day_notes répond
+/* ── NOTES DU JOUR (BUG-09) ────────────────────────────────────
+   Table Supabase day_notes (docs/sql/2026-10-15_notes_du_jour.sql). Tant qu'elle n'existe
+   pas, repli sur la mémoire du téléphone ('ps_note_<cure>_<jour>'). Dès qu'elle existe,
+   les notes restées dans le téléphone y sont recopiées puis retirées du téléphone. */
+let dayNotes = {};            // '<cureId>_<AAAA-MM-JJ>' → texte
+let dayNotesRemote = false;
 async function loadDayNotes() {
   dayNotes = {};
   try {
@@ -531,1096 +188,716 @@ async function loadDayNotes() {
     if (error) throw error;
     dayNotesRemote = true;
     (data || []).forEach(n => { dayNotes[n.cure_id + '_' + String(n.day).slice(0, 10)] = n.note || ''; });
-  } catch (e) {
-    dayNotesRemote = false;
-    return;
-  }
-  // Reprise des notes restées dans le téléphone
+  } catch (e) { dayNotesRemote = false; return; }
   const ids = new Set(allCures.map(c => c.id));
   const rows = [], keys = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    const m = k && /^ps_note_(.+)_(\d{4}-\d{2}-\d{2})$/.exec(k);
-    if (!m || !ids.has(m[1])) continue;
-    const note = localStorage.getItem(k) || '';
-    if (!note.trim()) { keys.push(k); continue; }
-    if (dayNotes[m[1] + '_' + m[2]] === undefined) rows.push({ user_id: userId, cure_id: m[1], day: m[2], note });
-    keys.push(k);
-  }
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      const m = k && /^ps_note_(.+)_(\d{4}-\d{2}-\d{2})$/.exec(k);
+      if (!m || !ids.has(m[1])) continue;
+      const note = localStorage.getItem(k) || '';
+      if (!note.trim()) { keys.push(k); continue; }
+      if (dayNotes[m[1] + '_' + m[2]] === undefined) rows.push({ user_id: userId, cure_id: m[1], day: m[2], note });
+      keys.push(k);
+    }
+  } catch (e) { return; }
   if (rows.length) {
     const { error } = await sb.from('day_notes').upsert(rows, { onConflict: 'user_id,cure_id,day' });
-    if (error) return;   // on garde les notes dans le téléphone, on réessaiera au prochain chargement
+    if (error) return;   // on réessaiera au prochain chargement
     rows.forEach(r => { dayNotes[r.cure_id + '_' + r.day] = r.note; });
   }
-  keys.forEach(k => localStorage.removeItem(k));
+  keys.forEach(lsDel);
 }
 function getDayNote(ds) {
   const k = currentCureId + '_' + ds;
   if (dayNotes[k] !== undefined) return dayNotes[k];
-  return localStorage.getItem('ps_note_' + k) || '';
+  return lsGet('ps_note_' + k) || '';
+}
+async function saveNote() {
+  const el = document.getElementById('dayNote'), msg = document.getElementById('noteMsg');
+  if (!el || !selDs || !currentCureId) return;
+  const ds = selDs, k = currentCureId + '_' + ds;
+  const btn = document.getElementById('noteSave');
+  if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); }
+  let remote = false, local = false;
+  if (dayNotesRemote) {
+    try {
+      const { error } = await sb.from('day_notes').upsert({ user_id: userId, cure_id: currentCureId, day: ds, note: el.value }, { onConflict: 'user_id,cure_id,day' });
+      if (!error) { remote = true; dayNotes[k] = el.value; lsDel('ps_note_' + k); }
+    } catch (e) {}
+  }
+  if (!remote) local = lsSet('ps_note_' + k, el.value);
+  if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); }
+  el.removeAttribute('aria-invalid');
+  if (msg) msg.innerHTML = '';
+  if (remote) P.toast(t('cure2_note_saved'));
+  else if (local) P.toast(t('cure2_note_local'));
+  else {
+    el.setAttribute('aria-invalid', 'true'); el.setAttribute('aria-errormessage', 'noteMsg');
+    if (msg) msg.innerHTML = P.notice(t('cure2_note_error'), 'error');
+  }
 }
 
-// ── RENDER ─────────────────────────────────────────────────────
-function render() {
-  const c = document.getElementById('mainContent');
-  if (allCures.length === 0) {
-    c.innerHTML = `<div class="empty-state"><span style="display:flex;justify-content:center;color:var(--accent)">${PS_icon('calendar-days')}</span><p>${t('cure_empty').replace('\n','<br>')}</p><button class="empty-btn" onclick="openAddCure()">+ Nouvelle cure</button></div>`;
+/* ══════════════ Navigation entre la cure et ses réglages ══════════════ */
+function route() {
+  if (!loaded) return;
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h === 'new') renderSettings(null);
+  else if (h.indexOf('edit=') === 0) {
+    const id = h.slice(5);
+    if (allCures.some(c => c.id === id)) renderSettings(id);
+    else { history.replaceState(null, '', location.pathname); renderMain(); P.toast(t('cure2_not_found')); }
+  }
+  else renderMain();
+  window.scrollTo(0, 0);
+}
+function goMain() {
+  if (location.hash) { history.replaceState(null, '', location.pathname); }
+  renderMain(); window.scrollTo(0, 0);
+  const m = document.getElementById('main'); if (m) m.focus({ preventScroll: true });
+}
+window.addEventListener('hashchange', () => { route(); const m = document.getElementById('main'); if (m) m.focus({ preventScroll: true }); });
+
+/* ══════════════ Vue principale ══════════════ */
+function pickDefaultCure() {
+  if (currentCureId && allCures.some(c => c.id === currentCureId)) return;
+  const saved = lsGet('ps_cure_view');
+  if (saved && allCures.some(c => c.id === saved)) { currentCureId = saved; return; }
+  const active = allCures.find(c => P.cure(c).state === 'active');
+  currentCureId = (active || allCures[0]).id;
+}
+function pickDefaultDay(m) {
+  const td = todayStr();
+  if (m.inCure(psDay(td)) || m.state === 'active') return td;
+  if (m.state === 'future') return psDayStr(m.start);
+  return psDayStr(P.addDays(m.end, -1));
+}
+function setSelected(ds) {
+  selDs = ds; const d = psDay(ds); calY = d.getFullYear(); calM = d.getMonth();
+}
+
+function renderMain() {
+  const v = document.getElementById('view');
+  if (!allCures.length) {
+    v.innerHTML =
+      '<div class="page-intro"><h1>' + esc(t('cure2_title')) + '</h1><p class="muted small">' + esc(t('cure2_empty_sub')) + '</p></div>' +
+      '<section class="card">' + P.empty(t('cure2_empty_title'), t('cure2_empty_text'), 'calendar-days', t('cure2_create'), '#new') + '</section>' +
+      '<a class="btn secondary full" href="inventaire.html">' + esc(t('cure2_add_equipment')) + '</a>';
+    PS_applyI18n();
     return;
   }
-  if (!currentCureId || !allCures.find(x => x.id === currentCureId)) currentCureId = allCures[0].id;
-
-  const cure    = allCures.find(x => x.id === currentCureId);
-  const startD  = localDay(cure.start_date) || new Date(0);
-  const endD    = new Date(startD); endD.setDate(endD.getDate() + (cure.duration_days||30));
-  const dayNum  = Math.max(1, Math.floor((TODAY - startD) / 86400000) + 1);
-  const daysLeft= Math.max(0, Math.ceil((endD - TODAY) / 86400000));
-  const cureInjs= allInjections.filter(i => i.cure_id === currentCureId);
-  const freq    = parseFloat(cure.frequency) || 1;
-  const totalDays    = cure.duration_days || 30;
-  const daysElapsed  = Math.min(dayNum, totalDays);
-  const done         = cureInjs.length;
-  // Attendues : on compte les jours d'injection REELLEMENT ecoules, comme le calendrier,
-  // au lieu d'une multiplication qui arrondissait a cote.
-  const _repStats = computeReportMap(cure, cureInjs);
-  let totalExp, missedCt;
-  if (freq < 1) {
-    const _iv = Math.max(1, Math.round(1/freq));
-    const _injSet = new Set();
-    cureInjs.forEach(i => {
-      const d = localDay(String(i.injected_at||'').slice(0,10));
-      if (d) _injSet.add(Math.floor((d - startD) / 86400000));
-    });
-    totalExp = 0; missedCt = 0;
-    for (let k = 0; k <= Math.min(dayNum - 1, totalDays); k += _iv) {
-      totalExp++;
-      if (!_injSet.has(k) && !_repStats.toIdx.has(k)) missedCt++;   // lien explicite uniquement
-    }
-  } else {
-    totalExp = Math.round(daysElapsed * freq);
-    missedCt = Math.max(0, totalExp - done);
-  }
-  // « Faites » ne compte que les creneaux prevus reellement couverts. Une injection
-  // enregistree hors planning et non rattachee ne gonfle plus le total ni la compliance :
-  // elle apparait sur sa propre ligne, ce qui signale qu'il y a un report a faire.
-  const onPlan       = Math.max(0, totalExp - missedCt);       // creneaux prevus couverts
-  const offPlan      = Math.max(0, done - onPlan);             // injections hors planning
-  const totalPlanned = Math.round(totalDays * freq);           // total prévues sur toute la cure
-  const remaining    = Math.max(0, totalPlanned - totalExp);   // creneaux encore a venir
-  const compPct      = totalExp > 0 ? Math.min(100, Math.round(onPlan/totalExp*100)) : 0;
-
-  // Calculer les paliers si titration active
-  const hasTitration = (cure.notes||'').includes('titration:[');
-  let paliersInfo = '';
-  if (hasTitration) {
-    try {
-      const p1Match = (cure.notes||'').match(/titration_p1:(\d+)/);
-      const p1Days  = p1Match ? parseInt(p1Match[1]) : 7;
-      const tMatch  = (cure.notes||'').match(/titration:(\[.*?\])(?:\s*\||$|\s*$)/);
-      const pals    = tMatch ? JSON.parse(tMatch[1]) : [];
-      let palHtml   = `<div class="stat-row"><span class="stat-row-key" style="font-weight:700">${t('titration_title')}</span></div>`;
-      // Palier 1
-      const p1Dose = cure.dose_mcg ? cure.dose_mcg+' '+(cure.unit||'mg') : '—';
-      palHtml += `<div class="stat-row" style="padding-left:10px"><span class="stat-row-key">Palier 1 · ${p1Dose}</span><span class="stat-row-val" style="font-size:.75rem">${p1Days} ${t('days')}</span></div>`;
-      pals.forEach((p, i) => {
-        const _pDose = p.dose ? (String(p.dose).match(/[a-zA-Z]/) ? p.dose : p.dose+' '+(cure.unit||'mg')) : '—';
-        palHtml += `<div class="stat-row" style="padding-left:10px"><span class="stat-row-key">Palier ${i+2} · ${_pDose}</span><span class="stat-row-val" style="font-size:.75rem">${p.duree_jours} ${t('days')}</span></div>`;
-      });
-      paliersInfo = palHtml;
-    } catch(e) {}
-  }
-  const admin   = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
-  const freqLabel = freq >= 1 ? freq+'×/'+t('days_suffix') : '1×/'+Math.round(1/freq)+t('days_suffix');
-  const doseLabel = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mg'}` : '—';
-
-  let status = 'active', statusLabel = t('cure_status_active');
-  if (endD < TODAY)   { status = 'ended';  statusLabel = t('cure_status_ended'); }
-  if (startD > TODAY) { status = 'future'; statusLabel = t('cure_status_future');  }
-
-  const cureOptions = allCures.map(cu =>
-    `<option value="${escHtml(cu.id)}"${cu.id===currentCureId?' selected':''}>${escHtml(capFirst(cu.peptide_name||cu.name))} — ${escHtml(cureStatusOf(cu))}</option>`
-  ).join('');
-
-  function fmtD(d) { return d.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'}); }
-
-  c.innerHTML = `
-    <div class="cure-select-wrap">
-      <label class="cure-select-label" for="cureSelect">${t('cure_select_label')}</label>
-      <select class="cure-select" id="cureSelect" onchange="selectCure(this.value)">${cureOptions}</select>
-    </div>
-    <div class="cure-info">
-      <div class="ci-header">
-        <div class="ci-name">${capFirst(cure.peptide_name||cure.name)}</div>
-        <div class="ci-status ${status}">${statusLabel}</div>
-      </div>
-      <div class="ci-grid">
-        <div class="ci-box"><div class="ci-box-label">${t('cure_dosage')}</div><div class="ci-box-val">${doseLabel}</div></div>
-        <div class="ci-box"><div class="ci-box-label">${t('cure_frequency')}</div><div class="ci-box-val">${freqLabel}</div></div>
-        <div class="ci-box"><div class="ci-box-label">${t('cure_duration')}</div><div class="ci-box-val">${cure.duration_days||'—'}${t('days_suffix')}</div></div>
-        <div class="ci-box"><div class="ci-box-label">${t('cure_start')}</div><div class="ci-box-val">${fmtD(startD)}</div></div>
-        <div class="ci-box"><div class="ci-box-label">${t('cure_end')}</div><div class="ci-box-val">${fmtD(endD)}</div></div>
-        <div class="ci-box"><div class="ci-box-label">${t('cure_remaining')}</div><div class="ci-box-val" style="color:${daysLeft<=5?'var(--danger)':'var(--accent)'}">${daysLeft}${t('days_suffix')}</div></div>
-      </div>
-      <div class="compliance-row"><span>Compliance</span><strong>${compPct}%</strong></div>
-      <div class="comp-bar"><div class="comp-fill" style="width:${compPct}%"></div></div>
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <button style="flex:1;padding:9px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:inherit;font-size:.78rem;cursor:pointer;" onclick="openEditCure('${cure.id}')">${t('cure_edit')}</button>
-      </div>
-    </div>
-    <div class="cal-section" id="calSection"></div>
-    <div class="day-detail" id="dayDetail"></div>
-    <div class="stats-section">
-      <h3>${t('cure_stats')}</h3>
-      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_done')}</span><span class="stat-row-val" style="color:var(--accent)">${onPlan}</span></div>
-      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_expected')}</span><span class="stat-row-val">${totalExp}</span></div>
-      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_missed')}</span><span class="stat-row-val" style="color:var(--status-missed)">${missedCt}</span></div>
-      ${offPlan > 0 ? `<div class="stat-row"><span class="stat-row-key">${t('cure_inj_offplan')}</span><span class="stat-row-val" style="color:var(--accent3)">${offPlan}</span></div>` : ''}
-      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_remaining')}</span><span class="stat-row-val" style="color:var(--accent2)">${remaining}</span></div>
-      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_total_planned')}</span><span class="stat-row-val">${totalPlanned}</span></div>
-      <div class="stat-row"><span class="stat-row-key">${t('cure_current_day')}</span><span class="stat-row-val">J${Math.min(dayNum,totalDays)}</span></div>
-      <div class="stat-row"><span class="stat-row-key">${t('cure_frequency')}</span><span class="stat-row-val">${freqLabel}</span></div>
-      ${paliersInfo}
-    </div>`;
-
-  renderCalendar();
-}
-
-// ── CALENDRIER ─────────────────────────────────────────────────
-function renderCalendar() {
-  const cure   = allCures.find(x => x.id === currentCureId);
-  if (!cure) return;
-  const startD = localDay(cure.start_date) || new Date(0);
-  const endD   = new Date(startD); endD.setDate(endD.getDate() + (cure.duration_days||30));
-  const freq   = parseFloat(cure.frequency) || 1;
-  const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
-  const cureInjs  = allInjections.filter(i => i.cure_id === currentCureId);
-  const firstDay  = new Date(calYear, calMonth, 1);
-  const lastDay   = new Date(calYear, calMonth+1, 0);
-  const startDow  = (firstDay.getDay() + 6) % 7;
-  const cal = document.getElementById('calSection');
-  if (!cal) return;
-
-  let daysHtml = '';
-  const _interval = freq < 1 ? Math.max(1, Math.round(1/freq)) : 1;
-  const _report   = computeReportMap(cure, cureInjs);
-
-  for (let i = 0; i < startDow; i++) daysHtml += `<div class="cal-day cal-empty"></div>`;
-
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    const date = new Date(calYear, calMonth, d); date.setHours(0,0,0,0);
-    const ds   = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday  = ds === todayStr;
-    const inCure   = date >= startD && date < endD;
-    const isFuture = date > TODAY;
-
-    let cls = 'cal-day', dot = '', shiftTo = 0;
-    if (!inCure) { cls += ' outside'; }
-    else if (isFuture) {
-      // Jour futur dans la cure — repère visuel selon fréquence
-      if (freq < 1) {
-        const dayIdx = Math.floor((date - startD) / 86400000);
-        if (dayIdx % Math.round(1/freq) === 0) {
-          cls += ' future-inj'; dot = 'blue';  // injection prévue
-        } else {
-          cls += ' future-day';                 // repos futur
-        }
-      } else {
-        cls += ' future-inj'; dot = 'blue';    // injection prévue
-      }
-    }
-    else {
-      const dayLogs = cureInjs.filter(i => (i.injected_at||'').startsWith(ds));
-      const doneCt  = dayLogs.length;
-      if (freq < 1) {
-        const dayIdx  = Math.floor((date - startD) / 86400000);
-        const isSched = dayIdx % _interval === 0;
-        if (doneCt >= 1) {
-          // Injection enregistree : verte, que le jour ait ete prevu ou non
-          cls += ' done'; dot = 'green';
-        } else if (isSched && _report.toIdx.has(dayIdx)) {
-          // Jour prevu rattrape plus tard : on affiche vers quel jour
-          const _tIdx = _report.toIdx.get(dayIdx);
-          const _tD   = new Date(startD); _tD.setDate(_tD.getDate() + _tIdx);
-          cls += ' shifted'; dot = ''; shiftTo = _tD.getDate();
-        } else if (isSched) {
-          cls += ' missed'; dot = 'red';
-        } else { cls += ' rest'; }
-      } else {
-        if (doneCt >= injPerDay)  { cls += ' done';    dot = 'green'; }
-        else if (doneCt > 0)      { cls += ' partial'; dot = 'amber'; }
-        else                      { cls += ' missed';  dot = 'red';   }
-      }
-    }
-    if (isToday) cls += ' today';
-    daysHtml += `<div class="${cls}" onclick="selectDay('${ds}',${inCure})">${d}${shiftTo?`<div class="day-shift">→${shiftTo}</div>`:''}${dot?`<div class="day-dot ${dot}"></div>`:''}</div>`;
-  }
-
-  cal.innerHTML = `
-    <div class="cal-nav">
-      <button onclick="changeMonth(-1)">‹</button>
-      <div class="cal-month">${MONTHS()[calMonth]} ${calYear}</div>
-      <button onclick="changeMonth(1)">›</button>
-    </div>
-    <div class="cal-days-header">${DAYS_SHORT().map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>
-    <div class="cal-grid">${daysHtml}</div>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--status-done-soft);border:1px solid var(--status-done)"></div><span data-i18n="cure_legend_done">Fait</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--status-partial-soft);border:1px solid var(--status-partial)"></div><span data-i18n="cure_legend_partial">Partiel</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--status-shifted-soft);border:1px dashed var(--status-shifted)"></div><span data-i18n="cure_legend_shifted">Décalée</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--status-missed-soft);border:1px solid var(--status-missed)"></div><span data-i18n="cure_legend_missed">Manqué</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--status-planned-soft);border:1.5px solid var(--status-planned)"></div><span data-i18n="cure_legend_planned">Prévu</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--surface2)"></div><span data-i18n="cure_legend_rest">Repos</span></div>
-    </div>`;
-}
-
-function changeMonth(dir) {
-  calMonth += dir;
-  if (calMonth < 0)  { calMonth = 11; calYear--; }
-  if (calMonth > 11) { calMonth = 0;  calYear++; }
-  renderCalendar();
-}
-
-// ── DAY DETAIL ─────────────────────────────────────────────────
-function selectDay(ds, clickable) {
-  const dd = document.getElementById('dayDetail');
-  if (!clickable) { dd.classList.remove('show'); return; }
-  const isPast = ds <= todayStr;
-
-  const cure  = allCures.find(x => x.id === currentCureId);
-  if (!cure) return;
-  const _startD = localDay(cure.start_date) || new Date(0);
-  const _date   = localDay(ds) || _startD;
-  const dayNum  = Math.max(1, Math.floor((_date - _startD) / 86400000) + 1);
-  const freq      = parseFloat(cure.frequency) || 1;
-  const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
-  const times     = injPerDay===1?['08:00']:injPerDay===2?['08:00','20:00']:['07:00','13:00','20:00'];
-  const date      = localDay(ds) || new Date();
-  const dateLabel = date.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'long',day:'numeric',month:'long'});
-  const dayInjs   = allInjections.filter(i => i.cure_id===currentCureId && (i.injected_at||'').startsWith(ds));
-  const admin     = (cure.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
-  const sites     = getSites(admin);
-  const { site: nextSite, idx: nextIdx } = getNextSite(currentCureId, admin, ds);
-
-  // Lien de report : ce jour a-t-il ete rattrape plus tard, ou rattrape-t-il un jour prevu ?
-  const _cureInjs = allInjections.filter(i => i.cure_id === currentCureId);
-  const _rep      = computeReportMap(cure, _cureInjs);
-  const _dayIdx   = Math.floor((_date - _startD) / 86400000);
-  const _fmtIdx = k => {
-    const d = new Date(_startD); d.setDate(d.getDate() + k);
-    return d.toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  pickDefaultCure();
+  const cure = curCure(), m = P.cure(cure);
+  if (!selDs || !selDsBelongs) { setSelected(pickDefaultDay(m)); selDsBelongs = true; }
+  const picker = allCures.length > 1
+    ? P.select(t('cure2_select_label'), 'cureSelect', allCures.map(c => [c.id, cureTitle(c) + ' · ' + cureStatusText(P.cure(c))]), currentCureId)
+    : '';
+  v.innerHTML =
+    '<div class="page-intro"><h1>' + esc(t('cure2_title')) + '</h1><p class="muted small">' + esc(t('intro_cure_sub')) + '</p></div>' +
+    picker +
+    '<section class="card calendar-card" id="calCard"></section>' +
+    '<section class="card day-card" id="dayCard" aria-live="polite"></section>' +
+    '<a class="btn secondary full" href="#edit=' + encodeURIComponent(cure.id) + '">' + P.icon('cog-6-tooth') + esc(t('cure2_settings_btn')) + '</a>' +
+    '<section class="card compact" id="statsCard"></section>';
+  const sel = document.getElementById('cureSelect');
+  if (sel) sel.onchange = () => {
+    currentCureId = sel.value; lsSet('ps_cure_view', sel.value);
+    setSelected(pickDefaultDay(P.cure(curCure()))); renderMain();
   };
-  const _freqNow  = parseFloat(cure.frequency) || 1;
-  const _ivNow    = _freqNow < 1 ? Math.max(1, Math.round(1/_freqNow)) : 1;
-  const _isSched  = _freqNow < 1 ? (_dayIdx % _ivNow === 0) : true;
-  const _hasInj   = dayInjs.length > 0;
+  renderCalendar(); renderDay(); renderStats();
+  PS_applyI18n();
+}
+let selDsBelongs = false;   // vrai une fois une journée choisie pour la cure affichée
 
-  let reportBanner = '';
-  if (_rep.toIdx.has(_dayIdx)) {
-    // Ce jour prevu a ete explicitement reporte par l'utilisateur
-    reportBanner = `<div class="dd-report">↷ ${t('cure_reported_to')} ${_fmtIdx(_rep.toIdx.get(_dayIdx))}
-      <button class="dd-report-btn" onclick="unlinkReport('${ds}')">${t('cure_report_unlink')}</button></div>`;
-  } else if (_rep.fromIdx.has(_dayIdx)) {
-    reportBanner = `<div class="dd-report">↶ ${t('cure_reported_from')} ${_fmtIdx(_rep.fromIdx.get(_dayIdx))}</div>`;
-  } else if (_isSched && !_hasInj && isPast && _freqNow < 1) {
-    // Jour prevu manque : on PROPOSE, on ne decide pas
-    const cands = strayInjections(cure, _cureInjs);
-    if (cands.length) {
-      const opts = cands.map(inj => {
-        const dl = (localDay(String(inj.injected_at||'').slice(0,10)) || new Date())
-          .toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{weekday:'short',day:'numeric',month:'long'});
-        return `<option value="${escHtml(inj.id)}">${escHtml(dl)} · ${escHtml(String(inj.injected_at||'').slice(11,16))}</option>`;
-      }).join('');
-      reportBanner = `<div class="dd-link">
-        <div class="dd-link-q">${t('cure_report_question')}</div>
-        <div class="dd-link-row">
-          <select class="dd-link-select" id="reportPick">${opts}</select>
-          <button class="dd-link-btn" onclick="linkReport('${ds}')">${t('cure_report_link')}</button>
-        </div></div>`;
-    } else {
-      reportBanner = `<div class="dd-link"><div class="dd-link-q" style="opacity:.7">${t('cure_report_none')}</div></div>`;
+/* ── Calendrier ── */
+function statesFor(model, ds, rep) { return P.slotStates(model, cureInjs(model.id), ds, rep); }
+function countLabel(states) {
+  if (states === null) return t('cure2_outside');
+  if (!states.length) return t('cure2_c_rest_1');
+  const n = {}, order = [];
+  states.forEach(s => { if (!n[s.status]) { n[s.status] = 0; order.push(s.status); } n[s.status]++; });
+  return order.map(k => n[k] + ' ' + t('cure2_c_' + k + '_' + (n[k] > 1 ? 'n' : '1'))).join(', ');
+}
+function marksHtml(codes, withLabel) {
+  if (!codes || !codes.length) return '';
+  const shown = codes.slice(0, 2).map(c => P.status(c, withLabel ? undefined : false)).join('');
+  const more = codes.length > 2 ? '<span class="more" aria-hidden="true">+' + (codes.length - 2) + '</span>' : '';
+  return '<span class="marks">' + shown + more + '</span>';
+}
+function renderCalendar() {
+  const box = document.getElementById('calCard'); if (!box) return;
+  const cure = curCure(), m = P.cure(cure), rep = P.reportMap(m, cureInjs(cure.id));
+  const first = new Date(calY, calM, 1), nDays = new Date(calY, calM + 1, 0).getDate();
+  const lead = (first.getDay() + 6) % 7, td = todayStr();
+  const names = weekdayNames(), shortN = daysShort();
+  const selInMonth = selDs && psDay(selDs).getFullYear() === calY && psDay(selDs).getMonth() === calM;
+  const focusDs = selInMonth ? selDs : (psDay(td).getMonth() === calM && psDay(td).getFullYear() === calY ? td : psDayStr(first));
+  const cells = names.map((nm, i) => '<span class="day-name" role="columnheader" aria-label="' + esc(nm) + '">' + esc(shortN[i]) + '</span>');
+  for (let i = 0; i < lead; i++) cells.push('<span class="cal-pad" role="gridcell"></span>');
+  let agenda = '';
+  for (let d = 1; d <= nDays; d++) {
+    const ds = psDayStr(new Date(calY, calM, d));
+    const st = statesFor(m, ds, rep), codes = P.dayCodes(st);
+    const isToday = ds === td, isSel = ds === selDs;
+    const label = dayLong(ds) + ', ' + countLabel(st) + (isToday ? ', ' + t('cure2_today') : '');
+    cells.push('<button type="button" class="day' + (st === null ? ' outside' : '') + '" role="gridcell" data-ds="' + ds + '" aria-selected="' + isSel + '"' +
+      (isToday ? ' aria-current="date"' : '') + ' tabindex="' + (ds === focusDs ? 0 : -1) + '" aria-label="' + esc(label) + '">' +
+      '<span class="day-number" aria-hidden="true">' + d + '</span>' + (codes ? marksHtml(codes, false) : '<span class="marks"></span>') + '</button>');
+    if (st !== null) {
+      agenda += '<button type="button" data-ds="' + ds + '" aria-pressed="' + isSel + '"><strong>' + esc(capFirst(dayShort(ds))) + (isToday ? ' · ' + esc(t('cure2_today')) : '') + '</strong>' +
+        marksHtml(codes, true) + '</button>';
     }
   }
-
-  let slotsHtml = '';
-  let isRestDay = false;
-  if (freq < 1) {
-    const startD   = localDay(cure.start_date) || new Date(0);
-    const dayIndex = Math.floor((date - startD) / 86400000);
-    isRestDay = dayIndex % Math.max(1, Math.round(1/freq)) !== 0;
-    const done = dayInjs.length > 0;
-    // Jour de repos : on annonce le repos, mais on autorise quand meme la saisie
-    // d'une injection decalee sur un jour passe (ou deja enregistree).
-    if (isRestDay) {
-      slotsHtml = `<div class="dd-rest-banner">${t('cure_rest_day')}</div>`;
-      if (isPast || done) slotsHtml += `<div class="dd-shift-hint">${t('cure_shift_hint')}</div>`;
-    }
-    if (!isRestDay || isPast || done) {
-      const existInj0 = dayInjs.find(l => (l.notes||'').includes('slot:0'));
-      const displayTime0 = existInj0 ? (existInj0.injected_at||'').slice(11,16) : times[0];
-      slotsHtml += `<div class="inj-slot ${done?'done':''}${isRestDay?' shifted':''}" onclick="handleSlotClick(event,'${ds}',0,'${times[0]}')">
-        <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
-        <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name}</div><div class="slot-detail">${getTitrationDoseForDay(cure, dayNum) || (cure.dose_mcg ? cure.dose_mcg+' '+(cure.unit||'mg') : '')} · ${admin}</div></div>
-        <input type="time" class="slot-time-input ${existInj0?'saved':''}" value="${displayTime0}" data-inj-id="${existInj0?.id||''}" data-ds="${ds}" data-slot="0" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;
-    }
-  } else {
-    times.forEach((time_, i) => {
-      const done    = dayInjs.some(l => (l.notes||'').includes('slot:'+i));
-      const existInj= dayInjs.find(l => (l.notes||'').includes('slot:'+i));
-      const displayT= existInj ? (existInj.injected_at||'').slice(11,16) : time_;
-      const _onclick = isPast ? `handleSlotClick(event,'${ds}',${i},'${time_}')` : '';
-      slotsHtml += `<div class="inj-slot ${done?'done':''}" onclick="${_onclick}">
-        <div class="slot-check ${done?'checked':'unchecked'}">${done?'✓':''}</div>
-        <div class="slot-info"><div class="slot-name">${cure.peptide_name||cure.name} · #${i+1}</div><div class="slot-detail">${getTitrationDoseForDay(cure, dayNum) || (cure.dose_mcg ? cure.dose_mcg+' '+(cure.unit||'mg') : '')} · ${admin}</div></div>
-        <input type="time" class="slot-time-input ${existInj?'saved':''}" value="${displayT}" data-inj-id="${existInj?.id||''}" data-ds="${ds}" data-slot="${i}" onclick="event.stopPropagation()" onchange="updateInjTime(this)"></div>`;
-    });
-  }
-
-
-  dd.innerHTML = `
-    <div class="dd-header">
-      <div class="dd-date">${dateLabel}</div>
-      <button class="dd-close" onclick="document.getElementById('dayDetail').classList.remove('show')">✕ ${t('back')}</button>
-    </div>
-    ${reportBanner}
-    ${(!isRestDay || isPast) ? `
-    <div style="background:var(--accent-soft);border:1.5px solid rgba(36,87,214,.18);border-radius:14px;padding:12px 14px;margin:10px 0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600">${t('cure_suggested_site')}</div>
-        <button onclick="cycleSite('${ds}')" style="font-size:.68rem;color:var(--accent);background:none;border:none;cursor:pointer;font-weight:600">${t('cure_change_site')}</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:1.6rem">${nextSite.icon}</span>
-        <div><div style="font-size:.92rem;font-weight:700">${nextSite.label}</div><div style="font-size:.7rem;color:var(--muted)">${t('cure_zone')} ${nextSite.zone}</div></div>
-      </div>
-    </div>` : ''}
-    ${slotsHtml}
-    <textarea class="note-area" id="dayNote" rows="2" placeholder="${t('cure_note_ph')}">${escHtml(getDayNote(ds))}</textarea>
-    <button class="save-note-btn" onclick="saveNote('${ds}')">${t('cure_save_note')}</button>`;
-
-  dd.classList.add('show');
-  dd.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
-function cycleSite(ds) {
-  const cure  = allCures.find(x => x.id === currentCureId);
-  const admin = (cure?.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
-  const sites = getSites(admin);
-  const key = 'ps_site_'+currentCureId+'_'+ds;
-  const cur = parseInt(localStorage.getItem(key)||'0');
-  localStorage.setItem(key, (cur+1) % sites.length);
-  selectDay(ds, true);
-}
-
-// Clic sur le slot : ignorer si l'event vient de l'input time
-// ── CONFIRMATION AVANT ENREGISTREMENT / SUPPRESSION ────────────
-// Un creneau se coche d'un simple appui : sans garde-fou, un clic involontaire
-// enregistre ou EFFACE une injection en base. On passe par une feuille.
-let _pendingSlot = null;
-
-function handleSlotClick(event, ds, slot, time) {
-  if (event.target.matches('.slot-time-input')) return;
-  const existing = allInjections.find(i =>
-    i.cure_id===currentCureId && (i.injected_at||'').startsWith(ds) && (i.notes||'').includes('slot:'+slot)
-  );
-  const input = document.querySelector(`.slot-time-input[data-ds="${ds}"][data-slot="${slot}"]`);
-  const shownTime = input ? input.value : time;
-  const dLbl = (localDay(ds) || new Date()).toLocaleDateString(
-    PS_getLang()==='en'?'en-US':'fr-FR', {weekday:'long', day:'numeric', month:'long'});
-
-  _pendingSlot = { ds, slot, time, isDelete: !!existing };
-
-  const okBtn = document.getElementById('injConfirmOk');
-  document.getElementById('injConfirmTitle').textContent =
-    existing ? t('cure_confirm_del_title') : t('cure_confirm_title');
-  document.getElementById('injConfirmSub').textContent =
-    existing ? `${dLbl} · ${(existing.injected_at||'').slice(11,16)}` : `${dLbl} · ${shownTime}`;
-  okBtn.textContent = existing ? t('cure_confirm_del_btn') : t('cure_confirm_ok_btn');
-  okBtn.classList.toggle('danger', !!existing);
-  document.getElementById('injConfirmOverlay').classList.add('open');
-}
-
-function closeInjConfirmModal() {
-  document.getElementById('injConfirmOverlay').classList.remove('open');
-  _pendingSlot = null;
-}
-function closeInjConfirm(e) {
-  if (e.target === document.getElementById('injConfirmOverlay')) closeInjConfirmModal();
-}
-function confirmInjAction() {
-  if (!_pendingSlot) return;
-  const { ds, slot, time } = _pendingSlot;
-  closeInjConfirmModal();
-  toggleInj(ds, slot, time);
-}
-
-// Mise à jour de l'heure d'une injection déjà loggée
-async function updateInjTime(input) {
-  const injId = input.dataset.injId;
-  const ds    = input.dataset.ds;
-  const newTime = input.value; // "HH:MM"
-  if (!newTime) return;
-
-  const newISOTime = localStamp(ds, newTime);
-
-  if (injId) {
-    // Injection existante → update
-    const { error } = await sb.from('injections').update({ injected_at: newISOTime }).eq('id', injId);
-    if (error) {
-      showToast('Erreur de sauvegarde'); input.style.borderColor='var(--danger)';
-      setTimeout(() => input.style.borderColor='', 1500);
-    } else {
-      input.classList.add('saved');
-      showToast(t('cure_time_updated') + newTime);
-      // Mettre à jour localement sans reload complet
-      const inj = allInjections.find(i => i.id === injId);
-      if (inj) inj.injected_at = newISOTime;
-    }
-  }
-  // Si pas d'injId (injection non encore loggée), l'heure sera utilisée au prochain toggleInj
-  // via data-ds + value de l'input
-}
-
-async function toggleInj(ds, slot, time) {
-  const existing = allInjections.find(i =>
-    i.cure_id===currentCureId && (i.injected_at||'').startsWith(ds) && (i.notes||'').includes('slot:'+slot)
-  );
-  const cure = allCures.find(x => x.id === currentCureId);
-
-  if (existing) {
-    await sb.from('injections').delete().eq('id', existing.id);
-    // Remettre la dose dans le flacon correspondant
-    await updateStockAfterInjection(cure, +1);
-    showToast(t('cure_inj_cancelled'));
-  } else {
-    const admin = (cure?.notes||'').includes('admin:') ? cure.notes.split('admin:')[1].split('|')[0].trim() : 'SC';
-    const { site, idx } = getNextSite(currentCureId, admin, ds);
-    // Mémoriser le site utilisé pour cette date
-    localStorage.setItem('ps_site_'+currentCureId+'_'+ds, idx);
-    // Avancer le site global pour la prochaine injection
-    const _gsites = getSites(admin);
-    const _gkey = 'ps_site_global_'+currentCureId;
-    localStorage.setItem(_gkey, (idx+1) % _gsites.length);
-    const timeInput = document.querySelector(`.slot-time-input[data-ds="${ds}"][data-slot="${slot}"]`);
-    const actualTime = timeInput ? timeInput.value : time;
-    await sb.from('injections').insert({
-      user_id: userId, cure_id: currentCureId,
-      peptide_name: cure?.peptide_name||cure?.name,
-      dose_mcg: (() => { const startD=localDay(cure?.start_date)||new Date(0); const dn=Math.floor(((localDay(ds)||startD)-startD)/86400000)+1; const td=getTitrationDoseForDay(cure,dn); return td ? parseFloat(td) : (cure?.dose_mcg||null); })(),
-      injection_site: site.label,
-      injected_at: localStamp(ds, actualTime),
-      notes: 'slot:'+slot
-    });
-    // Déduire la dose du flacon correspondant
-    await updateStockAfterInjection(cure, -1);
-    showToast(t('cure_inj_done_msg')+site.label);
-  }
-  await loadData();
-  setTimeout(() => selectDay(ds, true), 100);
-}
-
-// Met à jour remaining_units dans inventory après une injection
-// direction : -1 = déduire, +1 = remettre (annulation)
-async function updateStockAfterInjection(cure, direction) {
-  if (!cure) return;
-
-  // Extraire l'inventory_id depuis les notes de la cure (inv:UUID)
-  const invMatch = (cure.notes||'').match(/inv:([a-f0-9-]{36})/);
-  let flaconId   = invMatch ? invMatch[1] : null;
-
-  // Fallback : chercher par nom de peptide si pas d'inventoryId
-  if (!flaconId) {
-    const peptideName = cure.peptide_name || cure.name;
-    if (!peptideName) return;
-    const { data: flacons } = await sb.from('inventory')
-      .select('id, peptide_name, notes')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-    const match = (flacons||[]).find(f => {
-      const fn = (f.peptide_name||'').toLowerCase();
-      const pn = peptideName.toLowerCase();
-      return (fn === pn || fn.includes(pn) || pn.includes(fn)) && !(f.notes||'').includes('finished');
-    });
-    if (match) flaconId = match.id;
-  }
-
-  if (!flaconId) { console.warn('[Stock] Aucun flacon trouvé'); return; }
-
-  // Récupérer le flacon
-  const { data: flacon } = await sb.from('inventory')
-    .select('id, remaining_units, vial_qty_mg, notes, reconstituted_at')
-    .eq('id', flaconId)
-    .single();
-
-  if (!flacon) return;
-
-  // Calculer nouvelle quantité
-  let newRemaining = parseFloat(flacon.remaining_units ?? flacon.vial_qty_mg ?? 0);
-  if (cure.dose_mcg) {
-    let doseMg = parseFloat(cure.dose_mcg) || 0;
-    // Conversion si l'unité est mcg (ancienne donnée)
-    if ((cure.unit||'mg').toLowerCase() === 'mcg') doseMg = doseMg / 1000;
-    newRemaining = Math.max(0, newRemaining + direction * doseMg);
-  }
-
-  // Passer en active si scellé (première injection)
-  let newNotes = (flacon.notes || '');
-  if (direction === -1 && newNotes.includes('sealed')) {
-    newNotes = newNotes.replace('sealed', 'active');
-  }
-
-  const { error } = await sb.from('inventory').update({
-    remaining_units:  Math.round(newRemaining * 1000) / 1000,
-    notes:            direction === -1 ? newNotes : flacon.notes,
-    reconstituted_at: (direction === -1 && !flacon.reconstituted_at)
-      ? psDayStr()
-      : flacon.reconstituted_at,
-  }).eq('id', flaconId);
-
-  if (error) console.error('[Stock] Erreur update:', error);
-  else console.log('[Stock] ✓ Stock mis à jour, restant:', newRemaining);
-}
-
-async function saveNote(ds) {
-  const el = document.getElementById('dayNote');
-  if (!el) return;
-  const k = currentCureId + '_' + ds;
-  let savedRemote = false;
-  if (dayNotesRemote) {
-    const { error } = await sb.from('day_notes').upsert(
-      { user_id: userId, cure_id: currentCureId, day: ds, note: el.value },
-      { onConflict: 'user_id,cure_id,day' });
-    if (!error) { savedRemote = true; dayNotes[k] = el.value; localStorage.removeItem('ps_note_' + k); }
-  }
-  if (!savedRemote) localStorage.setItem('ps_note_' + k, el.value);
-  // Feedback visuel sur le bouton
-  const btn = el.nextElementSibling;
-  if (btn) { btn.textContent = '✓'; btn.style.background = 'var(--accent)'; setTimeout(() => { btn.textContent = t('cure_save_note'); btn.style.background = ''; }, 1500); }
-  showToast(t('cure_note_saved'));
-}
-
-// Statut de n'importe quelle cure — le calcul existant ne couvrait que la cure selectionnee.
-// Meme logique de dates que le reste du fichier, pour rester coherent avec la carte.
-function cureStatusOf(cu) {
-  const s = psDay(cu.start_date); s.setHours(0,0,0,0);
-  const e = new Date(s); e.setDate(e.getDate() + (cu.duration_days||30));
-  if (e < TODAY) return t('cure_status_ended');
-  if (s > TODAY) return t('cure_status_future');
-  return t('cure_status_active');
-}
-// BUG-03 : nom saisi en minuscules par l'utilisateur — corrige a l'affichage uniquement,
-// la donnee en base n'est pas modifiee.
-function capFirst(v) {
-  const str = String(v || '');
-  return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
-}
-function escHtml(v) {
-  return String(v || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── HORODATAGE LOCAL (BUG-10) ──────────────────────────────────
-// injected_at est lu partout par comparaison de chaine : .startsWith(ds) pour la
-// date, .slice(11,16) pour l'heure. Les lecteurs supposent donc de l'heure LOCALE.
-// toISOString() ecrivait de l'UTC -> decalage de 7 h en UTC+7, et une injection
-// saisie avant 07:00 basculait au jour precedent. On ecrit desormais l'heure
-// locale telle quelle, ce que fait deja le champ "modifier l'heure".
-// ── REPORTS D'INJECTION — LIENS EXPLICITES ─────────────────────
-// Le lien est DECIDE PAR L'UTILISATEUR, jamais deduit. Il est stocke dans le champ
-// notes de l'injection sous la forme "slot:0|report:2026-08-10", ce qui se lit
-// "cette injection couvre le jour prevu du 10 aout". Stocke en base, donc synchronise.
-function readReportTag(inj) {
-  const m = String((inj && inj.notes) || '').match(/report:(\d{4}-\d{2}-\d{2})/);
-  return m ? m[1] : null;
-}
-// Ecrit (ou retire, si targetDs vaut null) le lien dans une chaine de notes
-function writeReportTag(notes, targetDs) {
-  let base = String(notes || '').replace(/\|?report:\d{4}-\d{2}-\d{2}/g, '');
-  base = base.replace(/\|+/g, '|').replace(/^\||\|$/g, '');
-  return targetDs ? (base ? base + '|report:' + targetDs : 'report:' + targetDs) : base;
-}
-// Construit les deux sens du lien, en index de jours depuis le debut de la cure
-function computeReportMap(cure, injections) {
-  const toIdx = new Map(), fromIdx = new Map();
-  const startD = localDay(cure && cure.start_date);
-  if (!startD) return { toIdx, fromIdx };
-  const idxOf = ds => { const d = localDay(ds); return d ? Math.floor((d - startD) / 86400000) : null; };
-  (injections || []).forEach(inj => {
-    const target = readReportTag(inj);
-    if (!target) return;
-    const sIdx = idxOf(target);
-    const kIdx = idxOf(String(inj.injected_at || '').slice(0, 10));
-    if (sIdx === null || kIdx === null || sIdx === kIdx) return;
-    if (toIdx.has(sIdx)) return;                 // un jour prevu n'est couvert qu'une fois
-    toIdx.set(sIdx, kIdx); fromIdx.set(kIdx, sIdx);
+  while (cells.length % 7) cells.push('<span class="cal-pad" role="gridcell"></span>');
+  let rows = '';
+  for (let i = 0; i < cells.length; i += 7) rows += '<div class="cal-row" role="row">' + cells.slice(i, i + 7).join('') + '</div>';
+  box.innerHTML =
+    '<div class="cal-head"><button type="button" class="icon-btn" id="calPrev" aria-label="' + esc(t('cure2_prev_month')) + '">' + P.icon('chevron-left') + '</button>' +
+    '<h2 id="calHeading" aria-live="polite">' + esc(months()[calM] + ' ' + calY) + '</h2>' +
+    '<button type="button" class="icon-btn" id="calNext" aria-label="' + esc(t('cure2_next_month')) + '">' + P.icon('chevron-right') + '</button></div>' +
+    '<div class="calendar" role="grid" aria-labelledby="calHeading">' + rows + '</div>' +
+    P.legend() +
+    '<div class="calendar-agenda" aria-label="' + esc(t('cure2_agenda_aria')) + '">' + (agenda || '<p class="small muted">' + esc(t('cure2_agenda_empty')) + '</p>') + '</div>' +
+    '<p class="help">' + esc(t('cure2_cal_help')) + '</p>';
+  document.getElementById('calPrev').onclick = () => changeMonth(-1);
+  document.getElementById('calNext').onclick = () => changeMonth(1);
+  box.querySelectorAll('.calendar .day, .calendar-agenda button[data-ds]').forEach(b => {
+    b.onclick = () => { selectDay(b.dataset.ds, b.classList.contains('day')); };
   });
-  return { toIdx, fromIdx };
+  box.querySelectorAll('.calendar .day').forEach(b => b.addEventListener('keydown', onDayKey));
 }
-// Injections "hors calendrier" de la cure, non encore liees — candidates a un report
-function strayInjections(cure, injections) {
-  const startD = localDay(cure && cure.start_date);
-  if (!startD) return [];
-  const freq = parseFloat(cure && cure.frequency) || 1;
-  if (freq >= 1) return [];
-  const interval = Math.max(1, Math.round(1 / freq));
-  return (injections || []).filter(inj => {
-    if (readReportTag(inj)) return false;
-    const d = localDay(String(inj.injected_at || '').slice(0, 10));
-    if (!d) return false;
-    return Math.floor((d - startD) / 86400000) % interval !== 0;
-  }).sort((a, b) => String(a.injected_at).localeCompare(String(b.injected_at)));
+function changeMonth(dir) {
+  calM += dir;
+  if (calM < 0) { calM = 11; calY--; }
+  if (calM > 11) { calM = 0; calY++; }
+  renderCalendar();
 }
-
-// ── ACTIONS UTILISATEUR SUR LE LIEN DE REPORT ──────────────────
-async function linkReport(missedDs) {
-  const sel = document.getElementById('reportPick');
-  if (!sel || !sel.value) return;
-  const inj = allInjections.find(i => i.id === sel.value);
-  if (!inj) return;
-  const newNotes = writeReportTag(inj.notes, missedDs);
-  const { error } = await sb.from('injections').update({ notes: newNotes }).eq('id', inj.id);
-  if (error) { showToast('\u26A0\uFE0F ' + error.message); return; }
-  inj.notes = newNotes;
-  showToast(t('cure_report_linked'));
-  render();
-  selectDay(missedDs, true);
+function selectDay(ds, focusGrid) {
+  setSelected(ds); renderCalendar(); renderDay();
+  if (focusGrid) { const b = document.querySelector('.calendar .day[data-ds="' + ds + '"]'); if (b) b.focus(); }
+}
+function onDayKey(e) {
+  const cur = psDay(e.currentTarget.dataset.ds), wd = (cur.getDay() + 6) % 7;
+  const off = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7, Home: -wd, End: 6 - wd }[e.key];
+  if (off === undefined) return;
+  e.preventDefault();
+  selectDay(psDayStr(P.addDays(cur, off)), true);
 }
 
+/* ── Détail du jour ── */
+function slotSub(s, cure) {
+  const parts = [];
+  const rec = s.inj;
+  const status = s.status;
+  if (status === 'partial' && rec && P.getTag(rec.notes, 'qty')) parts.push(mgLabel(parseFloat(P.getTag(rec.notes, 'qty'))));
+  else if (status === 'done' || status === 'partial' || status === 'planned') { const d = mgLabel(doseMg(cure)); if (d) parts.push(d); }
+  if (rec && rec.injection_site && P.isTaken(rec)) parts.push(rec.injection_site);
+  else if (status === 'done' || status === 'partial' || status === 'planned') parts.push(P.cure(cure).admin);
+  if (status === 'postponed' && rec) {
+    const to = P.postponedTo(rec);
+    if (to) parts.push(fmtStr('cure2_postponed_to', { d: dayShort(to.ds) + (to.time ? ' · ' + to.time : '') }));
+  } else if (s.to && !rec) {
+    parts.push(fmtStr('cure2_covered_on', { d: dayShort(s.to.ds) }));
+  } else if (s.incoming) {
+    parts.push(fmtStr('cure2_from', { d: dayShort(s.from) }));
+  } else if ((s.extra || s.off) && s.from) {
+    parts.push(fmtStr('cure2_covers', { d: dayShort(s.from) }));
+  } else if (s.extra || s.off) {
+    parts.push(t('cure2_offplan'));
+  }
+  if (s.auto && status === 'missed') parts.push(t('cure2_not_recorded'));
+  return parts.filter(Boolean).join(' · ');
+}
+function renderDay() {
+  const box = document.getElementById('dayCard'); if (!box) return;
+  const cure = curCure(), m = P.cure(cure), ds = selDs;
+  const rep = P.reportMap(m, cureInjs(cure.id));
+  const st = statesFor(m, ds, rep);
+  dayStates = st || [];
+  const codes = P.dayCodes(st);
+  let head = '';
+  if (codes && codes.length === 1) head = P.status(codes[0]);
+  else if (codes && codes.length > 1) head = '<span class="small muted">' + esc(countLabel(st)) + '</span>';
+  let body = '';
+  const peptide = capFirst(cure.peptide_name || cure.name);
+  dayStates.forEach((s, i) => {
+    body += '<button type="button" class="list-row" data-slot-i="' + i + '">' +
+      '<div class="grow"><strong>' + esc((s.time || '—') + ' · ' + peptide) + '</strong><div class="muted small">' + esc(slotSub(s, cure)) + '</div></div>' +
+      P.status(s.status) + P.icon('chevron-right', 'chev') + '</button>';
+  });
+  if (st === null) body += '<p class="small muted day-msg">' + esc(t('cure2_day_outside')) + '</p>';
+  else if (!m.isScheduled(psDay(ds)) && !dayStates.some(s => !s.incoming)) {
+    body += '<p class="small muted day-msg">' + esc(t('cure2_rest_planned')) + '</p>';
+    if (ds <= todayStr()) body += '<button type="button" class="btn ghost full" id="addOff">' + P.icon('plus') + esc(t('cure2_add_offplan')) + '</button>';
+  }
+  const note = st === null ? '' :
+    '<div class="note-block"><label class="label" for="dayNote">' + esc(t('cure2_note_label')) + '</label>' +
+    '<textarea class="textarea" id="dayNote" placeholder="' + esc(t('cure2_note_ph')) + '">' + esc(getDayNote(ds)) + '</textarea>' +
+    '<div id="noteMsg"></div>' +
+    '<button type="button" class="btn ghost full" id="noteSave">' + esc(t('cure2_note_save')) + '</button></div>';
+  box.innerHTML = '<div class="day-head"><h2>' + esc(capFirst(dayShort(ds))) + '</h2>' + head + '</div>' + body + note;
+  box.querySelectorAll('[data-slot-i]').forEach(b => { b.onclick = () => openSlot(dayStates[Number(b.dataset.slotI)], b); });
+  const add = document.getElementById('addOff');
+  if (add) add.onclick = () => openSlot({ slot: 0, time: m.times[0], status: 'rest', inj: null, auto: true, off: true, offNew: true }, add);
+  const ns = document.getElementById('noteSave'); if (ns) ns.onclick = saveNote;
+}
+
+/* ── Statistiques (repliables) ── */
+function renderStats() {
+  const box = document.getElementById('statsCard'); if (!box) return;
+  const cure = curCure(), m = P.cure(cure), r = P.cureStats(m, cureInjs(cure.id));
+  const dayN = Math.min(Math.max(1, m.dayNumber(new Date())), m.duration);
+  const kv = (k, v) => '<div class="kv"><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>';
+  box.innerHTML = '<details class="stats"' + (statsOpen ? ' open' : '') + '><summary class="toggle-detail">' + esc(t('cure2_stats')) + P.icon('chevron-right') + '</summary>' +
+    kv(t('cure2_st_period'), dayShort(m.start) + ' → ' + dayShort(P.addDays(m.end, -1))) +
+    kv(t('cure2_st_state'), cureStatusText(m) + (m.state === 'active' ? ' · ' + fmtStr('cure2_st_day', { n: dayN, d: m.duration }) : '')) +
+    kv(t('cure2_st_freq'), m.freqLabel()) +
+    kv(t('cure2_st_recorded'), fmtStr('cure2_st_of', { a: r.recorded, b: r.slotsElapsed })) +
+    kv(t('cure2_st_done'), String(r.done)) +
+    kv(t('cure2_st_partial'), String(r.partial)) +
+    kv(t('cure2_st_missed'), String(Math.max(0, r.missed - r.notRecorded))) +
+    kv(t('cure2_st_notrec'), String(r.notRecorded)) +
+    kv(t('cure2_st_postponed'), String(r.postponed)) +
+    kv(t('cure2_st_planned'), String(r.planned)) +
+    kv(t('cure2_st_rest'), String(r.restDays)) +
+    '<p class="footnote">' + esc(t('cure2_st_note')) + '</p></details>';
+  box.querySelector('details').addEventListener('toggle', e => { statsOpen = e.target.open; });
+}
+
+/* ══════════════ Feuille d'un créneau ══════════════ */
+// Injections « hors planning » de la cure, non rattachées : candidates à un rattachement
+function strayInjections(m) {
+  return cureInjs(m.id).filter(i => P.isTaken(i) && !P.readReport(i) && !m.isScheduled(psDay(P.injDay(i))))
+    .sort((a, b) => String(a.injected_at).localeCompare(String(b.injected_at)));
+}
+function openSlot(s, trigger) {
+  if (!s) return;
+  const cure = curCure(), m = P.cure(cure), ds = selDs, td = todayStr();
+  const rec = s.inj || null, future = ds > td;
+  const peptide = capFirst(cure.peptide_name || cure.name);
+  const title = fmtStr('cure2_slot_title', { h: s.time || '—' });
+  let body = '<p class="muted small">' + esc(dayWeek(ds) + ' · ' + peptide) + '</p>' +
+    '<div class="slot-meta"><span class="small muted">' + esc(t('cure2_current')) + '</span>' + P.status(s.status) + '</div>';
+  const sub = slotSub(s, cure); if (sub) body += '<p class="small muted">' + esc(sub) + '</p>';
+
+  // Ancien lien « report: » (injection hors planning rattachée à ce jour) : lecture + retrait
+  if (s.to && !rec) {
+    body += '<button type="button" class="btn secondary full" id="slUnlink">' + esc(t('cure2_unlink')) + '</button>';
+    P.openSheet(title, body, d => {
+      d.querySelector('#slUnlink').onclick = () => { P.closeSheet(); unlinkReport(ds); };
+      d.addEventListener('close', () => { if (trigger && trigger.isConnected) trigger.focus(); }, { once: true });
+    });
+    return;
+  }
+  const taken = rec && P.isTaken(rec);
+  const allow = s.incoming ? ['done', 'partial', 'missed'] : (s.offNew ? ['done', 'partial'] : (future ? ['postponed', 'rest'] : ['done', 'partial', 'missed', 'postponed', 'rest']));
+  const canDone = !future && !taken;
+  if (canDone) body += '<button type="button" class="btn full" id="slDone">' + esc(t('cure2_mark_done')) + '</button>';
+  body += '<button type="button" class="btn secondary full" id="slOther">' + esc(t(rec ? 'cure2_change_status' : 'cure2_other_status')) + '</button>';
+  if (future && !rec) body += '<p class="help">' + esc(t('cure2_future_hint')) + '</p>';
+  // Heure
+  body += '<hr class="divider">' + P.field(t('cure2_time_label'), 'slTime', '', 'time', (rec ? P.injTime(rec) : s.time) || '', rec ? '' : t('cure2_time_hint'));
+  if (rec) body += '<button type="button" class="btn ghost full" id="slTimeSave">' + esc(t('cure2_time_save')) + '</button>';
+  // Site (rotation)
+  if (!future && !(rec && rec.injection_site) && (!rec || !taken)) {
+    const site = nextSite(cure, ds, s.slot);
+    body += '<div class="site-line"><div><span class="small muted">' + esc(t('cure2_site_label')) + '</span><strong id="slSite">' + esc(site.label) + '</strong></div>' +
+      '<button type="button" class="link-btn" id="slSiteNext">' + esc(t('cure2_site_change')) + '</button></div>';
+  } else if (rec && rec.injection_site) {
+    body += '<div class="site-line"><div><span class="small muted">' + esc(t('cure2_site_label')) + '</span><strong>' + esc(rec.injection_site) + '</strong></div></div>';
+  }
+  // Rattacher une injection hors planning (jour prévu non renseigné)
+  const strays = (s.auto && s.status === 'missed' && s.slot === 0 && !s.incoming && !rec && m.perDay === 1) ? strayInjections(m) : [];
+  if (strays.length) {
+    body += '<hr class="divider"><h3>' + esc(t('cure2_link_title')) + '</h3><p class="small muted">' + esc(t('cure2_link_help')) + '</p>' +
+      P.select(t('cure2_link_pick'), 'slLinkPick', strays.map(i => [i.id, dayWeek(P.injDay(i)) + ' · ' + P.injTime(i)])) +
+      '<button type="button" class="btn secondary full" id="slLink">' + esc(t('cure2_link_btn')) + '</button>';
+  }
+  if (rec) body += '<button type="button" class="btn ghost full danger-text" id="slClear">' + P.icon('trash') + esc(t('st_clear')) + '</button>';
+
+  P.openSheet(title, body, d => {
+    const timeVal = () => { const v = (d.querySelector('#slTime') || {}).value; return /^\d{2}:\d{2}$/.test(v || '') ? v : (s.time || P.nowHM()); };
+    const ctx = () => ({ cure, model: m, ds, s, rec, time: timeVal() });
+    d.addEventListener('close', () => { if (trigger && trigger.isConnected) trigger.focus(); }, { once: true });
+    const bDone = d.querySelector('#slDone');
+    if (bDone) bDone.onclick = () => { const c = ctx(); P.closeSheet(); applyStatus(c, { status: 'done' }); };
+    d.querySelector('#slOther').onclick = async () => {
+      const c = ctx();
+      const res = await P.statusSheet({ title: t('st_sheet_title'), sub: dayWeek(ds) + ' · ' + c.time, date: ds, time: c.time, allow, canClear: !!rec });
+      if (!res) return;
+      if (res.status === 'clear') clearLine(c);
+      else applyStatus(c, res);
+    };
+    const bT = d.querySelector('#slTimeSave');
+    if (bT) bT.onclick = () => { const v = d.querySelector('#slTime').value; if (!/^\d{2}:\d{2}$/.test(v)) { d.querySelector('#slTime').setAttribute('aria-invalid', 'true'); return; } P.closeSheet(); saveTime(rec, v); };
+    const bS = d.querySelector('#slSiteNext');
+    if (bS) bS.onclick = () => { cycleSite(cure, ds, s.slot); d.querySelector('#slSite').textContent = nextSite(cure, ds, s.slot).label; };
+    const bL = d.querySelector('#slLink');
+    if (bL) bL.onclick = () => { const id = d.querySelector('#slLinkPick').value; P.closeSheet(); linkReport(id, ds); };
+    const bC = d.querySelector('#slClear');
+    if (bC) bC.onclick = () => { const c = ctx(); P.closeSheet(); clearLine(c); };
+  });
+}
+
+/* ══════════════ Écritures des créneaux ══════════════ */
+// Quantité à déduire du stock pour une ligne : done → dose de la cure (undefined) ;
+// partiel → qty saisie, sinon rien ; autres états → rien (null)
+function stockQty(notes) {
+  const st = P.getTag(notes, 'st');
+  if (st === 'missed' || st === 'rest' || st === 'postponed') return null;
+  if (st === 'partial') { const q = parseFloat(P.getTag(notes, 'qty')); return isFinite(q) && q > 0 ? q : null; }
+  return undefined;
+}
+async function stockMove(cure, notes, dir) {
+  const q = stockQty(notes); if (q === null) return;
+  try { await P.updateStock(sb, userId, cure, dir, q); } catch (e) { console.warn('[stock]', e); }
+}
+function buildNotes(base, slot, res) {
+  let n = P.setTag(base, 'slot', String(slot));
+  n = P.setTag(n, 'st', res.status === 'done' ? null : res.status);
+  n = P.setTag(n, 'qty', res.status === 'partial' && res.qty ? String(res.qty) : null);
+  n = P.setTag(n, 'to', res.status === 'postponed' ? res.date + ' ' + res.time : null);
+  return n;
+}
+async function reloadAndRender() {
+  try { await loadData(); } catch (e) { console.warn(e); }
+  P.refreshReminders(allCures, allInjs, userId);
+  if (document.getElementById('dayCard')) { renderCalendar(); renderDay(); renderStats(); } else renderMain();
+}
+function findLine(cureId, ds, slot, notes) {
+  return allInjs.find(i => i.cure_id === cureId && P.injDay(i) === ds && P.injSlot(i) === slot && String(i.notes || '') === notes) || null;
+}
+function toastFor(status) {
+  return status === 'done' ? t('cure2_saved_done') : status === 'partial' ? t('msg_partial') : status === 'missed' ? t('msg_missed') : status === 'postponed' ? t('cure2_saved_postponed') : t('cure2_saved_status');
+}
+async function applyStatus(c, res) {
+  const { cure, ds, s, rec } = c;
+  const slot = s.slot || 0;
+  const taking = res.status === 'done' || res.status === 'partial';
+  try {
+    if (rec) {
+      const prev = { notes: rec.notes || '', injection_site: rec.injection_site || null, dose_mcg: rec.dose_mcg };
+      const notes = buildNotes(prev.notes, slot, res);
+      const upd = { notes };
+      if (taking && !rec.injection_site) { const site = nextSite(cure, ds, slot); upd.injection_site = site.label; commitSite(cure, ds, slot, site.idx); }
+      if (res.status === 'partial' && res.qty) upd.dose_mcg = res.qty;
+      else if (res.status === 'done') upd.dose_mcg = cure.dose_mcg || null;
+      const { error } = await sb.from('injections').update(upd).eq('id', rec.id);
+      if (error) throw error;
+      if (P.isTaken({ notes: prev.notes })) await stockMove(cure, prev.notes, +1);
+      if (taking) await stockMove(cure, notes, -1);
+      await reloadAndRender();
+      P.toast(toastFor(res.status), async () => {
+        await sb.from('injections').update(prev).eq('id', rec.id);
+        if (taking) await stockMove(cure, notes, +1);
+        if (P.isTaken({ notes: prev.notes })) await stockMove(cure, prev.notes, -1);
+        await reloadAndRender();
+      });
+      return;
+    }
+    // Nouvelle ligne
+    const base = s.incoming ? 'slot:' + slot + '|report:' + s.from : 'slot:' + slot;
+    const notes = buildNotes(base, slot, res);
+    const row = {
+      user_id: userId, cure_id: cure.id, peptide_name: cure.peptide_name || cure.name,
+      dose_mcg: taking ? (res.status === 'partial' && res.qty ? res.qty : (cure.dose_mcg || null)) : null,
+      injection_site: null, injected_at: P.localStamp(ds, c.time), notes
+    };
+    if (taking) { const site = nextSite(cure, ds, slot); row.injection_site = site.label; commitSite(cure, ds, slot, site.idx); }
+    const { data, error } = await sb.from('injections').insert(row).select().single();
+    if (error) throw error;
+    if (taking) await stockMove(cure, notes, -1);
+    await reloadAndRender();
+    const newId = (data && data.id) || (findLine(cure.id, ds, slot, notes) || {}).id || null;
+    P.toast(toastFor(res.status), async () => {
+      if (newId) await sb.from('injections').delete().eq('id', newId);
+      if (taking) await stockMove(cure, notes, +1);
+      await reloadAndRender();
+    });
+  } catch (e) {
+    console.error(e); P.toast(t('msg_save_error'));
+  }
+}
+async function clearLine(c) {
+  const { cure, rec } = c; if (!rec) return;
+  const ok = await P.confirm({ title: t('cure2_clear_title'), text: t('cure2_clear_text'), ok: t('cure2_clear_ok'), cancel: t('cancel'), danger: true });
+  if (!ok) return;
+  try {
+    const { error } = await sb.from('injections').delete().eq('id', rec.id);
+    if (error) throw error;
+    if (P.isTaken(rec)) await stockMove(cure, rec.notes, +1);
+    const copy = { user_id: userId, cure_id: rec.cure_id, peptide_name: rec.peptide_name, dose_mcg: rec.dose_mcg, injection_site: rec.injection_site || null, injected_at: rec.injected_at, notes: rec.notes };
+    await reloadAndRender();
+    P.toast(t('cure2_cleared'), async () => {
+      await sb.from('injections').insert(copy);
+      if (P.isTaken(rec)) await stockMove(cure, rec.notes, -1);
+      await reloadAndRender();
+    });
+  } catch (e) { console.error(e); P.toast(t('msg_save_error')); }
+}
+async function saveTime(rec, hm) {
+  if (!rec) return;
+  const stamp = P.localStamp(P.injDay(rec), hm), prev = rec.injected_at;
+  try {
+    const { error } = await sb.from('injections').update({ injected_at: stamp }).eq('id', rec.id);
+    if (error) throw error;
+    await reloadAndRender();
+    P.toast(t('cure2_time_saved'), async () => { await sb.from('injections').update({ injected_at: prev }).eq('id', rec.id); await reloadAndRender(); });
+  } catch (e) { console.error(e); P.toast(t('msg_save_error')); }
+}
+// Liens de report décidés par l'utilisateur (ancien fonctionnement « report: »)
+async function linkReport(injId, missedDs) {
+  const inj = allInjs.find(i => i.id === injId); if (!inj) return;
+  const notes = P.setTag(inj.notes, 'report', missedDs);
+  const { error } = await sb.from('injections').update({ notes }).eq('id', inj.id);
+  if (error) { P.toast(t('msg_save_error')); return; }
+  inj.notes = notes;
+  await reloadAndRender();
+  P.toast(t('cure_report_linked'));
+}
 async function unlinkReport(missedDs) {
-  const inj = allInjections.find(i => i.cure_id === currentCureId && readReportTag(i) === missedDs);
-  if (!inj) return;
-  const newNotes = writeReportTag(inj.notes, null);
-  const { error } = await sb.from('injections').update({ notes: newNotes }).eq('id', inj.id);
-  if (error) { showToast('\u26A0\uFE0F ' + error.message); return; }
-  inj.notes = newNotes;
-  showToast(t('cure_report_unlinked'));
-  render();
-  selectDay(missedDs, true);
+  const inj = allInjs.find(i => i.cure_id === currentCureId && P.readReport(i) === missedDs); if (!inj) return;
+  const notes = P.setTag(inj.notes, 'report', null);
+  const { error } = await sb.from('injections').update({ notes }).eq('id', inj.id);
+  if (error) { P.toast(t('msg_save_error')); return; }
+  inj.notes = notes;
+  await reloadAndRender();
+  P.toast(t('cure_report_unlinked'));
 }
 
-function localStamp(dateStr, timeStr) {
-  const d = String(dateStr || '').slice(0, 10);
-  let hm = String(timeStr || '').slice(0, 5);
-  if (!/^\d{2}:\d{2}$/.test(hm)) hm = '00:00';
-  return d + 'T' + hm + ':00';
+/* ══════════════ Réglages de la cure (création / modification) ══════════════ */
+const PEPTIDES_BIBLIO = ['BPC-157', 'TB-500', 'CJC-1295', 'Ipamorelin', 'GHRP-6', 'GHRP-2', 'Sermorelin', 'Semaglutide', 'Tirzepatide',
+  'Epithalon', 'Semax', 'Selank', 'PT-141', 'AOD-9604', 'Thymosin Alpha-1', 'GHK-Cu', 'TB-500 + BPC-157'];
+const MAX_TIMES = 3;
+function fld(label, id, opts) {
+  opts = opts || {};
+  return '<div class="field" id="' + id + '-f"><label class="label" for="' + id + '">' + esc(label) + '</label><div class="input-wrap">' +
+    '<input class="input" id="' + id + '" name="' + id + '" type="' + (opts.type || 'text') + '" value="' + esc(opts.value || '') + '"' +
+    (opts.inputmode ? ' inputmode="' + opts.inputmode + '"' : '') + (opts.ph ? ' placeholder="' + esc(opts.ph) + '"' : '') +
+    (opts.hint ? ' aria-describedby="' + id + '-help"' : '') + (opts.attrs ? ' ' + opts.attrs : '') + '>' +
+    (opts.unit ? '<span class="input-unit">' + esc(opts.unit) + '</span>' : '') + '</div>' +
+    (opts.hint ? '<p class="help" id="' + id + '-help">' + esc(opts.hint) + '</p>' : '') + '</div>';
 }
-// Horodatage local de l'instant present
-function localStampNow() {
-  const n = new Date();
-  const p = v => String(v).padStart(2, '0');
-  return n.getFullYear() + '-' + p(n.getMonth()+1) + '-' + p(n.getDate())
-       + 'T' + p(n.getHours()) + ':' + p(n.getMinutes()) + ':' + p(n.getSeconds());
+function sel(label, id, list, value, hint) {
+  return '<div class="field" id="' + id + '-f"><label class="label" for="' + id + '">' + esc(label) + '</label><select class="select" id="' + id + '"' +
+    (hint ? ' aria-describedby="' + id + '-help"' : '') + '>' +
+    list.map(o => '<option value="' + esc(o[0]) + '"' + (String(o[0]) === String(value) ? ' selected' : '') + '>' + esc(o[1]) + '</option>').join('') + '</select>' +
+    (hint ? '<p class="help" id="' + id + '-help">' + esc(hint) + '</p>' : '') + '</div>';
 }
-// Parse 'YYYY-MM-DD' en date LOCALE — new Date('YYYY-MM-DD') parse en UTC
-// et decale d'un jour selon le fuseau.
-function localDay(dateStr) {
-  const p = String(dateStr || '').slice(0, 10).split('-');
-  if (p.length !== 3) return null;
-  const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
-  if (isNaN(d.getTime())) return null;
-  d.setHours(0, 0, 0, 0);
-  return d;
+function invLabel(f) {
+  const ty = P.getTag(f.notes, 'type') || 'vial';
+  const kind = ty === 'pen-prefilled' ? t('cure2_dev_prefilled') : ty === 'pen-refillable' ? t('cure2_dev_refillable') : t('cure2_type_vial');
+  return capFirst(f.peptide_name || '—') + ' · ' + kind;
 }
+function renderSettings(id) {
+  const v = document.getElementById('view');
+  const cure = id ? allCures.find(c => c.id === id) : null;
+  const m = cure ? P.cure(cure) : null;
+  const notes = cure ? (cure.notes || '') : '';
+  // Valeurs de départ
+  let freq = 'daily';
+  if (m) freq = m.mode === 'dates' ? 'dates' : m.mode === 'dow' ? 'dow' : (m.interval === 1 ? 'daily' : m.interval === 2 ? 'every2' : 'keep');
+  formDow = m && m.dow ? m.dow.slice() : [];
+  formDates = m && m.dates ? m.dates.slice().sort() : [];
+  const timesTag = P.getTag(notes, 'times');
+  const times = m ? (timesTag ? m.times.slice() : P.defaultTimes(m.perDay)) : ['08:00'];
+  const dose = cure ? doseMg(cure) : null;
+  const admin = m ? m.admin : 'SC';
+  const adminOpts = [['SC', t('cure2_admin_sc')], ['IM', t('cure2_admin_im')]];
+  if (admin && admin !== 'SC' && admin !== 'IM') adminOpts.push([admin, admin]);
+  const freqOpts = [['daily', t('cure2_fq_daily')], ['every2', t('cure2_fq_2d')], ['dow', t('cure2_fq_dow')], ['dates', t('cure2_fq_dates')]];
+  if (freq === 'keep') freqOpts.unshift(['keep', fmtStr('cure2_fq_keep', { f: m.freqLabel() })]);
+  const invOpts = [['', t('cure2_vial_none')]].concat(inventory.filter(f => !P.hasFlag(f.notes, 'finished') || (m && m.inv === f.id)).map(f => [f.id, invLabel(f)]));
+  if (m && m.inv && !invOpts.some(o => o[0] === m.inv)) invOpts.push([m.inv, t('cure2_vial_unknown')]);
+  const names = Array.from(new Set(inventory.map(f => f.peptide_name).filter(Boolean).concat(PEPTIDES_BIBLIO)));
 
-function selectCure(id) { currentCureId=id; calMonth=TODAY.getMonth(); calYear=TODAY.getFullYear(); render(); }
+  v.innerHTML =
+    '<div class="back-row"><button type="button" class="icon-btn" id="setBack" aria-label="' + esc(t('back')) + '">' + P.icon('chevron-left') + '</button><span>' + esc(t('cure2_title')) + '</span></div>' +
+    '<div class="page-intro"><h1>' + esc(t('cure2_settings_btn')) + '</h1><p class="muted small">' + esc(t('cure2_set_sub')) + '</p></div>' +
+    '<form id="cureForm" class="stack" novalidate>' +
+      '<div id="formErr"></div>' +
+      fld(t('cure2_f_name'), 'cName', { value: cure ? (cure.name || cure.peptide_name || '') : '', ph: t('cure2_f_name_ph'), attrs: 'required autocomplete="off"' }) +
+      fld(t('cure2_f_peptide'), 'cPeptide', { value: cure ? (cure.peptide_name || '') : '', ph: t('cure2_f_peptide_ph'), attrs: 'required list="pepList" autocomplete="off"' }) +
+      '<datalist id="pepList">' + names.map(n => '<option value="' + esc(n) + '">').join('') + '</datalist>' +
+      sel(t('cure2_f_device'), 'cDevice', [['syringe', t('cure2_dev_syringe')], ['prefilled', t('cure2_dev_prefilled')], ['refillable', t('cure2_dev_refillable')]], m ? m.device : 'syringe') +
+      fld(t('cure2_f_dose'), 'cDose', { value: dose !== null ? String(dose).replace('.', P.lang() === 'en' ? '.' : ',') : '', unit: 'mg', inputmode: 'decimal', ph: '—', hint: t('cure2_dose_help') }) +
+      sel(t('cure2_f_admin'), 'cAdmin', adminOpts, admin) +
+      sel(t('cure2_f_freq'), 'cFreq', freqOpts, freq) +
+      '<div id="freqDetail"></div>' +
+      '<div class="grid2">' +
+        fld(t('cure2_f_start'), 'cStart', { type: 'date', value: cure ? String(cure.start_date || '').slice(0, 10) : todayStr(), attrs: 'required' }) +
+        fld(t('cure2_f_duration'), 'cDuration', { value: cure && cure.duration_days ? String(cure.duration_days) : '', unit: t('days'), inputmode: 'numeric', attrs: 'required' }) +
+      '</div>' +
+      '<div class="stack tight" id="timesBox"></div>' +
+      '<button type="button" class="btn secondary full" id="addTime">' + P.icon('plus') + esc(t('cure2_add_time')) + '</button>' +
+      sel(t('cure2_f_vial'), 'cInv', invOpts, m && m.inv ? m.inv : '', t('cure2_vial_help')) +
+      P.notice(t('cure2_notice')) +
+      '<button class="btn full" type="submit" id="cSave">' + esc(t('cure2_save')) + '</button>' +
+      (cure ? '<button type="button" class="btn danger full" id="cDelete">' + P.icon('trash') + esc(t('cure2_delete')) + '</button>' : '') +
+    '</form>';
 
-// ── CRUD CURES ─────────────────────────────────────────────────
-const PEPTIDES_BIBLIO = [
-  'BPC-157','TB-500','CJC-1295','Ipamorelin','GHRP-6','GHRP-2',
-  'Sermorelin','Semaglutide','Tirzepatide','Epithalon','Semax','Selank',
-  'PT-141','AOD-9604','Thymosin Alpha-1','GHK-Cu','TB-500 + BPC-157','Autre'
-];
-
-async function openAddCure() {
-  editCureId = null;
-  document.getElementById('modalTitle').textContent  = t('cure_new');
-  document.getElementById('modalSubmit').textContent = t('cure_start_btn');
-  document.getElementById('modalDelete').style.display = 'none';
-  ['newCureDosage','newCureNotes'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
-  document.getElementById('newCureAdmin').value = 'SC';
-  resetTitration();
-  document.getElementById('newCureStart').value    = todayStr;
-  document.getElementById('newCureDuration').value = '';
-  document.getElementById('newCureFreq').value     = '1';
-
-  // Charger les flacons du stock pour les proposer en premier
-  await populatePeptideSelect('');
-
-  document.getElementById('addCureModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  document.getElementById('setBack').onclick = goMain;
+  const tb = document.getElementById('timesBox');
+  times.forEach(h => addTimeRow(h));
+  document.getElementById('addTime').onclick = () => { addTimeRow(''); const all = tb.querySelectorAll('input[type=time]'); if (all.length) all[all.length - 1].focus(); };
+  const fq = document.getElementById('cFreq');
+  fq.onchange = () => renderFreqDetail(fq.value);
+  renderFreqDetail(freq);
+  document.getElementById('cureForm').onsubmit = e => { e.preventDefault(); saveCure(cure); };
+  const del = document.getElementById('cDelete'); if (del) del.onclick = () => deleteCure(cure);
+  PS_applyI18n();
 }
-
-async function populatePeptideSelect(currentVal) {
-  const sel = document.getElementById('newCurePeptide');
-  sel.innerHTML = '<option value="">Choisir…</option>';
-
-  // Flacons du stock (actifs ou scellés) — seulement si userId disponible
-  if (userId) {
-    try {
-      const { data: stock } = await sb.from('inventory')
-        .select('peptide_name, vial_qty_mg, remaining_units, notes')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      const stockItems = (stock || []).filter(f => !(f.notes||'').includes('finished'));
-      if (stockItems.length > 0) {
-        const grpStock = document.createElement('optgroup');
-        grpStock.label = t('cure_my_stock');
-        stockItems.forEach(f => {
-          const opt = document.createElement('option');
-          const rem = f.remaining_units ?? f.vial_qty_mg ?? 0;
-          opt.value = f.peptide_name;
-          opt.textContent = `${f.peptide_name} (${rem} mg ${t('cure_remaining').toLowerCase()})`;
-          if (currentVal === f.peptide_name) opt.selected = true;
-          grpStock.appendChild(opt);
-        });
-        sel.appendChild(grpStock);
-      }
-    } catch(e) { console.warn('Stock load error:', e); }
-  }
-
-  // Bibliothèque standard
-  const grpBiblio = document.createElement('optgroup');
-  grpBiblio.label = t('cure_library');
-  PEPTIDES_BIBLIO.forEach(name => {
-    const opt = document.createElement('option');
-    opt.value = name; opt.textContent = name;
-    if (currentVal === name) opt.selected = true;
-    grpBiblio.appendChild(opt);
-  });
-  sel.appendChild(grpBiblio);
+let timeSerial = 0;
+function addTimeRow(val) {
+  const tb = document.getElementById('timesBox'); if (!tb) return;
+  const n = tb.querySelectorAll('.time-row').length;
+  if (n >= MAX_TIMES) return;
+  const id = 'cTime' + (++timeSerial);
+  const row = document.createElement('div'); row.className = 'time-row';
+  row.innerHTML = fld(n === 0 ? t('cure2_f_time') : t('cure2_f_time_more'), id, { type: 'time', value: val, attrs: 'required' }) +
+    (n === 0 ? '' : '<button type="button" class="icon-btn" aria-label="' + esc(t('cure2_remove_time')) + '">' + P.icon('x-mark') + '</button>');
+  const rm = row.querySelector('.icon-btn');
+  if (rm) rm.onclick = () => { row.remove(); relabelTimes(); };
+  tb.appendChild(row);
+  relabelTimes();
 }
-
-async function openEditCure(id) {
-  const cure = allCures.find(x => x.id === id);
-  if (!cure) return;
-  editCureId = id;
-  document.getElementById('modalTitle').textContent  = t('cure_modal_edit');
-  document.getElementById('modalSubmit').textContent = t('cure_save_btn');
-  document.getElementById('modalDelete').style.display = 'block';
-  // Extraire la valeur admin depuis les notes (SC, IM, Oral, Nasal, IV)
-  const _adminMatch = (cure.notes||'').match(/admin:([^|\n]+)/);
-  const admin = (_adminMatch ? _adminMatch[1].trim() : '') || 'SC';
-  await populatePeptideSelect(cure.peptide_name||cure.name);
-  document.getElementById('newCureDosage').value   = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mg'}` : '';
-  // Forcer la sélection de la bonne option ROUTE
-  const adminSelect = document.getElementById('newCureAdmin');
-  adminSelect.value = admin;
-  if (!adminSelect.value) adminSelect.value = 'SC'; // fallback
-  document.getElementById('newCureStart').value    = cure.start_date;
-  document.getElementById('newCureDuration').value = cure.duration_days;
-  document.getElementById('newCureFreq').value     = cure.frequency||'1';
-  // Extraire uniquement la note libre (sans tags techniques admin:/inv:)
-  const _userNote = (cure.notes||'')
-    .replace(/admin:[^|]*/g, '')
-    .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
-    .replace(/[|]?titration:\[.*?\]/g, '')
-    .replace(/^\s*[|]+\s*/g, '')
-    .replace(/\s*[|]+\s*$/g, '')
-    .replace(/\s*[|]+\s*/g, ' | ')
-    .trim();
-  document.getElementById('newCureNotes').value = _userNote;
-  // Réinitialiser la titration avant de charger
-  titrationActive = false;
-  paliers = [];
-  const sw = document.getElementById('titrationSwitch');
-  const sec = document.getElementById('titrationSection');
-  if (sw) sw.classList.remove('on');
-  if (sec) sec.classList.remove('visible');
-  const dosageRow = document.getElementById('newCureDosage')?.closest('.form-row');
-  if (dosageRow) dosageRow.style.display = '';
-  // Charger la titration si elle existe dans les notes
-  loadTitrationFromCure(cure);
-  document.getElementById('addCureModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
+function relabelTimes() {
+  const tb = document.getElementById('timesBox'); if (!tb) return;
+  const rows = tb.querySelectorAll('.time-row');
+  rows.forEach((r, i) => { const l = r.querySelector('.label'); if (l) l.textContent = i === 0 ? t('cure2_f_time') : t('cure2_f_time_more'); });
+  const add = document.getElementById('addTime'); if (add) add.disabled = rows.length >= MAX_TIMES;
 }
-
-
-// ── TITRATION ─────────────────────────────────────────────────
-let titrationActive = false;
-let paliers = []; // [{dose, duree_jours}]
-
-function toggleTitration() {
-  titrationActive = !titrationActive;
-  const sw = document.getElementById('titrationSwitch');
-  const sec = document.getElementById('titrationSection');
-  const dosageInput = document.getElementById('newCureDosage');
-  if (titrationActive) {
-    sw.classList.add('on');
-    sec.classList.add('visible');
-    // Le dosage principal est le Palier 1 — on commence directement au Palier 2
-    if (paliers.length === 0) {
-      paliers.push({ dose: '', duree_jours: 7 }); // Palier 2 vide
-      renderPaliers();
-    }
-    // Masquer le champ dosage principal (remplacé par les paliers)
-    if (dosageInput) {
-      dosageInput.closest('.form-row').style.display = 'none';
-    }
-  } else {
-    sw.classList.remove('on');
-    sec.classList.remove('visible');
-    paliers = [];
-    // Réafficher le champ dosage principal
-    if (dosageInput) {
-      dosageInput.closest('.form-row').style.display = '';
-    }
-  }
-}
-
-function addPalier() {
-  if (paliers.length >= 4) return;
-  paliers.push({ dose: '', duree_jours: 7 });
-  const sheet = document.querySelector('.modal-sheet');
-  const scrollPos = sheet ? sheet.scrollTop : 0;
-  renderPaliers();
-  // Restaurer la position de scroll
-  if (sheet) requestAnimationFrame(() => { sheet.scrollTop = scrollPos; });
-}
-
-function removePalier(idx) {
-  paliers.splice(idx, 1);
-  const sheet = document.querySelector('.modal-sheet');
-  const scrollPos = sheet ? sheet.scrollTop : 0;
-  if (paliers.length === 0) {
-    toggleTitration();
-  } else {
-    renderPaliers();
-    if (sheet) requestAnimationFrame(() => { sheet.scrollTop = scrollPos; });
-  }
-}
-
-function updatePalier(idx, field, val) {
-  paliers[idx][field] = val;
-}
-
-function renderPaliers() {
-  const container = document.getElementById('titrationPaliers');
-  const addBtn = document.getElementById('titrationAddBtn');
-  addBtn.disabled = paliers.length >= 4;
-
-  container.innerHTML = paliers.map((p, i) => `
-    <div class="titration-palier">
-      <div class="titration-palier-header">
-        <span class="titration-palier-num">${t('titration_palier')} ${i+2}</span>
-        ${paliers.length > 1 ? `<button class="titration-palier-remove" onclick="removePalier(${i})">✕</button>` : ''}
-      </div>
-      <div class="titration-row">
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label" data-i18n="cure_dosage" style="font-size:.72rem">${t('cure_dosage')}</label>
-          <input class="form-input" style="font-size:.85rem;padding:8px 10px"
-            placeholder="ex: 0.5 mg"
-            value="${p.dose}"
-            onchange="updatePalier(${i},'dose',normalizeDose(this.value))"
-            oninput="updatePalier(${i},'dose',normalizeDose(this.value))">
-        </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label" style="font-size:.72rem" data-i18n="titration_duration">${t('titration_duration')}</label>
-          <input class="form-input" type="number" style="font-size:.85rem;padding:8px 10px"
-            placeholder="7"
-            min="1" max="90"
-            value="${p.duree_jours}"
-            onchange="updatePalier(${i},'duree_jours',parseInt(this.value)||7)"
-            oninput="updatePalier(${i},'duree_jours',parseInt(this.value)||7)">
-        </div>
-      </div>
-    </div>
-  `).join('');
-
-  // Mettre à jour la durée totale (palier1 + paliers suivants)
-  if (titrationActive) {
-    const p1Days = parseInt(document.getElementById('palier1Days')?.value) || 7;
-    const total = p1Days + paliers.reduce((s, p) => s + (parseInt(p.duree_jours)||7), 0);
-    const durInput = document.getElementById('newCureDuration');
-    if (durInput) durInput.value = total;
-  }
-}
-
-function resetTitration() {
-  titrationActive = false;
-  paliers = [];
-  const sw = document.getElementById('titrationSwitch');
-  const sec = document.getElementById('titrationSection');
-  if (sw) sw.classList.remove('on');
-  if (sec) sec.classList.remove('visible');
-  const dosageInput = document.getElementById('newCureDosage');
-  if (dosageInput) {
-    const wrap = dosageInput.closest('.form-row');
-    if (wrap) { wrap.style.display = ''; wrap.style.opacity = ''; wrap.style.pointerEvents = ''; }
-  }
-  if (document.getElementById('titrationPaliers')) {
-    document.getElementById('titrationPaliers').innerHTML = '';
-  }
-}
-
-function loadTitrationFromCure(cure) {
-  try {
-    const notesStr = cure.notes || '';
-    const match = notesStr.match(/titration:(\[.*?\])(?:\s*\||$|\s*$)/);
-    if (match) {
-      paliers = JSON.parse(match[1]);
-      titrationActive = true;
-      const sw = document.getElementById('titrationSwitch');
-      const sec = document.getElementById('titrationSection');
-      if (sw) sw.classList.add('on');
-      if (sec) sec.classList.add('visible');
-      // Masquer le champ dosage principal
-      const dosageInput = document.getElementById('newCureDosage');
-      if (dosageInput) {
-        const wrap = dosageInput.closest('.form-row');
-        if (wrap) wrap.style.display = 'none';
-      }
-      renderPaliers();
-    }
-  } catch(e) { /* silencieux */ }
-}
-
-
-function updateTotalDuration() {
-  if (!titrationActive) return;
-  const p1Days = parseInt(document.getElementById('palier1Days')?.value) || 7;
-  const total = p1Days + paliers.reduce((s, p) => s + (parseInt(p.duree_jours)||7), 0);
-  const durInput = document.getElementById('newCureDuration');
-  if (durInput) durInput.value = total;
-}
-
-function normalizeDose(val) {
-  // Accepte virgule ou point : "0,5" → "0.5", "1,5 mg" → "1.5 mg"
-  return String(val || '').replace(',', '.');
-}
-
-function getTitrationDoseForDay(cure, dayNum) {
-  try {
-    const notesStr = cure.notes || '';
-    const titMatch = notesStr.match(/titration:(\[.*?\])(?:\s*\||$|\s*$)/);
-    if (!titMatch) return null;
-    const pals = JSON.parse(titMatch[1]);
-    if (!pals || pals.length === 0) return null;
-    // Palier 1 = dose principale, durée stockée dans titration_p1
-    const p1Match = notesStr.match(/titration_p1:(\d+)/);
-    const p1Days = p1Match ? parseInt(p1Match[1]) : 7;
-    // Jours 1 à p1Days = dose principale (null = utiliser cure.dose_mcg)
-    if (dayNum <= p1Days) return null;
-    // Paliers suivants
-    let dayCount = p1Days;
-    for (const p of pals) {
-      dayCount += parseInt(p.duree_jours) || 7;
-      if (dayNum <= dayCount) return p.dose;
-    }
-    return pals[pals.length-1]?.dose || null;
-  } catch(e) { return null; }
-}
-
-async function saveCure() {
-  const peptide  = document.getElementById('newCurePeptide').value;
-  const dosage   = normalizeDose(document.getElementById('newCureDosage').value);
-  const admin    = document.getElementById('newCureAdmin').value;
-  const startDate= document.getElementById('newCureStart').value;
-  const duration = document.getElementById('newCureDuration').value;
-  const freq     = document.getElementById('newCureFreq').value;
-  const notes    = document.getElementById('newCureNotes').value;
-  // Validation titration
-  if (titrationActive) {
-    const invalid = paliers.some(p => !p.dose || p.dose.trim() === '');
-    if (invalid) { showToast(t('titration_fill_doses')); return; }
-    if (paliers.length === 0) { showToast(t('titration_fill_doses')); return; }
-  }
-  if (!peptide||!startDate||!duration) { showToast(t('alerts_fill_all')); return; }
-  if (!titrationActive && !dosage) { showToast(t('alerts_fill_all')); return; }
-  // Si titration active, utiliser la dose du premier palier
-  const effectiveDosage = normalizeDose(dosage || ''); // Palier 1 = dosage principal
-  const doseNum = parseFloat(effectiveDosage);
-  const unit    = effectiveDosage.toLowerCase().includes('iu') ? 'IU' : (effectiveDosage.toLowerCase().includes('mcg') ? 'mcg' : 'mg');
-
-  // Chercher si ce peptide correspond à un flacon du stock → stocker l'inventory_id
-  let inventoryId = null;
-  if (userId) {
-    const { data: stock } = await sb.from('inventory')
-      .select('id, peptide_name, notes')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-    const match = (stock||[]).find(f => {
-      const fn = (f.peptide_name||'').toLowerCase();
-      const pn = peptide.toLowerCase();
-      return fn === pn || fn.includes(pn) || pn.includes(fn);
+function renderFreqDetail(mode) {
+  const box = document.getElementById('freqDetail'); if (!box) return;
+  if (mode === 'dow') {
+    const nm = weekdayNames();
+    box.innerHTML = '<fieldset class="dow-set" id="dowSet" aria-describedby="dowSet-err"><legend>' + esc(t('cure2_dow_legend')) + '</legend>' +
+      nm.map((n, i) => '<label class="checkline"><input type="checkbox" value="' + (i + 1) + '"' + (formDow.indexOf(i + 1) >= 0 ? ' checked' : '') + '>' + esc(n) + '</label>').join('') + '</fieldset>';
+    box.querySelectorAll('input[type=checkbox]').forEach(cb => cb.onchange = () => {
+      formDow = Array.from(box.querySelectorAll('input:checked')).map(x => Number(x.value));
     });
-    if (match && !(match.notes||'').includes('finished')) {
-      inventoryId = match.id;
+  } else if (mode === 'dates') {
+    box.innerHTML = '<div class="stack tight" id="datesSet"><div class="date-list" id="dateList"></div>' +
+      '<div class="date-add">' + fld(t('cure2_dates_add_label'), 'cDateNew', { type: 'date' }) +
+      '<button type="button" class="btn secondary" id="dateAdd">' + P.icon('plus') + esc(t('cure2_dates_add')) + '</button></div></div>';
+    const draw = () => {
+      const list = document.getElementById('dateList');
+      list.innerHTML = formDates.length
+        ? formDates.map(d => '<div class="list-row"><span class="grow">' + esc(dayWeek(d)) + '</span><button type="button" class="icon-btn" data-rm="' + d + '" aria-label="' + esc(fmtStr('cure2_date_remove', { d: dayShort(d) })) + '">' + P.icon('x-mark') + '</button></div>').join('')
+        : '<p class="small muted">' + esc(t('cure2_dates_none')) + '</p>';
+      list.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { formDates = formDates.filter(x => x !== b.dataset.rm); draw(); });
+    };
+    draw();
+    document.getElementById('dateAdd').onclick = () => {
+      const inp = document.getElementById('cDateNew'), val = inp.value;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) { inp.setAttribute('aria-invalid', 'true'); inp.focus(); return; }
+      inp.removeAttribute('aria-invalid');
+      if (formDates.indexOf(val) < 0) { formDates.push(val); formDates.sort(); }
+      inp.value = ''; draw();
+    };
+  } else box.innerHTML = '';
+}
+function setErr(id, msg) {
+  const el = document.getElementById(id); if (!el) return;
+  const holder = document.getElementById(id + '-f') || el.parentElement;
+  if (el.tagName === 'INPUT' || el.tagName === 'SELECT') { el.setAttribute('aria-invalid', 'true'); el.setAttribute('aria-errormessage', id + '-err'); }
+  const p = document.createElement('p'); p.className = 'error-text'; p.id = id + '-err'; p.textContent = msg;
+  (holder.tagName === 'FIELDSET' ? holder : holder).appendChild(p);
+}
+function clearErrs(form) {
+  form.querySelectorAll('.error-text').forEach(e => e.remove());
+  form.querySelectorAll('[aria-invalid]').forEach(e => { e.removeAttribute('aria-invalid'); e.removeAttribute('aria-errormessage'); });
+  document.getElementById('formErr').innerHTML = '';
+}
+async function saveCure(cure) {
+  const form = document.getElementById('cureForm'); clearErrs(form);
+  const val = id => (document.getElementById(id) || {}).value || '';
+  const name = val('cName').trim(), peptide = val('cPeptide').trim();
+  const device = val('cDevice'), admin = val('cAdmin'), mode = val('cFreq');
+  const doseRaw = val('cDose').trim(), dose = P.num(doseRaw);
+  const start = val('cStart'), durRaw = val('cDuration').trim();
+  const timeInputs = Array.from(document.querySelectorAll('#timesBox input[type=time]'));
+  const times = timeInputs.map(i => i.value).filter(v => /^\d{2}:\d{2}$/.test(v));
+  const errs = [];
+  if (!name) errs.push(['cName', t('cure2_err_name')]);
+  if (!peptide) errs.push(['cPeptide', t('cure2_err_peptide')]);
+  if (doseRaw && !(dose > 0)) errs.push(['cDose', t('cure2_err_dose')]);
+  if (mode === 'dow' && !formDow.length) errs.push(['dowSet', t('cure2_err_dow')]);
+  if (mode === 'dates' && !formDates.length) errs.push(['cDateNew', t('cure2_err_dates')]);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) errs.push(['cStart', t('cure2_err_start')]);
+  if (!/^\d+$/.test(durRaw) || parseInt(durRaw, 10) < 1) errs.push(['cDuration', t('cure2_err_duration')]);
+  if (!times.length || times.length !== timeInputs.length) {
+    const bad = timeInputs.find(i => !/^\d{2}:\d{2}$/.test(i.value)) || timeInputs[0];
+    if (bad) errs.push([bad.id, t('cure2_err_time')]);
+  }
+  if (errs.length) {
+    errs.forEach(e => setErr(e[0], e[1]));
+    document.getElementById('formErr').innerHTML = P.notice(t('cure2_err_form'), 'error');
+    const first = document.getElementById(errs[0][0]);
+    const target = first && first.tagName === 'FIELDSET' ? first.querySelector('input') : first;
+    if (target) target.focus();
+    return;
+  }
+  // Fréquence (nombre en texte, sens inchangé) + étiquettes
+  const perDay = String(times.length);
+  const frequency = mode === 'every2' ? '0.5' : mode === 'keep' ? String(cure.frequency) : perDay;
+  const orderedTimes = cure ? times : times.slice().sort();
+  let notes = cure ? (cure.notes || '') : '';
+  notes = P.setTag(notes, 'admin', admin || 'SC');
+  notes = P.setTag(notes, 'dev', device || 'syringe');
+  notes = P.setTag(notes, 'times', orderedTimes.join(','));
+  notes = P.setTag(notes, 'inv', val('cInv') || null);
+  notes = P.setTag(notes, 'dow', mode === 'dow' ? formDow.slice().sort((a, b) => a - b).join(',') : null);
+  notes = P.setTag(notes, 'dates', mode === 'dates' ? formDates.slice().sort().join(',') : null);
+  const payload = {
+    name, peptide_name: peptide, dose_mcg: doseRaw ? dose : null, unit: 'mg', frequency,
+    duration_days: parseInt(durRaw, 10), start_date: start, status: 'active', notes
+  };
+  const btn = document.getElementById('cSave');
+  btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = t('cure2_saving');
+  try {
+    if (cure) {
+      const { error } = await sb.from('cures').update(payload).eq('id', cure.id);
+      if (error) throw error;
+      currentCureId = cure.id;
+    } else {
+      const { data, error } = await sb.from('cures').insert(Object.assign({}, payload, { user_id: userId })).select().single();
+      if (error) throw error;
+      if (data && data.id) currentCureId = data.id;
     }
+  } catch (e) {
+    console.error(e);
+    btn.disabled = false; btn.removeAttribute('aria-busy'); btn.textContent = t('cure2_save');
+    document.getElementById('formErr').innerHTML = P.notice(t('msg_save_error'), 'error');
+    return;
   }
-
-  // Sérialiser les paliers de titration dans les notes
-  let titrationStr = '';
-  if (titrationActive && paliers.length > 0) {
-    const p1Days = parseInt(document.getElementById('palier1Days')?.value) || 7;
-    const validPaliers = paliers.filter(p => p.dose && p.duree_jours > 0).map(p => ({ ...p, dose: String(p.dose).match(/[a-zA-Z]/) ? p.dose : p.dose+' '+(unit||'mg') }));
-    titrationStr = 'titration_p1:'+p1Days+'|titration:' + JSON.stringify(validPaliers);
-  }
-
-  const _cleanNote = notes
-    .replace(/admin:[^|]*/g, '')
-    .replace(/[|]?inv:[a-f0-9-]{36}/g, '')
-    .replace(/[|]?titration:\[.*?\]/g, '')
-    .replace(/^\s*[|]+\s*/g, '')
-    .replace(/\s*[|]+\s*$/g, '')
-    .replace(/\s*[|]+\s*/g, ' | ')
-    .trim();
-  const notesStr = 'admin:'+admin+(inventoryId?'|inv:'+inventoryId:'')+(titrationStr?' | '+titrationStr:'')+ (_cleanNote?' | '+_cleanNote:'');
-  const payload = { name:peptide, peptide_name:peptide, dose_mcg:doseNum||null, unit, frequency:freq,
-    duration_days:parseInt(duration), start_date:startDate, status:'active', notes:notesStr };
-
-  if (editCureId) {
-    await sb.from('cures').update(payload).eq('id', editCureId);
-    showToast(t('cure_updated'));
-  } else {
-    const { data } = await sb.from('cures').insert({...payload, user_id:userId}).select().single();
-    if (data) currentCureId = data.id;
-    showToast(t('cure_started'));
-  }
-  closeModal();
-  await loadData();
+  try { await loadData(); } catch (e) { console.warn(e); }
+  P.refreshReminders(allCures, allInjs, userId);
+  const c = curCure();
+  if (c) { lsSet('ps_cure_view', c.id); setSelected(pickDefaultDay(P.cure(c))); selDsBelongs = true; }
+  goMain();
+  P.toast(t(cure ? 'cure2_saved' : 'cure2_created'));
+}
+async function deleteCure(cure) {
+  if (!cure) return;
+  const ok = await P.confirm({ title: t('cure2_delete_title'), text: t('cure2_delete_text'), ok: t('cure2_delete'), cancel: t('cure2_keep'), danger: true });
+  if (!ok) return;
+  try {
+    const r1 = await sb.from('injections').delete().eq('cure_id', cure.id);
+    if (r1 && r1.error) throw r1.error;
+    const r2 = await sb.from('cures').delete().eq('id', cure.id);
+    if (r2 && r2.error) throw r2.error;
+  } catch (e) { console.error(e); document.getElementById('formErr').innerHTML = P.notice(t('msg_save_error'), 'error'); return; }
+  currentCureId = null; selDs = null; selDsBelongs = false; lsDel('ps_cure_view');
+  try { await loadData(); } catch (e) { console.warn(e); }
+  allCures = allCures.filter(c => c.id !== cure.id);
+  P.refreshReminders(allCures, allInjs, userId);
+  goMain();
+  P.toast(t('cure2_deleted'));
 }
 
-async function deleteCure() {
-  if (!editCureId) return;
-  if (!confirm(t('cure_confirm_delete'))) return;
-  await sb.from('injections').delete().eq('cure_id', editCureId);
-  await sb.from('cures').delete().eq('id', editCureId);
-  currentCureId = null;
-  closeModal();
-  showToast(t('cure_deleted'));
-  await loadData();
-}
-
-function closeModal() {
-  document.getElementById('addCureModal').classList.remove('open');
-  document.body.style.overflow = '';
-  resetTitration();
-  editCureId = null;
-}
-function closeIfOverlay(e) { if(e.target===document.getElementById('addCureModal')) closeModal(); }
-
-
-// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
-PS_initShell();
-
-async function psLogout() {
-  try { await sb.auth.signOut(); } catch(e) {}
-  window.location.href = '/login.html';
-}
-function psFillAvatar() {
-  sb.auth.getUser().then(({data}) => {
-    const n = data?.user?.user_metadata?.full_name || data?.user?.email || '';
-    const btn = document.getElementById('avatarButton');
-    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
-  }).catch(()=>{});
-}
-
-init().then(()=>{
-  psFillAvatar();
-  // Appliquer les traductions SEULEMENT si le modal est fermé
-  if (!document.getElementById('addCureModal').classList.contains('open')) {
-    PS_applyI18n();
-  }
-  PS_renderLangSwitcher();
-});
+init().catch(e => { console.error(e); document.getElementById('view').innerHTML = P.errorState(() => { document.getElementById('view').innerHTML = P.skeleton(); init().catch(() => {}); }); });
 </script>
 </body>
 </html>

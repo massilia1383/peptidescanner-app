@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Connexion — PeptideScanner</title>
-  <script src="/lang.js"></script>
-<script src="/assets/assets-bundle.js"></script>
-<script src="/ps-app.js"></script>
-  <script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Connexion — PeptideScanner</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -15,280 +12,317 @@
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
-  <link rel="stylesheet" href="/peptidescanner.css">
-  <!--
-    Lot D (14/10/2026) : page de connexion passée au design « Carnet de protocole ».
-    Couleurs et polices viennent de peptidescanner.css (mode sombre compris).
-    Classes préfixées auth- pour ne pas entrer en conflit avec .card / .tabs du design.
-    Plus de lien « Accueil » : la landing est archivée (appli stores uniquement).
-  -->
-  <style>
-    body{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px calc(32px + env(safe-area-inset-bottom));}
-    .auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
-    .auth-logo img{width:40px;height:40px;}
-    .auth-logo-name{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.3px;}
-    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;width:100%;max-width:420px;}
-    .auth-title{font-size:22px;font-weight:700;letter-spacing:-.4px;margin-bottom:6px;color:var(--text);}
-    .auth-subtitle{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
-    .auth-tabs{display:flex;background:var(--surface-muted);border-radius:10px;padding:3px;margin-bottom:24px;gap:3px;}
-    .auth-tab{flex:1;min-height:40px;padding:9px;font-family:inherit;font-size:14px;font-weight:500;color:var(--muted);background:transparent;border:none;border-radius:8px;cursor:pointer;transition:background .18s,color .18s;}
-    .auth-tab.active{background:var(--surface);color:var(--text);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.06);}
-    .auth-field{margin-bottom:16px;display:grid;gap:7px;}
-    .auth-field label{font-size:13px;font-weight:700;color:var(--text-soft);}
-    .auth-field input{width:100%;min-height:48px;padding:11px 13px;font-family:inherit;font-size:16px;color:var(--text);background:var(--surface-elevated);border:1px solid var(--border);border-radius:10px;outline:none;transition:border-color .18s,box-shadow .18s;}
-    .auth-field input:focus{border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring);}
-    .auth-submit{width:100%;min-height:48px;padding:12px;font-family:inherit;font-size:15px;font-weight:700;color:var(--accent-on);background:var(--accent);border:none;border-radius:10px;cursor:pointer;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .18s;}
-    .auth-submit:hover{background:var(--accent-hover);}
-    .auth-submit:active{background:var(--accent-pressed);}
-    .auth-submit:disabled{opacity:.6;cursor:not-allowed;}
-    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
-    @keyframes spin{to{transform:rotate(360deg);}}
-    .msg{display:none;padding:12px 14px;border-radius:10px;font-size:14px;margin-bottom:16px;line-height:1.45;}
-    .msg.error{display:block;background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger);}
-    .msg.success{display:block;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-border);}
-    .forgot{text-align:right;}
-    .forgot a{font-size:13px;color:var(--info);text-decoration:none;font-weight:600;}
-    /* Lot 3 : case obligatoire à l'inscription (18 ans et plus + CGU + confidentialité) */
-    .terms-check{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-muted);cursor:pointer;}
-    .terms-check input{width:20px;height:20px;flex-shrink:0;margin:1px 0 0;accent-color:var(--accent);}
-    .terms-check span{font-size:13px;line-height:1.5;color:var(--text);}
-    .terms-check a{color:var(--info);text-decoration:none;font-weight:600;}
-    #confirmScreen{display:none;text-align:center;padding:8px 0;}
-    .confirm-icon{width:56px;height:56px;margin:0 auto 16px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;}
-    .confirm-title{font-size:20px;font-weight:700;margin-bottom:10px;color:var(--text);}
-    .confirm-text{font-size:14px;color:var(--muted);line-height:1.6;}
-    .confirm-email{font-weight:700;color:var(--text);}
-    .resend-btn{background:none;border:1px solid var(--border);border-radius:10px;min-height:44px;padding:10px 20px;font-family:inherit;font-size:14px;color:var(--text);cursor:pointer;margin-top:20px;}
-    .resend-btn:hover{border-color:var(--accent);color:var(--accent);}
-    .lang-wrap{position:fixed;top:calc(12px + env(safe-area-inset-top));right:16px;z-index:10;}
-  </style>
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
+<link rel="stylesheet" href="/peptidescanner.css">
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
+<!--
+  Refonte « Clarté » (15/10/2026) : connexion, inscription et mot de passe oublié = maquettes
+  login / register / forgot du kit, dans la même page (vues commutées par l'adresse : #register, #forgot).
+  Conservé : connexion e-mail + mot de passe Supabase, inscription avec case obligatoire 18 ans + CGU,
+  écran « Vérifiez vos e-mails » avec renvoi, mot de passe oublié (lien vers reset-password.html),
+  messages d'erreur traduits, redirection si déjà connecté, ?signup=1, sélecteur de langue.
+  Erreur de connexion générique : on ne dit jamais si un compte existe.
+  Après connexion : dashboard.html (qui renvoie vers l'avertissement ou le parcours d'arrivée si besoin).
+-->
+<style>
+  /* Vues commutées : même espacement que .content */
+  .view{display:grid;gap:18px}
+  .view[hidden]{display:none}
+  /* Sélecteur de langue discret dans l'en-tête, cibles de 44 px */
+  .lang-switch{flex:0 0 auto;padding:3px;gap:3px;flex-wrap:nowrap}
+  .lang-switch button{flex:0 0 auto;min-width:48px;min-height:44px;padding:6px 10px;font-size:var(--text-sm)}
+  /* Case à cocher avec lien en ligne : texte dans un paragraphe, libellé relié à la case */
+  p.checkline{margin:0;color:var(--text)}
+  .checkline label{cursor:pointer}
+  .field-error[hidden]{display:none}
+  #loginMsg:empty,#regMsg:empty,#forgotFeedback:empty,#resendMsg:empty{display:none}
+  .lang-switch button{min-width:44px}
+  .check-mail{display:flex;gap:12px;align-items:flex-start}
+  .check-mail .icon{color:var(--accent);flex:0 0 24px}
+  .check-mail strong{word-break:break-all}
+</style>
 </head>
-<body>
+<body data-no-profile="1">
+<a class="sr-only" href="#main" data-i18n="auth2_skip">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content no-tabs" tabindex="-1">
 
-  <div class="lang-wrap" id="langToggleBtn"></div>
-
-  <div class="auth-logo">
-    <span class="brand-logo" data-ps-logo style="width:40px;height:40px;color:var(--accent)"></span>
-    <span class="auth-logo-name">PeptideScanner</span>
-  </div>
-
-  <div class="auth-card">
-    <div id="confirmScreen">
-      <div class="confirm-icon"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
-      <div class="confirm-title" id="confirmTitle"></div>
-      <p class="confirm-text" id="confirmText1"></p>
-      <p class="confirm-text" style="margin-top:10px;" id="confirmText2"></p>
-      <button class="resend-btn" id="resendBtn"></button>
+    <!-- ═══ Connexion (maquette login) ═══ -->
+    <div class="view" id="view-login" data-view="login">
+      <div class="page-intro">
+        <h1 data-i18n="auth2_login_title">Votre suivi, clairement.</h1>
+        <p class="muted small" data-i18n="auth2_login_sub">Retrouvez votre carnet personnel.</p>
+      </div>
+      <section class="card">
+        <form id="loginForm" class="stack" novalidate>
+          <div id="loginMsg"></div>
+          <div class="field">
+            <label class="label" for="loginEmail" data-i18n="auth2_email">Adresse e-mail</label>
+            <div class="input-wrap"><input class="input" id="loginEmail" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" data-i18n-ph="auth2_email_ph" placeholder="vous@exemple.fr" aria-describedby="loginEmail-err"></div>
+            <p class="error-text field-error" id="loginEmail-err" hidden></p>
+          </div>
+          <div class="field">
+            <label class="label" for="loginPassword" data-i18n="auth2_password">Mot de passe</label>
+            <div class="input-wrap"><input class="input" id="loginPassword" name="password" type="password" autocomplete="current-password" aria-describedby="loginPassword-err"></div>
+            <p class="error-text field-error" id="loginPassword-err" hidden></p>
+          </div>
+          <button class="btn full" type="submit" id="loginBtn" data-i18n="auth2_login_submit">Se connecter</button>
+          <a class="btn ghost full" href="#forgot" id="toForgot" data-i18n="auth2_forgot_link">Mot de passe oublié ?</a>
+        </form>
+      </section>
+      <a class="btn secondary full" href="#register" data-i18n="auth2_create_account">Créer un compte</a>
+      <p class="screen-footer" data-i18n="auth2_adults_only">Réservé aux adultes de 18 ans et plus.</p>
     </div>
 
-    <div id="authForm">
-      <div class="auth-title" id="formTitle"></div>
-      <div class="auth-subtitle" id="formSubtitle"></div>
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')"></button>
-        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')"></button>
+    <!-- ═══ Inscription (maquette register) ═══ -->
+    <div class="view" id="view-register" data-view="register" hidden>
+      <div class="page-intro">
+        <h1 data-i18n="auth2_reg_title">Créer votre compte</h1>
+        <p class="muted small" data-i18n="auth2_reg_sub">Un espace pour votre suivi personnel.</p>
       </div>
-      <div class="msg" id="msgBox"></div>
-      <div class="auth-field">
-        <label for="email" id="labelEmail"></label>
-        <input type="email" id="email" autocomplete="email" />
-      </div>
-      <div class="auth-field" id="nameGroup" style="display:none;">
-        <label for="fullName" id="labelName"></label>
-        <input type="text" id="fullName" autocomplete="given-name" />
-      </div>
-      <div class="auth-field">
-        <label for="password" id="labelPassword"></label>
-        <input type="password" id="password" autocomplete="current-password" />
-        <div class="forgot" id="forgotRow">
-          <a href="#" onclick="sendPasswordReset(event)" id="forgotLink"></a>
+      <form id="registerForm" class="stack" novalidate>
+        <div id="regMsg"></div>
+        <div class="field">
+          <label class="label" for="regName" data-i18n="auth2_first_name">Prénom</label>
+          <div class="input-wrap"><input class="input" id="regName" name="given-name" type="text" autocomplete="given-name" aria-describedby="regName-err"></div>
+          <p class="error-text field-error" id="regName-err" hidden></p>
         </div>
-      </div>
-      <div class="auth-field" id="confirmGroup" style="display:none;">
-        <label for="passwordConfirm" id="labelConfirmPw"></label>
-        <input type="password" id="passwordConfirm" autocomplete="new-password" />
-      </div>
-      <label class="terms-check" id="termsRow" style="display:none;">
-        <input type="checkbox" id="termsBox">
-        <span><span id="termsText"></span>
-        <a href="/cgu.html" id="termsCgu"></a><span id="termsAnd"> et notre </span><a href="/privacy.html" id="termsPrivacy"></a>.</span>
-      </label>
-      <button class="auth-submit" id="submitBtn" onclick="handleSubmit()"></button>
+        <div class="field">
+          <label class="label" for="regEmail" data-i18n="auth2_email">Adresse e-mail</label>
+          <div class="input-wrap"><input class="input" id="regEmail" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="regEmail-err"></div>
+          <p class="error-text field-error" id="regEmail-err" hidden></p>
+        </div>
+        <div class="field">
+          <label class="label" for="regPassword" data-i18n="auth2_password">Mot de passe</label>
+          <div class="input-wrap"><input class="input" id="regPassword" name="new-password" type="password" autocomplete="new-password" minlength="6" aria-describedby="regPassword-help regPassword-err"></div>
+          <p class="help" id="regPassword-help" data-i18n="auth2_pw_help">6 caractères minimum.</p>
+          <p class="error-text field-error" id="regPassword-err" hidden></p>
+        </div>
+        <div>
+          <p class="checkline">
+            <input id="regTerms" type="checkbox" aria-describedby="regTerms-err">
+            <span><label for="regTerms" data-i18n="auth2_reg_terms_a">J’ai 18 ans ou plus et j’accepte les</label> <a href="/cgu.html" data-i18n="auth2_reg_terms_link">CGU</a>.</span>
+          </p>
+          <p class="error-text field-error" id="regTerms-err" hidden></p>
+        </div>
+        <button class="btn full" type="submit" id="regBtn" data-i18n="auth2_reg_submit">Créer mon compte</button>
+        <p class="small muted"><span data-i18n="auth2_privacy_a">Consultez notre</span> <a href="/privacy.html" data-i18n="auth2_privacy_link">politique de confidentialité</a>.</p>
+      </form>
+      <a class="btn ghost full" href="#login" data-i18n="auth2_have_account">J’ai déjà un compte</a>
     </div>
-  </div>
 
-  <script>
-    // ── Appliquer les traductions statiques ──────────────────
-    function applyLoginI18n() {
-      document.getElementById('tabLogin').textContent  = t('login_tab_login');
-      document.getElementById('tabRegister').textContent = t('login_tab_register');
-      document.getElementById('labelEmail').textContent    = t('login_email');
-      document.getElementById('labelName').textContent     = t('login_name');
-      document.getElementById('labelPassword').textContent = t('login_password');
-      document.getElementById('labelConfirmPw').textContent= t('login_confirm_pw');
-      document.getElementById('forgotLink').textContent    = t('login_forgot');
-      document.getElementById('confirmTitle').textContent  = t('login_confirm_title');
-      document.getElementById('confirmText2').textContent  = t('login_confirm_text2');
-      document.getElementById('resendBtn').textContent     = t('login_resend');
-      document.getElementById('termsText').textContent     = t('login_terms') + ' ';
-      document.getElementById('termsCgu').textContent      = t('login_terms_cgu');
-      document.getElementById('termsAnd').textContent      = ' ' + (PS_getLang() === 'fr' ? 'et notre' : 'and our') + ' ';
-      document.getElementById('termsPrivacy').textContent  = t('login_terms_privacy');
-      // Placeholders
-      document.getElementById('email').placeholder         = t('login_email_ph');
-      document.getElementById('fullName').placeholder      = t('login_name_ph');
-      document.getElementById('password').placeholder      = t('login_password_ph');
-      document.getElementById('passwordConfirm').placeholder = t('login_confirm_pw_ph');
-      // Formulaire titre
-      setTabTexts('login');
-    }
+    <!-- ═══ Mot de passe oublié (maquette forgot) ═══ -->
+    <div class="view" id="view-forgot" data-view="forgot" hidden>
+      <div class="page-intro">
+        <h1 data-i18n="auth2_forgot_title">Mot de passe oublié</h1>
+        <p class="muted small" data-i18n="auth2_forgot_sub">Recevez les instructions de réinitialisation.</p>
+      </div>
+      <form id="forgotForm" class="stack" novalidate>
+        <div class="field">
+          <label class="label" for="forgotEmail" data-i18n="auth2_email">Adresse e-mail</label>
+          <div class="input-wrap"><input class="input" id="forgotEmail" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="forgotEmail-err"></div>
+          <p class="error-text field-error" id="forgotEmail-err" hidden></p>
+        </div>
+        <button class="btn full" type="submit" id="forgotBtn" data-i18n="auth2_forgot_submit">Envoyer les instructions</button>
+        <div id="forgotFeedback" aria-live="polite"></div>
+      </form>
+      <a class="btn ghost full" href="#login" data-i18n="auth2_back_login">Retour à la connexion</a>
+    </div>
 
-    function setTabTexts(tab) {
-      var isReg = tab === 'register';
-      document.getElementById('formTitle').textContent    = isReg ? t('login_register_title')    : t('login_title');
-      document.getElementById('formSubtitle').textContent = isReg ? t('login_register_subtitle') : t('login_subtitle');
-      document.getElementById('submitBtn').textContent    = isReg ? t('login_register_submit')   : t('login_submit');
-    }
+    <!-- ═══ Vérifiez vos e-mails (après inscription) ═══ -->
+    <div class="view" id="view-check" data-view="check" hidden>
+      <div class="page-intro">
+        <h1 data-i18n="auth2_check_title">Vérifiez vos e-mails</h1>
+        <p class="muted small" data-i18n="auth2_check_sub">Un lien de confirmation vient de vous être envoyé.</p>
+      </div>
+      <section class="card">
+        <div class="check-mail">
+          <span data-ps-i="envelope"></span>
+          <div class="grow stack tight">
+            <p class="small muted"><span data-i18n="auth2_check_sent_to">Lien envoyé à</span><br><strong id="checkEmail"></strong></p>
+            <p class="small muted" data-i18n="auth2_check_text">Ouvrez ce lien pour activer votre compte, puis revenez ici pour vous connecter.</p>
+          </div>
+        </div>
+      </section>
+      <div id="resendMsg" aria-live="polite"></div>
+      <button class="btn secondary full" type="button" id="resendBtn" data-i18n="auth2_resend">Renvoyer l’e-mail</button>
+      <a class="btn ghost full" href="#login" data-i18n="auth2_back_login">Retour à la connexion</a>
+    </div>
 
-    PS_renderLangSwitcher();
+  </main>
+</div>
+
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
+<script>
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const P = window.PS;   // outils communs (ps-app.js)
+const PW_MIN = 6;      // longueur minimale exigée (identique à l'ancienne page et à Supabase)
+const $ = function (id) { return document.getElementById(id); };
+
+// ── En-tête : logo + petit sélecteur de langue FR / EN (≥ 44 px) ──────
 PS_initShell();
-    applyLoginI18n();
-  </script>
+function renderLangSwitch() {
+  const head = $('psHeader'); if (!head) return;
+  let box = head.querySelector('.lang-switch');
+  if (!box) { box = document.createElement('div'); box.className = 'segmented lang-switch'; box.setAttribute('role', 'group'); head.appendChild(box); }
+  box.setAttribute('aria-label', t('auth2_lang'));
+  const cur = PS_getLang();
+  box.innerHTML = ['fr', 'en'].map(function (l) {
+    return '<button type="button" lang="' + l + '" data-lang="' + l + '" aria-pressed="' + (cur === l) + '" aria-label="' + (l === 'fr' ? 'Français' : 'English') + '">' + l.toUpperCase() + '</button>';
+  }).join('');
+  box.querySelectorAll('button').forEach(function (b) {
+    b.onclick = function () { if (b.dataset.lang !== PS_getLang()) PS_setLang(b.dataset.lang); };
+  });
+}
+document.documentElement.lang = PS_getLang();
+renderLangSwitch();
+PS_applyI18n();
 
-  <script src="/vendor/supabase-2.117.3.umd.js"></script>
-  <script>
-    // Lot 2 (14/10/2026) : la page passe en UMD comme toutes les autres (fin de l'exception
-    // « login en module »). supabase.js (ESM via esm.sh) est archivé dans _archive/.
-    // L'ancienne migration localStorage → Supabase après connexion est retirée : elle servait
-    // aux comptes de l'époque localStorage, il n'en existe plus.
-    var supabase = window.supabase.createClient(
-      'https://dkwztwlkjewdzfichkgk.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk'
-    );
-    async function signUp(email, password) {
-      var res = await supabase.auth.signUp({ email: email, password: password });
-      return { user: (res.data && res.data.user) || null, error: res.error };
-    }
-    async function signIn(email, password) {
-      var res = await supabase.auth.signInWithPassword({ email: email, password: password });
-      return { user: (res.data && res.data.user) || null, session: (res.data && res.data.session) || null, error: res.error };
-    }
-    function formatError(error) {
-      if (!error) return null;
-      var fr = PS_getLang() === 'fr';
-      var messages = {
-        'Invalid login credentials': fr ? 'Email ou mot de passe incorrect.' : 'Wrong email or password.',
-        'Email not confirmed':       fr ? 'Confirme ton email avant de te connecter.' : 'Please confirm your email before signing in.',
-        'User already registered':   fr ? 'Un compte existe déjà avec cet email.' : 'An account already exists with this email.'
-      };
-      return messages[error.message] || error.message || (fr ? 'Une erreur est survenue.' : 'Something went wrong.');
-    }
+// ── Vues commutées par l'adresse (#register, #forgot) ────────────────
+const VIEWS = ['login', 'register', 'forgot', 'check'];
+const DOC_TITLES = { login: 'auth2_doc_login', register: 'auth2_doc_register', forgot: 'auth2_doc_forgot', check: 'auth2_doc_check' };
+let currentView = 'login';
+function showView(name, focus) {
+  if (VIEWS.indexOf(name) < 0) name = 'login';
+  currentView = name;
+  VIEWS.forEach(function (v) { $('view-' + v).hidden = (v !== name); });
+  document.title = t(DOC_TITLES[name]);
+  clearAll();
+  if (name === 'forgot' && !$('forgotEmail').value) $('forgotEmail').value = $('loginEmail').value.trim();
+  if (focus) { const h = document.querySelector('#view-' + name + ' h1'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); } window.scrollTo(0, 0); }
+}
+function viewFromUrl() {
+  const h = (location.hash || '').replace('#', '');
+  if (h === 'register' || h === 'forgot') return h;
+  try { if (new URLSearchParams(location.search).get('signup') === '1' && !h) return 'register'; } catch (e) {}
+  return 'login';
+}
+window.addEventListener('hashchange', function () { showView(viewFromUrl(), true); });
+showView(viewFromUrl(), false);
 
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session) window.location.href = '/dashboard.html';
-    })();
+// ── Messages ─────────────────────────────────────────────────────────
+function fieldError(inputId, key) {
+  const input = $(inputId), err = $(inputId + '-err');
+  if (key) { err.textContent = t(key); err.hidden = false; input.setAttribute('aria-invalid', 'true'); }
+  else { err.textContent = ''; err.hidden = true; input.removeAttribute('aria-invalid'); }
+}
+function formMsg(boxId, key, kind) { $(boxId).innerHTML = key ? P.notice(t(key), kind || 'error') : ''; }
+function clearAll() {
+  document.querySelectorAll('.field-error').forEach(function (e) { e.hidden = true; e.textContent = ''; });
+  document.querySelectorAll('[aria-invalid]').forEach(function (e) { e.removeAttribute('aria-invalid'); });
+  ['loginMsg', 'regMsg', 'forgotFeedback', 'resendMsg'].forEach(function (id) { $(id).innerHTML = ''; });
+}
+function busy(btn, on, busyKey, idleKey) {
+  btn.disabled = on;
+  if (on) btn.setAttribute('aria-busy', 'true'); else btn.removeAttribute('aria-busy');
+  btn.textContent = t(on ? busyKey : idleKey);
+}
+function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+function isNetwork(err) { return !!err && (err.status === 0 || /fetch|network|load failed/i.test(String(err.message || err.name || ''))); }
+// Erreurs Supabase → messages traduits (la connexion reste générique)
+function errorKey(err, context) {
+  if (!err) return null;
+  const m = String(err.message || '');
+  if (isNetwork(err)) return 'auth2_err_network';
+  if (/rate limit|too many|after \d+ seconds/i.test(m) || err.status === 429) return 'auth2_err_rate';
+  if (context === 'login') return /email not confirmed/i.test(m) ? 'auth2_err_unconfirmed' : 'auth2_err_login';
+  if (/already registered|already been registered|already exists/i.test(m)) return 'auth2_err_exists';
+  if (/password/i.test(m) && /least|short|characters/i.test(m)) return 'auth2_err_pw_short';
+  if (/email/i.test(m) && /invalid/i.test(m)) return 'auth2_err_email';
+  return 'auth2_err_generic';
+}
 
-    window.currentTab = 'login';
+// ── Déjà connecté → carnet ───────────────────────────────────────────
+(async function () {
+  try {
+    const r = await sb.auth.getSession();
+    if (r && r.data && r.data.session) location.replace('/dashboard.html');
+  } catch (e) {}
+})();
 
-    window.switchTab = function(tab) {
-      window.currentTab = tab;
-      var isRegister = tab === 'register';
-      document.getElementById('tabLogin').classList.toggle('active', !isRegister);
-      document.getElementById('tabRegister').classList.toggle('active', isRegister);
-      document.getElementById('nameGroup').style.display    = isRegister ? 'grid' : 'none';
-      document.getElementById('confirmGroup').style.display = isRegister ? 'grid' : 'none';
-      document.getElementById('forgotRow').style.display    = isRegister ? 'none'  : 'block';
-      document.getElementById('termsRow').style.display     = isRegister ? 'flex' : 'none';
-      setTabTexts(tab);
-      clearMsg();
-    };
+// ── Connexion ────────────────────────────────────────────────────────
+$('loginForm').addEventListener('submit', async function (e) {
+  e.preventDefault(); clearAll();
+  const email = $('loginEmail').value.trim(), password = $('loginPassword').value;
+  let bad = false;
+  if (!validEmail(email)) { fieldError('loginEmail', 'auth2_err_email'); bad = true; }
+  if (!password) { fieldError('loginPassword', 'auth2_err_pw_empty'); bad = true; }
+  if (bad) { const first = document.querySelector('#loginForm [aria-invalid=true]'); if (first) first.focus(); return; }
+  const btn = $('loginBtn');
+  busy(btn, true, 'auth2_login_busy', 'auth2_login_submit');
+  let res;
+  try { res = await sb.auth.signInWithPassword({ email: email, password: password }); }
+  catch (err) { res = { error: err }; }
+  if (res.error || !(res.data && res.data.session)) {
+    busy(btn, false, 'auth2_login_busy', 'auth2_login_submit');
+    formMsg('loginMsg', errorKey(res.error || { message: '' }, 'login'));
+    return;
+  }
+  location.href = '/dashboard.html';
+});
 
-    // Ouvrir directement l'onglet Inscription si l'URL contient ?signup=1
-    try {
-      if (new URLSearchParams(window.location.search).get('signup') === '1') {
-        window.switchTab('register');
-      }
-    } catch (e) {}
+// ── Inscription ──────────────────────────────────────────────────────
+$('regTerms').addEventListener('change', function () { if (this.checked) fieldError('regTerms', null); });
+$('registerForm').addEventListener('submit', async function (e) {
+  e.preventDefault(); clearAll();
+  const name = $('regName').value.trim(), email = $('regEmail').value.trim(), password = $('regPassword').value;
+  let bad = false;
+  if (!name) { fieldError('regName', 'auth2_err_name'); bad = true; }
+  if (!validEmail(email)) { fieldError('regEmail', 'auth2_err_email'); bad = true; }
+  if (password.length < PW_MIN) { fieldError('regPassword', password ? 'auth2_err_pw_short' : 'auth2_err_pw_empty'); bad = true; }
+  if (!$('regTerms').checked) { fieldError('regTerms', 'auth2_err_terms'); bad = true; }
+  if (bad) { const first = document.querySelector('#registerForm [aria-invalid=true]'); if (first) first.focus(); return; }
+  const btn = $('regBtn');
+  busy(btn, true, 'auth2_reg_busy', 'auth2_reg_submit');
+  let res;
+  try { res = await sb.auth.signUp({ email: email, password: password, options: { data: { full_name: name } } }); }
+  catch (err) { res = { error: err }; }
+  if (res.error) {
+    busy(btn, false, 'auth2_reg_busy', 'auth2_reg_submit');
+    formMsg('regMsg', errorKey(res.error, 'register'));
+    return;
+  }
+  const user = res.data && res.data.user, session = res.data && res.data.session;
+  if (user && name) { try { await sb.from('profiles').update({ full_name: name }).eq('id', user.id); } catch (err) {} }
+  busy(btn, false, 'auth2_reg_busy', 'auth2_reg_submit');
+  if (session) { location.href = '/dashboard.html'; return; }   // confirmation d'e-mail désactivée côté Supabase
+  $('checkEmail').textContent = email;
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  showView('check', true);
+});
 
-    window.handleSubmit = async function() {
-      clearMsg();
-      var email    = document.getElementById('email').value.trim();
-      var password = document.getElementById('password').value;
-      if (!email || !password) { showMsg(t('login_fill_fields'), 'error'); return; }
-      if (password.length < 6) { showMsg(t('login_pw_short'), 'error'); return; }
-      if (window.currentTab === 'register') {
-        var confirm = document.getElementById('passwordConfirm').value;
-        if (password !== confirm) { showMsg(t('login_pw_mismatch'), 'error'); return; }
-        if (!document.getElementById('termsBox').checked) { showMsg(t('login_terms_required'), 'error'); return; }
-      }
-      setLoading(true);
-      if (window.currentTab === 'login') {
-        var { user, error } = await signIn(email, password);
-        if (error) { showMsg(formatError(error), 'error'); setLoading(false); return; }
-        window.location.href = '/dashboard.html';
-      } else {
-        var { user, error } = await signUp(email, password);
-        if (error) { showMsg(formatError(error), 'error'); setLoading(false); return; }
-        var fullName = document.getElementById('fullName').value.trim();
-        if (fullName && user) {
-          await supabase.from('profiles').update({ full_name: fullName }).eq('id', user.id);
-        }
-        setLoading(false);
-        showConfirmScreen(email);
-      }
-    };
+// ── Renvoi de l'e-mail de confirmation ───────────────────────────────
+$('resendBtn').addEventListener('click', async function () {
+  const btn = this, email = $('checkEmail').textContent;
+  $('resendMsg').innerHTML = '';
+  busy(btn, true, 'auth2_resend_busy', 'auth2_resend');
+  let res;
+  try { res = await sb.auth.resend({ type: 'signup', email: email }); } catch (err) { res = { error: err }; }
+  busy(btn, false, 'auth2_resend_busy', 'auth2_resend');
+  if (res && res.error) formMsg('resendMsg', errorKey(res.error, 'resend'));
+  else { formMsg('resendMsg', 'auth2_resend_done', 'success'); btn.disabled = true; }
+});
 
-    window.sendPasswordReset = async function(e) {
-      e.preventDefault();
-      var email = document.getElementById('email').value.trim();
-      if (!email) { showMsg(t('login_reset_email_required'), 'error'); return; }
-      var { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/reset-password.html',
-      });
-      if (error) showMsg(formatError(error), 'error');
-      else showMsg(t('login_reset_sent'), 'success');
-    };
-
-    window.resendConfirmation = async function() {
-      var email = document.getElementById('confirmEmail').textContent;
-      var { error } = await supabase.auth.resend({ type: 'signup', email });
-      if (!error) {
-        document.getElementById('resendBtn').textContent = '✓ ' + t('login_resend');
-        document.getElementById('resendBtn').disabled = true;
-      }
-    };
-    document.getElementById('resendBtn').addEventListener('click', window.resendConfirmation);
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') window.handleSubmit();
-    });
-
-    function setLoading(loading) {
-      var btn = document.getElementById('submitBtn');
-      btn.disabled = loading;
-      btn.innerHTML = loading ? '<div class="spinner"></div>'
-        : (window.currentTab === 'login' ? t('login_submit') : t('login_register_submit'));
-    }
-    function showMsg(text, type) {
-      var box = document.getElementById('msgBox');
-      box.textContent = text; box.className = 'msg ' + type;
-    }
-    function clearMsg() {
-      var box = document.getElementById('msgBox');
-      box.className = 'msg'; box.textContent = '';
-    }
-    function showConfirmScreen(email) {
-      document.getElementById('authForm').style.display = 'none';
-      document.getElementById('confirmScreen').style.display = 'block';
-      var p = document.getElementById('confirmText1');
-      p.textContent = t('login_confirm_text1');
-      var em = document.createElement('span');
-      em.className = 'confirm-email'; em.id = 'confirmEmail'; em.textContent = email;
-      p.appendChild(document.createElement('br')); p.appendChild(em);
-    }
-  </script>
+// ── Mot de passe oublié : même confirmation quelle que soit l'adresse ─
+$('forgotForm').addEventListener('submit', async function (e) {
+  e.preventDefault(); clearAll();
+  const email = $('forgotEmail').value.trim();
+  if (!validEmail(email)) { fieldError('forgotEmail', 'auth2_err_email'); $('forgotEmail').focus(); return; }
+  const btn = $('forgotBtn');
+  busy(btn, true, 'auth2_forgot_busy', 'auth2_forgot_submit');
+  let res;
+  try { res = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/reset-password.html' }); }
+  catch (err) { res = { error: err }; }
+  busy(btn, false, 'auth2_forgot_busy', 'auth2_forgot_submit');
+  if (res && res.error && isNetwork(res.error)) { formMsg('forgotFeedback', 'auth2_err_network'); return; }
+  formMsg('forgotFeedback', 'auth2_forgot_done', 'success');
+});
+</script>
 </body>
 </html>

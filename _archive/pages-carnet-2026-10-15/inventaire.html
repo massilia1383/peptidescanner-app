@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PeptideScanner — Inventaire</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<link rel="stylesheet" href="/peptidescanner.css">
+<link rel="stylesheet" href="/peptidescanner-extra.css">
+<style>
+  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
+  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
+     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
+     les noms propres a la page, pour que ses regles existantes prennent la
+     nouvelle palette automatiquement. */
+  :root {
+    --surface2: var(--surface-muted);
+    --accent2:  var(--info);
+    --accent3:  var(--amber);
+    --nav-h:    var(--bottomnav-h, 64px);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:var(--font-ui); background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--bottomnav-h,64px) + 32px + env(safe-area-inset-bottom)); }
+
+  /* TOPBAR */
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
+  .topbar h1 { font-size:1rem; font-weight:700; }
+
+  .content, #statsBar, .page-band { width:100%; max-width:100%; margin:0 auto; }
+  .content { padding:16px 20px 0; }
+  @media (min-width: 768px)  { .content, #statsBar, .page-band { max-width: 720px; } }
+  @media (min-width: 1024px) { .content, #statsBar, .page-band { max-width: var(--content-desktop, 1100px); } }
+
+  /* SECTION LABEL */
+  .section-label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; margin-bottom:10px; margin-top:4px; }
+  .section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .section-head h2 { font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
+
+  /* SUMMARY CARDS */
+  .summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .summary-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+  .summary-card.alert { border-color:rgba(180,35,56,.3); background:var(--danger-soft); }
+  .summary-card.warning { border-color:rgba(128,80,0,.3); background:var(--amber-soft); }
+  .summary-label { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; }
+  .summary-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.6rem; font-weight:700; line-height:1; color:var(--text); }
+  .summary-val.green { color:var(--accent); }
+  .summary-val.red { color:var(--danger); }
+  .summary-val.amber { color:var(--accent3); }
+  .summary-sub { font-size:.68rem; color:var(--muted); margin-top:4px; }
+
+  /* FLACON CARD */
+  .flacon-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; padding:18px; margin-bottom:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,.04);
+    transition:border-color .2s;
+  }
+  .flacon-card.critical { border-color:rgba(180,35,56,.4); border-left:4px solid var(--danger); }
+  .flacon-card.warning  { border-color:rgba(128,80,0,.4); border-left:4px solid var(--accent3); }
+  .flacon-card.ok       { border-left:4px solid var(--accent); }
+  .flacon-card.expired  { border-color:rgba(180,35,56,.3); opacity:.75; }
+
+  .flacon-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+  .flacon-name { font-size:1rem; font-weight:700; margin-bottom:3px; }
+  .flacon-dosage { font-size:.75rem; color:var(--muted); }
+  .flacon-badges { display:flex; gap:6px; flex-direction:column; align-items:flex-end; }
+
+  .badge {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700;
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .badge-green  { background:var(--accent-soft);  color:var(--accent); }
+  .badge-amber  { background:var(--amber-soft);  color:var(--accent3); }
+  .badge-red    { background:var(--danger-soft);   color:var(--danger); }
+  .badge-blue   { background:var(--info-soft);  color:var(--accent2); }
+  .badge-gray   { background:var(--surface2);      color:var(--muted); }
+
+  /* BARRE STOCK */
+  .stock-section { margin-bottom:14px; }
+  .stock-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .stock-label { font-size:.72rem; color:var(--muted); }
+  .stock-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.82rem; font-weight:700; }
+  .stock-bar { height:8px; background:var(--surface2); border-radius:100px; overflow:hidden; }
+  .stock-fill { height:100%; border-radius:100px; transition:width .5s ease; }
+  .stock-fill.green { background:linear-gradient(90deg, var(--accent), var(--accent)); }
+  .stock-fill.amber { background:linear-gradient(90deg, var(--accent3), var(--amber)); }
+  .stock-fill.red   { background:linear-gradient(90deg, var(--danger), var(--danger)); }
+
+  /* INFOS GRILLE */
+  .flacon-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .info-chip { background:var(--surface2); border-radius:10px; padding:8px 10px; }
+  .info-chip-label { font-size:.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:3px; }
+  .info-chip-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.82rem; font-weight:700; }
+  .info-chip-val.red { color:var(--danger); }
+  .info-chip-val.amber { color:var(--accent3); }
+  .info-chip-val.green { color:var(--accent); }
+
+  /* ACTIONS */
+  .flacon-actions { display:flex; gap:8px; }
+  .flacon-btn {
+    flex:1; padding:9px; border-radius:10px; border:1.5px solid var(--border);
+    background:transparent; color:var(--muted); font-family:inherit;
+    font-size:.78rem; font-weight:600; cursor:pointer; transition:all .2s;
+  }
+  .flacon-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .flacon-btn.danger:hover { border-color:var(--danger); color:var(--danger); }
+  .flacon-btn.primary { background:var(--accent); color:var(--accent-on); border-color:var(--accent); }
+  .flacon-btn.primary:hover { opacity:.88; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
+  .empty-state span { font-size:2.8rem; display:block; margin-bottom:14px; }
+  .empty-state h3 { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:8px; }
+  .empty-state p { font-size:.84rem; line-height:1.6; margin-bottom:20px; }
+  .empty-state button { background:var(--accent); color:var(--accent-on); border:none; padding:12px 24px; border-radius:10px; font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; }
+
+  /* ALERTE PÉREMPTION */
+  .peremption-banner {
+    display:flex; align-items:flex-start; gap:10px;
+    background:var(--danger-soft); border:1.5px solid rgba(180,35,56,.2);
+    border-radius:14px; padding:12px 14px; margin-bottom:16px;
+  }
+  .peremption-banner-icon { font-size:1.2rem; flex-shrink:0; }
+  .peremption-banner-text { font-size:.78rem; line-height:1.6; }
+  .peremption-banner-text strong { color:var(--danger); display:block; margin-bottom:2px; }
+
+
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.4); backdrop-filter:blur(4px); display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
+  .modal-overlay.show { opacity:1; pointer-events:all; }
+  .modal-sheet { background:var(--surface); border-radius:22px 22px 0 0; padding:24px 20px 40px; width:100%; max-width:520px; transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); max-height:92vh; overflow-y:auto; }
+  .modal-overlay.show .modal-sheet { transform:translateY(0); }
+  /* Bureau : la feuille se centre. Collee en bas, son bouton de validation
+     sortait de la fenetre et n'etait plus atteignable. */
+  @media (min-width: 768px) {
+    .modal-overlay { align-items: center; padding: 24px; }
+    .modal-sheet {
+      border-radius: 22px;
+      padding-bottom: 24px;
+      max-height: min(86vh, 780px);
+      overflow-y: auto;
+    }
+  }
+
+  .modal-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+  .modal-title { font-size:1.1rem; font-weight:700; margin-bottom:18px; }
+
+  /* FORM */
+  .form-group { margin-bottom:14px; }
+  .form-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; display:block; font-weight:600; }
+  .form-input { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; color:var(--text); font-family:var(--font-ui); font-size:.95rem; outline:none; transition:border-color .2s; }
+  .form-input:focus { border-color:var(--accent); background:#fff; }
+  .form-select { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; color:var(--text); font-family:inherit; font-size:.9rem; outline:none; transition:border-color .2s; cursor:pointer; }
+  .form-select:focus { border-color:var(--accent); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .save-btn { width:100%; padding:14px; border-radius:12px; border:none; background:var(--accent); color:var(--accent-on); font-family:inherit; font-size:.95rem; font-weight:700; cursor:pointer; margin-top:6px; transition:opacity .2s; }
+  .save-btn:hover { opacity:.88; }
+  .cancel-btn { width:100%; padding:12px; border-radius:12px; border:1.5px solid var(--border); background:transparent; color:var(--muted); font-family:inherit; font-size:.88rem; font-weight:600; cursor:pointer; margin-top:8px; }
+
+  /* BOTTOM NAV */
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .flacon-card { animation:fadeIn .3s ease both; }
+
+  /* INJECTIONS RESTANTES */
+  .inj-remaining {
+    background:linear-gradient(135deg, var(--accent-soft), var(--info-soft));
+    border:1px solid rgba(36,87,214,.18); border-radius:10px;
+    padding:8px 10px; margin-top:6px;
+    display:flex; align-items:center; justify-content:space-between; gap:6px;
+  }
+  .inj-remaining-label { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; }
+  .inj-remaining-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.82rem; font-weight:700; color:var(--accent); white-space:nowrap; }
+  .inj-remaining-days { font-size:.65rem; color:var(--muted); text-align:right; }
+  .inj-remaining.warn .inj-remaining-val { color:var(--accent3); }
+  .inj-remaining.critical .inj-remaining-val { color:var(--danger); }
+
+  /* DISCLAIMER JURIDIQUE */
+  .legal-disclaimer {
+    background:var(--amber-soft); border:1px solid rgba(128,80,0,.2);
+    border-radius:12px; padding:12px 16px; margin:12px 0;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .legal-disclaimer.compact { padding:8px 12px; margin:8px 0; border-radius:8px; }
+  .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
+  .legal-disclaimer-text { font-size:.72rem; color:var(--warning); line-height:1.5; }
+  .legal-disclaimer-text strong { color:var(--warning); }
+  .phase-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700; }
+  .phase-established  { background:var(--success-bg); color:var(--success); border:1px solid rgba(36,87,214,.2); }
+  .phase-preclinical  { background:var(--info-soft);  color:var(--info); border:1px solid rgba(36,87,214,.2); }
+  .phase-phase1       { background:var(--warning-bg); color:var(--warning); border:1px solid rgba(128,80,0,.2); }
+  .phase-phase2       { background:var(--warning-bg); color:var(--warning); border:1px solid rgba(128,80,0,.2); }
+  .phase-phase3       { background:var(--status-partial-soft); color:var(--status-partial); border:1px solid rgba(36,87,214,.2); }
+  .phase-experimental { background:var(--error-bg); color:var(--error); border:1px solid rgba(180,35,56,.15); }
+</style>
+</head>
+<body>
+
+<header class="app-topbar">
+  <div class="topbar-inner">
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
+  </div>
+</header>
+<div class="menu-popover" id="avatarMenu" hidden>
+  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
+  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
+  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
+</div>
+
+<!-- STATS BAR -->
+<div id="statsBar" style="display:flex;gap:10px;padding:12px 20px 0;margin:0 auto"></div>
+
+<!-- GRILLE FLACONS -->
+<div class="content" style="padding-bottom:0">
+<div class="page-intro"><h1 data-i18n="inv_title">Stock</h1><p data-i18n="intro_stock_sub">Vos flacons, au même endroit</p></div>
+<div class="section-tabs">
+  <a class="section-tab" href="inventaire.html" aria-current="page" data-i18n="nav_stock">Stock</a>
+  <a class="section-tab" href="calculateur.html" data-i18n="calc_title">Calculateur</a>
+</div>
+</div>
+<div class="content" id="mainContent"></div>
+
+<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
+  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item is-active" href="inventaire.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
+  <a class="nav-item" href="poids.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
+  <a class="nav-item" href="peptide-database.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
+</div></nav>
+<button class="ps-fab" type="button" onclick="openModal()" aria-label="Ajouter un flacon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="flaconModal" onclick="closeIfOverlay(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle" data-i18n="inv_modal_add">${t('inv_add')}</div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="inv_peptide">Peptide</label>
+      <input class="form-input" id="fPeptide" type="text" data-i18n-ph="inv_peptide_ph" placeholder="Ex: BPC-157, HGH…" oninput="autoFillStorage(this.value)">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-i18n="inv_qty">Quantité totale</label>
+        <input class="form-input" id="fQty" type="number" placeholder="10" min="0.1" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="inv_unit">Unité</label>
+        <select class="form-select" id="fUnit">
+          <option value="mg" selected>mg</option>
+          <option value="mcg">mcg</option>
+          <option value="IU">IU</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-i18n="inv_dose_inj">Dose / injection</label>
+        <input class="form-input" id="fDosePerInj" type="number" placeholder="0.25 mg" min="0.001" step="0.001">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="inv_frequency">Fréquence</label>
+        <select class="form-select" id="fFreqPerDay">
+          <option value="" data-i18n="inv_choose_freq">-- Choisir --</option>
+          <option value="3" data-i18n="freq_3x">3× par jour</option>
+          <option value="2" data-i18n="freq_2x">2× par jour</option>
+          <option value="1" data-i18n="freq_1x">1× par jour</option>
+          <option value="0.5">1× tous les 2 jours</option>
+          <option value="0.28" data-i18n="freq_2x_w">2× par semaine</option>
+          <option value="0.14" data-i18n="freq_1x_w">1× par semaine</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-i18n="inv_recon_date">Date reconstitution</label>
+        <input class="form-input" id="fReconDate" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="inv_status">Statut</label>
+        <select class="form-select" id="fStatus">
+          <option value="active" data-i18n="inv_status_active">En cours</option>
+          <option value="sealed" data-i18n="inv_status_sealed">Scellé</option>
+          <option value="finished" data-i18n="inv_status_done">Terminé</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-i18n="inv_temp">Temp. conservation</label>
+        <input class="form-input" id="fStorageTemp" type="text" data-i18n-ph="inv_temp_ph" data-i18n-ph="inv_temp_ph" placeholder="ex: 2-8°C">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="inv_max_days">📅 Durée max (jours)</label>
+        <input class="form-input" id="fStorageDays" type="number" placeholder="30" min="1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="inv_storage_note">Note conservation</label>
+      <input class="form-input" id="fStorageNote" type="text" data-i18n-ph="inv_storage_note_ph" placeholder="ex: Éviter la lumière">
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="inv_note">Note (optionnel)</label>
+      <input class="form-input" id="fNote" type="text" data-i18n-ph="inv_note_ph" placeholder="Ex: Lot 2025, cure récupération…">
+    </div>
+    <input type="hidden" id="fEditId">
+    <button class="save-btn" onclick="saveFlacon()"><span data-i18n="inv_save">Enregistrer le flacon</span></button>
+    <button class="cancel-btn" onclick="closeModal()"><span data-i18n="inv_cancel">Annuler</span></button>
+  </div>
+</div>
+
+<div class="ps-toast" id="toast"></div>
+
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
+<script>
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── BASE DE CONSERVATION PEPTIDES ─────────────────────────────
+const PEPTIDE_STORAGE = {
+  'bpc-157':          { temp:'2-8°C', days:30,  note:'Éviter la lumière' },
+  'tb-500':           { temp:'2-8°C', days:30,  note:'Éviter la lumière' },
+  'cjc-1295':         { temp:'2-8°C', days:21,  note:'Sensible à la chaleur' },
+  'ipamorelin':       { temp:'2-8°C', days:21,  note:'Éviter les cycles gel/dégel' },
+  'ghrp-6':           { temp:'2-8°C', days:21,  note:'Éviter la lumière' },
+  'ghrp-2':           { temp:'2-8°C', days:21,  note:'Éviter la lumière' },
+  'sermorelin':       { temp:'2-8°C', days:14,  note:'Très sensible à la chaleur' },
+  'semaglutide':      { temp:'2-8°C', days:56,  note:'Max 30 jours à temp. ambiante' },
+  'tirzepatide':      { temp:'2-8°C', days:56,  note:'Max 21 jours à temp. ambiante' },
+  'epithalon':        { temp:'2-8°C', days:30,  note:'Stable une fois reconstitué' },
+  'semax':            { temp:'2-8°C', days:14,  note:'Très sensible — utiliser rapidement' },
+  'selank':           { temp:'2-8°C', days:14,  note:'Très sensible — utiliser rapidement' },
+  'pt-141':           { temp:'2-8°C', days:30,  note:'Éviter la lumière directe' },
+  'aod-9604':         { temp:'2-8°C', days:30,  note:'Stable après reconstitution' },
+  'thymosin alpha-1': { temp:'2-8°C', days:30,  note:'Éviter la lumière' },
+  'ghk-cu':           { temp:'2-8°C', days:90,  note:'Très stable' },
+  'hgh':              { temp:'2-8°C', days:21,  note:t('tip_hgh') },
+  'igf-1':            { temp:'2-8°C', days:30,  note:'Ajouter acide acétique 0.1%' },
+  'mgf':              { temp:'2-8°C', days:14,  note:'Instable — utiliser rapidement' },
+  'dsip':             { temp:'2-8°C', days:30,  note:'Stable après reconstitution' },
+};
+
+function getStorageInfo(peptideName) {
+  if (!peptideName) return null;
+  const key = peptideName.toLowerCase().trim();
+  // Recherche exacte puis partielle
+  if (PEPTIDE_STORAGE[key]) return PEPTIDE_STORAGE[key];
+  for (const k of Object.keys(PEPTIDE_STORAGE)) {
+    if (key.includes(k) || k.includes(key)) return PEPTIDE_STORAGE[k];
+  }
+  return null;
+}
+
+
+function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+function fmt(d) { return d?new Date(d).toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'}):'—'; }
+
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+let userId=null, allInventory=[];
+
+async function init() {
+  const { data } = await sb.auth.getSession();
+  if (!data?.session) { window.location.href='/login.html'; return; }
+  userId = data.session.user.id;
+  const { data: _lp } = await sb.from('profiles').select('lang').eq('id', userId).single();
+  if(_lp) PS_loadLangFromProfile(sb, userId, _lp.lang);
+  await loadData();
+}
+
+async function loadData() {
+  const { data } = await sb.from('inventory').select('*').eq('user_id',userId).order('created_at',{ascending:false});
+  allInventory = data || [];
+  render();
+}
+
+// ── FLACON SVG ─────────────────────────────────────────────────
+function vialSVG(pct, color, isSealed) {
+  const capColor  = isSealed ? 'var(--border-strong)' : color;
+  const fillH     = Math.round(pct * 52 / 100); // max fill height = 52px
+  const fillY     = 44 + (52 - fillH);           // starts from bottom of body
+
+  const uid = Math.random().toString(36).substr(2,6);
+  return `<svg viewBox="0 0 48 110" xmlns="http://www.w3.org/2000/svg" style="width:48px;height:110px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.15))">
+    <defs>
+      <clipPath id="bodyClip_${uid}">
+        <rect x="8" y="42" width="32" height="54" rx="5"/>
+      </clipPath>
+      <linearGradient id="bodyGrad_${uid}" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#F6F1E8"/>
+        <stop offset="40%" stop-color="#FFFDF9"/>
+        <stop offset="100%" stop-color="#E9E0D3"/>
+      </linearGradient>
+      <linearGradient id="capGrad_${uid}" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="${capColor}" stop-opacity=".7"/>
+        <stop offset="50%" stop-color="${capColor}"/>
+        <stop offset="100%" stop-color="${capColor}" stop-opacity=".8"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Capuchon aluminium -->
+    <rect x="14" y="2" width="20" height="18" rx="4" fill="url(#capGrad_${uid})"/>
+    <!-- Bord inférieur capuchon (rebord) -->
+    <rect x="12" y="18" width="24" height="4" rx="1" fill="${capColor}" opacity=".6"/>
+
+    <!-- Septum caoutchouc -->
+    <ellipse cx="24" cy="26" rx="10" ry="5" fill="#C7BAA8"/>
+    <ellipse cx="24" cy="25" rx="8" ry="3.5" fill="#9C8F7C"/>
+    <!-- Point central septum -->
+    <circle cx="24" cy="25" r="2" fill="#6B6355"/>
+
+    <!-- Col du flacon -->
+    <rect x="17" y="28" width="14" height="14" rx="3" fill="url(#bodyGrad_${uid})" stroke="#E9E0D3" stroke-width="1"/>
+
+    <!-- Corps principal -->
+    <rect x="8" y="42" width="32" height="54" rx="5" fill="url(#bodyGrad_${uid})" stroke="#DED4C6" stroke-width="1.2"/>
+
+    <!-- Liquide -->
+    ${pct > 0 ? `<rect x="8" y="${fillY}" width="32" height="${fillH}" fill="${color}" opacity=".18" clip-path="url(#bodyClip_${uid})"/>
+    <rect x="8" y="${fillY}" width="32" height="2.5" fill="${color}" opacity=".35" clip-path="url(#bodyClip_${uid})"/>` : ''}
+
+    <!-- Reflet gauche -->
+    <rect x="12" y="46" width="4" height="36" rx="2" fill="white" opacity=".55"/>
+
+    <!-- Graduations -->
+    <line x1="36" y1="56" x2="40" y2="56" stroke="#C7BAA8" stroke-width="1"/>
+    <line x1="36" y1="66" x2="40" y2="66" stroke="#C7BAA8" stroke-width="1"/>
+    <line x1="36" y1="76" x2="40" y2="76" stroke="#C7BAA8" stroke-width="1"/>
+    <line x1="36" y1="86" x2="40" y2="86" stroke="#C7BAA8" stroke-width="1"/>
+
+    <!-- Étiquette -->
+    <rect x="10" y="58" width="20" height="22" rx="2" fill="white" opacity=".7" stroke="${color}" stroke-width=".8" stroke-opacity=".3"/>
+
+    <!-- Base arrondie -->
+    <rect x="9" y="92" width="30" height="4" rx="2" fill="#E9E0D3"/>
+  </svg>`;
+}
+
+// Majuscule initiale a l'affichage : la base contient « Retatritude » et
+// « retatritude » saisis a des moments differents. On ne touche pas aux donnees.
+function capFirst(v) {
+  const str = String(v || '');
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+}
+
+// ── RENDER ─────────────────────────────────────────────────────
+function render() {
+  const container = document.getElementById('mainContent');
+  const statsBar  = document.getElementById('statsBar');
+
+  // Stats
+  const active  = allInventory.filter(f => (f.notes||'').includes('active')||(!f.notes&&f.remaining_units>0));
+  const low     = allInventory.filter(f => f.vial_qty_mg && f.remaining_units!==null && (f.remaining_units/f.vial_qty_mg)<0.2);
+  statsBar.innerHTML = `
+    <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
+      <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:1.3rem;font-weight:700;color:var(--accent)">${allInventory.length}</div>
+      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px" data-i18n="inv_vials">flacons</div>
+    </div>
+    <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
+      <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:1.3rem;font-weight:700;color:var(--accent3)">${low.length}</div>
+      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px" data-i18n="inv_low_stock">stock bas</div>
+    </div>
+    <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
+      <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:1.3rem;font-weight:700;color:var(--accent2)">${allInventory.filter(f=>f.expiry_date&&new Date(f.expiry_date)<TODAY).length}</div>
+      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px" data-i18n="inv_expired">expirés</div>
+    </div>`;
+
+  if (allInventory.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="text-align:center;padding:60px 20px">
+      <div style="width:84px;margin:0 auto">${PS_asset('vial-powder')}</div>
+      <p style="margin-top:16px;color:var(--muted);font-size:.9rem">${t('inv_empty').replace('\n','<br>')}</p>
+      <button onclick="openModal()" style="margin-top:16px;padding:12px 24px;background:var(--accent);color:var(--accent-on);border:none;border-radius:10px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer">${t("inv_add")}</button>
+    </div>`;
+    return;
+  }
+
+  // Grille de flacons
+  container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;padding:16px 16px 0;margin:0 auto">
+    ${allInventory.map(f => {
+      const remaining = f.remaining_units ?? f.vial_qty_mg ?? 0;
+      const total     = f.vial_qty_mg ?? 1;
+      const pct       = total > 0 ? Math.min(100, Math.round((remaining/total)*100)) : 0;
+      const isExpired = f.expiry_date && new Date(f.expiry_date) < TODAY;
+      const isLow     = pct < 20 && pct > 0;
+      const isSealed  = (f.notes||'').includes('sealed');
+
+      const color = isExpired ? 'var(--danger)' : isLow ? 'var(--amber)' : 'var(--accent)';
+      const badgeHtml = isExpired
+        ? `<div style="background:var(--danger-soft);color:var(--danger);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;margin-bottom:6px">EXPIRÉ</div>`
+        : isLow
+        ? `<div style="background:var(--amber-soft);color:var(--amber);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;margin-bottom:6px">${t("inv_low_badge")}</div>`
+        : isSealed
+        ? `<div style="background:var(--neutral-soft);color:var(--neutral);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;margin-bottom:6px">${t("inv_sealed_badge")}</div>`
+        : '';
+
+      return `<div style="background:var(--surface);border:1.5px solid ${isExpired?'rgba(180,35,56,.25)':isLow?'rgba(128,80,0,.25)':'var(--border)'};border-radius:18px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .15s,box-shadow .15s" onclick="openEditModal('${f.id}')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div class="inv-vial" data-pct="${pct}" data-sealed="${isSealed?1:0}" style="width:72px">${PS_asset(isSealed?'vial-powder':(pct<=0?'vial-empty':'vial-full'))}</div>
+        ${badgeHtml}
+        <div style="font-weight:700;font-size:.84rem;text-align:center;line-height:1.3">${capFirst(f.peptide_name)}</div>
+        <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.8rem;color:${color};font-weight:700">${pct}%</div>
+        <div style="font-size:.68rem;color:var(--muted);text-align:center">${remaining} / ${total} mg</div>
+        ${f.expiry_date?`<div style="font-size:.65rem;color:var(--muted)">exp. ${fmt(f.expiry_date)}</div>`:''}
+        ${(() => {
+          const notesRaw  = f.notes || '';
+          const tempMatch  = notesRaw.match(/temp:([^|]+)/);
+          const snoteMatch = notesRaw.match(/snote:([^|]+)/);
+          const info = getStorageInfo(f.peptide_name);
+          const displayTemp = tempMatch  ? tempMatch[1].trim()  : info?.temp;
+          const displayNote = snoteMatch ? snoteMatch[1].trim() : info?.note;
+          if (!displayTemp) return '';
+          return `<div style="background:var(--info-soft);border:1px solid rgba(36,87,214,.18);border-radius:8px;padding:5px 8px;width:100%;text-align:center;margin-top:2px">
+            <div style="font-size:.65rem;font-weight:700;color:var(--accent2)">${displayTemp}</div>
+            ${displayNote?`<div style="font-size:.6rem;color:var(--muted);margin-top:1px">${displayNote}</div>`:''}
+          </div>`;
+        })()}
+        ${(() => {
+          const dosePerInj = f.bac_water_ml;
+          const freqPerDay = f.lot_number ? parseFloat(f.lot_number) : null;
+          const remaining2 = f.remaining_units ?? f.vial_qty_mg ?? 0;
+          const isSealed2  = (f.notes||'').includes('sealed') || !f.reconstituted_at;
+          if (!isSealed2 && dosePerInj && freqPerDay && remaining2 > 0) {
+            const injLeft  = Math.floor(remaining2 / dosePerInj);
+            const daysLeft = Math.round(injLeft / freqPerDay);
+            const cls      = injLeft <= 3 ? 'critical' : injLeft <= 10 ? 'warn' : '';
+            return `<div style="background:${cls==='critical'?'var(--danger-soft)':cls==='warn'?'var(--amber-soft)':'var(--accent-soft)'};border:1px solid ${cls==='critical'?'rgba(180,35,56,.25)':cls==='warn'?'rgba(128,80,0,.25)':'rgba(36,87,214,.18)'};border-radius:8px;padding:6px 8px;width:100%;text-align:center;margin-top:2px">
+              <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.78rem;font-weight:700;color:${cls==='critical'?'var(--danger)':cls==='warn'?'var(--accent3)':'var(--accent)'}">${injLeft} inj. restantes</div>
+              <div style="font-size:.62rem;color:var(--muted);margin-top:1px">~${daysLeft} ${t('day')+(daysLeft>1?'s':'')}</div>
+            </div>`;
+          }
+          return '';
+        })()}
+        <button onclick="event.stopPropagation();confirmDelete('${f.id}')" style="margin-top:6px;padding:4px 12px;background:var(--danger-soft);color:var(--danger);border:1px solid rgba(180,35,56,.25);border-radius:8px;font-family:inherit;font-size:.68rem;font-weight:600;cursor:pointer">${t('delete')}</button>
+      </div>`;
+    }).join('')}
+    <!-- Bouton ajouter -->
+    <div onclick="openModal()" style="background:var(--surface);border:1.5px dashed var(--border);border-radius:18px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;min-height:180px;transition:border-color .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:2rem;color:var(--border)">+</div>
+      <div style="font-size:.75rem;color:var(--muted);text-align:center">${t('inv_add_vial')}</div>
+    </div>
+  </div>`;
+
+  // Niveau de liquide exact sur chaque flacon (dessin du kit)
+  container.querySelectorAll('.inv-vial').forEach(w => {
+    if (w.dataset.sealed !== '1') PS_vialLevel(w.querySelector('svg'), Number(w.dataset.pct) / 100);
+  });
+}
+
+// ── MODAL ──────────────────────────────────────────────────────
+function autoFillStorage(peptideName) {
+  const info = getStorageInfo(peptideName);
+  if (!info) return;
+  const tempEl = document.getElementById('fStorageTemp');
+  const daysEl = document.getElementById('fStorageDays');
+  const noteEl = document.getElementById('fStorageNote');
+  // Pré-remplir seulement si vide
+  if (tempEl && !tempEl.value) tempEl.value = info.temp;
+  if (daysEl && !daysEl.value) daysEl.value = info.days;
+  if (noteEl && !noteEl.value) noteEl.value = info.note;
+}
+
+function openModal() {
+  document.getElementById('modalTitle').textContent = t('inv_add');
+  document.getElementById('fEditId').value = '';
+  ['fPeptide','fNote','fStorageTemp','fStorageDays','fStorageNote'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  document.getElementById('fQty').value        = '';
+  document.getElementById('fDosePerInj').value = '';
+  document.getElementById('fFreqPerDay').value = '';
+  document.getElementById('fUnit').value       = 'mg';
+  document.getElementById('fStatus').value     = 'active';
+  document.getElementById('fReconDate').value  = psDayStr();
+  document.getElementById('flaconModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function openEditModal(id) {
+  const f = allInventory.find(x=>x.id===id);
+  if (!f) return;
+  document.getElementById('modalTitle').textContent = t('inv_modal_edit');
+  document.getElementById('fEditId').value     = id;
+  document.getElementById('fPeptide').value    = f.peptide_name||'';
+  document.getElementById('fQty').value        = f.vial_qty_mg||'';
+  document.getElementById('fDosePerInj').value = f.bac_water_ml || '';
+  document.getElementById('fFreqPerDay').value = f.lot_number || '';
+  document.getElementById('fUnit').value       = 'mg';
+  document.getElementById('fReconDate').value  = f.reconstituted_at||'';
+  // Extraire les infos depuis les notes
+  const notesRaw = f.notes || '';
+  const tempMatch  = notesRaw.match(/temp:([^|]+)/);
+  const daysMatch  = notesRaw.match(/days:([^|]+)/);
+  const snoteMatch = notesRaw.match(/snote:([^|]+)/);
+  const storInfo   = getStorageInfo(f.peptide_name);
+  // Note utilisateur = tout sauf les tags techniques
+  const userNote = notesRaw.replace(/\s*\|?\s*(active|sealed|finished|temp:[^|]+|days:[^|]+|snote:[^|]+)/g,'').replace(/^\s*\|\s*/,'').trim();
+  document.getElementById('fNote').value        = userNote;
+  document.getElementById('fStorageTemp').value = tempMatch  ? tempMatch[1].trim()  : (storInfo?.temp || '');
+  document.getElementById('fStorageDays').value = daysMatch  ? daysMatch[1].trim()  : (storInfo?.days || '');
+  document.getElementById('fStorageNote').value = snoteMatch ? snoteMatch[1].trim() : (storInfo?.note || '');
+  const statusMap = { active:'active', sealed:'sealed', finished:'finished' };
+  document.getElementById('fStatus').value = f.notes?.includes('sealed')?'sealed':f.notes?.includes('finished')?'finished':'active';
+  document.getElementById('flaconModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+async function saveFlacon() {
+  const peptide = document.getElementById('fPeptide')?.value.trim();
+  if (!peptide) { showToast(t('inv_name_required')); return; }
+  const qty    = parseFloat(document.getElementById('fQty')?.value)||null;
+  const dose   = parseFloat(document.getElementById('fDosePerInj')?.value)||null;
+  const freq   = parseFloat(document.getElementById('fFreqPerDay')?.value)||null;
+  const recon  = document.getElementById('fReconDate')?.value||null;
+  const note   = document.getElementById('fNote')?.value||null;
+  const status = document.getElementById('fStatus')?.value||'active';
+  const editId = document.getElementById('fEditId')?.value;
+
+  // Calculer jours restants si dose et fréquence connues
+  let remaining = qty;
+  if (qty && dose && freq) {
+    const totalDoses = qty/dose;
+    const daysLeft   = totalDoses/freq;
+    // remaining = qty (on commence avec tout)
+  }
+
+  const storageTemp = document.getElementById('fStorageTemp')?.value.trim()||'';
+  const storageDays = document.getElementById('fStorageDays')?.value||'';
+  const storageNote = document.getElementById('fStorageNote')?.value.trim()||'';
+
+  // Encoder conservation dans les notes : status | note_user | temp:X | days:X | snote:X
+  let noteParts = [status];
+  if (note) noteParts.push(note);
+  if (storageTemp) noteParts.push('temp:'+storageTemp);
+  if (storageDays) noteParts.push('days:'+storageDays);
+  if (storageNote) noteParts.push('snote:'+storageNote);
+
+  const payload = {
+    peptide_name:    peptide,
+    vial_qty_mg:     qty,
+    remaining_units: editId ? undefined : qty,
+    bac_water_ml:    dose,
+    lot_number:      freq ? String(freq) : null,
+    reconstituted_at:recon,
+    notes:           noteParts.join(' | '),
+  };
+
+  if (editId) {
+    await sb.from('inventory').update(payload).eq('id',editId);
+    showToast(t('inv_updated'));
+  } else {
+    await sb.from('inventory').insert({...payload, user_id:userId});
+    showToast(t('inv_added'));
+  }
+  closeModal();
+  await loadData();
+}
+
+function editFlacon(id)  { openEditModal(id); }
+function deleteFlacon(id){ confirmDelete(id); }
+
+async function confirmDelete(id) {
+  if (!confirm(t('inv_delete_confirm'))) return;
+  await sb.from('inventory').delete().eq('id',id);
+  showToast(t('inv_deleted'));
+  await loadData();
+}
+
+function closeModal()      { document.getElementById('flaconModal').classList.remove('show'); document.body.style.overflow=''; }
+function closeIfOverlay(e) { if(e.target===document.getElementById('flaconModal')) closeModal(); }
+
+
+// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
+PS_initShell();
+
+async function psLogout() {
+  try { await sb.auth.signOut(); } catch(e) {}
+  window.location.href = '/login.html';
+}
+function psFillAvatar() {
+  sb.auth.getUser().then(({data}) => {
+    const n = data?.user?.user_metadata?.full_name || data?.user?.email || '';
+    const btn = document.getElementById('avatarButton');
+    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
+  }).catch(()=>{});
+}
+
+init().then(()=>{
+  psFillAvatar();
+  PS_applyI18n();
+  PS_renderLangSwitcher();
+});
+
+// Auto-refresh quand on revient sur la page (depuis cure.html par exemple)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && userId) {
+    loadData();
+  }
+});
+</script>
+
+<div class="page-band" style="padding:0 16px 8px"><div class="legal-disclaimer compact">
+  <span class="legal-disclaimer-icon">⚠️</span>
+  <div class="legal-disclaimer-text">
+    <strong data-i18n="disclaimer_title">Usage éducatif uniquement</strong> — <span data-i18n="disclaimer_short">Peptides de recherche non approuvés à usage humain.</span>
+  </div>
+</div></div>
+</body>
+</html>

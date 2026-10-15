@@ -2,667 +2,186 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<script src="/lang.js"></script>
-<script src="/assets/assets-bundle.js"></script>
-<script src="/ps-app.js"></script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PeptideScanner — Analyse</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>PeptideScanner — Statistiques</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
-<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <link rel="stylesheet" href="/peptidescanner.css">
-<link rel="stylesheet" href="/peptidescanner-extra.css">
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
 <style>
-  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
-  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
-     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
-     les noms propres a cette page. */
-  :root {
-    --surface2: var(--surface-muted);
-    --accent2:  var(--info);
-    --accent3:  var(--amber);
-    --nav-h:    var(--bottomnav-h, 64px);
-    --green:    var(--accent);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:var(--font-ui); background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:120px; }
-  .period-bar { display:flex; align-items:center; justify-content:space-between; gap:12px;
-                 width:100%; max-width:100%; margin:0 auto; padding:14px 20px 0; }
-  .period-label { font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
-  @media (min-width: 768px)  { .period-bar { max-width: 720px; } }
-  @media (min-width: 1024px) { .period-bar { max-width: var(--content-desktop, 1100px); } }
-  .period-select { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:6px 10px; font-family:inherit; font-size:.75rem; outline:none; cursor:pointer; }
-  .content { padding:16px 20px 0; width:100%; max-width:100%; margin:0 auto; }
-  @media (min-width: 768px)  { .content { max-width: 720px; } }
-  @media (min-width: 1024px) { .content { max-width: var(--content-desktop, 1100px); } }
-  .scan-score-card { background:linear-gradient(135deg, var(--accent-soft) 0%, var(--info-soft) 100%); border:1.5px solid rgba(36,87,214,.2); border-radius:22px; padding:24px 20px; margin-bottom:16px; position:relative; overflow:hidden; box-shadow:0 4px 20px rgba(36,87,214,.06); }
-  .score-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
-  .score-label { font-size:.68rem; color:var(--accent); text-transform:uppercase; letter-spacing:2px; font-family:var(--font-data);font-variant-numeric:tabular-nums; margin-bottom:4px; }
-  .score-title { font-size:1rem; font-weight:700; }
-  .score-ring-wrap { position:relative; width:80px; height:80px; flex-shrink:0; }
-  .score-ring-wrap svg { transform:rotate(-90deg); }
-  .score-ring-bg { fill:none; stroke:var(--border); stroke-width:6; }
-  .score-ring-fill { fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset .8s ease; }
-  .score-number { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
-  .score-num { font-size:1.4rem; font-weight:700; line-height:1; }
-  .score-max { font-size:.6rem; color:var(--muted); }
-  .score-breakdown { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px; }
-  .score-item { background:rgba(255,255,255,.7); border:1px solid rgba(36,87,214,.12); border-radius:10px; padding:10px 8px; text-align:center; }
-  .score-item-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1rem; font-weight:700; margin-bottom:3px; }
-  .score-item-label { font-size:.62rem; color:var(--muted); }
-  .insights-wrap { margin-bottom:16px; }
-  .insight-card { background:var(--surface); border-radius:16px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:flex-start; gap:12px; border:1px solid var(--border); }
-  .insight-card.positive { border-left:3px solid var(--accent); }
-  .insight-card.warning { border-left:3px solid var(--accent3); }
-  .insight-card.negative { border-left:3px solid var(--danger); }
-  .insight-card.info { border-left:3px solid var(--accent2); }
-  .insight-icon { font-size:1.3rem; flex-shrink:0; margin-top:1px; }
-  .insight-body { flex:1; }
-  .insight-title { font-size:.86rem; font-weight:700; margin-bottom:3px; }
-  .insight-text { font-size:.76rem; color:var(--muted); line-height:1.5; }
-  .insight-badge { display:inline-block; margin-top:6px; padding:2px 8px; border-radius:100px; font-size:.65rem; font-weight:700; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
-  .badge-green { background:var(--accent-soft); color:var(--green); }
-  .badge-amber { background:var(--amber-soft); color:var(--accent3); }
-  .badge-red { background:var(--danger-soft); color:var(--danger); }
-  .badge-blue { background:var(--info-soft); color:var(--accent2); }
-  .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
-  .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-  .chart-header h3 { font-size:.9rem; font-weight:600; }
-  .chart-legend { display:flex; gap:12px; }
-  .legend-item { display:flex; align-items:center; gap:5px; font-size:.68rem; color:var(--muted); }
-  .legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-  .chart-wrap { position:relative; height:160px; }
-  .chart-wrap svg { width:100%; height:100%; overflow:visible; }
-  .chart-labels { display:flex; justify-content:space-between; margin-top:6px; }
-  .chart-labels span { font-size:.62rem; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
-  .heatmap-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
-  .heatmap-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
-  .heatmap-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
-  .heatmap-cell { aspect-ratio:1; border-radius:4px; }
-  .hm-0 { background:var(--surface2); }
-  .hm-1 { background:var(--accent-soft); }
-  .hm-2 { background:var(--accent); }
-  .hm-3 { background:var(--accent); }
-  .hm-rest { background:var(--neutral-soft); }
-  .heatmap-legend { display:flex; align-items:center; gap:6px; margin-top:10px; font-size:.65rem; color:var(--muted); }
-  .heatmap-legend-dots { display:flex; gap:3px; }
-  .heatmap-legend-dot { width:10px; height:10px; border-radius:2px; }
-  .projection-card { background:linear-gradient(135deg, var(--info-soft), var(--accent-soft)); border:1px solid rgba(36,87,214,.18); border-radius:18px; padding:18px; margin-bottom:16px; }
-  .projection-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
-  .proj-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
-  .proj-row:last-child { border-bottom:none; }
-  .proj-label { font-size:.82rem; color:var(--muted); }
-  .proj-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.88rem; font-weight:700; }
-  .proj-val.green { color:var(--accent); }
-  .proj-val.amber { color:var(--accent3); }
-  .proj-val.blue { color:var(--accent2); }
-  .weekly-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
-  .weekly-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
-  .weekly-bars { display:flex; gap:8px; align-items:flex-end; height:80px; }
-  .weekly-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; }
-  .weekly-bar-bg { flex:1; width:100%; background:var(--surface2); border-radius:4px; position:relative; overflow:hidden; }
-  .weekly-bar-fill { position:absolute; bottom:0; left:0; right:0; border-radius:4px; transition:height .5s ease; }
-  .weekly-bar-label { font-size:.6rem; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
-  .weekly-bar-pct { font-size:.6rem; color:var(--muted); }
-  .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
-  .stat-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; }
-  .stat-box-label { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; }
-  .stat-box-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.4rem; font-weight:700; line-height:1; margin-bottom:4px; }
-  .stat-box-sub { font-size:.7rem; color:var(--muted); }
-  .stat-box-trend { font-size:.72rem; margin-top:4px; font-weight:600; }
-  .trend-up { color:var(--green); }
-  .trend-down { color:var(--danger); }
-  .trend-neutral { color:var(--muted); }
-  .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
-  .empty-state span { font-size:2.5rem; display:block; margin-bottom:12px; }
-  .empty-state p { font-size:.88rem; line-height:1.6; margin-bottom:20px; }
-  .empty-btn { background:var(--accent); color:var(--accent-on); border:none; padding:12px 24px; border-radius:10px; font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; }
-  .loading-state { text-align:center; padding:60px 20px; color:var(--muted); font-size:.88rem; }
-  .section-label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; margin-bottom:10px; margin-top:4px; }
-  .legal-disclaimer { display:flex; align-items:flex-start; gap:8px; background:#FEF3C7; border:1px solid var(--amber); border-radius:10px; padding:10px 14px; margin:12px 20px; }
-  .legal-disclaimer-text { font-size:.72rem; color:var(--warning); line-height:1.5; }
+  /* Statistiques (maquettes « statistics » et « empty-stats ») — jetons du kit uniquement */
+  .stat2-count { margin: 8px 0 }
+  .stat2-states { margin-top: 18px }
+  .stat2-lock { margin: 12px 0 }
+  .stat2-lock-title { gap: 12px }
 </style>
 </head>
-<body>
-
-<header class="app-topbar">
-  <div class="topbar-inner">
-    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
-    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
-    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
-  </div>
-</header>
-<div class="menu-popover" id="avatarMenu" hidden>
-  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
-  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
-  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
-  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
-  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
-</div>
-
-<div class="period-bar">
-  <label class="period-label" for="periodSelect" data-i18n="analytics_period">Période analysée</label>
-  <select class="period-select" id="periodSelect" onchange="render()">
-    <option value="30" data-i18n="analytics_30d">30 jours</option>
-    <option value="60" data-i18n="analytics_60d">60 jours</option>
-    <option value="90" data-i18n="analytics_90d">90 jours</option>
-    <option value="0" data-i18n="analytics_all">Tout</option>
-  </select>
-</div>
-<div class="content" style="padding-bottom:0">
-<div class="page-intro"><h1 data-i18n="analytics_title">Analyse</h1><p data-i18n="intro_stats_sub">Comprendre votre historique</p></div>
-<div class="section-tabs">
-  <a class="section-tab" href="poids.html" data-i18n="nav_weight">Poids</a>
-  <a class="section-tab" href="analytics.html" aria-current="page" data-i18n="analytics_title">Analyse</a>
-</div>
-</div>
-<div class="content" id="mainContent">
-  <div class="loading-state">⏳ Chargement…</div>
-</div>
-
-<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
-  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
-  <a class="nav-item" href="cure.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
-  <a class="nav-item" href="inventaire.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
-  <a class="nav-item is-active" href="poids.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
-  <a class="nav-item" href="peptide-database.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
-</div></nav>
-<div style="padding:0 0 8px">
-  <div class="legal-disclaimer">
-    <span style="display:flex;justify-content:center;color:var(--warning)" data-ps-i="exclamation-circle"></span>
-    <div class="legal-disclaimer-text">
-      <strong data-i18n="disclaimer_title">Usage éducatif uniquement</strong> — <span data-i18n="disclaimer_short">Peptides de recherche non approuvés à usage humain. Consultez un professionnel de santé.</span>
-    </div>
-  </div>
+<body data-tab="weight" data-back="poids.html">
+<a class="sr-only" href="#main" data-i18n="stat2_skip">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content" tabindex="-1">
+    <div class="page-intro"><h1 data-i18n="stat2_title">Statistiques</h1><p class="muted small" id="stat2Sub" data-i18n="stat2_sub">Comprendre votre historique</p></div>
+    <div id="view" class="stack"></div>
+  </main>
+  <nav id="psTabbar"></nav>
 </div>
 
 <script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
-const SUPABASE_URL     = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const P = window.PS;   // outils communs (ps-app.js)
+let userId = null;
 
-const TODAY = new Date(); TODAY.setHours(0,0,0,0);
-const todayStr = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+let cures = [];        // cures déjà commencées, triées (actives d'abord)
+let injections = [];   // toutes les injections de l'utilisateur
+let selectedId = null;
+try { selectedId = localStorage.getItem('ps_stat2_cure'); } catch (e) {}
 
-let _cures = [], _weights = [], _injections = [], _userId = null;
+PS_initShell();
+document.getElementById('view').innerHTML = P.skeleton();
 
-// ── LOAD DATA FROM SUPABASE ───────────────────────────────────
-async function loadData() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = '/login.html'; return; }
-  _userId = session.user.id;
-
-  // Charger langue
-  const { data: profil } = await sb.from('profiles').select('lang').eq('id', _userId).single();
-  if (profil?.lang) PS_loadLangFromProfile(sb, _userId, profil.lang);
-
-  const period = parseInt(document.getElementById('periodSelect').value) || 0;
-  const cutoff = period > 0 ? psDayStr(new Date(TODAY.getTime() - period * 86400000)) : null;
-
-  // Cures
-  const { data: cures } = await sb.from('cures').select('*').eq('user_id', _userId).eq('status', 'active');
-  _cures = cures || [];
-
-  // Poids
-  let wQuery = sb.from('weight_logs').select('*').eq('user_id', _userId).order('logged_at');
-  if (cutoff) wQuery = wQuery.gte('logged_at', cutoff);
-  const { data: weights } = await wQuery;
-  _weights = (weights || []).map(w => ({ ...w, date: w.logged_at }));
-
-  // Injections (cure active uniquement)
-  const activeCure = getActiveCure();
-  if (activeCure) {
-    let iQuery = sb.from('injections').select('*').eq('user_id', _userId).eq('cure_id', activeCure.id).order('injected_at');
-    if (cutoff) iQuery = iQuery.gte('injected_at', cutoff);
-    const { data: inj } = await iQuery;
-    _injections = (inj || []).map(i => ({ ...i, date: i.injected_at?.split('T')[0] }));
+// ── Petits outils locaux ────────────────────────────────────────
+function fill(str, map) { return String(str).replace(/\{(\w+)\}/g, (m, k) => (k in map ? map[k] : m)); }
+// Accord : en français 0 et 1 sont au singulier, en anglais seulement 1
+function isOne(n) { return P.lang() === 'en' ? n === 1 : n < 2; }
+function cureName(c) {
+  const m = P.cure(c);
+  return (c.peptide_name || c.name || P.tr('stat2_cure_fallback')) + (m.label ? ' · ' + m.label : '');
+}
+// « Du 1er au 18 juin » / « June 1 to 18 » ; deux mois : « Du 20 mai au 18 juin »
+function periodLabel(d0, d1) {
+  const en = P.lang() === 'en', loc = P.locale();
+  if (P.dayIndex(d0, d1) <= 0) return fill(P.tr('stat2_period_one'), { d: P.fmtDate(d1, { day: 'numeric', month: 'long' }) });
+  const sameYear = d0.getFullYear() === d1.getFullYear(), sameMonth = sameYear && d0.getMonth() === d1.getMonth();
+  const yearOpt = d1.getFullYear() !== new Date().getFullYear() ? { year: 'numeric' } : {};
+  let from, to;
+  if (sameMonth) {
+    if (en) { from = d0.toLocaleDateString(loc, { month: 'long', day: 'numeric' }); to = String(d1.getDate()) + (yearOpt.year ? ', ' + d1.getFullYear() : ''); }
+    else { from = d0.getDate() === 1 ? '1er' : String(d0.getDate()); to = P.fmtDate(d1, Object.assign({ day: 'numeric', month: 'long' }, yearOpt)); }
   } else {
-    _injections = [];
+    const o0 = Object.assign({ day: 'numeric', month: 'long' }, sameYear ? {} : { year: 'numeric' });
+    from = P.fmtDate(d0, o0);
+    if (!en && d0.getDate() === 1) from = from.replace(/^1 /, '1er ');
+    to = P.fmtDate(d1, Object.assign({ day: 'numeric', month: 'long' }, sameYear ? yearOpt : { year: 'numeric' }));
   }
+  return fill(P.tr('stat2_period'), { from: from, to: to });
 }
 
-function getActiveCure() {
-  return _cures.find(c => {
-    const s = psDay(c.start_date); s.setHours(0,0,0,0);
-    const e = psDay(c.start_date); e.setDate(e.getDate() + (c.duration_days || 30)); e.setHours(0,0,0,0);
-    return s <= TODAY && e >= TODAY;
+// ── Données ─────────────────────────────────────────────────────
+async function loadData() {
+  const today = psDay(new Date());
+  const [cr, ir] = await Promise.all([
+    sb.from('cures').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+    sb.from('injections').select('*').eq('user_id', userId).order('injected_at', { ascending: true })
+  ]);
+  if (cr.error) throw cr.error;
+  if (ir.error) throw ir.error;
+  injections = ir.data || [];
+  // Seules les cures déjà commencées ont un historique ; actives (favorite en tête) puis les plus récentes
+  cures = (cr.data || []).filter(c => c.start_date && psDay(c.start_date) <= today).sort((a, b) => {
+    const ma = P.cure(a), mb = P.cure(b);
+    const ra = (ma.state === 'active' && a.status === 'active') ? 0 : 1, rb = (mb.state === 'active' && b.status === 'active') ? 0 : 1;
+    if (ra !== rb) return ra - rb;
+    if (!!b.is_favorite !== !!a.is_favorite) return b.is_favorite ? 1 : -1;
+    return String(b.start_date).localeCompare(String(a.start_date));
   });
+  if (!cures.some(c => String(c.id) === String(selectedId))) selectedId = cures.length ? cures[0].id : null;
 }
 
-function getData() {
-  const activeCure = getActiveCure();
-  return { cures: _cures, weights: _weights, activeCure, logs: _injections };
-}
-
-// ── MOTEUR DE CORRÉLATION ──────────────────────────────────────
-function computeCorrelations(data) {
-  const { activeCure, logs, weights } = data;
-  const insights = [];
-
-  if (!activeCure && weights.length < 2) {
-    return { insights: [], score: 0, scoreBreakdown: { compliance: 0, progression: 0, regularity: 0 } };
-  }
-
-  let complianceScore = 0, compliancePct = 0;
-  if (activeCure) {
-    const freq = parseFloat(activeCure.frequency) || 1;
-    const startD = psDay(activeCure.start_date); startD.setHours(0,0,0,0);
-    const dayNum = Math.max(1, Math.floor((TODAY - startD) / 86400000) + 1);
-    const totalExpected = Math.round(Math.min(dayNum, activeCure.duration_days || 30) * freq);
-    const done = logs.length;
-    compliancePct = totalExpected > 0 ? Math.min(100, Math.round(done / totalExpected * 100)) : 0;
-    complianceScore = compliancePct;
-
-    if (compliancePct >= 90) {
-      insights.push({ type:'positive', icon:'🎯',
-        title: t('analytics_compliance_excellent') + ` — ${compliancePct}%`,
-        text: `${done} / ${totalExpected} ${t('analytics_expected')}`,
-        badge: { text: `+${compliancePct}%`, cls:'badge-green' }
-      });
-    } else if (compliancePct >= 70) {
-      insights.push({ type:'warning', icon:PS_icon('exclamation-circle'),
-        title: t('analytics_compliance_good') + ` — ${compliancePct}%`,
-        text: `${totalExpected - done} ${t('analytics_missed_inj')}`,
-        badge: { text: compliancePct+'%', cls:'badge-amber' }
-      });
-    } else {
-      insights.push({ type:'negative', icon:'❌',
-        title: t('analytics_compliance_weak') + ` — ${compliancePct}%`,
-        text: `${totalExpected - done} ${t('analytics_missed_inj')}`,
-        badge: { text: compliancePct+'%', cls:'badge-red' }
-      });
-    }
-
-    // Weekend analysis
-    const weekendLogs = logs.filter(l => { const d=new Date(l.date); return d.getDay()===0||d.getDay()===6; });
-    const weekdayLogs = logs.filter(l => { const d=new Date(l.date); return d.getDay()!==0&&d.getDay()!==6; });
-    const totalDays = Math.min(dayNum, activeCure.duration_days || 30);
-    const weekendDays = Math.round(totalDays * 2/7);
-    const weekdayDays = totalDays - weekendDays;
-    const weekendRate = weekendDays > 0 ? weekendLogs.length / (weekendDays * freq) : 1;
-    const weekdayRate = weekdayDays > 0 ? weekdayLogs.length / (weekdayDays * freq) : 1;
-    if (weekendRate < weekdayRate * 0.7 && weekendDays >= 2) {
-      insights.push({ type:'warning', icon:PS_icon('calendar-days'),
-        title: t('analytics_weekend_drop'),
-        text: t('analytics_weekend_text').replace('{pct}', Math.round((1-weekendRate/weekdayRate)*100)),
-        badge: { text: t('analytics_weekend')+' -'+Math.round((1-weekendRate/weekdayRate)*100)+'%', cls:'badge-amber' }
-      });
-    }
-  }
-
-  let progressionScore = 50;
-  if (weights.length >= 2) {
-    const first = weights[0];
-    const last = weights[weights.length-1];
-    const firstKg = parseFloat(first.weight_kg || first.kg);
-    const lastKg = parseFloat(last.weight_kg || last.kg);
-    const diffKg = lastKg - firstKg;
-    const diffPct = Math.abs(diffKg / firstKg * 100).toFixed(1);
-    const days = Math.ceil((new Date(last.date) - new Date(first.date)) / 86400000);
-    const ratePerWeek = days > 0 ? (diffKg / days * 7).toFixed(2) : 0;
-
-    if (activeCure && days >= 5) {
-      const cureStart = psDay(activeCure.start_date);
-      const weightsSinceCure = weights.filter(w => new Date(w.date) >= cureStart);
-      if (weightsSinceCure.length >= 2) {
-        const firstCureW = parseFloat(weightsSinceCure[0].weight_kg || weightsSinceCure[0].kg);
-        const lastCureW = parseFloat(weightsSinceCure[weightsSinceCure.length-1].weight_kg || weightsSinceCure[weightsSinceCure.length-1].kg);
-        const cureDiff = lastCureW - firstCureW;
-        const cureDays = Math.ceil((new Date(weightsSinceCure[weightsSinceCure.length-1].date) - cureStart) / 86400000);
-        insights.push({ type: cureDiff < 0 ? 'positive' : 'info', icon:'⚖️',
-          title: `${t('analytics_since')} ${activeCure.peptide_name || activeCure.name} — ${cureDiff > 0?'+':''}${cureDiff.toFixed(1)} kg`,
-          text: `${cureDays} ${t('analytics_cure_days_weight')} ${cureDiff < 0 ? t('analytics_lost') : t('analytics_gained')} ${Math.abs(cureDiff).toFixed(1)} kg. ${t('analytics_pace')} : ${Math.abs(ratePerWeek)} kg/${t('week')}.`,
-          badge: { text: (cureDiff>0?'+':'')+cureDiff.toFixed(1)+' kg', cls: cureDiff<0?'badge-green':'badge-blue' }
-        });
-        progressionScore = cureDiff <= 0 ? 80 : 50;
-      }
-    } else if (weights.length >= 2) {
-      insights.push({ type: diffKg < 0 ? 'positive' : 'info', icon:'📉',
-        title: `${t('analytics_weight_evolution')} — ${diffKg>0?'+':''}${diffKg.toFixed(1)} kg`,
-        text: `${t('analytics_over')} ${days} ${t('days')}, ${diffKg < 0 ? t('analytics_you_lost') : t('analytics_you_gained')} ${Math.abs(diffKg).toFixed(1)} kg (${diffPct}%). ${t('analytics_pace')} : ${Math.abs(ratePerWeek)} kg/${t('week')}.`,
-        badge: { text: (diffKg>0?'+':'')+diffKg.toFixed(1)+' kg', cls: diffKg<0?'badge-green':'badge-amber' }
-      });
-    }
-  }
-
-  let regularityScore = 0;
-  if (weights.length >= 3) {
-    const gaps = [];
-    for (let i=1; i<weights.length; i++) gaps.push((new Date(weights[i].date) - new Date(weights[i-1].date)) / 86400000);
-    const avgGap = gaps.reduce((a,b)=>a+b,0) / gaps.length;
-    const maxGap = Math.max(...gaps);
-    regularityScore = Math.max(0, 100 - avgGap * 5);
-    if (maxGap > 14) {
-      insights.push({ type:'warning', icon:'⏳',
-        title: t('analytics_gap').replace('{n}', Math.round(maxGap)),
-        text: t('analytics_gap_text').replace('{n}', Math.round(maxGap)),
-        badge: { text: Math.round(maxGap)+' '+t('days'), cls:'badge-amber' }
-      });
-    } else {
-      regularityScore = 90;
-      insights.push({ type:'positive', icon:PS_icon('check-circle'),
-        title: t('analytics_regular_weighing'),
-        text: `${t('analytics_avg_gap')} ${avgGap.toFixed(1)} ${t('days')}.`,
-        badge: { text: t('analytics_regular'), cls:'badge-green' }
-      });
-    }
-  } else if (weights.length > 0) {
-    regularityScore = 30;
-    insights.push({ type:'info', icon:'💡',
-      title: t('analytics_add_weighing'),
-      text: `${weights.length} ${t('weight_measures')}. ${t('analytics_add_weighing_text')}`,
-      badge: { text: weights.length+' '+t('weight_measures'), cls:'badge-blue' }
-    });
-  }
-
-  const scoreBreakdown = {
-    compliance: Math.round(complianceScore),
-    progression: Math.round(progressionScore),
-    regularity: Math.round(regularityScore)
-  };
-  const globalScore = Math.round(complianceScore * 0.4 + progressionScore * 0.35 + regularityScore * 0.25);
-  return { insights, score: globalScore, scoreBreakdown };
-}
-
-// ── RENDER ────────────────────────────────────────────────────
-function render() {
-  const data = getData();
-  const { insights, score, scoreBreakdown } = computeCorrelations(data);
-  const c = document.getElementById('mainContent');
-  const locale = PS_getLang() === 'en' ? 'en-US' : 'fr-FR';
-
-  if (data.weights.length === 0 && !data.activeCure) {
-    c.innerHTML = `<div class="empty-state">
-      <span style="display:flex;justify-content:center;color:var(--accent)">${PS_icon('chart-bar')}</span>
-      <p>${t('analytics_empty_text')}</p>
-      <button class="empty-btn" onclick="window.location.href='cure.html'">${t('analytics_start_cure')}</button>
-    </div>`;
-    return;
-  }
-
-  const scoreColor = score >= 80 ? 'var(--accent)' : score >= 60 ? 'var(--accent3)' : 'var(--danger)';
-  const scoreLabel = score >= 80 ? t('analytics_excellent') : score >= 60 ? t('analytics_good') : score >= 40 ? t('analytics_improve') : t('analytics_weak');
-  const circumference = 2 * Math.PI * 30;
-  const offset = circumference * (1 - score / 100);
-
-  c.innerHTML = `
-    <div class="scan-score-card">
-      <div class="score-header">
-        <div>
-          <div class="score-label">${t('analytics_scan_score')}</div>
-          <div class="score-title">${t('analytics_protocol_analysis')}</div>
-        </div>
-        <div class="score-ring-wrap">
-          <svg viewBox="0 0 68 68" width="68" height="68">
-            <circle class="score-ring-bg" cx="34" cy="34" r="30"/>
-            <circle class="score-ring-fill" cx="34" cy="34" r="30"
-              stroke="${scoreColor}"
-              stroke-dasharray="${circumference}"
-              stroke-dashoffset="${offset}"/>
-          </svg>
-          <div class="score-number">
-            <span class="score-num" style="color:${scoreColor}">${score}</span>
-            <span class="score-max">/100</span>
-          </div>
-        </div>
-      </div>
-      <div class="score-breakdown">
-        <div class="score-item">
-          <div class="score-item-val" style="color:${scoreBreakdown.compliance>=70?'var(--accent)':'var(--accent3)'}">${scoreBreakdown.compliance}%</div>
-          <div class="score-item-label">${t('cure_compliance')}</div>
-        </div>
-        <div class="score-item">
-          <div class="score-item-val" style="color:${scoreBreakdown.progression>=60?'var(--accent)':'var(--accent3)'}">${scoreBreakdown.progression}%</div>
-          <div class="score-item-label">${t('analytics_progression')}</div>
-        </div>
-        <div class="score-item">
-          <div class="score-item-val" style="color:${scoreBreakdown.regularity>=60?'var(--accent)':'var(--accent3)'}">${scoreBreakdown.regularity}%</div>
-          <div class="score-item-label">${t('analytics_regularity')}</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="stats-grid">${renderStatBox(data)}</div>
-
-    <div class="section-label">${t('analytics_insights')}</div>
-    <div class="insights-wrap">
-      ${insights.length > 0
-        ? insights.map(ins => `
-          <div class="insight-card ${ins.type}">
-            <div class="insight-icon">${ins.icon}</div>
-            <div class="insight-body">
-              <div class="insight-title">${ins.title}</div>
-              <div class="insight-text">${ins.text}</div>
-              ${ins.badge ? `<span class="insight-badge ${ins.badge.cls}">${ins.badge.text}</span>` : ''}
-            </div>
-          </div>`).join('')
-        : `<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">${t('analytics_no_data')}</div>`
-      }
-    </div>
-
-    ${data.weights.length >= 2 ? renderCorrelationChart(data, locale) : ''}
-    ${data.activeCure ? renderHeatmap(data) : ''}
-    ${data.activeCure && data.logs.length > 0 ? renderWeeklyBars(data) : ''}
-    ${renderProjection(data, locale)}
-  `;
-}
-
-function renderStatBox(data) {
-  const { activeCure, logs, weights } = data;
-  const stats = [];
-  if (activeCure) {
-    const freq = parseFloat(activeCure.frequency) || 1;
-    const startD = psDay(activeCure.start_date); startD.setHours(0,0,0,0);
-    const dayNum = Math.max(1, Math.floor((TODAY - startD) / 86400000) + 1);
-    const expected = Math.round(Math.min(dayNum, activeCure.duration_days || 30) * freq);
-    const pct = expected > 0 ? Math.min(100, Math.round(logs.length / expected * 100)) : 0;
-    stats.push(`<div class="stat-box"><div class="stat-box-label">${t('profil_injections')}</div><div class="stat-box-val" style="color:var(--accent)">${logs.length}</div><div class="stat-box-sub">/ ${expected} ${t('analytics_expected')}</div><div class="stat-box-trend ${pct>=80?'trend-up':pct>=60?'trend-neutral':'trend-down'}">${pct}% ${t('cure_compliance').toLowerCase()}</div></div>`);
-    stats.push(`<div class="stat-box"><div class="stat-box-label">${t('analytics_cure_day')}</div><div class="stat-box-val" style="color:var(--accent2)">J${Math.min(dayNum, activeCure.duration_days||30)}</div><div class="stat-box-sub">/ ${activeCure.duration_days||30} ${t('days')}</div><div class="stat-box-trend trend-neutral">${Math.max(0,(activeCure.duration_days||30)-dayNum)} ${t('cure_remaining').toLowerCase()}</div></div>`);
-  }
-  if (weights.length >= 2) {
-    const first = parseFloat(weights[0].weight_kg || weights[0].kg);
-    const last = parseFloat(weights[weights.length-1].weight_kg || weights[weights.length-1].kg);
-    const diff = (last - first).toFixed(1);
-    stats.push(`<div class="stat-box"><div class="stat-box-label">${t('dash_current_weight')}</div><div class="stat-box-val" style="color:var(--accent)">${last} kg</div><div class="stat-box-sub">${weights.length} ${t('weight_measures')}</div><div class="stat-box-trend ${diff<=0?'trend-up':'trend-down'}">${diff>0?'+':''}${diff} kg</div></div>`);
-    const days = Math.ceil((new Date(weights[weights.length-1].date) - new Date(weights[0].date)) / 86400000);
-    const rate = days > 0 ? Math.abs((last-first)/days*7).toFixed(2) : 0;
-    stats.push(`<div class="stat-box"><div class="stat-box-label">${t('analytics_pace')}</div><div class="stat-box-val" style="color:var(--accent3)">${rate}</div><div class="stat-box-sub">${t('analytics_kg_week')}</div><div class="stat-box-trend trend-neutral">${t('analytics_over')} ${days} ${t('days')}</div></div>`);
-  }
-  return stats.join('');
-}
-
-function renderCorrelationChart(data, locale) {
-  const { weights, activeCure } = data;
-  if (weights.length < 2) return '';
-  const W=400,H=120,PL=28,PR=8,PT=8,PB=16;
-  const vals = weights.map(w => parseFloat(w.weight_kg || w.kg));
-  const mn = Math.min(...vals)-0.5, mx = Math.max(...vals)+0.5;
-  const pts = vals.map((v,i) => ({ x:PL+(i/(vals.length-1))*(W-PL-PR), y:PT+(1-(v-mn)/(mx-mn))*(H-PT-PB), kg:v, date:weights[i].date }));
-  const line = pts.map((p,i)=>i===0?`M${p.x},${p.y}`:`L${p.x},${p.y}`).join(' ');
-  const area = line+` L${pts[pts.length-1].x},${H-PB} L${PL},${H-PB} Z`;
-  let cureStartLine = '';
-  if (activeCure) {
-    const cureStart = psDay(activeCure.start_date);
-    const cureIdx = weights.findIndex(w => new Date(w.date) >= cureStart);
-    if (cureIdx > 0 && cureIdx < weights.length) {
-      const cx = pts[cureIdx].x;
-      cureStartLine = `<line x1="${cx}" y1="${PT}" x2="${cx}" y2="${H-PB}" stroke="rgba(36,87,214,.4)" stroke-width="1.5" stroke-dasharray="3,3"/>`;
-    }
-  }
-  const step = Math.max(1, Math.floor(weights.length/4));
-  const xLabels = pts.filter((_,i)=>i%step===0||i===pts.length-1).map(p=>`<span>${new Date(p.date).toLocaleDateString(locale,{day:'2-digit',month:'short'})}</span>`).join('');
-  const n=pts.length, sumX=pts.reduce((s,_,i)=>s+i,0), sumY=pts.reduce((s,p)=>s+p.y,0), sumXY=pts.reduce((s,p,i)=>s+i*p.y,0), sumX2=pts.reduce((s,_,i)=>s+i*i,0);
-  const slope=(n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX), intercept=(sumY-slope*sumX)/n;
-  const trendColor = slope<0?'var(--accent)':'var(--danger)';
-  return `
-    <div class="section-label">${t('analytics_correlation')}</div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <h3>${t('dash_weight_title')}</h3>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>${t('weight_current')}</div>
-          <div class="legend-item"><div class="legend-dot" style="background:${trendColor};opacity:.7"></div>${t('analytics_trend')}</div>
-        </div>
-      </div>
-      <div class="chart-wrap">
-        <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;overflow:visible">
-          <defs><linearGradient id="cGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--accent)" stop-opacity=".2"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
-          <line x1="${PL}" y1="${PT}" x2="${W-PR}" y2="${PT}" stroke="var(--border)" stroke-width="1"/>
-          <line x1="${PL}" y1="${(H-PB+PT)/2}" x2="${W-PR}" y2="${(H-PB+PT)/2}" stroke="var(--border)" stroke-width="1"/>
-          <line x1="${PL}" y1="${H-PB}" x2="${W-PR}" y2="${H-PB}" stroke="var(--border)" stroke-width="1"/>
-          <text x="${PL-3}" y="${PT+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Inter">${mx.toFixed(1)}</text>
-          <text x="${PL-3}" y="${(H-PB+PT)/2+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Inter">${((mx+mn)/2).toFixed(1)}</text>
-          <text x="${PL-3}" y="${H-PB+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Inter">${mn.toFixed(1)}</text>
-          <path d="${area}" fill="url(#cGrad)"/>
-          <line x1="${pts[0].x}" y1="${intercept}" x2="${pts[n-1].x}" y2="${slope*(n-1)+intercept}" stroke="${trendColor}" stroke-width="1.5" stroke-dasharray="4,3" opacity=".6"/>
-          ${cureStartLine}
-          <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--accent)"/>`).join('')}
-          <circle cx="${pts[pts.length-1].x}" cy="${pts[pts.length-1].y}" r="5" fill="var(--accent)" stroke="var(--bg)" stroke-width="2"/>
-        </svg>
-      </div>
-      <div class="chart-labels">${xLabels}</div>
-    </div>`;
-}
-
-function renderHeatmap(data) {
-  const { activeCure, logs } = data;
-  if (!activeCure) return '';
-  const startD = psDay(activeCure.start_date); startD.setHours(0,0,0,0);
-  const freq = parseFloat(activeCure.frequency) || 1;
-  const inj_per_day = freq >= 1 ? Math.ceil(freq) : 1;
-  const dayNum = Math.floor((TODAY - startD) / 86400000) + 1;
-  const displayDays = Math.min(dayNum, activeCure.duration_days || 30, 28);
-  let cells = '';
-  for (let i=0; i<displayDays; i++) {
-    const d = new Date(startD); d.setDate(d.getDate()+i);
-    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const done = logs.filter(l => l.date === ds).length;
-    let cls = freq < 1 ? (i%Math.round(1/freq)===0 ? (done>0?'hm-3':'hm-0') : 'hm-rest') : (done>=inj_per_day?'hm-3':done>0?'hm-2':d<TODAY?'hm-0':'hm-rest');
-    cells += `<div class="heatmap-cell ${cls}" style="${ds===todayStr?'outline:2px solid var(--accent);outline-offset:1px':''}"></div>`;
-  }
-  return `
-    <div class="section-label">${t('analytics_heatmap')}</div>
-    <div class="heatmap-card">
-      <h3>${activeCure.peptide_name || activeCure.name} — ${displayDays} ${t('analytics_last_days')}</h3>
-      <div class="heatmap-grid">${cells}</div>
-      <div class="heatmap-legend">
-        <span>${t('analytics_less')}</span>
-        <div class="heatmap-legend-dots">
-          <div class="heatmap-legend-dot hm-0"></div><div class="heatmap-legend-dot hm-1"></div><div class="heatmap-legend-dot hm-2"></div><div class="heatmap-legend-dot hm-3"></div>
-        </div>
-        <span>${t('analytics_more')}</span>
-      </div>
-    </div>`;
-}
-
-function renderWeeklyBars(data) {
-  const { activeCure, logs } = data;
-  if (!activeCure || logs.length === 0) return '';
-  const startD = psDay(activeCure.start_date); startD.setHours(0,0,0,0);
-  const freq = parseFloat(activeCure.frequency) || 1;
-  const weeks = [];
-  for (let w=0; w<6; w++) {
-    const ws = new Date(startD); ws.setDate(ws.getDate()+w*7);
-    const we = new Date(ws); we.setDate(we.getDate()+6);
-    if (ws > TODAY) break;
-    const daysInWeek = Math.min(7, Math.ceil((TODAY - ws) / 86400000));
-    const expectedInj = Math.round(daysInWeek * freq);
-    const doneInj = logs.filter(l => { const d=new Date(l.date); return d>=ws&&d<=we; }).length;
-    const pct = expectedInj > 0 ? Math.min(100, Math.round(doneInj/expectedInj*100)) : 0;
-    weeks.push({ label:`S${w+1}`, pct, done:doneInj, expected:expectedInj });
-  }
-  if (weeks.length === 0) return '';
-  const barsHtml = weeks.map(w => {
-    const color = w.pct>=90?'var(--accent)':w.pct>=70?'var(--accent3)':'var(--danger)';
-    return `<div class="weekly-bar-wrap"><div class="weekly-bar-pct">${w.pct}%</div><div class="weekly-bar-bg"><div class="weekly-bar-fill" style="height:${w.pct}%;background:${color}"></div></div><div class="weekly-bar-label">${w.label}</div></div>`;
-  }).join('');
-  return `
-    <div class="section-label">${t('analytics_weekly_compliance')}</div>
-    <div class="weekly-card">
-      <h3>${t('analytics_regularity')} — ${activeCure.peptide_name || activeCure.name}</h3>
-      <div class="weekly-bars">${barsHtml}</div>
-    </div>`;
-}
-
-function renderProjection(data, locale) {
-  const { activeCure, logs, weights } = data;
-  if (!activeCure) return '';
-  const startD = psDay(activeCure.start_date); startD.setHours(0,0,0,0);
-  const dayNum = Math.floor((TODAY - startD) / 86400000) + 1;
-  const daysLeft = Math.max(0, (activeCure.duration_days||30) - dayNum);
-  const endDate = new Date(startD); endDate.setDate(endDate.getDate() + (activeCure.duration_days||30));
-  const freq = parseFloat(activeCure.frequency) || 1;
-  const totalExpected = Math.round((activeCure.duration_days||30) * freq);
-  const done = logs.length;
-  const remaining = Math.max(0, totalExpected - done);
-  let weightProjection = '—', weightDiff = '—';
-  if (weights.length >= 2) {
-    const cureWeights = weights.filter(w => new Date(w.date) >= startD);
-    if (cureWeights.length >= 2) {
-      const firstW = parseFloat(cureWeights[0].weight_kg || cureWeights[0].kg);
-      const lastW = parseFloat(cureWeights[cureWeights.length-1].weight_kg || cureWeights[cureWeights.length-1].kg);
-      const days = Math.ceil((new Date(cureWeights[cureWeights.length-1].date) - startD) / 86400000);
-      const ratePerDay = days > 0 ? (lastW - firstW) / days : 0;
-      const proj = (lastW + ratePerDay * daysLeft).toFixed(1);
-      weightProjection = proj + ' kg';
-      weightDiff = ((parseFloat(proj)-firstW)>0?'+':'')+(parseFloat(proj)-firstW).toFixed(1)+' kg';
-    }
-  }
-  const projCompliance = totalExpected > 0 ? Math.min(100, Math.round((done + remaining * 0.85) / totalExpected * 100)) : 0;
-  return `
-    <div class="section-label">${t('analytics_weight_proj')}</div>
-    <div class="projection-card">
-      <h3>🔮 ${t('analytics_cure_end')} — ${endDate.toLocaleDateString(locale,{day:'2-digit',month:'long'})}</h3>
-      <div class="proj-row"><span class="proj-label">${t('dash_days_left')}</span><span class="proj-val ${daysLeft<=7?'amber':'green'}">${daysLeft} ${t('days')}</span></div>
-      <div class="proj-row"><span class="proj-label">${t('analytics_remaining_inj')}</span><span class="proj-val blue">${remaining}</span></div>
-      <div class="proj-row"><span class="proj-label">${t('analytics_projected_weight')}</span><span class="proj-val green">${weightProjection}</span></div>
-      <div class="proj-row"><span class="proj-label">${t('analytics_projected_diff')}</span><span class="proj-val ${weightDiff.includes('-')?'green':'amber'}">${weightDiff}</span></div>
-      <div class="proj-row"><span class="proj-label">${t('analytics_projected_compliance')}</span><span class="proj-val ${projCompliance>=80?'green':'amber'}">${projCompliance}%</span></div>
-    </div>`;
-}
-
-// ── INIT ─────────────────────────────────────────────────────
 async function init() {
+  const session = await P.requireSession(sb);
+  if (!session) return;
+  userId = session.user.id;
+  const { data: profil } = await sb.from('profiles').select('*').eq('id', userId).single();
+  if (profil) PS_loadLangFromProfile(sb, userId, profil.lang);
+  document.documentElement.lang = P.lang();
   await loadData();
   render();
+}
+
+// ── Rendu ───────────────────────────────────────────────────────
+function render() {
+  const view = document.getElementById('view');
+  const sub = document.getElementById('stat2Sub');
+  const ids = cures.map(c => String(c.id));
+  const hasHistory = injections.some(i => ids.indexOf(String(i.cure_id)) >= 0);
+
+  if (!cures.length || !hasHistory) {
+    // Maquette « empty-stats »
+    sub.classList.add('hidden');
+    view.innerHTML = '<section class="card">' + P.empty(P.tr('stat2_empty_title'), P.tr('stat2_empty_text'), 'chart-bar', P.tr('stat2_empty_cta'), 'cure.html') + '</section>';
+    PS_applyI18n();
+    return;
+  }
+  sub.classList.remove('hidden');
+
+  const cure = cures.find(c => String(c.id) === String(selectedId)) || cures[0];
+  const model = P.cure(cure);
+  const injs = injections.filter(i => String(i.cure_id) === String(cure.id));
+  const r = P.cureStats(model, injs);
+  // cureStats compte les créneaux passés non renseignés dans « missed » : on les sépare
+  const missedRecorded = Math.max(0, (r.missed || 0) - (r.notRecorded || 0));
+  const counts = [['done', r.done || 0], ['partial', r.partial || 0], ['missed', missedRecorded], ['postponed', r.postponed || 0]];
+  if (r.rest) counts.push(['rest', r.rest]);
+
+  const today = psDay(new Date());
+  const lastDay = P.addDays(model.end, -1) < today ? P.addDays(model.end, -1) : today;
+  const pct = r.recordedPct || 0;
+  const n = r.recorded || 0, total = r.slotsElapsed || 0, left = r.notRecorded || 0;
+
+  const title = fill(P.tr('stat2_count'), {
+    n: n, total: total,
+    entries: P.tr(isOne(n) ? 'stat2_entry_one' : 'stat2_entry_other'),
+    planned: P.tr(isOne(total) ? 'stat2_planned_one' : 'stat2_planned_other')
+  });
+  const leftText = left === 0 ? P.tr('stat2_left_zero') : fill(P.tr(isOne(left) ? 'stat2_left_one' : 'stat2_left_other'), { n: left });
+
+  let html = '';
+  if (cures.length > 1) {
+    html += P.select(P.tr('stat2_cure_label'), 'stat2Cure', cures.map(c => [c.id, cureName(c)]), cure.id);
+  }
+  html += '<section class="card">' +
+      '<div class="eyebrow">' + P.esc(periodLabel(model.start, lastDay)) + '</div>' +
+      '<h2 class="stat2-count">' + P.esc(title) + '</h2>' +
+      '<p class="small muted">' + P.esc(fill(P.tr('stat2_pct_text'), { pct: pct })) + '</p>' +
+      P.progress(pct, P.tr('stat2_progress_label')) +
+      '<div class="stack tight stat2-states">' +
+        counts.map(c => '<div class="row between">' + P.status(c[0]) + '<strong class="number">' + c[1] + '</strong></div>').join('') +
+      '</div>' +
+      '<p class="help">' + P.esc(leftText) + '</p>' +
+    '</section>' +
+    '<section class="card">' +
+      '<div class="row stat2-lock-title">' + P.icon('lock-closed') + '<h2 data-i18n="stat2_lock_title">Votre historique détaillé</h2></div>' +
+      '<p class="small muted stat2-lock" data-i18n="stat2_lock_text">Comparez les périodes et exportez vos enregistrements avec Premium.</p>' +
+      '<a class="btn secondary full" href="premium.html" data-i18n="stat2_premium">Découvrir Premium</a>' +
+    '</section>' +
+    '<a class="btn ghost full" href="cure.html" data-i18n="stat2_calendar">Voir le calendrier</a>';
+  view.innerHTML = html;
+
+  const sel = document.getElementById('stat2Cure');
+  if (sel) sel.addEventListener('change', () => {
+    selectedId = sel.value;
+    try { localStorage.setItem('ps_stat2_cure', String(selectedId)); } catch (e) {}
+    render();
+    const again = document.getElementById('stat2Cure'); if (again) again.focus();
+  });
   PS_applyI18n();
-  PS_renderLangSwitcher();
 }
 
-init().catch(console.error);
-
-// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
-PS_initShell();
-document.querySelectorAll('[data-ps-i]').forEach(el=>{el.innerHTML=PS_icon(el.dataset.psI);});
-
-async function psLogout() {
-  try { await sb.auth.signOut(); } catch(e) {}
-  window.location.href = '/login.html';
-}
-function psFillAvatar() {
-  if (typeof sb === 'undefined' || !sb.auth) return;
-  sb.auth.getUser().then(({data}) => {
-    const n = (data && data.user && (data.user.user_metadata && data.user.user_metadata.full_name)) ||
-              (data && data.user && data.user.email) || '';
-    const btn = document.getElementById('avatarButton');
-    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
-  }).catch(function(){});
-}
-document.addEventListener('DOMContentLoaded', function () {
-  psFillAvatar();
-  if (window.PS_applyI18n) PS_applyI18n();
-  if (window.PS_renderLangSwitcher) PS_renderLangSwitcher();
-});
-
+init().catch(e => { console.error(e); document.getElementById('view').innerHTML = P.errorState(init); });
 </script>
 </body>
 </html>

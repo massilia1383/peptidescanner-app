@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════
 # PeptideScanner — prépare le dossier www/ que Capacitor met dans l'appli.
-# Créé le 14/10/2026 (lot 2) ; design Clarté le 15/10/2026 (assets, licences).
+# Créé le 14/10/2026 (lot 2) ; design Clarté le 15/10/2026 (assets, licences) ;
+# Clarté 100 % le 15/10/2026 (onboarding, premium, ps-calc.js ; peptidescanner-extra.css archivé).
 # Lancé par : npm run www  (ou cap:ios / cap:android)
 #
 # Copie UNIQUEMENT les fichiers de l'appli. Ne copie jamais : l'admin
@@ -12,10 +13,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-PAGES="index.html login.html reset-password.html avertissement.html dashboard.html cure.html poids.html inventaire.html
+PAGES="index.html login.html reset-password.html avertissement.html onboarding.html premium.html dashboard.html cure.html poids.html inventaire.html
 alertes.html analytics.html calculateur.html peptide-database.html profil.html
 cgu.html privacy.html mentions-legales.html"
-FILES="manifest.json lang.js ps-app.js peptidescanner.css peptidescanner-extra.css legal.css favicon.svg favicon.ico apple-touch-icon.png"
+FILES="manifest.json lang.js ps-app.js ps-calc.js peptidescanner.css legal.css favicon.svg favicon.ico apple-touch-icon.png"
 DIRS="fonts vendor brand icons assets licences"
 
 rm -rf www

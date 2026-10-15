@@ -1,72 +1,50 @@
 /* ═══════════════════════════════════════════════════════════════
-   legal.css — pages légales (CGU, confidentialité, mentions)
-   Créé le 15/10/2026 (lot 3) : design « Carnet de protocole ».
-   Couleurs, polices et mode sombre viennent de peptidescanner.css.
+   legal.css — pages légales (CGU, confidentialité, mentions légales)
+   Réécrit le 15/10/2026 : mise en forme des maquettes « terms », « privacy »,
+   « imprint » du kit Clarté. Les composants (.card, .legal, .notice, .list-row,
+   .page-intro, .screen-footer, .table) viennent de peptidescanner.css ;
+   ce fichier n'ajoute que le détail des textes longs. Jetons du kit uniquement.
    ═══════════════════════════════════════════════════════════════ */
-body { line-height: 1.65; padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
 
-.legal-topbar {
-  position: sticky; top: 0; z-index: 50;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
-  background: var(--topbar-bg); border-bottom: 1px solid var(--border);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-}
-.legal-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--text); text-decoration: none; }
-.legal-brand img { width: 28px; height: 28px; }
-.legal-back {
-  display: inline-flex; align-items: center; min-height: 40px; padding: 8px 14px;
-  border: 1px solid var(--border); border-radius: 999px; background: var(--surface);
-  color: var(--text-soft); font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap;
-}
-.legal-back:hover { border-color: var(--accent); color: var(--accent); }
+/* Icône d'encart (remplie par PS_initShell via data-ps-i) */
+.legal-ni { display: flex; flex: 0 0 20px; }
+.notice p { margin: 0; }
+.notice p + p { margin-top: 8px; }
 
-.legal-wrap { width: 100%; max-width: 720px; margin: 0 auto; padding: 28px 16px 0; }
+/* Sommaire : carte de liens, une cible de 48 px par ligne */
+.legal-toc h2 { margin-bottom: 4px; }
+.legal-toc-row { min-height: 48px; padding: 10px 0; font-size: var(--text-sm); font-weight: 600; color: var(--text); }
+.legal-toc-row .grow { overflow-wrap: anywhere; }
+.legal-chev { display: flex; margin-left: auto; color: var(--text-secondary); }
+.legal-chev .icon { width: 20px; height: 20px; flex-basis: 20px; }
 
-.legal-head { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-.legal-eyebrow {
-  font-family: var(--font-data); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 8px;
-}
-.legal-title { font-size: 28px; line-height: 1.2; font-weight: 700; letter-spacing: -.02em; color: var(--text); margin: 0 0 8px; overflow-wrap: anywhere; }
-.legal-meta { font-size: 13px; color: var(--muted); }
+/* Contenu */
+/* min-width:0 : la carte (élément de grille) ne s'élargit pas à la largeur du tableau */
+.content > * { min-width: 0; }
+.legal { line-height: 1.6; overflow-wrap: break-word; }
+.legal-section { scroll-margin-top: calc(var(--header-height) + var(--safe-top) + 12px); }
+.legal-section:first-child h2 { margin-top: 4px; }
+.legal h3 { font-size: var(--text-md); margin: 18px 0 8px; }
+.legal ul, .legal ol { margin: 0 0 12px; padding-left: 20px; }
+.legal li { margin-bottom: 6px; }
+.legal li::marker { color: var(--text-secondary); }
+.legal strong { font-weight: 650; }
+.legal a { color: var(--accent); }
+.legal .notice { margin: 4px 0 14px; }
+.legal .notice strong { color: inherit; }
 
-.legal-box {
-  border: 1px solid var(--border); border-radius: 12px; background: var(--surface);
-  padding: 14px 16px; margin: 16px 0; font-size: 14px; color: var(--text-soft);
-}
-.legal-box.is-warning { border-color: var(--amber); background: var(--amber-soft); color: var(--text); }
-.legal-box.is-ok { border-color: var(--accent-border); background: var(--accent-soft); color: var(--text); }
-.legal-box p:last-child { margin-bottom: 0; }
-
-.legal-toc { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 16px 18px; margin-bottom: 28px; }
-.legal-toc h2 { font-family: var(--font-data); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
-.legal-toc ol { margin: 0; padding-left: 20px; }
-.legal-toc li { margin-bottom: 4px; font-size: 14px; }
-.legal-toc a { color: var(--info); text-decoration: none; }
-
-.legal-section { margin-bottom: 28px; scroll-margin-top: 80px; }
-.legal-section h2 {
-  font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 12px;
-  padding-bottom: 8px; border-bottom: 1px solid var(--border);
-}
-.legal-section h3 { font-size: 15px; font-weight: 700; color: var(--text); margin: 18px 0 8px; }
-.legal-section p, .legal-section li { font-size: 15px; color: var(--text-soft); overflow-wrap: anywhere; }
-.legal-section p { margin: 0 0 10px; }
-.legal-section ul, .legal-section ol { margin: 0 0 10px; padding-left: 20px; }
-.legal-section li { margin-bottom: 6px; }
-.legal-section strong { color: var(--text); }
-.legal-section a { color: var(--info); }
+/* Mentions à compléter : repérables sans dépendre de la couleur (crochets dans le texte) */
+.legal-todo { color: var(--warning); background: var(--warning-bg); font-weight: 650; padding: 0 4px; border-radius: 4px; }
 
 /* Tableaux : défilent dans leur cadre au lieu d'élargir la page */
-.legal-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 12px; border: 1px solid var(--border); border-radius: 12px; }
-.legal-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 420px; }
-.legal-table th, .legal-table td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-soft); }
-.legal-table th { background: var(--surface-muted); color: var(--text); font-weight: 700; }
+.legal-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 14px; border: 1px solid var(--border); border-radius: var(--radius-md); }
+.legal-table-wrap:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.legal-table { min-width: 420px; }
+.legal-table th, .legal-table td { vertical-align: top; padding: 10px 12px; overflow-wrap: normal; hyphens: auto; }
+.legal-table th { background: var(--surface-tint); color: var(--text); }
 .legal-table tr:last-child td { border-bottom: 0; }
 
-.legal-todo { background: var(--amber-soft); color: var(--amber); font-weight: 700; padding: 0 4px; border-radius: 4px; }
-
-.legal-footer { margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); }
-.legal-footer nav { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 10px; }
-.legal-footer a { color: var(--info); text-decoration: none; font-weight: 600; }
+/* Pied : © + liens vers les deux autres pages */
+.legal-foot { display: grid; gap: 4px; }
+.legal-foot-links { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 10px; }
+.legal-foot-links a { font-weight: 650; font-size: var(--text-sm); min-width: 44px; justify-content: center; }

@@ -2,1265 +2,548 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PeptideScanner — Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>PeptideScanner — Accueil</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
-<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <link rel="stylesheet" href="/peptidescanner.css">
-<link rel="stylesheet" href="/peptidescanner-extra.css">
-<style>
-  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
-  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
-     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
-     les noms propres a la page, pour que ses regles existantes prennent la
-     nouvelle palette automatiquement. */
-  :root {
-    --purple: var(--info);
-    --surface2: var(--surface-muted);
-    --accent2:  var(--info);
-    --accent3:  var(--amber);
-    --nav-h:    var(--bottomnav-h, 64px);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:var(--font-ui); background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--bottomnav-h,64px) + 32px + env(safe-area-inset-bottom)); }
-
-  /* TOP BAR */
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
-
-  /* SCROLL CONTENT */
-  .content, .page-band { width:100%; max-width:100%; margin:0 auto; }
-  .content { padding:20px 20px 0; }
-  @media (min-width: 768px)  { .content, .page-band { max-width: 720px; } }
-  @media (min-width: 1024px) { .content, .page-band { max-width: var(--content-desktop, 1100px); } }
-
-  /* Colonnes : transparentes sur mobile, reelles a partir de 1024px */
-  .col-main, .col-side { display: contents; }
-  @media (min-width: 1024px) {
-    .content { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);
-               column-gap:22px; align-items:start; }
-    .col-main, .col-side { display:block; min-width:0; }
-  }
-
-  /* CURE ACTIVE CARD */
-  .cure-card {
-    background:var(--surface-muted);
-    border:0; border-radius:20px;
-    padding:22px 20px; margin-bottom:16px; position:relative;
-    box-shadow:0 4px 20px rgba(36,87,214,.08);
-  }
-  .cure-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
-  .cure-label { font-size:.68rem; color:var(--accent); text-transform:uppercase; letter-spacing:1.5px; font-family:var(--font-data);font-variant-numeric:tabular-nums; margin-bottom:4px; }
-  .cure-name { font-size:1.3rem; font-weight:700; color:var(--text); }
-  .cure-sub { font-size:.78rem; color:var(--muted); margin-top:2px; }
-  .cure-day-badge {
-    background:var(--accent-soft); border:1px solid rgba(36,87,214,.25);
-    border-radius:10px; padding:6px 12px; text-align:center; flex-shrink:0;
-  }
-  .cure-day-num { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.4rem; font-weight:700; color:var(--accent); line-height:1; }
-  .cure-day-label { font-size:.62rem; color:var(--muted); margin-top:2px; }
-  .cure-btn.primary { background:var(--accent); color:var(--accent-on); }
-
-  /* Progress ring */
-  .progress-section { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
-  .ring-wrap { position:relative; width:64px; height:64px; flex-shrink:0; }
-  .ring-wrap svg { transform:rotate(-90deg); }
-  .ring-bg { fill:none; stroke:var(--border); stroke-width:5; }
-  .ring-fill { fill:none; stroke:var(--accent); stroke-width:5; stroke-linecap:round; transition:stroke-dashoffset .5s ease; }
-  .ring-pct { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.75rem; font-weight:700; color:var(--accent); }
-  .progress-info { flex:1; }
-  .prog-row { display:flex; justify-content:space-between; margin-bottom:6px; }
-  .prog-key { font-size:.72rem; color:var(--muted); }
-  .prog-val { font-size:.72rem; font-weight:600; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
-  .prog-bar { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
-  .prog-fill { height:100%; background:linear-gradient(90deg, var(--accent), var(--accent2)); border-radius:2px; transition:width .5s ease; }
-
-  .cure-actions { display:flex; gap:10px; }
-  .cure-btn {
-    flex:1; padding:10px; border-radius:10px; border:none;
-    font-family:inherit; font-size:.82rem; font-weight:700; cursor:pointer; transition:all .2s;
-  }
-  .cure-btn.primary { background:var(--accent); color:var(--accent-on); }
-  .cure-btn.primary:hover { opacity:.85; }
-  .cure-btn.secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
-  .cure-btn.secondary:hover { border-color:var(--accent); color:var(--accent); }
-
-  /* STATS ROW */
-  .stats-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
-  .stat-card {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:16px; padding:16px;
-  }
-  .stat-card-label { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
-  .stat-card-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.5rem; font-weight:700; line-height:1; }
-  .stat-card-val.green { color:var(--accent); }
-  .stat-card-val.amber { color:var(--accent3); }
-  .stat-card-val.purple { color:var(--purple); }
-  .stat-card-sub { font-size:.7rem; color:var(--muted); margin-top:4px; display:flex; align-items:center; gap:4px; }
-  .trend-up { color:var(--accent); }
-  .trend-down { color:var(--terra); }
-
-  /* MINI WEIGHT CHART */
-  .weight-card {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:16px; padding:16px; margin-bottom:16px;
-  }
-  .card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
-  .card-head h3 { font-size:.9rem; font-weight:600; }
-  .card-head a { font-size:.75rem; color:var(--accent); text-decoration:none; font-weight:600; }
-  .mini-chart { position:relative; height:80px; }
-  .mini-chart svg { width:100%; height:100%; }
-
-  /* ALERTES */
-  .alerts-card {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:16px; padding:16px; margin-bottom:16px;
-  }
-  .alert-item {
-    display:flex; align-items:center; gap:12px;
-    padding:10px 0; border-bottom:1px solid var(--border);
-  }
-  .alert-item:last-child { border-bottom:none; padding-bottom:0; }
-  .alert-item:first-child { padding-top:0; }
-  .alert-icon {
-    width:36px; height:36px; border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:.9rem; flex-shrink:0;
-  }
-  .alert-icon.green { background:var(--accent-soft); }
-  .alert-icon.amber { background:var(--amber-soft); }
-  .alert-icon.red { background:var(--danger-soft); }
-  .alert-icon.purple { background:var(--info-soft); }
-  .alert-text { flex:1; }
-  .alert-title { font-size:.84rem; font-weight:600; margin-bottom:2px; }
-  .alert-sub { font-size:.72rem; color:var(--muted); }
-  .alert-time { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.68rem; color:var(--muted); flex-shrink:0; }
-
-  /* TODAY VIEW */
-  .today-view-header {
-    background:var(--surface-muted);
-    border:0; border-radius:18px;
-    padding:16px 18px; margin-bottom:12px;
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .today-date-label { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
-  .today-date-val { font-size:1rem; font-weight:700; }
-  .today-score { text-align:right; }
-  .today-score-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.5rem; font-weight:700; color:var(--accent); line-height:1; }
-  .today-score-label { font-size:.65rem; color:var(--muted); margin-top:2px; }
-
-  .today-progress-bar { height:6px; background:var(--surface2); border-radius:100px; overflow:hidden; margin-top:10px; }
-  .today-progress-fill { height:100%; border-radius:100px; background:linear-gradient(90deg, var(--accent), var(--accent)); transition:width .5s ease; }
-
-  .today-card {
-    padding:0;
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:16px; overflow:hidden; margin-bottom:4px;
-    box-shadow:0 2px 8px rgba(0,0,0,.04);
-  }
-  .today-cure-header {
-    padding:10px 16px; background:var(--surface2);
-    border-bottom:1px solid var(--border);
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .today-cure-name { font-size:.78rem; font-weight:700; }
-  .today-cure-day { font-size:.68rem; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
-
-  .injection-item {
-    display:flex; align-items:center; gap:12px;
-    padding:13px 16px; border-bottom:1px solid var(--border);
-    transition:background .15s; cursor:pointer;
-  }
-  .injection-item:last-child { border-bottom:none; }
-  .injection-item:active { background:var(--surface2); }
-  .injection-item.done-item { background:var(--accent-soft); }
-
-  .inj-check {
-    width:32px; height:32px; border-radius:10px; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer; transition:all .2s; font-size:.9rem;
-    border:2px solid var(--border); background:transparent;
-  }
-  .inj-check.done { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
-  .inj-check.pending { border-color:var(--border); }
-  .inj-check.due { border-color:var(--accent3); animation:pulseCheck 1.5s infinite; }
-  @keyframes pulseCheck {
-    0%,100%{ box-shadow:0 0 0 0 rgba(128,80,0,.3); }
-    50%{ box-shadow:0 0 0 5px transparent; }
-  }
-
-  .inj-info { flex:1; min-width:0; }
-  .inj-name { font-size:.86rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .inj-detail { font-size:.72rem; color:var(--muted); margin-top:2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  .inj-site { background:var(--accent-soft); border-radius:5px; padding:1px 6px; color:var(--accent); font-size:.66rem; font-weight:600; }
-
-  .inj-time { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.72rem; color:var(--muted); flex-shrink:0; text-align:right; }
-  .inj-time.due { color:var(--accent3); font-weight:700; }
-  .inj-time.done-time { color:var(--accent); }
-
-  .today-empty { text-align:center; padding:28px 20px; color:var(--muted); }
-  .today-empty span { font-size:2rem; display:block; margin-bottom:8px; }
-  .today-empty p { font-size:.84rem; line-height:1.5; }
-
-  /* SECTION TITLE */
-  .section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-  .section-head h2 { font-size:.82rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
-  .section-head a { font-size:.75rem; color:var(--accent); text-decoration:none; font-weight:600; }
-
-  /* BOTTOM NAV */
-
-  /* TOAST */
-
-  /* MODAL CONFIRMATION INJECTION */
-  .inj-confirm-overlay {
-    position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:500;
-    display:flex; align-items:center; justify-content:center; padding:20px;
-    opacity:0; pointer-events:none; transition:opacity .2s; backdrop-filter:blur(4px);
-  }
-  .inj-confirm-overlay.open { opacity:1; pointer-events:all; }
-  .inj-confirm-sheet {
-    width:100%; max-width:420px; background:var(--surface);
-    border-radius:22px; padding:24px 22px 22px;
-    transform:translateY(16px) scale(.96); opacity:0;
-    transition:transform .24s cubic-bezier(.32,.72,0,1), opacity .2s;
-    box-shadow:0 18px 50px rgba(0,0,0,.22);
-  }
-  .inj-confirm-overlay.open .inj-confirm-sheet { transform:translateY(0) scale(1); opacity:1; }
-  .inj-confirm-handle { display:none; }
-  .inj-confirm-title { font-size:1rem; font-weight:700; margin-bottom:4px; }
-  .inj-confirm-sub { font-size:.78rem; color:var(--muted); margin-bottom:18px; }
-  .inj-time-row { display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:12px 16px; margin-bottom:16px; }
-  .inj-time-label { font-size:.8rem; color:var(--muted); flex:1; }
-  .inj-time-picker {
-    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.1rem; font-weight:700;
-    color:var(--accent); border:none; background:transparent; outline:none;
-    cursor:pointer; -webkit-appearance:none; padding:0;
-  }
-  .inj-confirm-btns { display:flex; gap:10px; }
-  .inj-confirm-btn-cancel { flex:1; padding:13px; border-radius:12px; border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer; }
-  .inj-confirm-btn-ok { flex:2; padding:13px; border-radius:12px; border:none; background:var(--accent); color:var(--accent-on); font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; }
-  .inj-confirm-btn-ok:hover { opacity:.85; }
-
-  /* ADD CURE MODAL */
-  .modal-overlay {
-    position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:400;
-    display:flex; align-items:flex-end; opacity:0; pointer-events:none;
-    transition:opacity .25s; backdrop-filter:blur(4px);
-  }
-  .modal-overlay.open { opacity:1; pointer-events:all; }
-  .modal-sheet {
-    width:100%; background:var(--surface); border-radius:24px 24px 0 0;
-    padding:24px 20px 40px; transform:translateY(100%); transition:transform .3s;
-    max-width:480px; margin:0 auto;
-    /* sans ces deux lignes, un formulaire plus haut que l'ecran n'etait pas
-       defilable et sa fin restait inatteignable */
-    max-height:88vh; overflow-y:auto;
-  }
-  .modal-overlay.open .modal-sheet { transform:translateY(0); }
-  /* Bureau : la feuille se centre. Collee en bas, son bouton de validation
-     sortait de la fenetre et n'etait plus atteignable. */
-  @media (min-width: 768px) {
-    .modal-overlay { align-items: center; padding: 24px; }
-    .modal-sheet {
-      border-radius: 22px;
-      padding-bottom: 24px;
-      max-height: min(86vh, 780px);
-      overflow-y: auto;
-    }
-  }
-
-  .sheet-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
-  .sheet-title { font-size:1.1rem; font-weight:700; margin-bottom:20px; }
-  .form-group { margin-bottom:16px; }
-  .form-label { font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:block; }
-  .form-input {
-    width:100%; background:var(--surface2); border:1px solid var(--border);
-    border-radius:10px; padding:12px 14px; color:var(--text);
-    font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s;
-  }
-  .form-input:focus { border-color:var(--accent); }
-  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .submit-btn {
-    width:100%; padding:14px; border-radius:12px; border:none;
-    background:var(--accent); color:var(--accent-on); font-family:inherit;
-    font-size:.95rem; font-weight:700; cursor:pointer; margin-top:8px; transition:opacity .2s;
-  }
-  .submit-btn:hover { opacity:.85; }
-
-  /* DISCLAIMER JURIDIQUE */
-  .legal-disclaimer {
-    background:var(--amber-soft); border:1px solid rgba(128,80,0,.2);
-    border-radius:12px; padding:12px 16px; margin:12px 0;
-    display:flex; gap:10px; align-items:flex-start;
-  }
-  .legal-disclaimer.compact { padding:8px 12px; margin:8px 0; border-radius:8px; }
-  .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
-  .legal-disclaimer-text { font-size:.72rem; color:var(--warning); line-height:1.5; }
-  .legal-disclaimer-text strong { color:var(--warning); }
-  .phase-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700; }
-  .phase-established  { background:var(--success-bg); color:var(--success); }
-  .phase-preclinical  { background:var(--accent-soft); color:var(--accent); }
-  .phase-phase1       { background:var(--warning-bg); color:var(--warning); }
-  .phase-phase2       { background:var(--warning-bg); color:var(--warning); }
-  .phase-phase3       { background:var(--status-partial-soft); color:var(--status-partial); }
-  .phase-experimental { background:var(--error-bg); color:var(--error); }
-
-  /* ── CAROUSEL CURES ─────────────────────────────────────── */
-  .carousel-wrap { position:relative; margin-bottom:16px; padding:0 18px; }
-
-  /* Navigation dots */
-  .carousel-dots {
-    display:flex; justify-content:center; align-items:center;
-    gap:6px; margin-bottom:10px;
-  }
-  .carousel-dot {
-    width:6px; height:6px; border-radius:50%;
-    background:var(--border); transition:all .3s; cursor:pointer;
-  }
-  .carousel-dot.active { background:var(--accent); width:18px; border-radius:3px; }
-
-  /* Flèches nav */
-  .carousel-nav {
-    position:absolute; top:50%; transform:translateY(-50%);
-    width:32px; height:32px; border-radius:50%;
-    background:var(--surface); border:1px solid var(--border);
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer; font-size:.9rem; z-index:10;
-    box-shadow:0 2px 8px rgba(0,0,0,.08); transition:all .2s;
-    color:var(--text);
-  }
-  .carousel-nav:hover { border-color:var(--accent); color:var(--accent); }
-  .carousel-nav.prev { left:-14px; }
-  .carousel-nav.next { right:-14px; }
-  .carousel-nav.nav-off { opacity:0; pointer-events:none; }
-
-  /* Slide animation */
-  .cure-card {
-    background:var(--surface-muted);
-    border:0; border-radius:20px;
-    padding:22px 20px; position:relative;
-    box-shadow:0 4px 20px rgba(36,87,214,.08);
-    transition:transform .35s cubic-bezier(.4,0,.2,1), opacity .35s ease;
-  }
-  .cure-card.slide-out-left  { transform:translateX(-60px); opacity:0; }
-  .cure-card.slide-out-right { transform:translateX(60px);  opacity:0; }
-  .cure-card.slide-in-left   { transform:translateX(60px);  opacity:0; }
-  .cure-card.slide-in-right  { transform:translateX(-60px); opacity:0; }
-
-  /* Badge cure principale */
-  .main-badge {
-    display:inline-flex; align-items:center; gap:5px;
-    background:var(--accent-soft); border:1px solid rgba(36,87,214,.3);
-    color:var(--accent); border-radius:100px;
-    font-size:.65rem; font-weight:700; padding:3px 10px;
-    font-family:var(--font-data);font-variant-numeric:tabular-nums; letter-spacing:.5px;
-    margin-bottom:4px;
-  }
-  .main-badge::before { content:'●'; font-size:.55rem; }
-  .main-badge-clickable { cursor:pointer; transition:all .2s; }
-  .main-badge-clickable:hover { background:var(--danger-soft); border-color:rgba(180,35,56,.3); color:var(--danger); }
-
-  /* Bouton "Définir comme principale" */
-  .set-main-btn {
-    display:inline-flex; align-items:center; gap:5px;
-    background:transparent; border:1px solid var(--border);
-    color:var(--muted); border-radius:100px;
-    font-size:.65rem; font-weight:600; padding:3px 10px;
-    cursor:pointer; font-family:inherit;
-    transition:all .2s; margin-bottom:4px;
-  }
-  .set-main-btn:hover { border-color:var(--accent); color:var(--accent); }
-
-  /* Badge "Aucune cure" */
-  .no-cure-card {
-    background:var(--surface); border:1.5px dashed var(--border);
-    border-radius:22px; padding:32px 20px; text-align:center; margin-bottom:16px;
-  }
-  .no-cure-card p { font-size:.88rem; color:var(--muted); margin-top:8px; margin-bottom:16px; line-height:1.5; }
-</style>
-</head>
-<body>
-
-<!-- TOP BAR -->
-<header class="app-topbar">
-  <div class="topbar-inner">
-    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
-    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
-    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
-  </div>
-</header>
-<div class="menu-popover" id="avatarMenu" hidden>
-  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
-  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
-  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
-  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
-  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
-</div>
-
-<!-- CONTENT -->
-<div class="content">
-  <div class="col-main">
-
-  <div class="page-intro"><h1 data-i18n="dash_today_section">Aujourd'hui</h1><p id="introDate">—</p></div>
-
-  <!-- TODAY VIEW -->
-  <div id="todayViewContainer" style="margin-bottom:16px"></div>
-
-  <!-- CURE ACTIVE CAROUSEL -->
-  <div style="margin-bottom:8px">
-    <div class="section-head">
-      <h2 data-i18n="dash_active_cure">Cure active</h2>
-      <a href="cure.html"><span data-i18n="see_all">Voir tout →</span></a>
-    </div>
-  </div>
-
-  <!-- Dots pagination -->
-  <div class="carousel-dots" id="carouselDots"></div>
-
-  <!-- Carousel wrap -->
-  <div class="carousel-wrap" id="carouselWrap">
-    <button class="carousel-nav prev nav-off" id="carouselPrev" onclick="carouselMove(-1)">‹</button>
-    <div class="cure-card" id="cureCard">
-      <!-- Badge / bouton principale -->
-      <div id="favBadge" style="display:none"></div>
-      <div class="cure-header">
-        <div>
-          <div class="cure-label"><span data-i18n="dash_protocol">Protocole en cours</span></div>
-          <div class="cure-name" id="cureName">—</div>
-          <div class="cure-sub" id="cureSub">—</div>
-        </div>
-        <div class="cure-day-badge">
-          <div class="cure-day-num" id="cureDay">—</div>
-          <div class="cure-day-label">/ <span id="cureDuration">—</span> <span data-i18n="days">jours</span></div>
-        </div>
-      </div>
-      <div class="progress-section">
-        <div class="ring-wrap">
-          <svg viewBox="0 0 64 64" width="64" height="64">
-            <circle class="ring-bg" cx="32" cy="32" r="27"/>
-            <circle class="ring-fill" cx="32" cy="32" r="27" id="ringFill"
-              stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
-          </svg>
-          <div class="ring-pct" id="ringPct">0%</div>
-        </div>
-        <div class="progress-info">
-          <div class="prog-row">
-            <span class="prog-key"><span data-i18n="dash_inj_done">Injections faites</span></span>
-            <span class="prog-val" id="injDone">0 / 0</span>
-          </div>
-          <div class="prog-bar"><div class="prog-fill" id="injBar" style="width:0%"></div></div>
-          <div class="prog-row" style="margin-top:8px">
-            <span class="prog-key"><span data-i18n="dash_days_left">Jours restants</span></span>
-            <span class="prog-val" id="daysLeft">—</span>
-          </div>
-          <div class="prog-row">
-            <span class="prog-key"><span data-i18n="dash_end_date">Fin estimée</span></span>
-            <span class="prog-val" id="endDate">—</span>
-          </div>
-        </div>
-      </div>
-      <div class="cure-actions">
-        <button class="cure-btn primary" onclick="window.location='cure.html'"><span data-i18n="dash_calendar">📅 Calendrier</span></button>
-        <button class="cure-btn secondary" onclick="openAddCure()"><span data-i18n="dash_new_cure">＋ Nouvelle cure</span></button>
-      </div>
-    </div>
-    <button class="carousel-nav next nav-off" id="carouselNext" onclick="carouselMove(1)">›</button>
-  </div>
-
-  </div>
-
-  <div class="col-side">
-  <!-- STATS -->
-  <div class="section-head">
-    <h2 data-i18n="dash_summary">Résumé</h2>
-    <a href="poids.html" data-i18n="dash_weight_go">Poids →</a>
-  </div>
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-card-label" data-i18n="dash_current_weight">Poids actuel</div>
-      <div class="stat-card-val green" id="currentWeight">—</div>
-      <div class="stat-card-sub" id="weightDiff">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label" data-i18n="dash_cures_done">Cures complétées</div>
-      <div class="stat-card-val amber" id="curesCount">0</div>
-      <div class="stat-card-sub" data-i18n="dash_since_start">depuis le début</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label" data-i18n="dash_total_inj">Injections totales</div>
-      <div class="stat-card-val purple" id="totalInj">0</div>
-      <div class="stat-card-sub" data-i18n="dash_all_cures">toutes cures</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label" data-i18n="dash_compliance">Compliance</div>
-      <div class="stat-card-val green" id="compliance">—</div>
-      <div class="stat-card-sub" data-i18n="dash_inj_done">injections faites</div>
-    </div>
-  </div>
-
-  <!-- MINI WEIGHT CHART -->
-  <div class="weight-card">
-    <div class="card-head">
-      <h3 data-i18n="dash_weight_title">Évolution du poids</h3>
-      <a href="poids.html" data-i18n="details">Détail →</a>
-    </div>
-    <div class="mini-chart">
-      <svg id="miniChart" viewBox="0 0 400 80" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="wGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="var(--accent)" stop-opacity=".25"/>
-            <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-        <text x="200" y="44" fill="var(--muted)" font-size="12" font-family="Inter" text-anchor="middle" id="chartEmpty">—</text>
-        <path id="chartArea" d="" fill="url(#wGrad)"/>
-        <path id="chartLine" d="" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </div>
-  </div>
-
-  <!-- ALERTES -->
-  <div class="section-head" style="margin-top:4px">
-    <h2 data-i18n="dash_alerts_section">Alertes récentes</h2>
-    <a href="alertes.html" data-i18n="dash_alerts_all">Toutes →</a>
-  </div>
-  <div class="alerts-card" id="alertsCard">
-    <div style="text-align:center;padding:16px 0;color:var(--muted);font-size:.85rem">
-      Aucune alerte active
-    </div>
-  </div>
-
-  </div>
-</div><!-- /content -->
-
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
-  <a class="nav-item is-active" href="dashboard.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
-  <a class="nav-item" href="cure.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
-  <a class="nav-item" href="inventaire.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
-  <a class="nav-item" href="poids.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
-  <a class="nav-item" href="peptide-database.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
-</div></nav>
-
-<!-- ADD CURE MODAL -->
-<div class="modal-overlay" id="addCureModal" onclick="closeIfOverlay(event)">
-  <div class="modal-sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" data-i18n="dash_new_cure_title">Nouvelle cure</div>
-    <div class="form-group">
-      <label class="form-label" data-i18n="dash_peptide">Peptide</label>
-      <select class="form-input" id="newCurePeptide">
-        <option value="" data-i18n="dash_choose_peptide">Choisir un peptide…</option>
-        <option>BPC-157</option><option>TB-500</option><option>CJC-1295</option>
-        <option>Ipamorelin</option><option>GHRP-6</option><option>Semaglutide</option>
-        <option>Epithalon</option><option>Semax</option><option>PT-141</option>
-        <option>AOD-9604</option><option>Thymosin Alpha-1</option><option>GHK-Cu</option>
-        <option>Autre</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label" data-i18n="dash_dosage">Dosage</label>
-        <input class="form-input" id="newCureDosage" placeholder="ex: 250 mcg">
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="dash_admin">Administration</label>
-        <select class="form-input" id="newCureAdmin">
-          <option value="SC" data-i18n="admin_sc">SC</option><option value="IM" data-i18n="admin_im">IM</option><option value="Oral" data-i18n="admin_oral">Oral</option><option value="Nasal" data-i18n="admin_nasal">Nasal</option><option value="IV" data-i18n="admin_iv">IV</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label" data-i18n="dash_start_date">Date de début</label>
-        <input class="form-input" id="newCureStart" type="date">
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="dash_duration">Durée (jours)</label>
-        <input class="form-input" id="newCureDuration" type="number" placeholder="30" min="1" max="365">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label"><span data-i18n="dash_frequency">Fréquence d'injection</span></label>
-      <select class="form-input" id="newCureFreq">
-        <option value="1" data-i18n="freq_1x">1× par jour</option>
-        <option value="2" data-i18n="freq_2x">2× par jour</option>
-        <option value="3" data-i18n="freq_3x">3× par jour</option>
-        <option value="0.5" data-i18n="freq_1_2d">1× tous les 2 jours</option>
-        <option value="0.28" data-i18n="freq_2x_w">2× par semaine</option>
-        <option value="0.14" data-i18n="freq_1x_w">1× par semaine</option>
-      </select>
-    </div>
-    <button class="submit-btn" onclick="saveCure()"><span data-i18n="dash_start_cure">Démarrer la cure</span></button>
-  </div>
-</div>
-
-<!-- MODAL CONFIRMATION INJECTION -->
-<div class="inj-confirm-overlay" id="injConfirmOverlay" onclick="closeInjConfirm(event)">
-  <div class="inj-confirm-sheet">
-    <div class="inj-confirm-handle"></div>
-    <div class="inj-confirm-title" id="injConfirmTitle">Confirmer l'injection</div>
-    <div class="inj-confirm-sub" id="injConfirmSub">Vérifiez l'heure avant de valider</div>
-    <div class="inj-time-row">
-      <span class="inj-time-label" data-i18n="dash_inj_time">⏰ Heure d'injection</span>
-      <input type="time" class="inj-time-picker" id="injConfirmTime">
-    </div>
-    <div class="inj-confirm-btns">
-      <button class="inj-confirm-btn-cancel" onclick="closeInjConfirmModal()"><span data-i18n="cancel">Annuler</span></button>
-      <button class="inj-confirm-btn-ok" onclick="confirmInjection()"><span data-i18n="dash_validate">✓ Valider l'injection</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div class="ps-toast" id="toast"></div>
-
 <script src="/lang.js"></script>
 <script src="/assets/assets-bundle.js"></script>
 <script src="/ps-app.js"></script>
+<style>
+  /* Accueil (kit « home ») — uniquement des jetons du kit */
+  #view { display: grid; gap: 18px; }
+  .home-h2 { margin-top: 6px; }
+  .home-actions { margin-top: 12px; }
+  .home-metric { font-size: 1.4rem; margin: 8px 0; }
+  .home-metric .unit { font-size: var(--text-md); }
+  .home-more { margin-top: 4px; }
+  .home-vial p { margin: 2px 0 0; }
+  .list-row .icon-btn { flex: none; margin-right: -10px; }
+  .list-row .grow strong { display: block; }
+</style>
+</head>
+<body data-tab="home">
+<a class="sr-only" href="#main" data-i18n="home2_skip">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content" tabindex="-1">
+    <div class="page-intro"><h1 id="introTitle" data-i18n="home2_today">Aujourd’hui</h1><p class="muted small" id="introSub" hidden></p></div>
+    <div id="view"></div>
+  </main>
+  <nav id="psTabbar"></nav>
+</div>
+
 <script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
-// ── INIT SUPABASE ──────────────────────────────────────────────
-const SUPABASE_URL     = 'https://dkwztwlkjewdzfichkgk.supabase.co';
-const SUPABASE_ANON_KEY= 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const P = window.PS;   // outils communs (ps-app.js)
 
-// ── UTILS ──────────────────────────────────────────────────────
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-function formatDate(d) {
-  return new Date(d).toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR', { day:'2-digit', month:'short' });
-}
-const TODAY = new Date(); TODAY.setHours(0,0,0,0);
-const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
-
+// ── État de la page ──────────────────────────────────────────────
 let userId = null;
-let allCures = [], allInjections = [], allWeights = [];
-let activeCures = [];       // cures actives triées (favorite en premier)
-let carouselIdx = 0;        // index de la cure affichée
-let _swipeStartX = null;    // pour le swipe mobile
+let allCures = [], allInjections = [], allWeights = [], allInventory = [];
+let ROWS = [];          // créneaux du jour affichés (ordre de l'écran)
+let busy = false;       // bloque les doubles appuis pendant une écriture
+let renderedDay = null; // jour affiché (pour rafraîchir après minuit)
 
-// ── AUTH ───────────────────────────────────────────────────────
-async function init() {
-  const { data } = await sb.auth.getSession();
-  if (!data?.session) { window.location.href = '/login.html'; return; }
-  userId = data.session.user.id;
+// Rotation des sites d'injection (inchangée : clé localStorage ps_site_<cure>)
+const SITE_KEYS = ['site_abd_g', 'site_abd_d', 'site_thigh_g', 'site_thigh_d', 'site_glute_g', 'site_glute_d'];
 
-  // Lot 3 (15/10/2026) : l'avertissement d'utilisation doit avoir été accepté (avertissement.html).
-  const _meta = data.session.user.user_metadata || {};
-  if (!_meta.disclaimer_accepted_at || Number(_meta.disclaimer_version) < 1) {
-    window.location.replace('/avertissement.html'); return;
-  }
-
-  // Profil
-  const { data: profil } = await sb.from('profiles').select('*').eq('id', userId).single();
-  PS_loadLangFromProfile(sb, userId, profil?.lang);
-  const _un = document.getElementById('userName');
-  if (_un) _un.textContent = profil?.full_name || data.session.user.email?.split('@')[0] || 'Utilisateur';
-
-  await loadAll();
+// ── Petits outils ────────────────────────────────────────────────
+const $ = s => document.querySelector(s);
+// Traduction avec variables {x} (jamais de variable nommée « t »)
+function tx(key, vars) {
+  let s = t(key);
+  Object.keys(vars || {}).forEach(k => { s = s.split('{' + k + '}').join(vars[k]); });
+  return s;
 }
-
-async function loadAll() {
-  const [cRes, iRes, wRes] = await Promise.all([
-    sb.from('cures').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-    sb.from('injections').select('*').eq('user_id', userId).order('injected_at', { ascending: false }).limit(500),
-    sb.from('weight_logs').select('*').eq('user_id', userId).order('logged_at', { ascending: true }).limit(90)
-  ]);
-  allCures      = cRes.data  || [];
-  allInjections = iRes.data  || [];
-  allWeights    = wRes.data  || [];
-
-  // Lot 2 : dans l'appli installée, on remet à jour les rappels du téléphone à chaque
-  // chargement (ouverture, injection notée…) si l'utilisateur les a activés.
-  if (window.PS_isNativeApp && PS_isNativeApp() && localStorage.getItem('ps_notif_choice') === 'on') {
-    let _rem = {};
-    try { _rem = JSON.parse(localStorage.getItem('ps_reminders_' + userId) || '{}'); } catch (e) {}
-    PS_scheduleReminders(PS_buildInjectionPlan(allCures, allInjections, _rem, 7), false);
-  }
-
-  // Cures actives : favorite en premier, puis par date début décroissante
-  activeCures = allCures.filter(c => {
-    if (c.status !== 'active') return false;
-    const start = psDay(c.start_date); start.setHours(0,0,0,0);
-    const end   = psDay(c.start_date); end.setDate(end.getDate() + (c.duration_days||30)); end.setHours(0,0,0,0);
-    return start <= TODAY && end >= TODAY;
-  }).sort((a, b) => {
-    if (a.is_favorite && !b.is_favorite) return -1;
-    if (!a.is_favorite && b.is_favorite) return 1;
-    return psDay(b.start_date) - psDay(a.start_date);
-  });
-
-  // Garder l'index courant si possible, sinon revenir à 0
-  if (carouselIdx >= activeCures.length) carouselIdx = 0;
-
-  renderCarousel();
-  renderStats();
-  renderTodayView();
-  renderAlerts();
+const esc = P.esc;
+function cap(s) { s = String(s || ''); return s.charAt(0).toUpperCase() + s.slice(1); }
+function shortDate(ds) { return P.fmtDate(ds, { day: 'numeric', month: 'long' }); }
+function periodOf(hm) {
+  const h = parseInt(String(hm || '').slice(0, 2), 10);
+  if (!isFinite(h) || h < 12) return t('home2_morning');
+  return h < 18 ? t('home2_afternoon') : t('home2_evening');
 }
-
-// ── CAROUSEL ───────────────────────────────────────────────────
-function renderCarousel() {
-  const dots     = document.getElementById('carouselDots');
-  const prevBtn  = document.getElementById('carouselPrev');
-  const nextBtn  = document.getElementById('carouselNext');
-  const cureCard = document.getElementById('cureCard');
-
-  if (activeCures.length === 0) {
-    // Aucune cure active
-    cureCard.style.display = 'none';
-    dots.innerHTML = '';
-    prevBtn.classList.add('nav-off');
-    nextBtn.classList.add('nav-off');
-    // Afficher message vide
-    let noCard = document.getElementById('noCureCard');
-    if (!noCard) {
-      noCard = document.createElement('div');
-      noCard.id = 'noCureCard';
-      noCard.className = 'no-cure-card';
-      noCard.innerHTML = `<div style="display:flex;justify-content:center;color:var(--accent)">${PS_icon('calendar-days')}</div>
-        <p>${t('dash_no_cure_sub')}</p>
-        <button class="cure-btn primary" style="max-width:220px;margin:0 auto" onclick="openAddCure()">
-          <span data-i18n="dash_new_cure">${t('dash_new_cure')}</span>
-        </button>`;
-      cureCard.parentNode.insertBefore(noCard, cureCard);
-    }
-    document.getElementById('compliance').textContent = '—';
-    return;
-  }
-
-  // Masquer le no-cure card si des cures existent
-  const noCard = document.getElementById('noCureCard');
-  if (noCard) noCard.remove();
-  cureCard.style.display = '';
-
-  // Dots
-  dots.innerHTML = activeCures.map((_, i) =>
-    `<div class="carousel-dot${i===carouselIdx?' active':''}" onclick="carouselGoTo(${i})"></div>`
-  ).join('');
-
-  // Flèches
-  prevBtn.classList.toggle('nav-off', activeCures.length <= 1 || carouselIdx === 0);
-  nextBtn.classList.toggle('nav-off', activeCures.length <= 1 || carouselIdx === activeCures.length - 1);
-
-  // Swipe mobile
-  cureCard.ontouchstart = e => { _swipeStartX = e.touches[0].clientX; };
-  cureCard.ontouchend   = e => {
-    if (_swipeStartX === null) return;
-    const dx = e.changedTouches[0].clientX - _swipeStartX;
-    if (Math.abs(dx) > 40) carouselMove(dx < 0 ? 1 : -1);
-    _swipeStartX = null;
-  };
-
-  renderCureData(activeCures[carouselIdx]);
-}
-
-function carouselGoTo(idx) {
-  if (idx === carouselIdx) return;
-  carouselMove(idx > carouselIdx ? 1 : -1, idx);
-}
-
-function carouselMove(dir, targetIdx) {
-  const card = document.getElementById('cureCard');
-  const newIdx = targetIdx !== undefined ? targetIdx : carouselIdx + dir;
-  if (newIdx < 0 || newIdx >= activeCures.length) return;
-
-  card.classList.add(dir > 0 ? 'slide-out-left' : 'slide-out-right');
-  setTimeout(() => {
-    card.classList.remove('slide-out-left', 'slide-out-right');
-    card.classList.add(dir > 0 ? 'slide-in-left' : 'slide-in-right');
-    carouselIdx = newIdx;
-    renderCureData(activeCures[carouselIdx]);
-    renderCarousel(); // met à jour dots et flèches
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        card.classList.remove('slide-in-left', 'slide-in-right');
-      });
-    });
-  }, 200);
-}
-
-function renderCureData(active) {
-  if (!active) return;
-
-  // Badge "Principale" ou bouton "Définir comme principale"
-  const favBadge = document.getElementById('favBadge');
-  if (favBadge) {
-    favBadge.style.display = 'block';
-    if (active.is_favorite) {
-      var label = PS_getLang()==='en' ? 'MAIN CYCLE' : 'CURE PRINCIPALE';
-      var hint  = PS_getLang()==='en' ? 'Tap to remove' : 'Appuyer pour retirer';
-      favBadge.innerHTML = '<span class="main-badge main-badge-clickable" onclick="toggleFavorite()" title="' + hint + '">' + label + ' ✕</span>';
-    } else if (activeCures.length > 1) {
-      favBadge.innerHTML = '<button class="set-main-btn" onclick="toggleFavorite()">' + (PS_getLang()==='en' ? 'Set as main' : 'Définir comme principale') + '</button>';
-    } else {
-      favBadge.style.display = 'none';
-    }
-  }
-
-  const start    = localDay(active.start_date) || new Date(0);
-  const dur      = active.duration_days || 30;
-  const dayNum   = Math.floor((TODAY - start) / 86400000) + 1;
-  const pct      = Math.min(100, Math.round((dayNum / dur) * 100));
-  const endDate  = new Date(start); endDate.setDate(endDate.getDate() + dur);
-  // Meme formule que cure.html et que l'alerte de fin de cure : on compte les jours
-  // jusqu'a la date de fin, pas la difference entre la duree et le numero du jour.
-  const daysLeft = Math.max(0, Math.ceil((endDate - TODAY) / 86400000));
-  const cureInjs = allInjections.filter(i => i.cure_id === active.id);
-  const freq     = parseFloat(active.frequency) || 1;
-  const done     = cureInjs.length;
-
-  // Statistiques identiques a celles de cure.html : « faites » ne compte que les
-  // creneaux prevus reellement couverts, report explicite inclus. Sans ca l'accueil
-  // et la page Cure affichaient deux chiffres differents pour la meme cure.
-  const _rep = computeReportMap(active, cureInjs);
-  let totalExp, missedCt;
-  if (freq < 1) {
-    const _iv = Math.max(1, Math.round(1 / freq));
-    const _injSet = new Set();
-    cureInjs.forEach(i => {
-      const d = localDay(String(i.injected_at || '').slice(0, 10));
-      if (d) _injSet.add(Math.floor((d - start) / 86400000));
-    });
-    totalExp = 0; missedCt = 0;
-    for (let k = 0; k <= Math.min(dayNum - 1, dur); k += _iv) {
-      totalExp++;
-      if (!_injSet.has(k) && !_rep.toIdx.has(k)) missedCt++;
-    }
-  } else {
-    totalExp = Math.round(Math.min(dayNum, dur) * freq);
-    missedCt = Math.max(0, totalExp - done);
-  }
-  const onPlan   = Math.max(0, totalExp - missedCt);
-  const injPct   = totalExp > 0 ? Math.min(100, Math.round((onPlan / totalExp) * 100)) : 0;
-  const freqLabel= freq >= 1 ? freq + '×/' + t('days_suffix') : '1×/' + Math.round(1/freq) + t('days_suffix');
-
-  document.getElementById('cureName').textContent     = active.peptide_name || active.name;
-  document.getElementById('cureSub').textContent      = `${active.dose_mcg || ''} ${active.unit || 'mcg'} · ${freqLabel}`;
-  document.getElementById('cureDay').textContent      = dayNum;
-  document.getElementById('cureDuration').textContent = dur;
-  document.getElementById('ringPct').textContent      = pct + '%';
-  document.getElementById('daysLeft').textContent     = daysLeft + ' ' + t('dash_days_suffix');
-  document.getElementById('endDate').textContent      = formatDate(endDate);
-  document.getElementById('injDone').textContent      = onPlan + ' / ' + totalExp;
-  document.getElementById('injBar').style.width       = injPct + '%';
-  document.getElementById('compliance').textContent   = injPct + '%';
-
-  const circ = 2 * Math.PI * 27;
-  document.getElementById('ringFill').style.strokeDasharray  = circ;
-  document.getElementById('ringFill').style.strokeDashoffset = circ * (1 - pct / 100);
-}
-
-// ── TOGGLE FAVORI ──────────────────────────────────────────────
-async function toggleFavorite() {
-  const cure = activeCures[carouselIdx];
-  if (!cure) return;
-  const newVal = !cure.is_favorite;
-
-  // Optimistic update
-  cure.is_favorite = newVal;
-  renderCureData(activeCures[carouselIdx]); // optimistic update badge
-
-  // Si on met en favori → retirer le favori des autres
-  if (newVal) {
-    const others = activeCures.filter((_, i) => i !== carouselIdx);
-    for (const other of others) {
-      if (other.is_favorite) {
-        other.is_favorite = false;
-        await sb.from('cures').update({ is_favorite: false }).eq('id', other.id);
-      }
-    }
-  }
-
-  // Sauvegarder en DB
-  const { error } = await sb.from('cures').update({ is_favorite: newVal }).eq('id', cure.id);
-  if (error) {
-    cure.is_favorite = !newVal; // rollback
-    renderCureData(activeCures[carouselIdx]);
-    showToast('Erreur : ' + error.message);
-    return;
-  }
-
-  const cureName_ = cure.peptide_name || cure.name;
-  showToast(newVal
-    ? '● ' + cureName_ + ' — ' + (PS_getLang()==='en' ? 'set as main cycle' : 'définie comme cure principale')
-    : cureName_ + ' — ' + (PS_getLang()==='en' ? 'removed from main' : 'retirée des principales'));
-
-  // Re-trier : si on vient de mettre en favori → aller en position 0
-  if (newVal) {
-    await loadAll();
-    carouselIdx = 0;
-    renderCarousel();
-  }
-}
-
-// ── STATS ──────────────────────────────────────────────────────
-function renderStats() {
-  if (allWeights.length > 0) {
-    const latest = allWeights[allWeights.length - 1];
-    document.getElementById('currentWeight').textContent = latest.weight_kg + ' kg';
-    if (allWeights.length > 1) {
-      const diff = (latest.weight_kg - allWeights[0].weight_kg).toFixed(1);
-      const sign = diff > 0 ? '+' : '';
-      // Meme convention que la page Poids : une baisse est verte, une hausse en
-      // terre cuite. L'accueil affichait exactement l'inverse.
-      const cls  = Number(diff) < 0 ? 'trend-up' : Number(diff) > 0 ? 'trend-down' : '';
-      document.getElementById('weightDiff').innerHTML = `<span class="${cls}">${sign}${diff} kg</span> ${t('dash_since_start')}`;
-    } else {
-      document.getElementById('weightDiff').textContent = t('dash_first_measure');
-    }
-    renderMiniChart(allWeights);
-  } else {
-    document.getElementById('currentWeight').textContent = '— kg';
-    document.getElementById('weightDiff').textContent    = t('no_data');
-  }
-  const completed = allCures.filter(c => {
-    if (!c.start_date || !c.duration_days) return false;
-    const end = psDay(c.start_date); end.setDate(end.getDate() + c.duration_days); end.setHours(0,0,0,0);
-    return end < TODAY;
-  });
-  document.getElementById('curesCount').textContent = completed.length;
-  document.getElementById('totalInj').textContent   = allInjections.length;
-}
-
-function renderMiniChart(weights) {
-  if (weights.length < 2) return;
-  const _ce = document.getElementById('chartEmpty'); if(_ce) _ce.style.display = 'none';
-  const vals = weights.map(w => parseFloat(w.weight_kg));
-  const mn = Math.min(...vals) - 1, mx = Math.max(...vals) + 1;
-  const W = 400, H = 80;
-  const pts = vals.map((v, i) => {
-    return [(i / (vals.length - 1)) * W, H - ((v - mn) / (mx - mn)) * (H - 10) - 5];
-  });
-  const line = pts.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
-  document.getElementById('chartLine').setAttribute('d', line);
-  document.getElementById('chartArea').setAttribute('d', line + ` L${pts[pts.length-1][0]},${H} L0,${H} Z`);
-}
-
-// ── TODAY VIEW ─────────────────────────────────────────────────
-function renderTodayView() {
-  const container = document.getElementById('todayViewContainer');
-  if (!container) return;
-  const now = new Date();
-  const dayNames = PS_getLang()==='en' ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'] : ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-  const monthNames = PS_LANG[PS_getLang()].months.map(m => m.toLowerCase());
-  const dateLabel  = `${dayNames[now.getDay()]} ${now.getDate()} ${monthNames[now.getMonth()]}`;
-  const _introDate = document.getElementById('introDate');
-  if (_introDate) _introDate.textContent = dateLabel;
-  const activeCures = allCures.filter(c => {
-    if (c.status !== 'active') return false;
-    const start = psDay(c.start_date); start.setHours(0,0,0,0);
-    const end   = psDay(c.start_date); end.setDate(end.getDate() + (c.duration_days||30)); end.setHours(0,0,0,0);
-    return start <= now && end > now;
-  });
-  const todayInjs = allInjections.filter(i => (i.injected_at||'').startsWith(todayStr));
-  let totalDoses = 0, doneDoses = 0;
-  activeCures.forEach(c => {
-    const freq = parseFloat(c.frequency) || 1;
-    const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
-    const cureToday = todayInjs.filter(i => i.cure_id === c.id);
-    totalDoses += injPerDay;
-    doneDoses  += Math.min(cureToday.length, injPerDay);
-  });
-  const scorePct = totalDoses > 0 ? Math.round(doneDoses / totalDoses * 100) : 0;
-  const allDone  = totalDoses > 0 && doneDoses >= totalDoses;
-
-  let html = `<div class="today-view-header">
-    <div>
-      <div class="today-date-label">${t('dash_today_program')}</div>
-      <div class="today-date-val">${dateLabel}</div>
-      <div class="today-progress-bar"><div class="today-progress-fill" style="width:${scorePct}%"></div></div>
-    </div>
-    <div class="today-score">
-      <div class="today-score-val">${doneDoses}/${totalDoses}</div>
-      <div class="today-score-label">${allDone ? t('dash_score_done') : t('dash_score_label')}</div>
-    </div>
-  </div>`;
-
-  if (activeCures.length === 0) {
-    html += `<div class="today-card"><div class="today-empty"><span style="display:flex;justify-content:center;color:var(--success)">${PS_icon('check-circle')}</span><p>${t('dash_no_injection')}</p></div></div>`;
-    container.innerHTML = html; return;
-  }
-
-  const SITES = [t('site_abd_g'),t('site_abd_d'),t('site_thigh_g'),t('site_thigh_d'),t('site_glute_g'),t('site_glute_d')];
-  activeCures.forEach(cure => {
-    const freq = parseFloat(cure.frequency) || 1;
-    const start = psDay(cure.start_date); start.setHours(0,0,0,0);
-    const dayNum = Math.floor((now - start) / 86400000) + 1;
-    const injPerDay = freq >= 1 ? Math.ceil(freq) : 1;
-    const times = injPerDay === 1 ? ['08:00'] : injPerDay === 2 ? ['08:00','20:00'] : ['07:00','13:00','20:00'];
-    const cureToday = todayInjs.filter(i => i.cure_id === cure.id);
-    const siteIdx = parseInt(localStorage.getItem('ps_site_'+cure.id)||'-1');
-    const nextSite = SITES[(siteIdx+1) % SITES.length];
-    const peptideName = cure.peptide_name || cure.name;
-    const doseLabel = cure.dose_mcg ? `${cure.dose_mcg} ${cure.unit||'mcg'}` : '';
-
-    html += `<div class="today-card" style="margin-bottom:12px">
-      <div class="today-cure-header">
-        <span class="today-cure-name">${peptideName}</span>
-        <span class="today-cure-day">J${dayNum} · ${doseLabel}</span>
-      </div>`;
-
-    times.forEach((time, i) => {
-      const done = cureToday.some(l => (l.notes||'').includes('slot:'+i));
-      const [h, m] = time.split(':').map(Number);
-      const isDue  = !done && (now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m));
-      html += `<div class="injection-item ${done?'done-item':''}" onclick="openInjConfirm('${cure.id}',${i},'${time}','${peptideName}','${doseLabel}','${nextSite}',${done})">
-        <div class="inj-check ${done?'done':isDue?'due':'pending'}">${done?'✓':isDue?'!':''}</div>
-        <div class="inj-info">
-          <div class="inj-name">${injPerDay>1?t('dash_injection_num')+' '+(i+1):t('dash_injection_day')}</div>
-          <div class="inj-detail">SC <span class="inj-site">${nextSite}</span></div>
-        </div>
-        <div class="inj-time ${done?'done-time':isDue?'due':''}">${done?t('status_done_short')||'Fait':isDue?time:time}</div>
-      </div>`;
-    });
-    html += `</div>`;
-  });
-  container.innerHTML = html;
-}
-
-// ── MODAL CONFIRMATION INJECTION ───────────────────────────────
-let _pendingInj = null;
-
-function openInjConfirm(cureId, slot, time, peptideName, dose, site, done) {
-  if (done) {
-    // Si déjà fait → annulation directe sans modal
-    quickToggleInj(cureId, slot, time, peptideName, dose, site);
-    return;
-  }
-  _pendingInj = { cureId, slot, time, peptideName, dose, site };
-
-  // Pré-remplir avec l'heure actuelle
-  const now = new Date();
-  const hh  = String(now.getHours()).padStart(2,'0');
-  const mm  = String(now.getMinutes()).padStart(2,'0');
-  document.getElementById('injConfirmTime').value = `${hh}:${mm}`;
-  document.getElementById('injConfirmTitle').textContent = peptideName;
-  document.getElementById('injConfirmSub').textContent   = `${dose} · ${t('dash_injection_day')} : ${site}`;
-
-  document.getElementById('injConfirmOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeInjConfirmModal() {
-  document.getElementById('injConfirmOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-  _pendingInj = null;
-}
-
-function closeInjConfirm(e) {
-  if (e.target === document.getElementById('injConfirmOverlay')) closeInjConfirmModal();
-}
-
-// ── HORODATAGE LOCAL (BUG-10) ──────────────────────────────────
-// injected_at est lu partout par comparaison de chaine : .startsWith(ds) pour la
-// date, .slice(11,16) pour l'heure. Les lecteurs supposent donc de l'heure LOCALE.
-// toISOString() ecrivait de l'UTC -> decalage de 7 h en UTC+7, et une injection
-// saisie avant 07:00 basculait au jour precedent. On ecrit desormais l'heure
-// locale telle quelle, ce que fait deja le champ "modifier l'heure".
-function localStamp(dateStr, timeStr) {
-  const d = String(dateStr || '').slice(0, 10);
-  let hm = String(timeStr || '').slice(0, 5);
-  if (!/^\d{2}:\d{2}$/.test(hm)) hm = '00:00';
-  return d + 'T' + hm + ':00';
-}
-// Horodatage local de l'instant present
-function localStampNow() {
-  const n = new Date();
-  const p = v => String(v).padStart(2, '0');
-  return n.getFullYear() + '-' + p(n.getMonth()+1) + '-' + p(n.getDate())
-       + 'T' + p(n.getHours()) + ':' + p(n.getMinutes()) + ':' + p(n.getSeconds());
-}
-// Parse 'YYYY-MM-DD' en date LOCALE — new Date('YYYY-MM-DD') parse en UTC
-// et decale d'un jour selon le fuseau.
-function localDay(dateStr) {
-  const p = String(dateStr || '').slice(0, 10).split('-');
-  if (p.length !== 3) return null;
-  const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
-  if (isNaN(d.getTime())) return null;
-  d.setHours(0, 0, 0, 0);
+function cleanNote(v) { return String(v || '').replace(/\s*[|\r\n]+\s*/g, ' ').trim().slice(0, 200); }
+function doseMg(cure) {
+  let d = parseFloat(cure && cure.dose_mcg) || 0;
+  if (String((cure && cure.unit) || 'mg').toLowerCase() === 'mcg') d = d / 1000;
   return d;
 }
-
-// Lecture du lien de report pose manuellement par l'utilisateur (meme format que cure.html)
-function readReportTag(inj) {
-  const m = String((inj && inj.notes) || '').match(/report:(\d{4}-\d{2}-\d{2})/);
-  return m ? m[1] : null;
+function injQty(inj) { const q = parseFloat(P.getTag(inj && inj.notes, 'qty')); return q > 0 ? q : null; }
+// Quantité consommée dans le flacon pour un état donné (mg)
+function effectMg(status, qty, cure) {
+  if (status === 'done') return doseMg(cure);
+  if (status === 'partial') return qty > 0 ? qty : doseMg(cure);
+  return 0;
 }
-function computeReportMap(cure, injections) {
-  const toIdx = new Map(), fromIdx = new Map();
-  const startD = localDay(cure && cure.start_date);
-  if (!startD) return { toIdx, fromIdx };
-  const idxOf = ds => { const d = localDay(ds); return d ? Math.floor((d - startD) / 86400000) : null; };
-  (injections || []).forEach(inj => {
-    const target = readReportTag(inj);
-    if (!target) return;
-    const sIdx = idxOf(target);
-    const kIdx = idxOf(String(inj.injected_at || '').slice(0, 10));
-    if (sIdx === null || kIdx === null || sIdx === kIdx) return;
-    if (toIdx.has(sIdx)) return;
-    toIdx.set(sIdx, kIdx); fromIdx.set(kIdx, sIdx);
-  });
-  return { toIdx, fromIdx };
+// Stock : consumed > 0 = retiré du flacon, < 0 = remis
+async function applyStock(cure, consumed) {
+  if (!consumed || !cure) return;
+  const dir = consumed > 0 ? -1 : 1, amt = Math.abs(consumed);
+  try {
+    if (Math.abs(amt - doseMg(cure)) < 1e-9) await P.updateStock(sb, userId, cure, dir);
+    else await P.updateStock(sb, userId, cure, dir, amt);
+  } catch (e) { console.warn('[accueil] stock :', e); }
 }
-
-async function confirmInjection() {
-  if (!_pendingInj) return;
-  const { cureId, slot, peptideName, dose, site } = _pendingInj;
-  const chosenTime = document.getElementById('injConfirmTime').value; // "HH:MM"
-
-  closeInjConfirmModal();
-
-  const siteKey  = 'ps_site_' + cureId;
-  const SITES    = [t('site_abd_g'),t('site_abd_d'),t('site_thigh_g'),t('site_thigh_d'),t('site_glute_g'),t('site_glute_d')];
-  const lastIdx  = parseInt(localStorage.getItem(siteKey)||'-1');
-  const nextIdx  = (lastIdx + 1) % SITES.length;
-  localStorage.setItem(siteKey, nextIdx);
-
-  // Construire un ISO avec la date du jour + l'heure choisie
-  const injectedAt = localStamp(todayStr, chosenTime);
-
-  await sb.from('injections').insert({
-    user_id: userId, cure_id: cureId,
-    peptide_name: peptideName, dose_mcg: parseFloat(dose)||null,
-    injection_site: SITES[nextIdx],
-    injected_at: injectedAt,
-    notes: 'slot:'+slot
-  });
-  showToast(`✓ ${SITES[nextIdx]} · ${chosenTime}`);
-  await loadAll();
+function nextSite(cureId) {
+  let last = -1;
+  try { last = parseInt(localStorage.getItem('ps_site_' + cureId) || '-1', 10); } catch (e) {}
+  if (!isFinite(last)) last = -1;
+  const idx = (last + 1) % SITE_KEYS.length;
+  try { localStorage.setItem('ps_site_' + cureId, idx); } catch (e) {}
+  return { label: t(SITE_KEYS[idx]), prev: last };
+}
+function restoreSite(cureId, prev) {
+  try { if (prev < 0) localStorage.removeItem('ps_site_' + cureId); else localStorage.setItem('ps_site_' + cureId, prev); } catch (e) {}
+}
+function check(r) { if (r && r.error) throw r.error; return r; }
+// Requête ciblant une injection : par id, ou par ses valeurs si l'id n'a pas été renvoyé
+function target(q, inj) {
+  if (inj._local) return q.eq('user_id', userId).eq('cure_id', inj.cure_id).eq('injected_at', inj.injected_at).eq('notes', inj.notes);
+  return q.eq('id', inj.id);
+}
+function afterChange() {
+  render();
+  P.refreshReminders(allCures, allInjections, userId);
+}
+// Garde-fou : une seule écriture à la fois, message clair en cas d'échec
+async function guarded(fn) {
+  if (busy) return;
+  busy = true;
+  try { await fn(); }
+  catch (e) { console.error(e); P.toast(t('msg_save_error')); }
+  finally { busy = false; }
 }
 
-// ── QUICK LOG INJECTION (pour annulation directe) ──────────────
-async function quickToggleInj(cureId, slot, time, peptideName, dose, site) {
-  const existing = allInjections.find(i =>
-    i.cure_id === cureId && (i.injected_at||'').startsWith(todayStr) && (i.notes||'').includes('slot:'+slot)
-  );
-  if (existing) {
-    await sb.from('injections').delete().eq('id', existing.id);
-    showToast(t('dash_inj_cancelled'));
-  } else {
-    const siteKey = 'ps_site_' + cureId;
-    const SITES   = [t('site_abd_g'),t('site_abd_d'),t('site_thigh_g'),t('site_thigh_d'),t('site_glute_g'),t('site_glute_d')];
-    const lastIdx = parseInt(localStorage.getItem(siteKey)||'-1');
-    const nextIdx = (lastIdx + 1) % SITES.length;
-    localStorage.setItem(siteKey, nextIdx);
-    await sb.from('injections').insert({
-      user_id: userId, cure_id: cureId,
-      peptide_name: peptideName, dose_mcg: parseFloat(dose)||null,
-      injection_site: SITES[nextIdx],
-      injected_at: localStampNow(),
-      notes: 'slot:'+slot
+// Annulation depuis le toast : une seule à la fois ; en cas d'échec, message d'erreur (pas « annulée »)
+function undoable(fn) {
+  return () => {
+    if (busy) return new Promise(() => {});
+    busy = true;
+    return Promise.resolve().then(fn).then(() => { busy = false; },
+      e => { busy = false; console.error(e); P.toast(t('msg_save_error')); return new Promise(() => {}); });
+  };
+}
+
+// ── Données ──────────────────────────────────────────────────────
+function activeModels() {
+  return allCures
+    .filter(c => c && c.status === 'active' && c.start_date)
+    .map(c => P.cure(c))
+    .filter(m => m && m.state === 'active')
+    .sort((a, b) => {
+      if (a.raw.is_favorite && !b.raw.is_favorite) return -1;
+      if (!a.raw.is_favorite && b.raw.is_favorite) return 1;
+      return b.start - a.start;
     });
-    showToast('✓ ' + SITES[nextIdx] + ' — enregistré !');
+}
+// Créneaux du jour de toutes les cures actives (prévus, reportés vers aujourd'hui, saisies du jour)
+function todayRows(models, ds) {
+  const rows = [];
+  models.forEach((m, ci) => {
+    const states = P.slotStates(m, allInjections, ds) || [];
+    states.forEach(s => {
+      const legacy = s.status === 'postponed' && !s.inj && !s.auto;   // jour couvert par une injection d'un autre jour
+      // Heure de référence du créneau (Matin / Après-midi / Soir) : prévue, ou celle du report
+      const planned = (s.incoming || s.extra || s.off) ? (s.time || m.times[s.slot]) : (m.times[s.slot] || s.time);
+      rows.push({ m, s, ci, legacy, planned, from: s.from || (s.inj ? P.readReport(s.inj) : null) });
+    });
+  });
+  rows.sort((a, b) => String(a.s.time || '99:99').localeCompare(String(b.s.time || '99:99')) || a.ci - b.ci || a.s.slot - b.s.slot);
+  return rows;
+}
+function rowSlotLabel(r) { return r.m.name + ' · ' + periodOf(r.planned) + ' · ' + (r.s.time || r.planned); }
+function rowSub(r) {
+  const s = r.s;
+  let sub = P.statusLabel(s.status);
+  if (r.from) sub += ' · ' + tx('home2_from', { d: shortDate(r.from) });
+  if (s.inj && s.status === 'postponed') {
+    const to = P.postponedTo(s.inj);
+    if (to) sub += ' · ' + tx('home2_to', { d: shortDate(to.ds), h: to.time || '—' });
   }
-  await loadAll();
+  if (s.inj && s.status === 'partial' && injQty(s.inj)) sub += ' · ' + P.fmtNum(injQty(s.inj), 3) + ' mg';
+  if (r.legacy && s.to) sub += ' · ' + shortDate(s.to.ds);
+  return sub;
 }
 
-// ── ALERTES ────────────────────────────────────────────────────
-function renderAlerts() {
-  const container = document.getElementById('alertsCard');
-  const autoAlerts = [];
-  allCures.forEach(c => {
-    if (!c.start_date || !c.duration_days) return;
-    const end = psDay(c.start_date); end.setDate(end.getDate() + c.duration_days); end.setHours(0,0,0,0);
-    const start = psDay(c.start_date); start.setHours(0,0,0,0);
-    if (start <= TODAY && end >= TODAY) {
-      const daysLeft = Math.ceil((end - TODAY) / 86400000);
-      if (daysLeft <= 5) autoAlerts.push({ icon:PS_icon('clock'), type:'amber', title:`${t('dash_cure_ended')} ${daysLeft}${t('dash_days_suffix')}`, sub: c.peptide_name||c.name, time:'Auto' });
-    }
-  });
-  document.getElementById('notifBadge').style.display = autoAlerts.length > 0 ? 'block' : 'none';
-  if (autoAlerts.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:16px 0;color:var(--muted);font-size:.85rem">'+t('dash_no_alerts')+'</div>';
+// ── Écritures ────────────────────────────────────────────────────
+// Renseigner un créneau encore vide (prévu ou reporté vers aujourd'hui)
+async function recordSlot(r, status, opts) {
+  opts = opts || {};
+  const m = r.m, s = r.s, cure = m.raw, ds = psDayStr();
+
+  // Créneau déjà reporté vers aujourd'hui, reporté de nouveau : on déplace le report d'origine
+  if (s.incoming && status === 'postponed') {
+    const src = s.source, oldNotes = src.notes;
+    const newNotes = P.setTag(oldNotes, 'to', opts.date + ' ' + opts.ptime);
+    check(await target(sb.from('injections').update({ notes: newNotes }), src));
+    src.notes = newNotes;
+    afterChange();
+    P.toast(tx('home2_msg_postponed', { d: shortDate(opts.date), h: opts.ptime }), undoable(async () => {
+      check(await target(sb.from('injections').update({ notes: oldNotes }), src));
+      src.notes = oldNotes; afterChange();
+    }));
     return;
   }
-  container.innerHTML = autoAlerts.slice(0,4).map(a => `
-    <div class="alert-item">
-      <div class="alert-icon amber" style="color:var(--warning)">${a.icon}</div>
-      <div class="alert-text"><div class="alert-title">${a.title}</div><div class="alert-sub">${a.sub}</div></div>
-      <div class="alert-time">${a.time}</div>
-    </div>`).join('');
+
+  const taken = status === 'done' || status === 'partial';
+  let notes = 'slot:' + s.slot;
+  if (s.incoming) notes = P.setTag(notes, 'report', s.from);
+  if (status !== 'done') notes = P.setTag(notes, 'st', status);
+  if (status === 'partial' && opts.qty) notes = P.setTag(notes, 'qty', opts.qty);
+  if (status === 'postponed') notes = P.setTag(notes, 'to', opts.date + ' ' + opts.ptime);
+  if (opts.note) notes = P.setTag(notes, 'note', cleanNote(opts.note));
+  const site = taken ? nextSite(cure.id) : null;
+  const row = {
+    user_id: userId, cure_id: cure.id, peptide_name: cure.peptide_name || cure.name,
+    dose_mcg: taken ? (cure.dose_mcg != null ? cure.dose_mcg : null) : null,
+    injection_site: site ? site.label : null,
+    injected_at: P.localStamp(ds, taken ? (opts.time || P.nowHM()) : (s.time || r.planned)),
+    notes: notes
+  };
+  let res;
+  try { res = check(await sb.from('injections').insert(row).select().single()); }
+  catch (e) { if (site) restoreSite(cure.id, site.prev); throw e; }
+  const saved = Object.assign({}, row, (res && res.data) || {});
+  if (!saved.id) { saved.id = 'local-' + Date.now(); saved._local = true; }
+  allInjections.unshift(saved);
+  const used = effectMg(status, opts.qty, cure);
+  await applyStock(cure, used);
+  afterChange();
+
+  const msg = status === 'done' ? t('home2_msg_done') : status === 'partial' ? t('msg_partial')
+    : status === 'missed' ? t('msg_missed') : status === 'rest' ? t('home2_msg_rest')
+    : tx('home2_msg_postponed', { d: shortDate(opts.date), h: opts.ptime });
+  P.toast(msg, undoable(async () => {
+    check(await target(sb.from('injections').delete({}), saved));
+    allInjections = allInjections.filter(i => i !== saved);
+    await applyStock(cure, -used);
+    if (site) restoreSite(cure.id, site.prev);
+    afterChange();
+  }));
 }
 
-// ── ADD CURE ───────────────────────────────────────────────────
-function openAddCure() {
-  document.getElementById('newCureStart').value = todayStr;
-  document.getElementById('addCureModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
+// Changer l'état d'un créneau déjà renseigné (feuille des états)
+async function changeRecorded(r, res) {
+  const inj = r.s.inj, cure = r.m.raw;
+  if (res.status === 'clear') return clearRecord(r);
+  const old = { notes: inj.notes, dose_mcg: inj.dose_mcg, injection_site: inj.injection_site };
+  const oldStatus = P.injStatus(inj);
+  const wasTaken = oldStatus === 'done' || oldStatus === 'partial';
+  const taken = res.status === 'done' || res.status === 'partial';
+  let notes = P.setTag(inj.notes, 'st', res.status === 'done' ? null : res.status);
+  notes = P.setTag(notes, 'qty', res.status === 'partial' && res.qty ? res.qty : null);
+  notes = P.setTag(notes, 'to', res.status === 'postponed' ? res.date + ' ' + res.time : null);
+  let site = null;
+  if (taken && !wasTaken && !inj.injection_site) site = nextSite(cure.id);
+  const patch = {
+    notes: notes,
+    dose_mcg: taken ? (inj.dose_mcg != null ? inj.dose_mcg : (cure.dose_mcg != null ? cure.dose_mcg : null)) : null,
+    injection_site: taken ? (inj.injection_site || (site ? site.label : null)) : null
+  };
+  try { check(await target(sb.from('injections').update(patch), inj)); }
+  catch (e) { if (site) restoreSite(cure.id, site.prev); throw e; }
+  const delta = effectMg(res.status, res.qty, cure) - effectMg(oldStatus, injQty(inj), cure);
+  Object.assign(inj, patch);
+  await applyStock(cure, delta);
+  afterChange();
+  const msg = res.status === 'done' ? t('home2_msg_done') : res.status === 'partial' ? t('msg_partial')
+    : res.status === 'missed' ? t('msg_missed') : res.status === 'rest' ? t('home2_msg_rest')
+    : tx('home2_msg_postponed', { d: shortDate(res.date), h: res.time });
+  P.toast(msg, undoable(async () => {
+    check(await target(sb.from('injections').update(old), inj));
+    Object.assign(inj, old);
+    await applyStock(cure, -delta);
+    if (site) restoreSite(cure.id, site.prev);
+    afterChange();
+  }));
 }
-function closeAddCure() {
-  document.getElementById('addCureModal').classList.remove('open');
-  document.body.style.overflow = '';
+
+// Effacer un enregistrement : le créneau redevient non renseigné
+async function clearRecord(r) {
+  const ok = await P.confirm({ title: t('home2_clear_title'), text: t('home2_clear_text'), ok: t('home2_clear_ok'), cancel: t('cancel'), danger: true });
+  if (!ok) return;
+  const inj = r.s.inj, cure = r.m.raw;
+  check(await target(sb.from('injections').delete({}), inj));
+  allInjections = allInjections.filter(i => i !== inj);
+  const used = effectMg(P.injStatus(inj), injQty(inj), cure);
+  await applyStock(cure, -used);
+  afterChange();
+  P.toast(t('home2_msg_cleared'), undoable(async () => {
+    const copy = Object.assign({}, inj); delete copy._local;
+    if (inj._local) delete copy.id;
+    check(await sb.from('injections').insert(copy));
+    allInjections.unshift(inj);
+    await applyStock(cure, used);
+    afterChange();
+  }));
 }
-function closeIfOverlay(e) {
-  if (e.target === document.getElementById('addCureModal')) closeAddCure();
+
+// Modifier l'heure et la note d'un enregistrement
+async function saveEdit(r, hm, note) {
+  const inj = r.s.inj;
+  const old = { injected_at: inj.injected_at, notes: inj.notes };
+  const patch = {
+    injected_at: /^\d{2}:\d{2}$/.test(hm) ? P.localStamp(P.injDay(inj), hm) : inj.injected_at,
+    notes: P.setTag(inj.notes, 'note', cleanNote(note) || null)
+  };
+  if (patch.injected_at === old.injected_at && patch.notes === old.notes) return;
+  check(await target(sb.from('injections').update(patch), inj));
+  Object.assign(inj, patch);
+  afterChange();
+  P.toast(t('home2_msg_saved'), undoable(async () => {
+    check(await target(sb.from('injections').update(old), inj));
+    Object.assign(inj, old); afterChange();
+  }));
 }
-async function saveCure() {
-  const peptide   = document.getElementById('newCurePeptide').value;
-  const dosage    = document.getElementById('newCureDosage').value;
-  const admin     = document.getElementById('newCureAdmin').value;
-  const startDate = document.getElementById('newCureStart').value;
-  const duration  = document.getElementById('newCureDuration').value;
-  const freq      = document.getElementById('newCureFreq').value;
-  if (!peptide || !dosage || !startDate || !duration) { showToast(t('alerts_fill_all')); return; }
-  const doseNum = parseFloat(dosage);
-  const unit    = dosage.toLowerCase().includes('mg') ? 'mg' : dosage.toLowerCase().includes('iu') ? 'IU' : 'mcg';
-  const { error } = await sb.from('cures').insert({
-    user_id: userId, name: peptide, peptide_name: peptide,
-    dose_mcg: doseNum||null, unit, frequency: freq,
-    duration_days: parseInt(duration), start_date: startDate,
-    status: 'active', notes: 'admin:'+admin
+
+// ── Feuilles ─────────────────────────────────────────────────────
+function allowFor(r, recorded) {
+  // Une injection qui couvre un report ne se reporte pas une 2e fois (l'effacer d'abord)
+  if (recorded && r.from) return ['done', 'partial', 'missed', 'rest'];
+  return ['done', 'partial', 'missed', 'postponed', 'rest'];
+}
+async function openStatus(r) {
+  const recorded = !!r.s.inj;
+  const res = await P.statusSheet({
+    title: t('st_sheet_title'),
+    sub: tx('home2_sheet_sub', { slot: rowSlotLabel(r) }),
+    date: psDayStr(), time: r.s.time || r.planned,
+    allow: allowFor(r, recorded), canClear: recorded
   });
-  if (error) { showToast('Erreur : ' + error.message); return; }
-  document.getElementById('addCureModal').classList.remove('open');
-  document.body.style.overflow = '';
-  showToast(t('cure_started'));
-  await loadAll();
+  if (!res) return;
+  if (recorded) return guarded(() => changeRecorded(r, res));
+  return guarded(() => recordSlot(r, res.status, { qty: res.qty, date: res.date, ptime: res.time }));
+}
+function openEdit(r) {
+  const s = r.s, recorded = !!s.inj;
+  const title = r.m.name + ' · ' + periodOf(r.planned);
+  const site = recorded && s.inj.injection_site ? ' · ' + s.inj.injection_site : '';
+  const hm = recorded ? (P.injTime(s.inj) || r.planned) : P.nowHM();
+  const note = recorded ? (P.getTag(s.inj.notes, 'note') || '') : '';
+  const body = '<p class="small muted">' + esc((s.time || r.planned) + ' · ' + rowSub(r) + site) + '</p>' +
+    P.field(t('home2_time'), 'hmTime', '', 'time', hm) +
+    P.field(t('home2_note'), 'hmNote', '', 'text', note, '', 'maxlength="200" autocomplete="off"') +
+    (recorded
+      ? '<button class="btn full" type="button" data-k="save">' + esc(t('save')) + '</button>' +
+        '<button class="btn secondary full" type="button" data-k="status">' + esc(t('home2_change_status')) + '</button>' +
+        '<button class="btn ghost full" type="button" data-k="clear">' + esc(t('st_clear')) + '</button>'
+      : '<button class="btn full" type="button" data-k="done">' + esc(t('home2_mark_done')) + '</button>' +
+        '<button class="btn secondary full" type="button" data-k="status">' + esc(t('home2_other_status')) + '</button>');
+  P.openSheet(title, body, d => {
+    const val = id => (d.querySelector(id).value || '').trim();
+    d.querySelectorAll('[data-k]').forEach(b => {
+      b.onclick = () => {
+        const k = b.dataset.k, time = val('#hmTime'), txt = val('#hmNote');
+        if ((k === 'save' || k === 'done') && time && !/^\d{2}:\d{2}$/.test(time)) { d.querySelector('#hmTime').setAttribute('aria-invalid', 'true'); return; }
+        if (k === 'status') { openStatus(r); return; }    // la feuille des états remplace celle-ci
+        P.closeSheet();
+        if (k === 'save') guarded(() => saveEdit(r, time, txt));
+        else if (k === 'done') guarded(() => recordSlot(r, 'done', { time: time || P.nowHM(), note: txt }));
+        else if (k === 'clear') guarded(() => clearRecord(r));
+      };
+    });
+  });
 }
 
-// ── LANCER ─────────────────────────────────────────────────────
-
-// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
-PS_initShell();
-
-async function psLogout() {
-  try { await sb.auth.signOut(); } catch(e) {}
-  window.location.href = '/login.html';
+// ── Rendu ────────────────────────────────────────────────────────
+function setIntro(titleKey, sub) {
+  const h = $('#introTitle'); h.setAttribute('data-i18n', titleKey); h.textContent = t(titleKey);
+  const p = $('#introSub'); p.textContent = sub || ''; p.hidden = !sub;
 }
-function psFillAvatar() {
-  sb.auth.getUser().then(({data}) => {
-    const n = data?.user?.user_metadata?.full_name || data?.user?.email || '';
-    const btn = document.getElementById('avatarButton');
-    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
-  }).catch(()=>{});
+function todayLabel() {
+  return cap(P.fmtDate(new Date(), { weekday: 'long', day: 'numeric', month: 'long' }));
 }
 
-init().then(() => {
-  psFillAvatar();
+function heroHtml(rows) {
+  const head = (title) => '<div class="row between"><div><div class="eyebrow">' + esc(t('home2_eyebrow')) + '</div>' +
+    '<h2 class="home-h2">' + esc(title) + '</h2></div>' + P.icon('calendar-days') + '</div>';
+  if (!rows.length) {
+    return '<section class="card hero-card">' + head(t('home2_rest_title')) +
+      '<div class="list-row">' + P.status('rest', false) + '<div class="grow"><strong>' + esc(t('st_rest')) + '</strong>' +
+      '<div class="small muted">' + esc(t('home2_rest_sub')) + '</div></div></div></section>';
+  }
+  const total = rows.length, done = rows.filter(r => !r.s.auto).length;
+  let html = '<section class="card hero-card">' + head(tx(total === 1 ? 'home2_count_1' : 'home2_count', { x: done, y: total }));
+  rows.forEach((r, i) => {
+    const editable = !r.legacy;
+    html += '<div class="list-row">' + P.status(r.s.status, false) +
+      '<div class="grow"><strong>' + esc(rowSlotLabel(r)) + '</strong><div class="small muted">' + esc(rowSub(r)) + '</div></div>' +
+      (editable ? '<button class="icon-btn" type="button" data-edit="' + i + '" aria-label="' + esc(tx('home2_edit_aria', { slot: rowSlotLabel(r) })) + '">' + P.icon('pencil-square') + '</button>' : '') +
+      '</div>';
+  });
+  const next = rows.findIndex(r => r.s.auto);
+  const lastRec = (() => { for (let i = rows.length - 1; i >= 0; i--) if (rows[i].s.inj) return i; return -1; })();
+  html += '<div class="stack tight home-actions">';
+  if (next >= 0) {
+    html += '<button class="btn full" type="button" data-done="' + next + '">' + esc(t('home2_mark_done')) + '</button>' +
+            '<button class="btn ghost full" type="button" data-other="' + next + '">' + esc(t('home2_other_status')) + '</button>';
+  } else if (lastRec >= 0) {
+    html += '<button class="btn full" type="button" data-other="' + lastRec + '">' + esc(t('home2_edit_record')) + '</button>';
+  }
+  return html + '</div></section>';
+}
+
+function cureHtml(models) {
+  const m = models[0], today = psDay(new Date());
+  const dayNum = Math.min(m.duration, Math.max(1, m.dayNumber(today)));
+  const pct = Math.round(dayNum / m.duration * 100);
+  const others = models.length - 1;
+  return '<section class="card"><div class="row">' + P.icon('calendar-days') +
+    '<div class="grow"><span class="small muted">' + esc(t('home2_cure_now') + ' · ' + m.name) + '</span>' +
+    '<h2>' + esc(tx('home2_day_of', { x: dayNum, y: m.duration })) + '</h2></div>' +
+    '<a class="icon-btn" href="cure.html" aria-label="' + esc(t('home2_open_cure')) + '">' + P.icon('chevron-right') + '</a></div>' +
+    P.progress(pct, t('home2_progress_aria')) +
+    '<p class="help">' + esc(t('home2_progress_help')) + '</p>' +
+    (others > 0 ? '<a class="link-btn home-more" href="cure.html">' + esc(others === 1 ? t('home2_more_1') : tx('home2_more_n', { n: others })) + '</a>' : '') +
+    '</section>';
+}
+
+function nextReminder() {
+  let rem = {};
+  try { rem = JSON.parse(localStorage.getItem('ps_reminders_' + userId) || '{}') || {}; } catch (e) {}
+  const plan = PS_buildInjectionPlan(allCures, allInjections, rem, 2);
+  if (!plan.length) return null;
+  const at = plan[0].at;
+  return { hm: P.pad(at.getHours()) + ':' + P.pad(at.getMinutes()), tomorrow: psDayStr(at) !== psDayStr() };
+}
+function lastWeight() {
+  const w = allWeights.filter(x => x && x.weight_kg != null && isFinite(parseFloat(x.weight_kg)))
+    .sort((a, b) => String(b.logged_at || '').localeCompare(String(a.logged_at || '')) || String(b.created_at || '').localeCompare(String(a.created_at || '')));
+  return w.length ? parseFloat(w[0].weight_kg) : null;
+}
+function gridHtml() {
+  const nr = nextReminder(), w = lastWeight();
+  return '<div class="grid2">' +
+    '<section class="card compact home-mini"><div class="small muted">' + esc(t('home2_next_reminder')) + '</div>' +
+      '<div class="number home-metric">' + (nr ? esc(nr.hm) + (nr.tomorrow ? ' <span class="unit">' + esc(t('home2_tomorrow')) + '</span>' : '') : '—') + '</div>' +
+      '<a class="btn ghost" href="alertes.html">' + esc(t('home2_set')) + '</a></section>' +
+    '<section class="card compact home-mini"><div class="small muted">' + esc(t('home2_last_weight')) + '</div>' +
+      '<div class="number home-metric">' + (w != null ? esc(P.fmtNum(w, 1)) + ' <span class="unit">kg</span>' : '—') + '</div>' +
+      '<a class="btn ghost" href="poids.html">' + esc(t('home2_add')) + '</a></section>' +
+    '</div>';
+}
+
+// Flacon actif à moins de 20 % (quantité restante / quantité du flacon)
+function lowVial() {
+  let best = null;
+  allInventory.forEach(f => {
+    if (!f || P.hasFlag(f.notes, 'finished') || P.hasFlag(f.notes, 'sealed')) return;
+    if (/^pen/.test(P.getTag(f.notes, 'type') || '')) return;
+    const total = parseFloat(f.vial_qty_mg), left = parseFloat(f.remaining_units);
+    if (!(total > 0) || !isFinite(left)) return;
+    const frac = left / total;
+    if (frac < 0.2 && (!best || frac < best.frac)) best = { f, frac };
+  });
+  return best;
+}
+function vialCardHtml() {
+  const lv = lowVial();
+  if (!lv) return '';
+  return '<section class="card compact"><div class="row home-vial">' +
+    P.asset('vial-low', 'material-mini').replace('<svg ', '<svg aria-hidden="true" focusable="false" ') +
+    '<div class="grow"><strong>' + esc(t('home2_vial_low')) + '</strong>' +
+    '<p class="small muted">' + esc((lv.f.peptide_name ? lv.f.peptide_name + ' · ' : '') + t('home2_vial_est')) + '</p>' +
+    '<a class="btn ghost" href="inventaire.html#vial=' + encodeURIComponent(lv.f.id) + '">' + esc(t('home2_vial_see')) + '</a></div></div></section>';
+}
+
+function emptyHtml(hasCures) {
+  return '<section class="card">' +
+    P.empty(t(hasCures ? 'home2_none_title' : 'home2_empty_title'), t(hasCures ? 'home2_none_text' : 'home2_empty_text'),
+      'calendar-days', t('home2_empty_cta'), 'cure.html#new') +
+    '</section><a class="btn secondary full" href="inventaire.html">' + esc(t('home2_add_equipment')) + '</a>';
+}
+
+function render() {
+  const view = $('#view');
+  const ds = psDayStr();
+  renderedDay = ds;
+  const models = activeModels();
+  if (!models.length) {
+    setIntro('home2_today', t('home2_ready'));
+    ROWS = [];
+    view.innerHTML = emptyHtml(allCures.length > 0);
+    PS_applyI18n();
+    return;
+  }
+  setIntro('home2_today', todayLabel());
+  ROWS = todayRows(models, ds);
+  view.innerHTML = heroHtml(ROWS) + cureHtml(models) + gridHtml() + vialCardHtml();
+  view.querySelectorAll('[data-edit]').forEach(b => { b.onclick = () => { if (!busy) openEdit(ROWS[+b.dataset.edit]); }; });
+  view.querySelectorAll('[data-other]').forEach(b => { b.onclick = () => { if (!busy) openStatus(ROWS[+b.dataset.other]); }; });
+  view.querySelectorAll('[data-done]').forEach(b => {
+    b.onclick = () => guarded(async () => {
+      b.setAttribute('aria-busy', 'true');
+      await recordSlot(ROWS[+b.dataset.done], 'done', { time: P.nowHM() });
+    });
+  });
   PS_applyI18n();
-  PS_renderLangSwitcher();
-  const _ce = document.getElementById('chartEmpty');
-  if (_ce) _ce.textContent = t('dash_no_weight_data');
-}).catch(console.error);
-</script>
+}
 
-<div class="page-band" style="padding:0 16px 8px"><div class="legal-disclaimer compact">
-  
-  <div class="legal-disclaimer-text">
-    <strong data-i18n="disclaimer_title">Usage éducatif uniquement</strong> — <span data-i18n="disclaimer_short">Peptides de recherche non approuvés à usage humain. Consultez un professionnel de santé. PeptideScanner décline toute responsabilité.</span>
-  </div>
-</div></div>
+// ── Chargement ───────────────────────────────────────────────────
+function showLoading() {
+  setIntro('home2_today', '');
+  $('#view').innerHTML = P.skeleton();
+  PS_applyI18n();
+}
+function showError() {
+  setIntro('home2_error_title', '');
+  $('#view').innerHTML = P.errorState(init) +
+    '<a class="btn ghost full" href="profil.html">' + esc(t('home2_open_profile')) + '</a>';
+  PS_applyI18n();
+}
+async function loadAll() {
+  const [cRes, iRes, wRes, vRes] = await Promise.all([
+    sb.from('cures').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+    sb.from('injections').select('*').eq('user_id', userId).order('injected_at', { ascending: false }).limit(1000),
+    sb.from('weight_logs').select('*').eq('user_id', userId).order('logged_at', { ascending: false }).limit(5),
+    sb.from('inventory').select('*').eq('user_id', userId)
+  ]);
+  [cRes, iRes, wRes].forEach(check);
+  allCures = cRes.data || [];
+  allInjections = iRes.data || [];
+  allWeights = wRes.data || [];
+  allInventory = (vRes && !vRes.error && vRes.data) || [];
+}
+async function init() {
+  showLoading();
+  try {
+    // Avertissement d'utilisation + parcours d'arrivée (redirections gérées par ps-app.js)
+    const session = await P.requireSession(sb, { onboarding: true });
+    if (!session) return;
+    userId = session.user.id;
+    const { data: profil } = await sb.from('profiles').select('*').eq('id', userId).single();
+    if (profil) PS_loadLangFromProfile(sb, userId, profil.lang);
+    await loadAll();
+    // Rappels du téléphone remis à jour à chaque ouverture (si activés)
+    P.refreshReminders(allCures, allInjections, userId);
+    render();
+  } catch (e) {
+    console.error(e);
+    showError();
+  }
+}
+
+document.documentElement.lang = P.lang();
+document.title = t('home2_doc_title');
+PS_initShell();
+// Retour sur l'appli après minuit : on recharge le nouveau jour
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && userId && renderedDay && renderedDay !== psDayStr() && !busy) init();
+});
+init();
+</script>
 </body>
 </html>

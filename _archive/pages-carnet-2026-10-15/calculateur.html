@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PeptideScanner — Calculateur de dosage</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<link rel="stylesheet" href="/peptidescanner.css">
+<link rel="stylesheet" href="/peptidescanner-extra.css">
+<style>
+  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
+  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
+     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
+     les noms propres a cette page. */
+  :root {
+    --surface2: var(--surface-muted);
+    --accent2:  var(--info);
+    --accent3:  var(--amber);
+    --nav-h:    var(--bottomnav-h, 64px);
+    --success:  var(--accent);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:var(--font-ui); background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
+
+  /* TOPBAR */
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; box-shadow:0 1px 8px rgba(0,0,0,.06); }
+  .back-btn { background:transparent; border:1px solid var(--border); color:var(--muted); border-radius:8px; padding:6px 12px; font-family:inherit; font-size:.78rem; cursor:pointer; text-decoration:none; }
+
+  .content { padding:16px 20px 0; width:100%; max-width:100%; margin:0 auto; }
+  @media (min-width: 768px)  { .content { max-width: 720px; } }
+  @media (min-width: 1024px) { .content { max-width: var(--content-desktop, 1100px); } }
+
+  /* WARNING BANNER */
+  .warning-banner {
+    background:var(--warning-bg); border:0;
+    border-radius:14px; padding:14px 16px; margin-bottom:20px;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .warning-banner-icon { display:none; }
+  .warning-banner-text { font-size:.78rem; line-height:1.6; color:var(--text); }
+  .warning-banner-text strong { color:var(--warning); display:block; margin-bottom:2px; }
+
+  /* TABS */
+  .module-tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:20px; scrollbar-width:none; }
+  .module-tabs::-webkit-scrollbar { display:none; }
+  .module-tab {
+    padding:8px 16px; border-radius:100px; border:1.5px solid var(--border);
+    background:var(--surface); color:var(--muted); font-size:.78rem; font-weight:600;
+    cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0;
+    font-family:inherit;
+  }
+  .module-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  /* MODULE PANELS */
+  .module-panel { display:none; }
+  .module-panel.active { display:block; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px;
+    color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; margin-bottom:10px;
+  }
+
+  /* INPUT CARD */
+  .calc-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; padding:20px; margin-bottom:16px;
+    box-shadow:0 2px 12px rgba(0,0,0,.04);
+  }
+  .calc-card h3 { font-size:.95rem; font-weight:700; margin-bottom:4px; }
+  .calc-card p { font-size:.8rem; color:var(--muted); margin-bottom:16px; line-height:1.5; }
+
+  .form-group { margin-bottom:14px; }
+  .form-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; display:block; font-weight:600; }
+  .form-input {
+    width:100%; background:var(--surface2); border:1.5px solid var(--border);
+    border-radius:10px; padding:12px 14px; color:var(--text);
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1rem; font-weight:700;
+    outline:none; transition:border-color .2s;
+  }
+  .form-input:focus { border-color:var(--accent); background:#fff; }
+  .form-select {
+    width:100%; background:var(--surface2); border:1.5px solid var(--border);
+    border-radius:10px; padding:12px 14px; color:var(--text);
+    font-family:inherit; font-size:.9rem; outline:none; transition:border-color .2s;
+    cursor:pointer;
+  }
+  .form-select:focus { border-color:var(--accent); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* BAC WATER BUTTONS */
+  .bac-btns { display:flex; gap:8px; flex-wrap:wrap; }
+  .bac-btn {
+    padding:10px 16px; border-radius:10px; border:1.5px solid var(--border);
+    background:var(--surface2); color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums;
+    font-size:.84rem; font-weight:700; cursor:pointer; transition:all .2s;
+  }
+  .bac-btn.selected { border-color:var(--accent2); background:var(--info-soft); color:var(--accent2); }
+  .bac-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* RESULT CARD */
+  .result-card {
+    background:linear-gradient(135deg, var(--accent-soft), var(--info-soft));
+    border:1.5px solid rgba(36,87,214,.25); border-radius:18px;
+    padding:20px; margin-bottom:16px; display:none;
+  }
+  .result-card.show { display:block; animation:fadeIn .3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .result-title { font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--accent); font-family:var(--font-data);font-variant-numeric:tabular-nums; margin-bottom:14px; }
+  .result-main {
+    display:flex; align-items:center; gap:16px; margin-bottom:16px;
+    padding:14px; background:var(--surface); border-radius:12px;
+    border:1px solid var(--border);
+  }
+  .result-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:2rem; font-weight:700; color:var(--accent); line-height:1; }
+  .result-unit { font-size:.78rem; color:var(--muted); margin-top:3px; }
+  .result-formula { font-size:.8rem; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
+  .result-formula strong { color:var(--accent2); }
+
+  /* ── SERINGUE PREMIUM ── */
+  .syringe-section { margin-bottom:16px; }
+
+  .syringe-wrap {
+    background:linear-gradient(160deg,#f0f9ff 0%,#ffffff 60%,#f8faff 100%);
+    border:1px solid #dde8f5;
+    border-radius:22px; padding:20px 20px 16px;
+    box-shadow:0 4px 24px rgba(36,87,214,.06), 0 1px 4px rgba(36,87,214,.06);
+    position:relative; overflow:hidden;
+  }
+  .syringe-wrap::before {
+    content:''; position:absolute; top:0; right:0;
+    width:120px; height:120px;
+    background:radial-gradient(circle at top right, rgba(36,87,214,.06) 0%, transparent 70%);
+    pointer-events:none;
+  }
+
+  .syringe-title {
+    font-size:.88rem; font-weight:700; margin-bottom:3px;
+    color:var(--text); letter-spacing:-.01em;
+  }
+  .syringe-sub { font-size:.74rem; color:var(--muted); margin-bottom:18px; line-height:1.5; }
+
+  .syringe-visual {
+    display:flex; align-items:flex-start; gap:20px; margin-bottom:14px;
+  }
+  .syringe-svg-wrap { flex-shrink:0; }
+
+  /* SVG seringue */
+  .syringe-svg {
+    width:90px; height:360px;
+    touch-action:none; cursor:ns-resize;
+    filter:drop-shadow(0 4px 12px rgba(36,87,214,.15));
+    transition:filter .2s;
+  }
+  .syringe-svg:active { filter:drop-shadow(0 2px 6px rgba(36,87,214,.25)); }
+
+  /* Hint drag */
+  .syringe-interactive-wrap { display:flex; flex-direction:column; align-items:center; }
+  .syringe-drag-hint {
+    font-size:.62rem; color:var(--muted); text-align:center; margin-top:8px;
+    display:flex; align-items:center; gap:3px; justify-content:center;
+    opacity:.65; letter-spacing:.3px; user-select:none;
+  }
+
+  /* Panel info droite */
+  .syringe-info { flex:1; display:flex; flex-direction:column; gap:10px; padding-top:4px; }
+
+  .syringe-dose-display {
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:2rem; font-weight:700;
+    color:var(--accent); line-height:1; letter-spacing:-.03em;
+  }
+  .syringe-dose-label {
+    font-size:.68rem; color:var(--muted); text-transform:uppercase;
+    letter-spacing:1px; margin-top:3px;
+  }
+
+  .syringe-chip {
+    background:#fff; border:1.5px solid rgba(36,87,214,.18);
+    border-radius:12px; padding:10px 14px;
+    box-shadow:0 1px 4px rgba(36,87,214,.06);
+  }
+  .syringe-chip-val {
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.15rem; font-weight:700;
+    color:var(--accent2); line-height:1;
+  }
+  .syringe-chip-label { font-size:.64rem; color:var(--muted); margin-top:4px; letter-spacing:.5px; text-transform:uppercase; }
+
+  .syringe-verify-box {
+    background:var(--accent-soft); border:1px solid rgba(36,87,214,.15);
+    border-radius:10px; padding:9px 12px;
+    font-size:.72rem; color:var(--muted); line-height:1.5;
+  }
+
+  /* Drag active glow */
+  .syringe-svg.dragging { filter:drop-shadow(0 0 10px rgba(36,87,214,.35)); }
+
+  /* Graduation highlight */
+  @keyframes gradPop {
+    0%   { opacity:1; }
+    40%  { opacity:.2; }
+    100% { opacity:1; }
+  }
+  .grad-active { animation: gradPop .2s ease; }
+
+  /* DOSE TABLE */
+  .dose-table-wrap {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; overflow:hidden; margin-bottom:16px;
+  }
+  .dose-table-header { padding:14px 16px; border-bottom:1px solid var(--border); }
+  .dose-table-header h3 { font-size:.88rem; font-weight:700; }
+  .dose-table-header p { font-size:.75rem; color:var(--muted); margin-top:2px; }
+  table { width:100%; border-collapse:collapse; }
+  thead th {
+    padding:10px 14px; text-align:left; font-size:.68rem;
+    text-transform:uppercase; letter-spacing:.8px; color:var(--muted);
+    background:var(--surface2); border-bottom:1px solid var(--border);
+    font-family:var(--font-data);font-variant-numeric:tabular-nums;
+  }
+  tbody tr { border-bottom:1px solid rgba(226,232,240,.5); transition:background .15s; }
+  tbody tr:hover { background:var(--accent-soft); }
+  tbody tr.highlighted { background:var(--accent-soft); border-left:3px solid var(--accent); }
+  tbody td { padding:10px 14px; font-size:.84rem; }
+  tbody td:first-child { font-weight:600; }
+  tbody td.mono { font-family:var(--font-data);font-variant-numeric:tabular-nums; color:var(--accent2); }
+  tbody td.units { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-weight:700; color:var(--accent); }
+
+  /* EXPLAINER */
+  .explainer-card {
+    background:var(--info-soft); border:1px solid rgba(36,87,214,.15);
+    border-radius:14px; padding:16px; margin-bottom:12px;
+  }
+  .explainer-card h4 { font-size:.84rem; font-weight:700; color:var(--accent2); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .explainer-card p { font-size:.8rem; color:var(--muted); line-height:1.6; }
+  .explainer-card .formula {
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; background:var(--surface2);
+    border-radius:8px; padding:10px 12px; margin-top:8px;
+    font-size:.82rem; color:var(--text); border:1px solid var(--border);
+  }
+  .explainer-card .formula strong { color:var(--accent); }
+
+  /* TITRATION TIMELINE */
+  .titration-wrap { margin-bottom:16px; }
+  .titration-step {
+    display:flex; gap:14px; margin-bottom:12px; position:relative;
+  }
+  .titration-step:not(:last-child)::after {
+    content:''; position:absolute; left:20px; top:44px; bottom:-12px;
+    width:2px; background:var(--border);
+  }
+  .step-num {
+    width:40px; height:40px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.88rem; font-weight:700;
+    z-index:1;
+  }
+  .step-content {
+    flex:1; background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:14px; margin-bottom:0;
+  }
+  .step-weeks { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
+  .step-dose { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.2rem; font-weight:700; margin-bottom:4px; }
+  .step-label { font-size:.78rem; font-weight:600; margin-bottom:4px; }
+  .step-expect { font-size:.75rem; color:var(--muted); line-height:1.5; }
+  .step-warning {
+    display:flex; align-items:center; gap:6px; margin-top:8px;
+    padding:6px 10px; background:var(--amber-soft);
+    border-radius:8px; border:1px solid rgba(128,80,0,.2);
+    font-size:.72rem; color:var(--accent3);
+  }
+
+  /* RECONSTITUTION STEPS */
+  .recon-step {
+    display:flex; gap:14px; margin-bottom:14px;
+  }
+  .recon-num {
+    width:32px; height:32px; border-radius:10px; flex-shrink:0;
+    background:var(--accent); color:var(--accent-on);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.88rem; margin-top:2px;
+  }
+  .recon-content h4 { font-size:.88rem; font-weight:700; margin-bottom:4px; }
+  .recon-content p { font-size:.78rem; color:var(--muted); line-height:1.6; }
+  .recon-content .tip {
+    margin-top:6px; padding:6px 10px; border-radius:8px;
+    font-size:.72rem; display:flex; align-items:center; gap:5px;
+  }
+  .tip-green { background:var(--accent-soft); color:#059669; border:1px solid rgba(36,87,214,.2); }
+  .tip-red { background:var(--danger-soft); color:var(--danger); border:1px solid rgba(180,35,56,.15); }
+  .tip-blue { background:var(--info-soft); color:var(--accent2); border:1px solid rgba(36,87,214,.15); }
+
+  /* MATERIEL GRID */
+  .materiel-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+  .materiel-item {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:12px; text-align:center;
+  }
+  .materiel-icon { font-size:1.6rem; margin-bottom:6px; }
+  .materiel-label { font-size:.72rem; font-weight:600; margin-bottom:2px; }
+  .materiel-desc { font-size:.65rem; color:var(--muted); line-height:1.3; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(255,255,255,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 8px; box-shadow:0 -2px 12px rgba(0,0,0,.06); }
+
+  /* ── MODALE AVERTISSEMENT DOSE HAUTE ── */
+  .modal-overlay {
+    position:fixed; inset:0; z-index:500;
+    background:rgba(0,0,0,.45); backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; opacity:0; pointer-events:none;
+    transition:opacity .25s;
+  }
+  .modal-overlay.show { opacity:1; pointer-events:all; }
+  .modal-box {
+    background:var(--surface); border-radius:22px;
+    padding:24px 22px; max-width:360px; width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,.18);
+    transform:scale(.95); transition:transform .25s;
+    border:1.5px solid rgba(180,35,56,.2);
+  }
+  .modal-overlay.show .modal-box { transform:scale(1); }
+  .modal-icon { font-size:2.4rem; text-align:center; margin-bottom:12px; }
+  .modal-title { font-size:1rem; font-weight:700; text-align:center; margin-bottom:6px; color:var(--danger); }
+  .modal-sub { font-size:.8rem; color:var(--muted); text-align:center; line-height:1.6; margin-bottom:18px; }
+  .modal-dose-badge {
+    background:var(--danger-soft); border:1px solid rgba(180,35,56,.2);
+    border-radius:12px; padding:12px 16px; margin-bottom:18px; text-align:center;
+  }
+  .modal-dose-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.4rem; font-weight:700; color:var(--danger); }
+  .modal-dose-label { font-size:.7rem; color:var(--muted); margin-top:3px; }
+  .modal-btns { display:flex; flex-direction:column; gap:10px; }
+  .modal-btn-confirm {
+    width:100%; padding:13px; border-radius:12px; border:none;
+    background:var(--danger); color:#fff; font-family:inherit;
+    font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s;
+  }
+  .modal-btn-confirm:hover { opacity:.88; }
+  .modal-btn-cancel {
+    width:100%; padding:12px; border-radius:12px;
+    border:1.5px solid var(--border); background:transparent;
+    color:var(--muted); font-family:inherit; font-size:.88rem;
+    font-weight:600; cursor:pointer; transition:all .2s;
+  }
+  .modal-btn-cancel:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── SPLIT DOSE ── */
+  .split-dose-card {
+    background:var(--info-soft); border:1.5px solid rgba(36,87,214,.2);
+    border-radius:16px; padding:16px; margin-top:12px; display:none;
+  }
+  .split-dose-card.show { display:block; animation:fadeIn .3s ease; }
+  .split-dose-title { font-size:.8rem; font-weight:700; color:var(--accent2); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+  .split-draw {
+    display:flex; align-items:center; gap:12px;
+    background:var(--surface); border-radius:10px;
+    padding:10px 14px; margin-bottom:8px;
+    border:1px solid var(--border);
+  }
+  .split-draw:last-child { margin-bottom:0; }
+  .split-draw-num {
+    width:28px; height:28px; border-radius:8px; background:var(--accent2);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.82rem; flex-shrink:0;
+  }
+  .split-draw-info { flex:1; }
+  .split-draw-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.95rem; font-weight:700; color:var(--accent2); }
+  .split-draw-label { font-size:.68rem; color:var(--muted); margin-top:2px; }
+
+  /* ── SÉLECTION AUTO SERINGUE ── */
+  .syringe-auto-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    background:var(--accent-soft); border:1px solid rgba(36,87,214,.25);
+    border-radius:100px; padding:3px 10px; font-size:.68rem;
+    font-weight:700; color:var(--accent); margin-left:8px;
+    font-family:var(--font-data);font-variant-numeric:tabular-nums;
+  }
+
+  /* CALC BTN */
+  .calc-btn {
+    width:100%; padding:13px; border-radius:12px; border:none;
+    background:var(--accent); color:var(--accent-on); font-family:inherit;
+    font-size:.95rem; font-weight:700; cursor:pointer; transition:all .2s;
+    margin-top:4px;
+  }
+  .calc-btn:hover { opacity:.9; transform:translateY(-1px); }
+
+  /* SAFETY CARD */
+  .safety-card {
+    background:var(--danger-soft); border:1.5px solid rgba(180,35,56,.15);
+    border-radius:14px; padding:16px; margin-bottom:12px;
+  }
+  .safety-card h4 { font-size:.86rem; font-weight:700; color:var(--danger); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .safety-item { display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; font-size:.78rem; color:var(--muted); line-height:1.5; }
+  .safety-item:last-child { margin-bottom:0; }
+  .safety-dot { width:6px; height:6px; border-radius:50%; background:var(--danger); flex-shrink:0; margin-top:5px; }
+
+  /* DISCLAIMER JURIDIQUE */
+  .legal-disclaimer {
+    background:var(--amber-soft); border:1px solid rgba(128,80,0,.2);
+    border-radius:12px; padding:12px 16px; margin:12px 0;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .legal-disclaimer.compact { padding:8px 12px; margin:8px 0; border-radius:8px; }
+  .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
+  .legal-disclaimer-text { font-size:.72rem; color:var(--warning); line-height:1.5; }
+  .legal-disclaimer-text strong { color:var(--warning); }
+  .phase-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700; }
+  .phase-established  { background:var(--success-bg); color:var(--success); border:1px solid rgba(36,87,214,.2); }
+  .phase-preclinical  { background:var(--info-soft);  color:var(--info); border:1px solid rgba(36,87,214,.2); }
+  .phase-phase1       { background:var(--warning-bg); color:var(--warning); border:1px solid rgba(128,80,0,.2); }
+  .phase-phase2       { background:var(--warning-bg); color:var(--warning); border:1px solid rgba(128,80,0,.2); }
+  .phase-phase3       { background:var(--status-partial-soft); color:var(--status-partial); border:1px solid rgba(36,87,214,.2); }
+  .phase-experimental { background:var(--error-bg); color:var(--error); border:1px solid rgba(180,35,56,.15); }
+</style>
+</head>
+<body>
+
+<header class="app-topbar">
+  <div class="topbar-inner">
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
+  </div>
+</header>
+<div class="menu-popover" id="avatarMenu" hidden>
+  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
+  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
+  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
+</div>
+
+<div class="content">
+
+<div class="page-intro"><h1 data-i18n="calc_title">Calculateur</h1><p data-i18n="intro_calc_sub">Vos valeurs, votre calcul</p></div>
+<div class="section-tabs">
+  <a class="section-tab" href="inventaire.html" data-i18n="nav_stock">Stock</a>
+  <a class="section-tab" href="calculateur.html" aria-current="page" data-i18n="calc_title">Calculateur</a>
+</div>
+
+
+  <!-- WARNING -->
+  <div class="warning-banner">
+    
+    <div class="warning-banner-text">
+      <strong data-i18n="disclaimer_title">Usage éducatif uniquement</strong>
+      <span data-i18n="calc_warning_sub">Ce calculateur est un outil d'information. Vérifiez toujours vos calculs avant toute injection. Consultez un professionnel de santé avant tout protocole. PeptideScanner décline toute responsabilité en cas d'erreur de dosage.</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="module-tabs">
+    <button class="module-tab active" onclick="switchModule('reconstitution',this)"><span data-i18n="calc_tab_recon">🧪 Reconstitution</span></button>
+    <button class="module-tab" onclick="switchModule('dosage',this)"><span data-i18n="calc_tab_dosage">💉 Dosage</span></button>
+    <button class="module-tab" onclick="switchModule('guide',this)"><span data-i18n="calc_tab_guide">📋 Guide injection</span></button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MODULE 1 — RECONSTITUTION
+  ══════════════════════════════════════════ -->
+  <div class="module-panel active" id="panel-reconstitution">
+
+    <div class="section-title"><span data-i18n="calc_recon_section">Étape 1 — Calculer la concentration</span></div>
+
+    <div class="calc-card">
+      <h3 data-i18n="calc_recon_title">🧪 Reconstitution du flacon</h3>
+      <p>Entrez la quantité de peptide dans votre flacon et le volume d'eau bactériostatique que vous allez ajouter. Le calculateur fait le reste.</p>
+
+      <div class="form-group">
+        <label class="form-label"><span data-i18n="calc_peptide_qty">Quantité de peptide dans le flacon</span></label>
+        <div class="form-row">
+          <input class="form-input" id="peptideMg" type="number" placeholder="10" min="0.1" max="100" step="0.1" oninput="calculateReconstitution()">
+          <select class="form-select" id="peptideUnit" onchange="calculateReconstitution()">
+            <option value="mg">mg (milligrammes)</option>
+            <option value="mcg">mcg (microgrammes)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><span data-i18n="calc_bac_volume">Volume d'eau bactériostatique à ajouter</span></label>
+        <div class="bac-btns" id="bacBtns">
+          <button class="bac-btn" onclick="selectBac(0.5,this)">0.5 mL</button>
+          <button class="bac-btn" onclick="selectBac(1,this)">1 mL</button>
+          <button class="bac-btn selected" onclick="selectBac(2,this)">2 mL</button>
+          <button class="bac-btn" onclick="selectBac(3,this)">3 mL</button>
+          <button class="bac-btn" onclick="selectBac(5,this)">5 mL</button>
+        </div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:.75rem;color:var(--muted)"><span data-i18n="calc_other_volume">Autre volume :</span></span>
+          <input class="form-input" id="bacCustom" type="number" placeholder="mL" min="0.1" max="10" step="0.1" style="width:100px;font-size:.84rem;padding:8px 10px" oninput="selectBacCustom(this.value)">
+          <span style="font-size:.75rem;color:var(--muted)">mL</span>
+        </div>
+      </div>
+
+      <!-- EXPLICATION POURQUOI LE VOLUME CHANGE TOUT -->
+      <div class="explainer-card">
+        <h4>💡 Pourquoi le volume d'eau est crucial</h4>
+        <p>Le même flacon de 10mg reconstitué avec <strong>1mL</strong> ou <strong>2mL</strong> donne une concentration différente — et donc un nombre d'unités différent pour la même dose !</p>
+        <div class="formula">
+          10mg + <strong>1mL</strong> = <strong>10 mg/mL</strong> → 1mg = 10 unités<br>
+          10mg + <strong>2mL</strong> = <strong>5 mg/mL</strong> → 1mg = 20 unités
+        </div>
+      </div>
+    </div>
+
+    <!-- RÉSULTAT RECONSTITUTION -->
+    <div class="result-card" id="recon-result">
+      <div class="result-title"><span data-i18n="calc_recon_result">✓ Résultat de la reconstitution</span></div>
+      <div class="result-main">
+        <div>
+          <div class="result-val" id="concentration-val">—</div>
+          <div class="result-unit">mg / mL</div>
+        </div>
+        <div class="result-formula" id="concentration-formula">—</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:var(--surface);border-radius:10px;padding:12px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Pour 1 mg</div>
+          <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:1.1rem;font-weight:700;color:var(--accent2)" id="units-per-mg">— unités</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:2px" id="ml-per-mg">— mL</div>
+        </div>
+        <div style="background:var(--surface);border-radius:10px;padding:12px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">1 unité =</div>
+          <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:1.1rem;font-weight:700;color:var(--accent3)" id="mcg-per-unit">— mcg</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:2px">par unité seringue</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERINGUE RECONSTITUTION -->
+    <div class="calc-card" id="kit-material-card" style="display:none">
+      <h3 data-i18n="calc_material_title">Aperçu du matériel</h3>
+      <p data-i18n="calc_material_sub">Choisissez votre seringue : le trait indique le niveau exact pour la dose choisie dans le tableau.</p>
+      <div class="form-group">
+        <label class="form-label" data-i18n="calc_material_label">Seringue</label>
+        <select class="form-select" id="kitSyringeSelect" onchange="updateKitPreview()">
+          <option value="30">U-100 · 30 U (0,3 ml) — pas 0,5 U</option>
+          <option value="50" selected>U-100 · 50 U (0,5 ml) — pas 1 U</option>
+          <option value="100">U-100 · 100 U (1 ml) — pas 2 U</option>
+        </select>
+      </div>
+      <div class="equipment-pair"><div id="kitVial"></div><div id="kitSyringe"></div></div>
+      <p class="field-help" id="kitCaption" data-i18n="calc_material_wait">Le niveau apparaît après le choix d'une dose.</p>
+      <div id="kitWarn"></div>
+    </div>
+
+    <div class="syringe-section" id="recon-syringe-section" style="display:none">
+      <div class="syringe-wrap">
+        <div class="syringe-title" data-i18n="calc_syringe_view">Visualiser la seringue</div>
+        <div class="syringe-sub">Cliquez sur une ligne du tableau pour voir la graduation. Ou glissez le piston.</div>
+        <div class="syringe-visual">
+          <div class="syringe-svg-wrap">
+            <div class="syringe-interactive-wrap">
+              <svg class="syringe-svg" viewBox="0 0 90 360" id="syringeSVG2">
+                <defs>
+                  <linearGradient id="bodyGrad2" x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0%"   stop-color="#c8dff5" stop-opacity=".6"/>
+                    <stop offset="18%"  stop-color="#e8f4ff" stop-opacity=".9"/>
+                    <stop offset="50%"  stop-color="#f5faff"/>
+                    <stop offset="82%"  stop-color="#e4f0fb" stop-opacity=".9"/>
+                    <stop offset="100%" stop-color="#b8d3ee" stop-opacity=".6"/>
+                  </linearGradient>
+                  <linearGradient id="liquidGrad2" x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0%"   stop-color="var(--accent)" stop-opacity=".12"/>
+                    <stop offset="30%"  stop-color="var(--accent)" stop-opacity=".28"/>
+                    <stop offset="70%"  stop-color="var(--accent)" stop-opacity=".22"/>
+                    <stop offset="100%" stop-color="var(--accent)" stop-opacity=".1"/>
+                  </linearGradient>
+                  <linearGradient id="pistonGrad2" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%"   stop-color="#4a90d9"/>
+                    <stop offset="40%"  stop-color="var(--info)"/>
+                    <stop offset="100%" stop-color="#1a4f8a"/>
+                  </linearGradient>
+                  <clipPath id="bodyClip2">
+                    <rect x="29" y="28" width="28" height="284" rx="5"/>
+                  </clipPath>
+                </defs>
+                <rect x="27" y="26" width="32" height="288" rx="7" fill="rgba(36,87,214,.08)"/>
+                <rect x="29" y="28" width="28" height="284" rx="5" fill="url(#bodyGrad2)" stroke="#a8c8e8" stroke-width="1.2"/>
+                <rect x="31" y="30" width="4" height="280" rx="2" fill="rgba(255,255,255,.55)"/>
+                <rect x="52" y="30" width="2" height="280" rx="1" fill="rgba(255,255,255,.25)"/>
+                <g clip-path="url(#bodyClip2)">
+                  <rect id="liquidFill2" x="29" y="28" width="28" height="0" fill="url(#liquidGrad2)"/>
+                  <rect id="liquidSurface2" x="29" y="28" width="28" height="1.5" fill="rgba(36,87,214,.4)" rx="1"/>
+                </g>
+                <g fill="none">
+                  <line id="g2_0"   x1="29" y1="28"    x2="41" y2="28"    stroke="var(--neutral)" stroke-width="1.1"/>
+                  <text x="27" y="32"    font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Inter" font-weight="bold">0</text>
+                  <line id="g2_10"  x1="29" y1="56.4"  x2="40" y2="56.4"  stroke="var(--neutral)" stroke-width=".9"/>
+                  <text x="27" y="60"    font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">10</text>
+                  <line id="g2_20"  x1="29" y1="84.8"  x2="40" y2="84.8"  stroke="var(--neutral)" stroke-width=".9"/>
+                  <text x="27" y="88.5"  font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">20</text>
+                  <line id="g2_30"  x1="29" y1="113.2" x2="40" y2="113.2" stroke="var(--neutral)" stroke-width=".9"/>
+                  <text x="27" y="117"   font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">30</text>
+                  <line id="g2_40"  x1="29" y1="141.6" x2="40" y2="141.6" stroke="var(--neutral)" stroke-width=".9"/>
+                  <text x="27" y="145.5" font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">40</text>
+                  <line id="g2_50"  x1="29" y1="170"   x2="43" y2="170"   stroke="var(--text)" stroke-width="1.3"/>
+                  <text x="27" y="174"   font-size="8"   fill="var(--text)" text-anchor="end" font-family="Inter" font-weight="bold">50</text>
+                  <line id="g2_60"  x1="29" y1="198.4" x2="40" y2="198.4" stroke="var(--neutral)" stroke-width=".9"/>
+                  <text x="27" y="202"   font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">60</text>
+                  <line id="g2_70"  x1="29" y1="226.8" x2="40" y2="226.8" stroke="var(--neutral)" stroke-width=".9"/>
+                  <text x="27" y="230.5" font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">70</text>
+                  <line id="g2_80"  x1="29" y1="255.2" x2="40" y2="255.2" stroke="var(--neutral)" stroke-width=".9"/>
+                  <text x="27" y="259"   font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">80</text>
+                  <line id="g2_90"  x1="29" y1="283.6" x2="40" y2="283.6" stroke="var(--neutral)" stroke-width=".9"/>
+                  <text x="27" y="287.5" font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">90</text>
+                  <line id="g2_100" x1="29" y1="312"   x2="43" y2="312"   stroke="var(--text)" stroke-width="1.1"/>
+                  <text x="27" y="316"   font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Inter" font-weight="bold">100</text>
+                  <line x1="29" y1="42.2"  x2="36" y2="42.2"  stroke="var(--muted)" stroke-width=".7"/>
+                  <line x1="29" y1="70.6"  x2="36" y2="70.6"  stroke="var(--muted)" stroke-width=".7"/>
+                  <line x1="29" y1="99"    x2="36" y2="99"    stroke="var(--muted)" stroke-width=".7"/>
+                  <line x1="29" y1="127.4" x2="36" y2="127.4" stroke="var(--muted)" stroke-width=".7"/>
+                  <line x1="29" y1="155.8" x2="36" y2="155.8" stroke="var(--muted)" stroke-width=".7"/>
+                  <line x1="29" y1="184.2" x2="36" y2="184.2" stroke="var(--muted)" stroke-width=".7"/>
+                  <line x1="29" y1="212.6" x2="36" y2="212.6" stroke="var(--muted)" stroke-width=".7"/>
+                  <line x1="29" y1="241"   x2="36" y2="241"   stroke="var(--muted)" stroke-width=".7"/>
+                  <line x1="29" y1="269.4" x2="36" y2="269.4" stroke="var(--muted)" stroke-width=".7"/>
+                  <line x1="29" y1="297.8" x2="36" y2="297.8" stroke="var(--muted)" stroke-width=".7"/>
+                </g>
+                <g id="doseArrow2" transform="translate(0,0)" style="transition:transform .4s cubic-bezier(.4,0,.2,1)">
+                  <line x1="57" y1="28" x2="67" y2="28" stroke="var(--accent)" stroke-width="1.6"/>
+                  <polygon points="57,25 57,31 62,28" fill="var(--accent)"/>
+                  <rect x="67" y="19" width="20" height="18" rx="5" fill="var(--accent)"/>
+                  <text id="arrowLabel2" x="77" y="31" font-size="7.5" fill="var(--accent-on)" font-family="Inter" font-weight="bold" text-anchor="middle">0U</text>
+                </g>
+                <g id="pistonGroup2" style="transition:transform .4s cubic-bezier(.4,0,.2,1); cursor:ns-resize;">
+                  <rect x="27" y="30" width="32" height="5" rx="2.5" fill="#1a4f8a" opacity=".7"/>
+                  <rect id="piston2" x="26" y="20" width="34" height="13" rx="4" fill="url(#pistonGrad2)"/>
+                  <rect x="29" y="22" width="12" height="3" rx="1.5" fill="rgba(255,255,255,.4)"/>
+                  <line x1="34" y1="23" x2="34" y2="30" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+                  <line x1="39" y1="23" x2="39" y2="30" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+                  <line x1="44" y1="23" x2="44" y2="30" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+                  <rect x="37" y="2" width="12" height="22" rx="3" fill="var(--info)"/>
+                  <rect x="27" y="0" width="32" height="7" rx="3.5" fill="#1E40AF"/>
+                  <rect x="18" y="1" width="12" height="5" rx="2.5" fill="#1E40AF"/>
+                  <rect x="56" y="1" width="12" height="5" rx="2.5" fill="#1E40AF"/>
+                </g>
+                <polygon points="35,312 51,312 44,320 42,320" fill="var(--muted)"/>
+                <rect x="40" y="318" width="6" height="8" rx="1" fill="var(--muted)"/>
+                <rect x="41.5" y="326" width="3" height="28" rx="1" fill="var(--muted)"/>
+                <polygon points="41.5,354 44.5,354 43,358" fill="var(--neutral)"/>
+              </svg>
+              <div class="syringe-drag-hint">
+                <svg width="10" height="13" viewBox="0 0 10 13" fill="none">
+                  <path d="M5 1v11M2 3.5L5 1l3 2.5M2 9.5L5 12l3-2.5" stroke="#9CA3AF" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Glisser le piston
+              </div>
+            </div>
+          </div>
+          <div class="syringe-info">
+            <div class="syringe-dose-display" id="recon-syringe-units">— U</div>
+            <div class="syringe-dose-label">unités seringue</div>
+            <div class="syringe-chip">
+              <div class="syringe-chip-val" id="recon-syringe-ml">— mL</div>
+              <div class="syringe-chip-label">volume à prélever</div>
+            </div>
+            <div class="syringe-verify-box" id="recon-syringe-info">
+              Cliquez sur une ligne du tableau ↓
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLEAU DE RÉFÉRENCE -->
+    <div class="dose-table-wrap" id="recon-table" style="display:none">
+      <div class="dose-table-header">
+        <h3 data-i18n="calc_table_title">Tableau de référence rapide</h3>
+        <p id="table-subtitle">Seringue insuline U-100 (1mL = 100 unités)</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="calc_dose_table_dose">Dose</th>
+            <th>Volume (mL)</th>
+            <th>Unités seringue</th>
+            <th>Graduation</th>
+          </tr>
+        </thead>
+        <tbody id="dose-table-body"></tbody>
+      </table>
+    </div>
+
+    <!-- EXPLICATION SERINGUE -->
+    <div class="explainer-card">
+      <h4>Comprendre la seringue insuline U-100</h4>
+      <p>Une seringue insuline U-100 contient <strong>1mL = 100 unités</strong>. Les graduations vont de 0 à 100. C'est le standard mondial pour les injections SC.</p>
+      <div class="formula">
+        Unités = Dose souhaitée (mg) ÷ Concentration (mg/mL) × <strong>100</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MODULE 2 — DOSAGE + SERINGUE ANIMÉE
+  ══════════════════════════════════════════ -->
+  <div class="module-panel" id="panel-dosage">
+
+    <div class="section-title"><span data-i18n="calc_dosage_section">Calculer précisément votre dose</span></div>
+
+    <div class="calc-card">
+      <h3 data-i18n="calc_dosage_title">💉 Calculateur de dose précise</h3>
+      <p><span data-i18n="calc_dosage_sub">Entrez votre concentration (calculée dans l'onglet Reconstitution) et la dose souhaitée.</span></p>
+
+      <div class="form-group">
+        <label class="form-label"><span data-i18n="calc_unit">Unité du peptide</span></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="unitTypeBtns">
+          <button class="bac-btn selected" onclick="selectUnitType('mg',this)">mg / mcg</button>
+          <button class="bac-btn" onclick="selectUnitType('iu',this)">IU (HGH, HCG…)</button>
+        </div>
+      </div>
+
+      <!-- BLOC mg/mcg -->
+      <div id="blockMgMcg">
+        <div class="form-group">
+          <label class="form-label">Concentration du flacon reconstitué</label>
+          <div class="form-row">
+            <input class="form-input" id="concInput" type="number" placeholder="5" min="0.01" max="100" step="0.01" oninput="calculateDosage()">
+            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.88rem;color:var(--muted)">mg / mL</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span data-i18n="calc_desired_dose">Dose souhaitée</span></label>
+          <div class="form-row">
+            <input class="form-input" id="doseInput" type="number" placeholder="0.25" min="0.01" max="50" step="0.01" oninput="calculateDosage()">
+            <select class="form-select" id="doseUnit" onchange="calculateDosage()">
+              <option value="mg">mg</option>
+              <option value="mcg">mcg</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOC IU -->
+      <div id="blockIU" style="display:none">
+        <div class="explainer-card" style="margin-bottom:14px">
+          <h4>Comment fonctionnent les IU ?</h4>
+          <p>Pour HGH : 1 mg = 3 IU (environ). Pour HCG : 1 flacon = valeur indiquée en IU. Entrez la concentration en IU/mL après reconstitution.</p>
+          <div class="formula">Volume (mL) = Dose (IU) ÷ Concentration (IU/mL)</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Concentration après reconstitution</label>
+          <div class="form-row">
+            <input class="form-input" id="concIU" type="number" placeholder="100" min="1" max="10000" step="1" oninput="calculateDosage()">
+            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.88rem;color:var(--muted)">IU / mL</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dose souhaitée</label>
+          <div class="form-row">
+            <input class="form-input" id="doseIU" type="number" placeholder="2" min="0.1" max="10000" step="0.1" oninput="calculateDosage()">
+            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.88rem;color:var(--muted)">IU</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><span data-i18n="calc_syringe">Type de seringue</span> <span class="syringe-auto-badge" id="autoSyringeBadge" style="display:none"><span data-i18n="calc_auto_syringe">✓ Auto-sélectionnée</span></span></label>
+        <select class="form-select" id="syringeType" onchange="calculateDosage()"></select>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:5px">
+          Seringues configurées dans votre <a href="profil.html" style="color:var(--accent);text-decoration:none;font-weight:600">profil →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- RÉSULTAT + SERINGUE ANIMÉE -->
+    <div class="result-card" id="dosage-result">
+      <div class="result-title"><span data-i18n="calc_dosage_result">✓ Résultat du dosage</span></div>
+
+      <div class="syringe-section">
+        <div class="syringe-wrap">
+          <div class="syringe-title">Seringue insuline — Position exacte</div>
+          <div class="syringe-sub">Le piston indique exactement où s'arrêter pour votre dose.</div>
+
+          <div class="syringe-visual">
+            <!-- SERINGUE SVG INTERACTIVE -->
+            <div class="syringe-svg-wrap">
+              <div class="syringe-interactive-wrap">
+                <svg class="syringe-svg" viewBox="0 0 90 360" id="syringeSVG">
+                  <defs>
+                    <linearGradient id="bodyGrad" x1="0" x2="1" y1="0" y2="0">
+                      <stop offset="0%"   stop-color="#c8dff5" stop-opacity=".6"/>
+                      <stop offset="18%"  stop-color="#e8f4ff" stop-opacity=".9"/>
+                      <stop offset="50%"  stop-color="#f5faff"/>
+                      <stop offset="82%"  stop-color="#e4f0fb" stop-opacity=".9"/>
+                      <stop offset="100%" stop-color="#b8d3ee" stop-opacity=".6"/>
+                    </linearGradient>
+                    <linearGradient id="liquidGrad" x1="0" x2="1" y1="0" y2="0">
+                      <stop offset="0%"   stop-color="var(--accent)" stop-opacity=".12"/>
+                      <stop offset="30%"  stop-color="var(--accent)" stop-opacity=".28"/>
+                      <stop offset="70%"  stop-color="var(--accent)" stop-opacity=".22"/>
+                      <stop offset="100%" stop-color="var(--accent)" stop-opacity=".1"/>
+                    </linearGradient>
+                    <linearGradient id="pistonGrad" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%"   stop-color="#4a90d9"/>
+                      <stop offset="40%"  stop-color="var(--info)"/>
+                      <stop offset="100%" stop-color="#1a4f8a"/>
+                    </linearGradient>
+                    <linearGradient id="needleGrad" x1="0" x2="1" y1="0" y2="0">
+                      <stop offset="0%"   stop-color="var(--muted)"/>
+                      <stop offset="50%"  stop-color="var(--border)"/>
+                      <stop offset="100%" stop-color="var(--muted)"/>
+                    </linearGradient>
+                    <clipPath id="bodyClip">
+                      <rect x="29" y="28" width="28" height="284" rx="5"/>
+                    </clipPath>
+                  </defs>
+
+                  <!-- ── CORPS ── -->
+                  <!-- Ombre externe corps -->
+                  <rect x="27" y="26" width="32" height="288" rx="7" fill="rgba(36,87,214,.08)"/>
+                  <!-- Corps principal -->
+                  <rect x="29" y="28" width="28" height="284" rx="5" fill="url(#bodyGrad)" stroke="#a8c8e8" stroke-width="1.2"/>
+                  <!-- Reflet gauche (ligne de lumière) -->
+                  <rect x="31" y="30" width="4" height="280" rx="2" fill="rgba(255,255,255,.55)"/>
+                  <!-- Reflet droit (subtil) -->
+                  <rect x="52" y="30" width="2" height="280" rx="1" fill="rgba(255,255,255,.25)"/>
+
+                  <!-- ── LIQUIDE ── -->
+                  <g clip-path="url(#bodyClip)">
+                    <rect id="liquidFill" x="29" y="28" width="28" height="0" fill="url(#liquidGrad)"/>
+                    <!-- Ligne de surface liquide -->
+                    <rect id="liquidSurface" x="29" y="28" width="28" height="1.5" fill="rgba(36,87,214,.4)" rx="1"/>
+                  </g>
+
+                  <!-- ── GRADUATIONS ── -->
+                  <g fill="none">
+                    <!-- Graduation 0 -->
+                    <line id="grad0"   x1="29" y1="28"  x2="41" y2="28"  stroke="var(--neutral)" stroke-width="1.1"/>
+                    <text x="27" y="32"  font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Inter" font-weight="bold">0</text>
+
+                    <!-- 10 -->
+                    <line id="grad10"  x1="29" y1="56.4" x2="40" y2="56.4" stroke="var(--neutral)" stroke-width=".9"/>
+                    <text x="27" y="60"  font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">10</text>
+                    <!-- 20 -->
+                    <line id="grad20"  x1="29" y1="84.8" x2="40" y2="84.8" stroke="var(--neutral)" stroke-width=".9"/>
+                    <text x="27" y="88.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">20</text>
+                    <!-- 30 -->
+                    <line id="grad30"  x1="29" y1="113.2" x2="40" y2="113.2" stroke="var(--neutral)" stroke-width=".9"/>
+                    <text x="27" y="117" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">30</text>
+                    <!-- 40 -->
+                    <line id="grad40"  x1="29" y1="141.6" x2="40" y2="141.6" stroke="var(--neutral)" stroke-width=".9"/>
+                    <text x="27" y="145.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">40</text>
+                    <!-- 50 — renforcé -->
+                    <line id="grad50"  x1="29" y1="170" x2="43" y2="170"   stroke="var(--text)" stroke-width="1.3"/>
+                    <text x="27" y="174" font-size="8" fill="var(--text)" text-anchor="end" font-family="Inter" font-weight="bold">50</text>
+                    <!-- 60 -->
+                    <line id="grad60"  x1="29" y1="198.4" x2="40" y2="198.4" stroke="var(--neutral)" stroke-width=".9"/>
+                    <text x="27" y="202" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">60</text>
+                    <!-- 70 -->
+                    <line id="grad70"  x1="29" y1="226.8" x2="40" y2="226.8" stroke="var(--neutral)" stroke-width=".9"/>
+                    <text x="27" y="230.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">70</text>
+                    <!-- 80 -->
+                    <line id="grad80"  x1="29" y1="255.2" x2="40" y2="255.2" stroke="var(--neutral)" stroke-width=".9"/>
+                    <text x="27" y="259" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">80</text>
+                    <!-- 90 -->
+                    <line id="grad90"  x1="29" y1="283.6" x2="40" y2="283.6" stroke="var(--neutral)" stroke-width=".9"/>
+                    <text x="27" y="287.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">90</text>
+                    <!-- 100 -->
+                    <line id="grad100" x1="29" y1="312" x2="43" y2="312"   stroke="var(--text)" stroke-width="1.1"/>
+                    <text x="27" y="316" font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Inter" font-weight="bold">100</text>
+
+                    <!-- Sub-graduations 5U -->
+                    <line x1="29" y1="42.2"  x2="36" y2="42.2"  stroke="var(--muted)" stroke-width=".7"/>
+                    <line x1="29" y1="70.6"  x2="36" y2="70.6"  stroke="var(--muted)" stroke-width=".7"/>
+                    <line x1="29" y1="99"    x2="36" y2="99"    stroke="var(--muted)" stroke-width=".7"/>
+                    <line x1="29" y1="127.4" x2="36" y2="127.4" stroke="var(--muted)" stroke-width=".7"/>
+                    <line x1="29" y1="155.8" x2="36" y2="155.8" stroke="var(--muted)" stroke-width=".7"/>
+                    <line x1="29" y1="184.2" x2="36" y2="184.2" stroke="var(--muted)" stroke-width=".7"/>
+                    <line x1="29" y1="212.6" x2="36" y2="212.6" stroke="var(--muted)" stroke-width=".7"/>
+                    <line x1="29" y1="241"   x2="36" y2="241"   stroke="var(--muted)" stroke-width=".7"/>
+                    <line x1="29" y1="269.4" x2="36" y2="269.4" stroke="var(--muted)" stroke-width=".7"/>
+                    <line x1="29" y1="297.8" x2="36" y2="297.8" stroke="var(--muted)" stroke-width=".7"/>
+                  </g>
+
+                  <!-- ── INDICATEUR DOSE (droite) ── -->
+                  <g id="doseArrow" transform="translate(0,0)" style="transition:transform .4s cubic-bezier(.4,0,.2,1)">
+                    <!-- Ligne -->
+                    <line x1="57" y1="28" x2="67" y2="28" stroke="var(--accent)" stroke-width="1.6"/>
+                    <!-- Triangle -->
+                    <polygon points="57,25 57,31 62,28" fill="var(--accent)"/>
+                    <!-- Badge -->
+                    <rect x="67" y="19" width="20" height="18" rx="5" fill="var(--accent)"/>
+                    <text id="arrowLabel" x="77" y="31" font-size="7.5" fill="var(--accent-on)" font-family="Inter" font-weight="bold" text-anchor="middle">0U</text>
+                  </g>
+
+                  <!-- ── PISTON ── -->
+                  <g id="pistonGroup" style="transition:transform .4s cubic-bezier(.4,0,.2,1); cursor:ns-resize;">
+                    <!-- Joint d'étanchéité (bottom) -->
+                    <rect x="27" y="30" width="32" height="5" rx="2.5" fill="#1a4f8a" opacity=".7"/>
+                    <!-- Corps piston -->
+                    <rect id="piston" x="26" y="20" width="34" height="13" rx="4" fill="url(#pistonGrad)"/>
+                    <!-- Reflet haut piston -->
+                    <rect x="29" y="22" width="12" height="3" rx="1.5" fill="rgba(255,255,255,.4)"/>
+                    <!-- Grip lines -->
+                    <line x1="34" y1="23" x2="34" y2="30" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+                    <line x1="39" y1="23" x2="39" y2="30" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+                    <line x1="44" y1="23" x2="44" y2="30" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+                    <!-- Tige piston -->
+                    <rect x="37" y="2" width="12" height="22" rx="3" fill="var(--info)"/>
+                    <rect x="39" y="3" width="4" height="20" rx="2" fill="rgba(255,255,255,.2)"/>
+                    <!-- Crosse (T) -->
+                    <rect x="27" y="0" width="32" height="7" rx="3.5" fill="#1E40AF"/>
+                    <!-- Ailes latérales crosse -->
+                    <rect x="18" y="1" width="12" height="5" rx="2.5" fill="#1E40AF"/>
+                    <rect x="56" y="1" width="12" height="5" rx="2.5" fill="#1E40AF"/>
+                  </g>
+
+                  <!-- ── EMBOUT + AIGUILLE ── -->
+                  <!-- Cône embout -->
+                  <polygon points="35,312 51,312 44,320 42,320" fill="var(--muted)"/>
+                  <!-- Douille -->
+                  <rect x="40" y="318" width="6" height="8" rx="1" fill="var(--muted)"/>
+                  <!-- Aiguille -->
+                  <rect x="41.5" y="326" width="3" height="28" rx="1" fill="url(#needleGrad)"/>
+                  <!-- Pointe -->
+                  <polygon points="41.5,354 44.5,354 43,358" fill="var(--neutral)"/>
+                  <!-- Capuchon translucide -->
+                  <rect x="39.5" y="320" width="7" height="36" rx="3.5" fill="rgba(148,163,184,.1)" stroke="var(--border)" stroke-width=".7"/>
+
+                </svg>
+                <div class="syringe-drag-hint">
+                  <svg width="10" height="13" viewBox="0 0 10 13" fill="none">
+                    <path d="M5 1v11M2 3.5L5 1l3 2.5M2 9.5L5 12l3-2.5" stroke="#9CA3AF" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Glisser le piston
+                </div>
+            </div>
+
+            <div class="syringe-info">
+              <div class="syringe-dose-display" id="syringe-units-display">— U</div>
+              <div class="syringe-dose-label">unités seringue</div>
+              <div class="syringe-chip">
+                <div class="syringe-chip-val" id="syringe-ml-display">— mL</div>
+                <div class="syringe-chip-label">volume à prélever</div>
+              </div>
+              <div class="syringe-verify-box" id="syringe-verify">
+                Entrez vos valeurs pour voir la seringue
+              </div>
+            </div>
+          </div>
+
+          <!-- INSTRUCTION CLAIRE -->
+          <div style="background:var(--accent-soft);border:1px solid rgba(36,87,214,.18);border-radius:12px;padding:12px 14px;font-size:.8rem;line-height:1.6;color:var(--text)" id="syringe-instruction">
+            Remplissez les champs ci-dessus pour obtenir les instructions précises.
+          </div>
+
+          <!-- SPLIT DOSE -->
+          <div class="split-dose-card" id="splitDoseCard">
+            <div class="split-dose-title">Diviser la dose en plusieurs tirages</div>
+            <div id="splitDoseDraws"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VÉRIFICATION -->
+      <div class="explainer-card" id="dosage-explainer" style="display:none">
+        <h4>Calcul détaillé</h4>
+        <div class="formula" id="dosage-formula-text">—</div>
+      </div>
+    </div>
+
+    <!-- SAFETY -->
+    <div class="safety-card">
+      <h4>Règles de sécurité</h4>
+      <div class="safety-item"><div class="safety-dot"></div><span>Vérifiez TOUJOURS votre calcul deux fois avant d'injecter</span></div>
+      <div class="safety-item"><div class="safety-dot"></div><span>Si le résultat vous semble anormal, ne pas injecter — recalculez</span></div>
+      <div class="safety-item"><div class="safety-dot"></div><span>Utilisez toujours une aiguille neuve à chaque injection</span></div>
+    </div>
+
+  </div>
+
+  <!-- Module 3 « Titration » retiré le 14/10/2026 (version store) : il proposait un plan
+       de doses semaine par semaine. Le code JS (getTitrations/showTitration) reste plus bas,
+       inutilisé ; la version complète est dans l'historique Git. -->
+
+  <!-- ══════════════════════════════════════════
+       MODULE 4 — GUIDE INJECTION
+  ══════════════════════════════════════════ -->
+  <div class="module-panel" id="panel-guide">
+
+    <div class="section-title"><span data-i18n="calc_guide_section">Guide d'injection pas à pas</span></div>
+
+    <!-- MATÉRIEL -->
+    <div class="calc-card">
+      <h3>🧰 Matériel nécessaire</h3>
+      <p>Préparez tout le matériel avant de commencer. Ne jamais improviser.</p>
+    </div>
+    <div class="materiel-grid">
+      <div class="materiel-item">
+        <div class="materiel-icon">💊</div>
+        <div class="materiel-label">Flacon peptide</div>
+        <div class="materiel-desc">Lyophilisé, poudre blanche</div>
+      </div>
+      <div class="materiel-item">
+        <div class="materiel-icon">💧</div>
+        <div class="materiel-label">Eau BAC</div>
+        <div class="materiel-desc">Bactériostatique stérile</div>
+      </div>
+      <div class="materiel-item">
+        <div class="materiel-icon">💉</div>
+        <div class="materiel-label">Seringue U-100</div>
+        <div class="materiel-desc">Insuline 1mL neuve</div>
+      </div>
+      <div class="materiel-item">
+        <div class="materiel-icon">🪡</div>
+        <div class="materiel-label">Aiguille stérile</div>
+        <div class="materiel-desc">29G-31G jetable</div>
+      </div>
+      <div class="materiel-item">
+        <div class="materiel-icon">🧴</div>
+        <div class="materiel-label">Alcool 70%</div>
+        <div class="materiel-desc">Tampons isopropylique</div>
+      </div>
+      <div class="materiel-item">
+        <div class="materiel-icon">🧤</div>
+        <div class="materiel-label">Gants nitrile</div>
+        <div class="materiel-desc">Ou lavage mains strict</div>
+      </div>
+    </div>
+
+    <!-- ÉTAPES -->
+    <div class="section-title"><span data-i18n="calc_guide_recon">Étapes de reconstitution</span></div>
+
+    <div class="recon-step">
+      <div class="recon-num">1</div>
+      <div class="recon-content">
+        <h4>🧹 Désinfection des flacons</h4>
+        <p>Retirez les capuchons en aluminium des deux flacons (peptide et eau BAC). Désinfectez le bouchon en caoutchouc de chaque flacon avec un tampon alcoolisé. Laissez sécher 30 secondes.</p>
+        <div class="tip tip-red">🚫 Ne jamais toucher le bouchon après désinfection</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num">2</div>
+      <div class="recon-content">
+        <h4>💧 Prélever l'eau bactériostatique</h4>
+        <p>Insérez l'aiguille dans le flacon d'eau BAC. Aspirez lentement le volume calculé (0.5, 1, 2 ou 3 mL selon votre reconstitution). Vérifiez l'absence de bulles.</p>
+        <div class="tip tip-blue">💡 Calculez le volume exact dans l'onglet Reconstitution</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num">3</div>
+      <div class="recon-content">
+        <h4>🧪 Ajouter l'eau au peptide</h4>
+        <p>Insérez l'aiguille dans le flacon de peptide en inclinant légèrement. Injectez l'eau <strong>lentement contre la paroi du flacon</strong>. Ne jamais injecter directement sur la poudre.</p>
+        <div class="tip tip-red">🚫 Ne jamais injecter directement sur la poudre — projection contre la paroi obligatoire</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num">4</div>
+      <div class="recon-content">
+        <h4>🔄 Dissolution</h4>
+        <p>Retirez l'aiguille. Roulez doucement le flacon entre vos paumes pendant 30-60 secondes. Laissez reposer 5-15 minutes. La solution doit devenir parfaitement claire et transparente.</p>
+        <div class="tip tip-red">🚫 Ne jamais agiter vigoureusement — risque de dénaturation du peptide</div>
+        <div class="tip tip-green">✓ Solution claire = dissolution complète</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num">5</div>
+      <div class="recon-content">
+        <h4>📦 Stockage</h4>
+        <p>Réfrigérateur entre 2-8°C. Protéger de la lumière (envelopper dans du papier aluminium si nécessaire). Étiqueter avec la date de reconstitution.</p>
+        <div class="tip tip-blue">📅 Durée maximale après reconstitution : 30 jours au réfrigérateur</div>
+        <div class="tip tip-red">🚫 Ne jamais congeler après reconstitution</div>
+      </div>
+    </div>
+
+    <!-- GUIDE INJECTION SC -->
+    <div class="section-title" style="margin-top:8px"><span data-i18n="calc_guide_sc">Guide d'injection sous-cutanée</span></div>
+
+    <div class="recon-step">
+      <div class="recon-num" style="background:var(--accent2)">6</div>
+      <div class="recon-content">
+        <h4>📍 Zone d'injection</h4>
+        <p>Zones recommandées : abdomen (2-5cm autour du nombril), cuisses externes, deltoïde. Alterner les zones à chaque injection pour éviter la lipodystrophie.</p>
+        <div class="tip tip-red">🚫 Éviter le nombril et les zones avec cicatrices</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num" style="background:var(--accent2)">7</div>
+      <div class="recon-content">
+        <h4>💉 Technique d'injection SC</h4>
+        <p>Pincez légèrement la peau entre pouce et index. Insérez l'aiguille à 45° (ou 90° si pli de peau suffisant). Injectez lentement et régulièrement. Retirez l'aiguille, relâchez la peau. Appuyez doucement avec un tampon propre.</p>
+        <div class="tip tip-green">✓ Injection lente = moins de douleur et meilleure absorption</div>
+        <div class="tip tip-red">🚫 Ne jamais injecter dans le muscle (injection IM différente)</div>
+      </div>
+    </div>
+
+    <div class="recon-step">
+      <div class="recon-num" style="background:var(--accent2)">8</div>
+      <div class="recon-content">
+        <h4>🗑 Après l'injection</h4>
+        <p>Jetez l'aiguille immédiatement dans un conteneur pour objets tranchants (sharps container). Ne jamais recapuchonner l'aiguille. Ne jamais réutiliser une aiguille. Notez l'injection dans PeptideScanner.</p>
+        <div class="tip tip-blue">📱 Pensez à cocher votre injection dans l'app</div>
+      </div>
+    </div>
+
+    <!-- FINAL WARNING -->
+    <div class="warning-banner" style="margin-top:8px">
+      <div class="warning-banner-icon">⚕️</div>
+      <div class="warning-banner-text">
+        <strong>Information médicale importante</strong>
+        <span data-i18n="calc_guide_warning_sub">Ce guide est à titre éducatif uniquement. Toute injection doit être validée par un professionnel de santé. En cas de doute, ne pas procéder. PeptideScanner n'est pas responsable des erreurs de manipulation ou de dosage.</span>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /content -->
+
+<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
+  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item is-active" href="inventaire.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
+  <a class="nav-item" href="poids.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
+  <a class="nav-item" href="peptide-database.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
+</div></nav>
+<!-- ── MODALE DOSE HAUTE ── -->
+<div class="modal-overlay" id="highDoseModal">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title"><span data-i18n="calc_high_dose_title">Dose élevée détectée</span></div>
+    <div class="modal-sub">Cette dose dépasse 0,5 mL — vérifiez votre calcul avant de continuer.</div>
+    <div class="modal-dose-badge">
+      <div class="modal-dose-val" id="modalDoseVal">— mL</div>
+      <div class="modal-dose-label">volume à prélever</div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-confirm" onclick="confirmHighDose()"><span data-i18n="calc_high_dose_confirm">J'ai vérifié — continuer quand même</span></button>
+      <button class="modal-btn-cancel" onclick="cancelHighDose()"><span data-i18n="calc_high_dose_cancel">← Recalculer ma dose</span></button>
+    </div>
+  </div>
+</div>
+
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
+<script>
+// ── MODULE SWITCH ─────────────────────────────────────────────
+function switchModule(id, btn) {
+  document.querySelectorAll('.module-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.module-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── RECONSTITUTION ────────────────────────────────────────────
+let bacVolume = 2;
+
+function selectBac(vol, btn) {
+  bacVolume = vol;
+  document.querySelectorAll('.bac-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('bacCustom').value = '';
+  calculateReconstitution();
+}
+
+function selectBacCustom(val) {
+  bacVolume = parseFloat(val) || 2;
+  document.querySelectorAll('.bac-btn').forEach(b => b.classList.remove('selected'));
+  calculateReconstitution();
+}
+
+function calculateReconstitution() {
+  const mgInput = parseFloat(document.getElementById('peptideMg').value);
+  const unit = document.getElementById('peptideUnit').value;
+  if (!mgInput || mgInput <= 0) return;
+
+  const mgValue = unit === 'mcg' ? mgInput / 1000 : mgInput;
+  const concentration = mgValue / bacVolume; // mg/mL
+  const unitsPerMg = 100 / concentration; // unités U-100 pour 1mg
+  const mlPerMg = 1 / concentration;
+  const mcgPerUnit = (mgValue * 1000) / (concentration * 100);
+
+  // Afficher résultat
+  document.getElementById('concentration-val').textContent = concentration.toFixed(2);
+  document.getElementById('concentration-formula').innerHTML =
+    `<strong>${mgValue} mg</strong> ÷ <strong>${bacVolume} mL</strong> = ${concentration.toFixed(2)} mg/mL`;
+  document.getElementById('units-per-mg').textContent = unitsPerMg.toFixed(1) + ' ' + t('calc_units');
+  document.getElementById('ml-per-mg').textContent = mlPerMg.toFixed(3) + ' mL';
+  document.getElementById('mcg-per-unit').textContent = mcgPerUnit.toFixed(1) + ' mcg';
+
+
+  document.getElementById('recon-result').classList.add('show');
+
+  // Générer tableau
+  generateDoseTable(concentration, mgValue);
+
+  // Pré-remplir l'onglet dosage
+  document.getElementById('concInput').value = concentration.toFixed(2);
+}
+
+function generateDoseTable(concentration, totalMg) {
+  const table = document.getElementById('dose-table-body');
+  const tableWrap = document.getElementById('recon-table');
+  document.getElementById('table-subtitle').textContent =
+    `Concentration : ${concentration.toFixed(2)} mg/mL — Seringue U-100`;
+
+  // Générer des doses pertinentes
+  const doses = [];
+  if (concentration >= 1) {
+    const steps = [0.1, 0.25, 0.5, 1, 2, 2.5, 5, 10];
+    steps.forEach(d => { if (d <= totalMg) doses.push(d); });
+  } else {
+    // Doses en mcg pour peptides faibles
+    const steps = [50, 100, 200, 250, 300, 500, 750, 1000];
+    steps.forEach(d => { if (d/1000 <= totalMg) doses.push(d/1000); });
+  }
+
+  table.innerHTML = doses.map(dose => {
+    const units = (dose / concentration * 100).toFixed(1);
+    const ml = (dose / concentration).toFixed(3);
+    const isStandard = parseFloat(units) >= 5 && parseFloat(units) <= 50;
+    const displayDose = dose < 1 ? (dose * 1000).toFixed(0) + ' mcg' : dose + ' mg';
+    return `<tr class="${isStandard ? 'highlighted' : ''}" style="cursor:pointer" onclick="selectReconDose(${parseFloat(units)}, '${ml}', '${displayDose}')">
+      <td>${displayDose}</td>
+      <td class="mono">${ml} mL</td>
+      <td class="units">${units} U</td>
+      <td style="font-size:.75rem;color:var(--muted)">Graduation ${Math.round(parseFloat(units))}</td>
+    </tr>`;
+  }).join('');
+
+  tableWrap.style.display = 'block';
+
+  // Afficher la seringue reconstitution
+  document.getElementById('recon-syringe-section').style.display = 'block';
+
+  // Animer automatiquement sur la première dose standard
+  const firstStandard = doses.find(d => {
+    const u = d / concentration * 100;
+    return u >= 5 && u <= 50;
+  }) || doses[0];
+  if (firstStandard) {
+    const u = firstStandard / concentration * 100;
+    const ml2 = (firstStandard / concentration).toFixed(3);
+    const disp = firstStandard < 1 ? (firstStandard*1000).toFixed(0)+' mcg' : firstStandard+' mg';
+    setTimeout(() => selectReconDose(u, ml2, disp), 100);
+  }
+}
+
+// ── SERINGUE RECONSTITUTION ───────────────────────────────────
+function selectReconDose(units, ml, doseLabel) {
+  const SVG_H = 284;
+  const pct = Math.min(Math.max(units, 0), 100) / 100;
+  const fillH = SVG_H * pct;
+
+  const liquid = document.getElementById('liquidFill2');
+  liquid.setAttribute('y', '28');
+  liquid.setAttribute('height', String(fillH.toFixed(2)));
+
+  const surface = document.getElementById('liquidSurface2');
+  if (surface) {
+    surface.setAttribute('y', String((28 + fillH - 1.5).toFixed(2)));
+    surface.style.opacity = fillH > 3 ? '1' : '0';
+  }
+
+  document.getElementById('pistonGroup2').style.transform = `translateY(${fillH.toFixed(2)}px)`;
+  document.getElementById('doseArrow2').style.transform = `translateY(${fillH.toFixed(2)}px)`;
+  document.getElementById('arrowLabel2').textContent = Math.round(units) + 'U';
+
+  document.getElementById('recon-syringe-units').textContent = units.toFixed(1) + ' U';
+  document.getElementById('recon-syringe-ml').textContent = ml + ' mL';
+  document.getElementById('recon-syringe-info').innerHTML =
+    `<strong style="color:var(--accent)">${doseLabel}</strong> → graduation <strong>${Math.round(units)}</strong>`;
+
+  // Highlight ligne tableau
+  document.querySelectorAll('#dose-table-body tr').forEach(tr => tr.style.background = '');
+  event && event.currentTarget && (event.currentTarget.style.background = 'var(--accent-soft)');
+
+  // Aperçu du matériel (kit Clarté)
+  _kitSel = { units: units, ml: parseFloat(ml) };
+  const _kc = document.getElementById('kit-material-card');
+  if (_kc) { _kc.style.display = 'block'; renderKitPreview(); }
+}
+
+// ── Aperçu du matériel (kit Clarté) ───────────────────────────
+let _kitSel = { units:null, ml:null, label:'' };
+function renderKitPreview() {
+  const sel = document.getElementById('kitSyringeSelect');
+  if (!sel) return;
+  const cap = Number(sel.value);
+  document.getElementById('kitVial').innerHTML = PS_asset('vial-half');
+  document.getElementById('kitSyringe').innerHTML = PS_asset('syringe-' + cap);
+  const warn = document.getElementById('kitWarn');
+  const capEl = document.getElementById('kitCaption');
+  if (_kitSel.units == null) { capEl.textContent = t('calc_material_wait'); warn.innerHTML = ''; return; }
+  if (_kitSel.units > cap) {
+    const alt = [30, 50, 100].find(c => c >= _kitSel.units);
+    warn.innerHTML = '<div class="notice warning" style="margin-top:10px">' + t('calc_material_overflow') +
+      (alt ? ' ' + t('calc_material_take') + ' ' + alt + ' U.' : '') + '</div>';
+    capEl.textContent = '';
+  } else {
+    warn.innerHTML = '';
+    PS_updateLevel(document.querySelector('#kitSyringe svg'), 'syringe', _kitSel.ml, _kitSel.units,
+      _kitSel.ml.toFixed(3).replace('.', ',') + ' ml · ' + _kitSel.units.toFixed(1).replace('.', ',') + ' U');
+    capEl.textContent = t('calc_material_caption');
+  }
+}
+function updateKitPreview() { renderKitPreview(); }
+
+// Drag seringue reconstitution
+(function initReconDrag() {
+  const SVG_H = 284, SVG_TOP = 28;
+  let dragging = false;
+
+  function getUnits(clientY) {
+    const svg = document.getElementById('syringeSVG2');
+    if (!svg) return 0;
+    const rect = svg.getBoundingClientRect();
+    const scale = SVG_H / rect.height;
+    const fillY = (clientY - rect.top) * scale - SVG_TOP;
+    return Math.min(Math.max(fillY / SVG_H * 100, 0), 100);
+  }
+
+  function apply(units) {
+    const ml = (units / 100).toFixed(3);
+    selectReconDose(units, ml, units.toFixed(1) + 'U drag');
+  }
+
+  function onStart(e) {
+    const svg = document.getElementById('syringeSVG2');
+    if (!svg) return;
+    svg.classList.add('dragging');
+    document.getElementById('pistonGroup2').style.transition = 'none';
+    document.getElementById('doseArrow2').style.transition = 'none';
+    dragging = true;
+    apply(getUnits(e.touches ? e.touches[0].clientY : e.clientY));
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    apply(getUnits(e.touches ? e.touches[0].clientY : e.clientY));
+    e.preventDefault();
+  }
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    const svg = document.getElementById('syringeSVG2');
+    if (svg) svg.classList.remove('dragging');
+    document.getElementById('pistonGroup2').style.transition = 'transform .4s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('doseArrow2').style.transition = 'transform .4s cubic-bezier(.4,0,.2,1)';
+    const cur = parseFloat(document.getElementById('recon-syringe-units').textContent) || 0;
+    apply(Math.round(cur / 5) * 5);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const svg = document.getElementById('syringeSVG2');
+    if (!svg) return;
+    svg.addEventListener('mousedown', onStart, { passive: false });
+    document.addEventListener('mousemove', onMove, { passive: false });
+    document.addEventListener('mouseup', onEnd);
+    svg.addEventListener('touchstart', onStart, { passive: false });
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+  });
+})();
+
+// ── INIT SERINGUES DEPUIS ÉQUIPEMENT ─────────────────────────
+function initSyringeSelect() {
+  const eq = (() => { try { return JSON.parse(localStorage.getItem('pt_equipment')) || {}; } catch { return {}; } })();
+  const owned = eq.syringes || ['U50', 'U100'];
+  const ALL = [
+    { id:'U30',  val:30,  label:'U-30 (0.3 mL — 30 unités)' },
+    { id:'U50',  val:50,  label:'U-50 (0.5 mL — 50 unités)' },
+    { id:'U100', val:100, label:'U-100 (1 mL — 100 '+t('calc_units')+') — Standard' },
+    { id:'U200', val:200, label:t('syringe_u200_label')+' (2 mL)' },
+  ];
+  const available = ALL.filter(s => owned.includes(s.id));
+  // Si rien configuré, tout afficher
+  const toShow = available.length > 0 ? available : ALL;
+  const sel = document.getElementById('syringeType');
+  sel.innerHTML = toShow.map(s =>
+    `<option value="${s.val}" ${s.id === 'U100' ? 'selected' : ''}>${s.label}</option>`
+  ).join('');
+}
+
+document.addEventListener('DOMContentLoaded', initSyringeSelect);
+
+// ── UNIT TYPE SWITCH (mg/mcg ↔ IU) ──────────────────────────
+let currentUnitType = 'mg';
+
+function selectUnitType(type, btn) {
+  currentUnitType = type;
+  document.querySelectorAll('#unitTypeBtns .bac-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('blockMgMcg').style.display = type === 'mg' ? 'block' : 'none';
+  document.getElementById('blockIU').style.display = type === 'iu' ? 'block' : 'none';
+  // Reset résultat
+  document.getElementById('dosage-result').classList.remove('show');
+  document.getElementById('splitDoseCard').classList.remove('show');
+}
+
+function applyIUPreset() {
+  const preset = document.getElementById('iuPreset').value;
+  if (!preset) return;
+  const presets = {
+    'hgh_2iu_1ml':  { concIU: 10,   doseIU: 2 },
+    'hgh_4iu_2ml':  { concIU: 5,    doseIU: 4 },
+    'hcg_500_2ml':  { concIU: 2500, doseIU: 500 },
+    'hcg_250_2ml':  { concIU: 2500, doseIU: 250 },
+  };
+  const p = presets[preset];
+  if (!p) return;
+  document.getElementById('concIU').value = p.concIU;
+  document.getElementById('doseIU').value = p.doseIU;
+  calculateDosage();
+}
+
+// ── DOSAGE + SERINGUE ANIMÉE ──────────────────────────────────
+let _pendingDosageResult = null; // stocke le résultat en attente de confirmation modale
+
+function calculateDosage() {
+  let concRaw, doseRaw, doseUnit, doseMg, volumeMl;
+
+  if (currentUnitType === 'iu') {
+    // ── MODE IU ──
+    concRaw = parseFloat(document.getElementById('concIU').value);
+    doseRaw = parseFloat(document.getElementById('doseIU').value);
+    if (!concRaw || !doseRaw || concRaw <= 0 || doseRaw <= 0) return;
+    doseUnit = 'IU';
+    volumeMl = doseRaw / concRaw;
+    doseMg = null; // pas de mg en mode IU
+  } else {
+    // ── MODE mg/mcg ──
+    concRaw = parseFloat(document.getElementById('concInput').value);
+    doseRaw = parseFloat(document.getElementById('doseInput').value);
+    doseUnit = document.getElementById('doseUnit').value;
+    if (!concRaw || !doseRaw || concRaw <= 0 || doseRaw <= 0) return;
+    doseMg = doseUnit === 'mcg' ? doseRaw / 1000 : doseRaw;
+    volumeMl = doseMg / concRaw;
+  }
+
+  const units = volumeMl * 100; // U-100
+
+  // ── 1. SÉLECTION AUTO DE LA PLUS PETITE SERINGUE ──
+  const syringeSelect = document.getElementById('syringeType');
+  const badge = document.getElementById('autoSyringeBadge');
+  let autoSelected = false;
+
+  // Seringues disponibles par ordre croissant
+  const syringes = [
+    { val: '30', maxMl: 0.3 },
+    { val: '50', maxMl: 0.5 },
+    { val: '100', maxMl: 1.0 }
+  ];
+  const bestSyringe = syringes.find(s => volumeMl <= s.maxMl);
+
+  if (bestSyringe && syringeSelect.value !== bestSyringe.val) {
+    syringeSelect.value = bestSyringe.val;
+    badge.style.display = 'inline-flex';
+    autoSelected = true;
+  } else {
+    badge.style.display = 'none';
+  }
+
+  const syringeMax = parseInt(syringeSelect.value);
+
+  // ── 2. SPLIT-DOSE si dépasse la seringue choisie ──
+  if (units > syringeMax) {
+    const numDraws = Math.ceil(units / syringeMax);
+    const unitsPerDraw = units / numDraws;
+    const mlPerDraw = volumeMl / numDraws;
+    showSplitDose(numDraws, unitsPerDraw, mlPerDraw, units, volumeMl);
+    document.getElementById('syringe-instruction').innerHTML =
+      `<span style="color:var(--accent2)">✂️ Dose divisée en <strong>${numDraws} tirages</strong> de ${unitsPerDraw.toFixed(1)}U chacun — voir ci-dessous</span>`;
+    document.getElementById('dosage-result').classList.add('show');
+    animateSyringe(unitsPerDraw, syringeMax);
+    document.getElementById('syringe-units-display').textContent = unitsPerDraw.toFixed(1) + ' U';
+    document.getElementById('syringe-ml-display').textContent = mlPerDraw.toFixed(3) + ' mL';
+    return;
+  }
+
+  // Cacher split-dose si plus nécessaire
+  document.getElementById('splitDoseCard').classList.remove('show');
+
+  // ── 3. MODALE si volume > 0.5 mL ──
+  if (volumeMl > 0.5) {
+    _pendingDosageResult = { units, syringeMax, volumeMl, doseMg, doseRaw, doseUnit, concRaw };
+    document.getElementById('modalDoseVal').textContent = volumeMl.toFixed(3) + ' mL';
+    document.getElementById('highDoseModal').classList.add('show');
+    return;
+  }
+
+  // ── Affichage normal ──
+  applyDosageResult({ units, syringeMax, volumeMl, doseMg, doseRaw, doseUnit, concRaw });
+}
+
+function applyDosageResult({ units, syringeMax, volumeMl, doseMg, doseRaw, doseUnit, concRaw }) {
+  document.getElementById('syringe-units-display').textContent = units.toFixed(1) + ' U';
+  document.getElementById('syringe-ml-display').textContent = volumeMl.toFixed(3) + ' mL';
+
+  // Vérification adaptée selon le mode
+  if (doseUnit === 'IU') {
+    document.getElementById('syringe-verify').innerHTML =
+      `<strong style="color:var(--accent)">${t('calc_verification')} :</strong> ${doseRaw} IU ÷ ${concRaw} IU/mL = <strong>${volumeMl.toFixed(3)} mL</strong> = <strong>${units.toFixed(1)} ${t('calc_units')}</strong>`;
+  } else {
+    document.getElementById('syringe-verify').innerHTML =
+      `<strong style="color:var(--accent)">${t('calc_verification')} :</strong> ${doseMg < 1 ? (doseMg*1000).toFixed(0)+'mcg' : doseMg+'mg'} ÷ ${concRaw} mg/mL × 100 = <strong>${units.toFixed(1)} ${t('calc_units')}</strong>`;
+  }
+
+  document.getElementById('syringe-instruction').innerHTML =
+    `<strong style="color:var(--accent)">→ Remplissez jusqu'à la graduation ${Math.round(units)}</strong><br>
+    Volume exact : ${volumeMl.toFixed(3)} mL · ${units.toFixed(1)} unités sur seringue U-100`;
+  document.getElementById('splitDoseCard').classList.remove('show');
+  animateSyringe(units, syringeMax);
+
+  const formula = document.getElementById('dosage-formula-text');
+  if (doseUnit === 'IU') {
+    formula.innerHTML = `
+      Dose : <strong>${doseRaw} IU</strong><br>
+      Concentration : <strong>${concRaw} IU/mL</strong><br>
+      Volume = ${doseRaw} ÷ ${concRaw} = <strong>${volumeMl.toFixed(4)} mL</strong><br>
+      Unités seringue = ${volumeMl.toFixed(4)} × 100 = <strong>${units.toFixed(1)} U</strong>
+    `;
+  } else {
+    formula.innerHTML = `
+      Dose : <strong>${doseUnit === 'mcg' ? doseRaw + ' mcg' : doseRaw + ' mg'}</strong> (= ${doseMg.toFixed(4)} mg)<br>
+      Concentration : <strong>${concRaw} mg/mL</strong><br>
+      Volume = ${doseMg.toFixed(4)} ÷ ${concRaw} = <strong>${volumeMl.toFixed(4)} mL</strong><br>
+      Unités = ${volumeMl.toFixed(4)} × 100 = <strong>${units.toFixed(1)} unités U-100</strong>
+    `;
+  }
+  document.getElementById('dosage-explainer').style.display = 'block';
+  document.getElementById('dosage-result').classList.add('show');
+}
+
+function showSplitDose(numDraws, unitsPerDraw, mlPerDraw, totalUnits, totalMl) {
+  const card = document.getElementById('splitDoseCard');
+  const draws = document.getElementById('splitDoseDraws');
+  let html = '';
+  for (let i = 1; i <= numDraws; i++) {
+    html += `<div class="split-draw">
+      <div class="split-draw-num">${i}</div>
+      <div class="split-draw-info">
+        <div class="split-draw-val">${unitsPerDraw.toFixed(1)} U · ${mlPerDraw.toFixed(3)} mL</div>
+        <div class="split-draw-label">Tirage ${i}/${numDraws} — graduation ${Math.round(unitsPerDraw)}</div>
+      </div>
+    </div>`;
+  }
+  html += `<div style="margin-top:10px;font-size:.72rem;color:var(--muted);text-align:center">
+    Total : ${totalUnits.toFixed(1)} unités · ${totalMl.toFixed(3)} mL en ${numDraws} tirages
+  </div>`;
+  draws.innerHTML = html;
+  card.classList.add('show');
+}
+
+function confirmHighDose() {
+  document.getElementById('highDoseModal').classList.remove('show');
+  if (_pendingDosageResult) {
+    applyDosageResult(_pendingDosageResult);
+    _pendingDosageResult = null;
+  }
+}
+
+function cancelHighDose() {
+  document.getElementById('highDoseModal').classList.remove('show');
+  _pendingDosageResult = null;
+  document.getElementById('doseInput').focus();
+}
+
+function animateSyringe(units, maxUnits) {
+  // Coordonnées SVG premium : top=28, bottom=312 → H=284
+  const SVG_TOP = 28, SVG_H = 284;
+  const pct = Math.min(Math.max(units, 0), 100) / 100;
+  const fillH = SVG_H * pct;
+
+  // Liquide
+  const liquid = document.getElementById('liquidFill');
+  liquid.setAttribute('y', String(SVG_TOP));
+  liquid.setAttribute('height', String(fillH.toFixed(2)));
+
+  // Ligne de surface liquide
+  const surface = document.getElementById('liquidSurface');
+  if (surface) {
+    surface.setAttribute('y', String((SVG_TOP + fillH - 1.5).toFixed(2)));
+    surface.style.opacity = fillH > 3 ? '1' : '0';
+  }
+
+  // Piston + flèche
+  const pistonGroup = document.getElementById('pistonGroup');
+  pistonGroup.style.transform = `translateY(${fillH.toFixed(2)}px)`;
+  const arrow = document.getElementById('doseArrow');
+  arrow.style.transform = `translateY(${fillH.toFixed(2)}px)`;
+  document.getElementById('arrowLabel').textContent = Math.round(units) + 'U';
+
+  // Highlight graduation la plus proche
+  highlightNearestGrad(Math.round(units));
+}
+
+function highlightNearestGrad(units) {
+  // Retirer highlight précédent
+  document.querySelectorAll('.grad-active').forEach(el => {
+    el.classList.remove('grad-active');
+    el.setAttribute('stroke', el.dataset.origStroke || 'var(--neutral)');
+    el.setAttribute('stroke-width', el.dataset.origSw || '0.8');
+  });
+  const snap = Math.round(units / 10) * 10;
+  const gradEl = document.getElementById('grad' + snap);
+  if (gradEl) {
+    gradEl.dataset.origStroke = gradEl.getAttribute('stroke') || 'var(--neutral)';
+    gradEl.dataset.origSw = gradEl.getAttribute('stroke-width') || '0.8';
+    gradEl.setAttribute('stroke', 'var(--accent)');
+    gradEl.setAttribute('stroke-width', '1.6');
+    gradEl.classList.add('grad-active');
+  }
+}
+
+// ── DRAG INTERACTIF SERINGUE ──────────────────────────────────
+(function initSyringeDrag() {
+  const SVG_TOP = 28, SVG_H = 284;
+  let dragging = false;
+  let svgEl, svgRect;
+
+  function getUnitsFromClientY(clientY) {
+    svgRect = svgEl.getBoundingClientRect();
+    const scale = SVG_H / svgRect.height;
+    const relY = (clientY - svgRect.top) * scale;
+    const fillY = relY - SVG_TOP;
+    const pct = Math.min(Math.max(fillY / SVG_H, 0), 1);
+    return pct * 100;
+  }
+
+  function applyUnits(units) {
+    const syringeMax = parseInt((document.getElementById('syringeType') || {value:'100'}).value) || 100;
+    const clamped = Math.min(Math.max(units, 0), syringeMax);
+    animateSyringe(clamped, syringeMax);
+
+    const concVal = parseFloat((document.getElementById('concInput') || {}).value);
+    if (concVal > 0) {
+      const volumeMl = clamped / 100;
+      const doseMg = volumeMl * concVal;
+      document.getElementById('syringe-units-display').textContent = clamped.toFixed(1) + ' U';
+      document.getElementById('syringe-ml-display').textContent = volumeMl.toFixed(3) + ' mL';
+      document.getElementById('syringe-verify').innerHTML =
+        `<strong style="color:var(--accent)">← Drag manuel</strong> · ${clamped.toFixed(1)}U · ${volumeMl.toFixed(3)} mL · ${(doseMg*1000).toFixed(1)} mcg`;
+      document.getElementById('syringe-instruction').innerHTML =
+        `<strong style="color:var(--accent)">→ Graduation ${Math.round(clamped)}</strong><br>
+        Volume : ${volumeMl.toFixed(3)} mL · Dose : ${doseMg < 1 ? (doseMg*1000).toFixed(0)+'mcg' : doseMg.toFixed(3)+'mg'}`;
+      document.getElementById('dosage-result').classList.add('show');
+    }
+  }
+
+  function onStart(e) {
+    svgEl = document.getElementById('syringeSVG');
+    if (!svgEl) return;
+    svgEl.classList.add('dragging');
+    document.getElementById('pistonGroup').style.transition = 'none';
+    document.getElementById('doseArrow').style.transition = 'none';
+    dragging = true;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    applyUnits(getUnitsFromClientY(clientY));
+    e.preventDefault();
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    applyUnits(getUnitsFromClientY(clientY));
+    e.preventDefault();
+  }
+
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    const svgEl = document.getElementById('syringeSVG');
+    if (svgEl) svgEl.classList.remove('dragging');
+    document.getElementById('pistonGroup').style.transition = 'transform .4s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('doseArrow').style.transition = 'transform .4s cubic-bezier(.4,0,.2,1)';
+    // Snap par 5U
+    const cur = parseFloat(document.getElementById('syringe-units-display').textContent) || 0;
+    applyUnits(Math.round(cur / 5) * 5);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const svg = document.getElementById('syringeSVG');
+    if (!svg) return;
+    svg.addEventListener('mousedown', onStart, { passive: false });
+    document.addEventListener('mousemove', onMove, { passive: false });
+    document.addEventListener('mouseup', onEnd);
+    svg.addEventListener('touchstart', onStart, { passive: false });
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+  });
+})();
+
+// ── TITRATION ─────────────────────────────────────────────────
+function getTitrations() {
+return {
+  semaglutide: {
+    name: 'Semaglutide',
+    steps: [
+      { weeks:'S1–4', dose:'0.25 mg', freq:'1×/'+t('week'), label:t('calc_phase_adapt'), expect:t('calc_sem_s1_exp'), color:'var(--accent)', warn:null },
+      { weeks:'S5–8', dose:'0.5 mg', freq:'1×/'+t('week'), label:t('calc_increase'), expect:t('calc_sem_s2_exp'), color:'var(--accent)', warn:t('calc_warn_semlow') },
+      { weeks:'S9–12', dose:'1 mg', freq:'1×/'+t('week'), label:t('calc_eff_dose'), expect:t('calc_sem_s3_exp'), color:'var(--info)', warn:null },
+      { weeks:'S13–16', dose:'1.7 mg', freq:'1×/'+t('week'), label:t('calc_adv_dose'), expect:t('calc_sem_s4_exp'), color:'var(--info)', warn:t('calc_warn_sem1mg') },
+      { weeks:'S17+', dose:'2.4 mg', freq:'1×/'+t('week'), label:t('calc_max_dose'), expect:t('calc_sem_s5_exp'), color:'var(--amber)', warn:t('calc_warn_maxdose') },
+    ]
+  },
+  tirzepatide: {
+    name: 'Tirzepatide',
+    steps: [
+      { weeks:'S1–4', dose:'2.5 mg', freq:'1×/'+t('week'), label:t('calc_phase_adapt'), expect:t('calc_tir_s1_exp'), color:'var(--accent)', warn:null },
+      { weeks:'S5–8', dose:'5 mg', freq:'1×/'+t('week'), label:t('calc_prog_rise'), expect:t('calc_tir_s2_exp'), color:'var(--accent)', warn:null },
+      { weeks:'S9–12', dose:'7.5 mg', freq:'1×/'+t('week'), label:t('calc_eff_dose'), expect:t('calc_tir_s3_exp'), color:'var(--info)', warn:t('calc_warn_tol') },
+      { weeks:'S13–16', dose:'10 mg', freq:'1×/'+t('week'), label:t('calc_adv_dose'), expect:t('calc_tir_s4_exp'), color:'var(--info)', warn:null },
+      { weeks:'S17–20', dose:'12.5 mg', freq:'1×/'+t('week'), label:t('calc_high_dose_label'), expect:t('calc_tir_s5_exp'), color:'var(--amber)', warn:t('calc_warn_prev_tol') },
+      { weeks:'S21+', dose:'15 mg', freq:'1×/'+t('week'), label:t('calc_max_dose'), expect:t('calc_tir_s6_exp'), color:'var(--danger)', warn:t('calc_warn_absmax') },
+    ]
+  },
+  retatrutide: {
+    name: 'Retatrutide',
+    steps: [
+      { weeks:'S1–4', dose:'1 mg', freq:'1×/'+t('week'), label:t('calc_adapt'), expect:t('calc_ret_s1_exp'), color:'var(--accent)', warn:t('calc_warn_exp_p3') },
+      { weeks:'S5–8', dose:'2 mg', freq:'1×/'+t('week'), label:t('calc_appetite_down'), expect:t('calc_ret_s2_exp'), color:'var(--accent)', warn:null },
+      { weeks:'S9–12', dose:'4 mg', freq:'1×/'+t('week'), label:t('calc_fat_loss'), expect:t('calc_ret_s3_exp'), color:'var(--info)', warn:null },
+      { weeks:'S13–16', dose:'8 mg', freq:'1×/'+t('week'), label:t('calc_major_loss'), expect:t('calc_ret_s4_exp'), color:'var(--amber)', warn:t('calc_warn_hr') },
+      { weeks:'S17+', dose:'12 mg', freq:'1×/'+t('week'), label:t('calc_max_effect'), expect:t('calc_ret_s5_exp'), color:'var(--danger)', warn:t('calc_warn_exp_only') },
+    ]
+  },
+  cjc_ipa: {
+    name: 'CJC-1295 + Ipamorelin',
+    steps: [
+      { weeks:'S1–2', dose:'100mcg + 100mcg', freq:'2×/'+t('day'), label:t('calc_intro'), expect:t('calc_cjc_s1_exp'), color:'var(--accent)', warn:null },
+      { weeks:'S3–8', dose:'100mcg + 200mcg', freq:'2-3×/'+t('day'), label:t('calc_eff_phase'), expect:t('calc_cjc_s2_exp'), color:'var(--accent)', warn:t('calc_warn_fast') },
+      { weeks:'S9–12', dose:'100mcg + 300mcg', freq:'3×/'+t('day'), label:t('calc_opt_dose'), expect:t('calc_cjc_s3_exp'), color:'var(--info)', warn:t('calc_warn_igf1') },
+      { weeks:'S13+', dose:t('calc_break_4w'), freq:'OFF', label:t('calc_cycle_off'), expect:t('calc_cjc_s4_exp'), color:'var(--amber)', warn:t('calc_warn_no_continuous') },
+    ]
+  },
+  bpc157: {
+    name: 'BPC-157',
+    steps: [
+      { weeks:'S1–2', dose:'250 mcg', freq:'2×/'+t('day'), label:t('calc_intro'), expect:t('calc_bpc_intro_exp'), color:'var(--accent)', warn:null },
+      { weeks:'S3–8', dose:'250–500 mcg', freq:'2×/'+t('day'), label:t('calc_therap_phase'), expect:t('calc_bpc_therap_exp'), color:'var(--accent)', warn:t('calc_warn_inject_near') },
+      { weeks:'S9–12', dose:'250 mcg', freq:'1×/'+t('day'), label:t('calc_maint_phase'), expect:t('calc_bpc_maint_exp'), color:'var(--info)', warn:null },
+    ]
+  },
+  tb500: {
+    name: 'TB-500',
+    steps: [
+      { weeks:'S1–6', dose:'2–2.5 mg', freq:'2×/'+t('week'), label:t('calc_load_phase'), expect:t('calc_tb_s1_exp'), color:'var(--accent)', warn:null },
+      { weeks:'S7–12', dose:'1–1.5 mg', freq:'1×/'+t('week'), label:t('calc_maint_phase'), expect:t('calc_bpc_s2_exp'), color:'var(--info)', warn:t('calc_warn_bpc_stack') },
+    ]
+  },
+  epithalon: {
+    name: 'Epithalon',
+    steps: [
+      { weeks:'J1–10', dose:'5–10 mg', freq:'1×/'+t('day')+' · 10 '+t('days'), label:t('calc_intensive'), expect:t('calc_epi_s1_exp'), color:'var(--accent)', warn:null },
+      { weeks:t('calc_break_6m'), dose:'—', freq:'OFF', label:t('calc_mandatory_break'), expect:t('calc_epi_s2_exp'), color:'var(--amber)', warn:t('calc_warn_6months') },
+      { weeks:t('calc_2nd_cycle'), dose:'5–10 mg', freq:'1×/'+t('day')+' · 10 '+t('days'), label:t('calc_second_cycle'), expect:t('calc_epi_s3_exp'), color:'var(--info)', warn:t('calc_warn_2year') },
+    ]
+  }
+};
+}
+
+function showTitration() {
+  const peptide = document.getElementById('titrationPeptide').value;
+  const content = document.getElementById('titration-content');
+  if (!peptide) { content.style.display = 'none'; return; }
+
+  const data = getTitrations()[peptide];
+  if (!data) return;
+
+  const stepsHtml = data.steps.map((step, i) => `
+    <div class="titration-step">
+      <div class="step-num" style="background:${step.color};color:#fff">${i+1}</div>
+      <div class="step-content">
+        <div class="step-weeks">${step.weeks}</div>
+        <div class="step-dose" style="color:${step.color}">${step.dose}</div>
+        <div class="step-label">${step.label} · ${step.freq}</div>
+        <div class="step-expect">→ ${step.expect}</div>
+        ${step.warn ? `<div class="step-warning">⚠️ ${step.warn}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('titration-steps').innerHTML = stepsHtml;
+  content.style.display = 'block';
+  content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Init
+document.getElementById('peptideMg').value = '10';
+calculateReconstitution();
+PS_applyI18n();
+PS_renderLangSwitcher();
+
+// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
+PS_initShell();
+
+async function psLogout() {
+  try { await sb.auth.signOut(); } catch(e) {}
+  window.location.href = '/login.html';
+}
+function psFillAvatar() {
+  if (typeof sb === 'undefined' || !sb.auth) return;
+  sb.auth.getUser().then(({data}) => {
+    const n = (data && data.user && (data.user.user_metadata && data.user.user_metadata.full_name)) ||
+              (data && data.user && data.user.email) || '';
+    const btn = document.getElementById('avatarButton');
+    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
+  }).catch(function(){});
+}
+document.addEventListener('DOMContentLoaded', function () {
+  psFillAvatar();
+  if (window.PS_applyI18n) PS_applyI18n();
+  if (window.PS_renderLangSwitcher) PS_renderLangSwitcher();
+});
+
+</script>
+</body>
+</html>

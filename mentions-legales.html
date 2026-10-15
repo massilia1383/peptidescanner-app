@@ -2,102 +2,105 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
 <title>Mentions légales — PeptideScanner</title>
-<script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <link rel="stylesheet" href="/peptidescanner.css">
 <link rel="stylesheet" href="/legal.css">
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
 <!--
   Réécrite le 15/10/2026 (lot 3) : design Carnet (fin du débordement sur téléphone) et contenu à jour.
   Retirés : Lemon Squeezy, Anthropic / conseiller IA, liens affiliés.
   Les mentions [À compléter] doivent être remplies par James. Texte à faire relire avant publication.
+  Mise en forme « Clarté » (maquette « imprint » du kit) le 15/10/2026 : en-tête du kit, contenu dans une
+  carte .legal, sommaire en liste de liens, encarts en .notice. Textes juridiques inchangés (seul le chemin
+  « Profil → Zone de danger → … » devient « Profil → … », la zone de danger n'existant plus).
+  Page lisible sans compte : pas de session demandée, pas de Supabase. Texte juridique en français seulement.
 -->
 </head>
-<body>
+<body data-tab="" data-back="profil.html" data-title="legal2_t_imprint">
+<a class="sr-only" href="#main">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content" tabindex="-1">
+    <div class="page-intro"><h1 data-i18n="legal2_h_imprint">Mentions légales</h1><p class="muted small">Dernière mise à jour : 15 octobre 2026 · Loi n° 2004-575 du 21 juin 2004 (LCEN)</p></div>
+    <div id="legalFrOnly" hidden><div class="notice"><span class="legal-ni" data-ps-i="information-circle"></span><div><p data-i18n="legal2_fr_only">Ce document est disponible en français.</p></div></div></div>
+    <div class="notice warning"><span class="legal-ni" data-ps-i="information-circle"></span><div><p><strong>Avertissement</strong> — PeptideScanner est un outil d'information et d'organisation. Il ne fournit ni avis médical, ni diagnostic, ni prescription, et ne recommande aucune dose.</p></div></div>
+    <article class="card legal">
+      <section class="legal-section">
+        <h2>Éditeur</h2>
+        <ul>
+          <li>Nom commercial : <strong>Rivage Labs</strong></li>
+          <li>Statut : micro-entreprise (entrepreneur individuel)</li>
+          <li>Entrepreneur : <span class="legal-todo">[Nom et prénom — À compléter]</span></li>
+          <li>SIRET : <span class="legal-todo">[À compléter]</span></li>
+          <li>Adresse : <span class="legal-todo">[À compléter]</span></li>
+          <li>Email : contact@peptidescanner.app</li>
+          <li>Directeur de la publication : <span class="legal-todo">[Nom et prénom — À compléter]</span></li>
+        </ul>
+      </section>
 
-<header class="legal-topbar">
-  <a class="legal-brand" href="/dashboard.html"><img src="/brand/logo-clarte.svg" alt="" width="28" height="28">PeptideScanner</a>
-  <a class="legal-back" href="/dashboard.html" onclick="if (history.length > 1) { history.back(); return false; }">← Retour</a>
-</header>
+      <section class="legal-section">
+        <h2>Distribution et hébergement</h2>
+        <ul>
+          <li><strong>Application</strong> : distribuée par l'App Store (Apple Distribution International Ltd., Irlande) et Google Play (Google Ireland Ltd., Irlande).</li>
+          <li><strong>Base de données et comptes</strong> : Supabase Inc., hébergement dans l'Union européenne.</li>
+          <li><strong>Site peptidescanner.app</strong> : Vercel Inc., États-Unis <span class="legal-todo">[adresse postale à vérifier sur vercel.com/legal — À compléter]</span>.</li>
+        </ul>
+      </section>
 
-<main class="legal-wrap">
+      <section class="legal-section">
+        <h2>Abonnements</h2>
+        <p>Les abonnements Premium sont vendus et encaissés par Apple (App Store) ou Google (Google Play) selon leurs conditions. Le statut des abonnements est géré avec RevenueCat, Inc.</p>
+      </section>
 
-  <div class="legal-head">
-    <div class="legal-eyebrow">Légal</div>
-    <h1 class="legal-title">Mentions légales</h1>
-    <div class="legal-meta">Dernière mise à jour : 15 octobre 2026 · Loi n° 2004-575 du 21 juin 2004 (LCEN)</div>
-  </div>
+      <section class="legal-section">
+        <h2>Propriété intellectuelle</h2>
+        <p>Le nom PeptideScanner, le logo, le design, les textes, la bibliothèque documentaire et le code de l'application sont la propriété de l'éditeur. Toute reproduction sans autorisation écrite préalable est interdite.</p>
+        <p>Police Inter : licence SIL Open Font License 1.1. Icônes Heroicons : licence MIT. Illustrations du kit Clarté : licence MIT.</p>
+      </section>
 
-  <div class="legal-box is-warning">
-    <p><strong>Avertissement</strong> — PeptideScanner est un outil d'information et d'organisation. Il ne fournit ni avis médical, ni diagnostic, ni prescription, et ne recommande aucune dose.</p>
-  </div>
+      <section class="legal-section">
+        <h2>Données personnelles</h2>
+        <p>Voir la <a href="/privacy.html">Politique de confidentialité</a>. Réclamations : CNIL (cnil.fr).</p>
+      </section>
 
-  <section class="legal-section">
-    <h2>Éditeur</h2>
-    <ul>
-      <li>Nom commercial : <strong>Rivage Labs</strong></li>
-      <li>Statut : micro-entreprise (entrepreneur individuel)</li>
-      <li>Entrepreneur : <span class="legal-todo">[Nom et prénom — À compléter]</span></li>
-      <li>SIRET : <span class="legal-todo">[À compléter]</span></li>
-      <li>Adresse : <span class="legal-todo">[À compléter]</span></li>
-      <li>Email : contact@peptidescanner.app</li>
-      <li>Directeur de la publication : <span class="legal-todo">[Nom et prénom — À compléter]</span></li>
-    </ul>
-  </section>
+      <section class="legal-section">
+        <h2>Droit applicable et médiation</h2>
+        <p>Droit français. Médiateur de la consommation : <span class="legal-todo">[À compléter]</span>.</p>
+      </section>
 
-  <section class="legal-section">
-    <h2>Distribution et hébergement</h2>
-    <ul>
-      <li><strong>Application</strong> : distribuée par l'App Store (Apple Distribution International Ltd., Irlande) et Google Play (Google Ireland Ltd., Irlande).</li>
-      <li><strong>Base de données et comptes</strong> : Supabase Inc., hébergement dans l'Union européenne.</li>
-      <li><strong>Site peptidescanner.app</strong> : Vercel Inc., États-Unis <span class="legal-todo">[adresse postale à vérifier sur vercel.com/legal — À compléter]</span>.</li>
-    </ul>
-  </section>
-
-  <section class="legal-section">
-    <h2>Abonnements</h2>
-    <p>Les abonnements Premium sont vendus et encaissés par Apple (App Store) ou Google (Google Play) selon leurs conditions. Le statut des abonnements est géré avec RevenueCat, Inc.</p>
-  </section>
-
-  <section class="legal-section">
-    <h2>Propriété intellectuelle</h2>
-    <p>Le nom PeptideScanner, le logo, le design, les textes, la bibliothèque documentaire et le code de l'application sont la propriété de l'éditeur. Toute reproduction sans autorisation écrite préalable est interdite.</p>
-    <p>Police Inter : licence SIL Open Font License 1.1. Icônes Heroicons : licence MIT. Illustrations du kit Clarté : licence MIT.</p>
-  </section>
-
-  <section class="legal-section">
-    <h2>Données personnelles</h2>
-    <p>Voir la <a href="/privacy.html">Politique de confidentialité</a>. Réclamations : CNIL (cnil.fr).</p>
-  </section>
-
-  <section class="legal-section">
-    <h2>Droit applicable et médiation</h2>
-    <p>Droit français. Médiateur de la consommation : <span class="legal-todo">[À compléter]</span>.</p>
-  </section>
-
-  <section class="legal-section">
-    <h2>Contact</h2>
-    <ul>
-      <li>Support : contact@peptidescanner.app</li>
-      <li>Données personnelles : privacy@peptidescanner.app</li>
-    </ul>
-  </section>
-
-  <footer class="legal-footer">
-    <div>© 2026 Rivage Labs — PeptideScanner</div>
-    <nav>
-      <a href="/cgu.html">CGU</a>
-      <a href="/privacy.html">Confidentialité</a>
-      <a href="/mentions-legales.html">Mentions légales</a>
-    </nav>
-  </footer>
-
-</main>
+      <section class="legal-section">
+        <h2>Contact</h2>
+        <ul>
+          <li>Support : contact@peptidescanner.app</li>
+          <li>Données personnelles : privacy@peptidescanner.app</li>
+        </ul>
+      </section>
+    </article>
+    <footer class="screen-footer legal-foot">
+      <p>© 2026 Rivage Labs — PeptideScanner</p>
+      <nav class="legal-foot-links" aria-labelledby="legalFootTitle"><span class="sr-only" id="legalFootTitle" data-i18n="legal2_other">Autres pages légales</span><a class="text-link" href="/cgu.html" data-i18n="legal2_t_terms">CGU</a> <span aria-hidden="true">·</span> <a class="text-link" href="/privacy.html" data-i18n="legal2_t_privacy">Confidentialité</a></nav>
+    </footer>
+  </main>
+</div>
+<script>
+PS_initShell();
+// Le texte juridique n'existe qu'en français : on le signale en anglais.
+if (PS_getLang() === 'en') document.getElementById('legalFrOnly').hidden = false;
+document.documentElement.lang = 'fr';
+PS_applyI18n();
+</script>
 </body>
 </html>

@@ -2,1297 +2,878 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<script src="/lang.js"></script>
-<script src="/assets/assets-bundle.js"></script>
-<script src="/ps-app.js"></script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PeptideScanner — Bibliothèque complète</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>PeptideScanner — Bibliothèque</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
-<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <link rel="stylesheet" href="/peptidescanner.css">
-<link rel="stylesheet" href="/peptidescanner-extra.css">
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
 <style>
-  body { padding-bottom: calc(var(--bottomnav-h, 64px) + 28px); }
-  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
-
-  /* Les jetons partages viennent de peptidescanner.css et suivent le mode sombre.
-     On n'alias ici que les noms propres a cette page. */
-  :root {
-    --surface2: var(--surface-muted);
-    --accent2:  var(--info);
-    --accent3:  var(--amber);
-    --nav-h:    var(--bottomnav-h, 64px);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: var(--font-ui), sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
-  /* NAV */
-  nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 28px; background: rgba(248,249,250,.97);
-    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 200;
-    backdrop-filter: blur(12px);
-  }
-  .logo { font-family: var(--font-data), monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-  .nav-back { color: var(--muted); font-size: .85rem; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color .2s; }
-  .nav-back:hover { color: var(--accent); }
-
-  /* HEADER */
-  .page-header {
-    max-width: var(--content-desktop, 1100px); margin: 0 auto; padding: 48px 28px 32px;
-  }
-  .page-eyebrow { font-family: var(--font-data), monospace; font-size: .72rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-  .db-hero-title { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 700; margin-bottom: 10px; }
-  .page-sub { color: var(--muted); font-size: .95rem; line-height: 1.6; }
-  .stats-row { display: flex; gap: 28px; margin-top: 24px; flex-wrap: wrap; }
-  .stat { display: flex; flex-direction: column; }
-  .stat-val { font-family: var(--font-data), monospace; font-size: 1.6rem; font-weight: 700; color: var(--accent); }
-  .stat-label { font-size: .72rem; color: var(--muted); margin-top: 2px; }
-
-  /* CONTROLS */
-  .controls {
-    max-width: var(--content-desktop, 1100px); margin: 0 auto; padding: 0 28px 28px;
-    display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
-  }
-  .search-wrap { position: relative; flex: 1; min-width: 220px; }
-  .search-input {
-    width: 100%; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 11px 16px 11px 40px;
-    color: var(--text); font-family: inherit; font-size: .88rem; outline: none;
-    transition: border-color .2s;
-  }
-  .search-input:focus { border-color: var(--accent); }
-  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .9rem; }
-  .filter-btn {
-    padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--muted); font-family: inherit;
-    font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .2s;
-    white-space: nowrap;
-  }
-  .filter-btn:hover, .filter-btn.active { background: var(--accent-soft); border-color: rgba(36,87,214,.4); color: var(--accent); }
-  .filter-btn.active { background: var(--accent-soft); }
-
-  /* CATEGORY COLORS */
-  .cat { padding: 3px 10px; border-radius: 100px; font-size: .7rem; font-weight: 700; display: inline-block; white-space: nowrap; }
-  .cat-gh { background: var(--accent-soft); color: var(--accent); }
-  .cat-recov { background: var(--info-soft); color: var(--accent2); }
-  .cat-anti { background: var(--amber-soft); color: var(--accent3); }
-  .cat-neuro { background: var(--danger-soft); color: var(--danger); }
-  .cat-fat { background: var(--info-soft); color: var(--purple); }
-  .cat-sex { background: rgba(236,72,153,.12); color: #EC4899; }
-  .cat-immun { background: var(--accent-soft); color: var(--accent); }
-  .cat-cardio { background: var(--info-soft); color: var(--info); }
-  .cat-skin { background: rgba(251,146,60,.12); color: #FB923C; }
-
-  /* GRID */
-  .db-grid {
-    max-width: var(--content-desktop, 1100px); margin: 0 auto; padding: 0 28px 60px;
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 18px;
-  }
-
-  /* CARD */
-  .pep-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 18px; overflow: hidden; cursor: pointer;
-    transition: all .25s; position: relative;
-  }
-  .pep-card:hover { border-color: rgba(36,87,214,.35); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.4); }
-  .pep-card.hidden { display: none; }
-
-  .card-top {
-    padding: 20px 20px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: flex-start;
-  }
-  .card-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
-  .card-alias { font-size: .75rem; color: var(--muted); font-family: var(--font-data), monospace; }
-  .card-cat { margin-top: 8px; }
-
-  .card-body { padding: 16px 20px; }
-  .info-row {
-    display: flex; justify-content: space-between; align-items: baseline;
-    margin-bottom: 10px; gap: 8px;
-  }
-  .info-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; flex-shrink: 0; }
-  .info-val { font-size: .82rem; font-weight: 600; text-align: right; }
-  .info-val.mono { font-family: var(--font-data), monospace; color: var(--accent); font-size: .78rem; }
-
-  .effects-list { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
-  .effect-tag {
-    padding: 3px 9px; border-radius: 6px; font-size: .7rem; font-weight: 500;
-    background: var(--surface2); color: var(--muted); border: 1px solid var(--border);
-  }
-
-  .card-footer {
-    padding: 12px 20px; border-top: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .stack-label { font-size: .72rem; color: var(--muted); }
-  .stack-val { font-size: .78rem; color: var(--accent2); font-weight: 600; }
-  .shop-btn {
-    padding: 6px 14px; border-radius: 7px;
-    background: var(--accent-soft); color: var(--accent);
-    font-size: .75rem; font-weight: 700; border: 1px solid rgba(36,87,214,.2);
-    cursor: pointer; transition: all .2s; font-family: inherit;
-    text-decoration: none; display: inline-block;
-  }
-  .shop-btn:hover { background: var(--accent-soft); }
-
-  /* MODAL */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.75);
-    z-index: 500; display: flex; align-items: center; justify-content: center;
-    padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s;
-    backdrop-filter: blur(4px);
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 24px; max-width: 680px; width: 100%;
-    max-height: 90vh; overflow-y: auto;
-    transform: translateY(20px); transition: transform .2s;
-  }
-  .modal-overlay.open .modal { transform: translateY(0); }
-  .modal-header {
-    padding: 28px 28px 20px; border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: flex-start;
-    position: sticky; top: 0; background: var(--surface); z-index: 1;
-    border-radius: 24px 24px 0 0;
-  }
-  .modal-close {
-    width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
-    background: var(--surface2); color: var(--muted); cursor: pointer;
-    font-size: 1rem; display: flex; align-items: center; justify-content: center;
-    transition: all .2s; flex-shrink: 0;
-  }
-  .modal-close:hover { border-color: var(--danger); color: var(--danger); }
-  .modal-body { padding: 24px 28px 28px; }
-  .modal-name { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
-  .modal-alias { font-family: var(--font-data), monospace; font-size: .78rem; color: var(--muted); margin-bottom: 10px; }
-
-  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
-  .modal-info-box {
-    background: var(--surface2); border-radius: 12px; padding: 14px;
-    border: 1px solid var(--border);
-  }
-  .modal-info-box .lbl { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-  .modal-info-box .val { font-size: .9rem; font-weight: 600; line-height: 1.4; }
-  .modal-info-box .val.green { color: var(--accent); font-family: var(--font-data), monospace; }
-
-  .modal-section { margin-top: 20px; }
-  .modal-section h4 { font-size: .78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; font-family: var(--font-data), monospace; }
-  .modal-section p { font-size: .88rem; line-height: 1.7; color: var(--text); }
-  .modal-section ul { list-style: none; display: flex; flex-wrap: wrap; gap: 7px; }
-  .modal-section ul li {
-    padding: 4px 12px; border-radius: 7px; font-size: .78rem;
-    background: var(--surface2); border: 1px solid var(--border);
-  }
-  .modal-section ul li.pos { border-color: rgba(36,87,214,.25); color: var(--accent); background: var(--accent-soft); }
-  .modal-section ul li.neg { border-color: rgba(180,35,56,.25); color: var(--danger); background: var(--danger-soft); }
-  .modal-section ul li.stack { border-color: rgba(36,87,214,.25); color: var(--accent2); background: var(--info-soft); }
-  .modal-section ul li.warn { border-color: rgba(128,80,0,.25); color: var(--accent3); background: var(--amber-soft); }
-
-  .modal-cta {
-    margin-top: 24px; padding: 14px; border-radius: 10px;
-    background: var(--accent-soft); border: 1px solid rgba(36,87,214,.2);
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  }
-  .modal-cta p { font-size: .82rem; color: var(--muted); }
-  .modal-cta a {
-    background: var(--accent); color: #000; padding: 9px 20px;
-    border-radius: 8px; font-weight: 700; font-size: .82rem;
-    text-decoration: none; white-space: nowrap; transition: opacity .2s;
-    flex-shrink: 0;
-  }
-  .modal-cta a:hover { opacity: .85; }
-
-  .disclaimer {
-    margin-top: 14px; padding: 10px 14px; border-radius: 8px;
-    background: var(--amber-soft); border: 1px solid rgba(128,80,0,.2);
-    font-size: .75rem; color: var(--muted); line-height: 1.5;
-  }
-
-  /* NO RESULTS */
-  .no-results {
-    grid-column: 1/-1; text-align: center; padding: 60px 20px;
-    color: var(--muted);
-  }
-  .no-results span { font-size: 2rem; display: block; margin-bottom: 12px; }
-
-  /* SCROLL */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-  @media(max-width: 600px) {
-    .db-grid { grid-template-columns: 1fr; padding: 0 16px 40px; }
-    .controls { padding: 0 16px 20px; }
-    .page-header { padding: 32px 16px 20px; }
-    .modal-grid { grid-template-columns: 1fr; }
-    .modal-header, .modal-body { padding: 20px; }
-  }
-
-  /* DISCLAIMER JURIDIQUE */
-  .legal-disclaimer {
-    background:var(--amber-soft); border:1px solid rgba(128,80,0,.2);
-    border-radius:12px; padding:12px 16px; margin:12px 0;
-    display:flex; gap:10px; align-items:flex-start;
-  }
-  .legal-disclaimer.compact { padding:8px 12px; margin:8px 0; border-radius:8px; }
-  .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
-  .legal-disclaimer-text { font-size:.72rem; color:var(--warning); line-height:1.5; }
-  .legal-disclaimer-text strong { color:var(--warning); }
-
-  /* PHASE VISUELLE */
-  .phase-visual { margin:10px 0; }
-  .phase-bar { display:flex; align-items:center; gap:3px; margin-bottom:6px; }
-  .phase-step {
-    flex:1; height:6px; border-radius:3px; background:var(--border);
-    transition:background .3s;
-  }
-  .phase-step.active-red    { background:var(--danger); }
-  .phase-step.active-orange { background:var(--amber); }
-  .phase-step.active-yellow { background:#EAB308; }
-  .phase-step.active-green  { background:var(--accent); }
-  .phase-step.active-teal   { background:var(--accent); }
-  .phase-label {
-    display:flex; align-items:center; gap:6px;
-    font-size:.75rem; font-weight:700; margin-bottom:3px;
-  }
-  .phase-desc { font-size:.68rem; color:var(--muted); line-height:1.4; font-style:italic; }
-  .phase-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-
+  /* Bibliothèque (kit : library, peptide, empty-library) — jetons du kit uniquement */
+  .lib-search .search-ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-secondary);pointer-events:none;display:flex}
+  .lib-search .search-ic .icon{width:20px;height:20px}
+  .lib-search .input{padding-left:46px;padding-right:14px;min-height:48px}
+  .lib-search .input::-webkit-search-decoration{-webkit-appearance:none}
+  .lib-list .list-row .grow{min-width:0}
+  .lib-list .list-row strong{display:block;overflow-wrap:anywhere}
+  .lib-back{text-decoration:none;align-self:start}
+  .lib-back .icon-btn{pointer-events:none}
+  .lib-sub{overflow-wrap:anywhere}
+  .lib-h3{font-size:var(--text-md);font-weight:650;margin:16px 0 8px}
+  .lib-h3:first-of-type{margin-top:12px}
+  .lib-bullets{margin:0;padding-left:20px;display:grid;gap:4px;font-size:var(--text-sm);color:var(--text-secondary)}
+  .lib-study{padding:10px 0;border-bottom:1px solid var(--border)}
+  .lib-study:last-child{border-bottom:0}
+  .lib-study a{overflow-wrap:anywhere}
+  #pepTitle:focus{outline:none}
 </style>
 </head>
-<body>
-
-<header class="app-topbar">
-  <div class="topbar-inner">
-    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
-    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
-    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
-  </div>
-</header>
-<div class="menu-popover" id="avatarMenu" hidden>
-  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
-  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
-  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
-  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
-  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
+<body data-tab="library">
+<a class="sr-only" href="#main" data-i18n="lib2_skip">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content" tabindex="-1">
+    <div id="view"></div>
+  </main>
+  <nav id="psTabbar"></nav>
 </div>
 
-<div class="page-header">
-  <div class="page-eyebrow" data-i18n="db_eyebrow">Bibliothèque · Base de données</div>
-  <div class="db-hero-title" data-i18n="db_title">Référentiel peptidique complet</div>
-  <div class="page-sub" data-i18n="db_sub">Fiches documentaires : phase de recherche, effets étudiés, effets indésirables et contre-indications. Aucune recommandation de dose.</div>
-  <div class="stats-row">
-    <div class="stat"><span class="stat-val" id="totalCount">48</span><span class="stat-label" data-i18n="db_stat_peptides">Peptides référencés</span></div>
-    <div class="stat"><span class="stat-val">9</span><span class="stat-label" data-i18n="db_stat_categories">Catégories</span></div>
-    <div class="stat"><span class="stat-val" id="shownCount">52</span><span class="stat-label" data-i18n="db_stat_shown">Affichés</span></div>
-  </div>
-</div>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   Les 48 fiches de la bibliothèque (reprises de l'ancienne page, 15/10/2026).
+   Ton documentaire (règles Apple 1.4.1/1.4.2, Google « contenu santé ») :
+   - aucun dosage, aucune fréquence, aucune durée de cure, aucun protocole, aucun « stack » ;
+   - effets décrits comme des domaines étudiés (plus de flèches ↑ ↓ ni de superlatifs) ;
+   - reg : statut réglementaire tiré des données de la fiche
+     (approved | approved_some | research | not_approved | cosmetic | review = à documenter) ;
+   - phase : repli local quand la table Supabase « peptides » ne donne pas research_phase
+     (la valeur Supabase prime toujours) ;
+   - etudes : [{ authors, year, title, type, link }] — vide tant qu'aucune source n'est vérifiée.
+   Les anciennes fiches 45 (« stack »), 48 (« relance »), 49 et 52 (doublons) restent retirées.
+   ════════════════════════════════════════════════════════════════ */
+const PEPTIDES = [
+  // ── Axe GH / IGF-1 ─────────────────────────────────────────────
+  { id: 1, name: 'CJC-1295', alias: 'Modified GRF 1-29 (avec DAC)', cat: 'gh', admin: 'SC', reg: 'review', phase: '',
+    effets: ['Sécrétion de GH', 'IGF-1', 'Récupération musculaire', 'Lipolyse', 'Sommeil', 'Vieillissement cutané'],
+    secondaires: ['Rétention d’eau', 'Engourdissements', 'Fatigue légère', 'Hypoglycémie possible'],
+    contreindications: 'Diabète actif, cancer hormono-dépendant, grossesse.',
+    note: 'La version avec DAC (Drug Affinity Complex) a une demi-vie prolongée (environ 8 jours). La version sans DAC produit un profil de GH plus proche du profil physiologique.',
+    etudes: [],
+    en: { alias: 'Modified GRF 1-29 (with DAC)',
+      effets: ['GH secretion', 'IGF-1', 'Muscle recovery', 'Lipolysis', 'Sleep', 'Skin ageing'],
+      secondaires: ['Water retention', 'Numbness', 'Mild fatigue', 'Possible hypoglycaemia'],
+      contreindications: 'Active diabetes, hormone-dependent cancer, pregnancy.',
+      note: 'The DAC (Drug Affinity Complex) version has an extended half-life (about 8 days). The version without DAC produces a GH profile closer to the physiological one.' } },
+  { id: 2, name: 'Ipamorelin', alias: 'NNC 26-0161', cat: 'gh', admin: 'SC', reg: 'review', phase: '',
+    effets: ['Sécrétion de GH', 'Masse maigre', 'Récupération', 'Masse grasse', 'Sommeil profond', 'Vieillissement'],
+    secondaires: ['Rougeur cutanée passagère', 'Léger mal de tête', 'Fatigue initiale', 'Faim accrue'],
+    contreindications: 'Tumeurs actives, grossesse.',
+    note: 'Sécrétagogue de la GH décrit comme sélectif : les études rapportent peu d’effet sur le cortisol et la prolactine.',
+    etudes: [],
+    en: { effets: ['GH secretion', 'Lean mass', 'Recovery', 'Body fat', 'Deep sleep', 'Ageing'],
+      secondaires: ['Temporary skin flushing', 'Mild headache', 'Initial fatigue', 'Increased hunger'],
+      contreindications: 'Active tumours, pregnancy.',
+      note: 'GH secretagogue described as selective: studies report little effect on cortisol and prolactin.' } },
+  { id: 3, name: 'GHRP-6', alias: 'Growth Hormone Releasing Hexapeptide', cat: 'gh', admin: 'SC / IM', reg: 'review', phase: '',
+    effets: ['Sécrétion de GH', 'Appétit', 'Masse musculaire', 'Récupération', 'IGF-1', 'Protection gastrique'],
+    secondaires: ['Faim intense', 'Rétention d’eau', 'Hausse du cortisol', 'Hausse de la prolactine', 'Somnolence'],
+    contreindications: 'Troubles alimentaires, diabète instable.',
+    note: 'Les études décrivent une stimulation de la GH plus marquée qu’avec l’ipamoréline, avec davantage d’effets indésirables, notamment une forte hausse de l’appétit.',
+    etudes: [],
+    en: { effets: ['GH secretion', 'Appetite', 'Muscle mass', 'Recovery', 'IGF-1', 'Gastric protection'],
+      secondaires: ['Intense hunger', 'Water retention', 'Raised cortisol', 'Raised prolactin', 'Drowsiness'],
+      contreindications: 'Eating disorders, unstable diabetes.',
+      note: 'Studies describe a stronger GH stimulation than with ipamorelin, with more side effects, notably a marked increase in appetite.' } },
+  { id: 4, name: 'GHRP-2', alias: 'KP-102 / Pralmorelin', cat: 'gh', admin: 'SC', reg: 'review', phase: '',
+    effets: ['Sécrétion de GH', 'Masse grasse', 'Masse maigre', 'IGF-1', 'Récupération'],
+    secondaires: ['Hausse du cortisol', 'Hausse de la prolactine', 'Rougeur cutanée passagère', 'Fatigue'],
+    contreindications: 'Tumeurs hormono-dépendantes.',
+    note: 'Stimule moins l’appétit que le GHRP-6 dans les études comparatives.',
+    etudes: [],
+    en: { effets: ['GH secretion', 'Body fat', 'Lean mass', 'IGF-1', 'Recovery'],
+      secondaires: ['Raised cortisol', 'Raised prolactin', 'Temporary skin flushing', 'Fatigue'],
+      contreindications: 'Hormone-dependent tumours.',
+      note: 'Stimulates appetite less than GHRP-6 in comparative studies.' } },
+  { id: 5, name: 'Sermorelin', alias: 'GRF 1-29 / GHRH 1-29', cat: 'gh', admin: 'SC', reg: 'review', phase: '',
+    effets: ['Sécrétion nocturne de GH', 'Sommeil', 'Composition corporelle', 'Vieillissement', 'Énergie'],
+    secondaires: ['Rougeur cutanée passagère', 'Maux de tête', 'Somnolence', 'Œdèmes légers'],
+    contreindications: 'Hypothyroïdie non traitée, néoplasie.',
+    note: 'Analogue de la GHRH : il stimule la sécrétion de GH par l’hypophyse plutôt que d’apporter de la GH.',
+    etudes: [],
+    en: { effets: ['Night-time GH secretion', 'Sleep', 'Body composition', 'Ageing', 'Energy'],
+      secondaires: ['Temporary skin flushing', 'Headache', 'Drowsiness', 'Mild swelling'],
+      contreindications: 'Untreated hypothyroidism, neoplasia.',
+      note: 'GHRH analogue: it stimulates GH secretion by the pituitary gland rather than supplying GH.' } },
+  { id: 6, name: 'IGF-1 LR3', alias: 'Long-R3 IGF-1', cat: 'gh', admin: 'SC / IM', reg: 'review', phase: '',
+    effets: ['Synthèse protéique', 'Croissance musculaire', 'Lipolyse', 'Récupération', 'Densité musculaire'],
+    secondaires: ['Hypoglycémie (risque élevé)', 'Crampes', 'Rétention d’eau', 'Neuropathie'],
+    contreindications: 'Diabète, hypoglycémie, cancer, grossesse.',
+    note: 'Un risque élevé d’hypoglycémie est signalé. Sa demi-vie prolongée (20 à 30 heures) le distingue de l’IGF-1 naturel.',
+    etudes: [],
+    en: { effets: ['Protein synthesis', 'Muscle growth', 'Lipolysis', 'Recovery', 'Muscle density'],
+      secondaires: ['Hypoglycaemia (high risk)', 'Cramps', 'Water retention', 'Neuropathy'],
+      contreindications: 'Diabetes, hypoglycaemia, cancer, pregnancy.',
+      note: 'A high risk of hypoglycaemia is reported. Its extended half-life (20 to 30 hours) sets it apart from natural IGF-1.' } },
+  { id: 7, name: 'Tesamorelin', alias: 'TH9507 / Egrifta', cat: 'gh', admin: 'SC', reg: 'approved', phase: 'established',
+    regNote: 'Approuvé par la FDA (États-Unis) pour la lipodystrophie liée au VIH.',
+    effets: ['Graisse viscérale', 'IGF-1', 'Profil lipidique', 'Composition corporelle', 'Cognition'],
+    secondaires: ['Œdèmes', 'Douleurs articulaires', 'Neuropathie périphérique', 'Hyperglycémie'],
+    contreindications: 'Cancer actif, grossesse, allergie au mannitol.',
+    note: 'Seul analogue de la GHRH approuvé par la FDA. Les essais portent sur la graisse abdominale profonde des personnes vivant avec le VIH.',
+    etudes: [],
+    en: { regNote: 'Approved by the FDA (United States) for HIV-associated lipodystrophy.',
+      effets: ['Visceral fat', 'IGF-1', 'Lipid profile', 'Body composition', 'Cognition'],
+      secondaires: ['Swelling', 'Joint pain', 'Peripheral neuropathy', 'Hyperglycaemia'],
+      contreindications: 'Active cancer, pregnancy, mannitol allergy.',
+      note: 'The only GHRH analogue approved by the FDA. Trials focus on deep abdominal fat in people living with HIV.' } },
+  { id: 8, name: 'MK-677', alias: 'Ibutamoren / Nutrabol', cat: 'gh', admin: 'Oral', reg: 'review', phase: '',
+    effets: ['Sécrétion de GH et d’IGF-1', 'Masse maigre', 'Masse grasse', 'Sommeil', 'Densité osseuse', 'Peau et cheveux'],
+    secondaires: ['Forte hausse de l’appétit', 'Rétention d’eau', 'Hausse de la glycémie', 'Somnolence', 'Engourdissements'],
+    contreindications: 'Diabète de type 2, insuffisance cardiaque, cancer.',
+    note: 'Sécrétagogue de la GH non peptidique, souvent classé avec les peptides de l’axe GH. Il se prend par voie orale.',
+    etudes: [],
+    en: { effets: ['GH and IGF-1 secretion', 'Lean mass', 'Body fat', 'Sleep', 'Bone density', 'Skin and hair'],
+      secondaires: ['Marked increase in appetite', 'Water retention', 'Raised blood sugar', 'Drowsiness', 'Numbness'],
+      contreindications: 'Type 2 diabetes, heart failure, cancer.',
+      note: 'Non-peptide GH secretagogue, often grouped with GH-axis peptides. It is taken by mouth.' } },
 
-<div class="controls">
-  <div class="search-wrap">
-    <span class="search-icon" style="display:grid;place-items:center" data-ps-i="magnifying-glass"></span>
-    <input class="search-input" id="searchInput" data-i18n-ph="db_search_ph" placeholder="Rechercher un peptide, effet, catégorie…" oninput="filterPeptides()">
-  </div>
-  <button class="filter-btn active" onclick="filterCat('all', this)" data-i18n="db_all">Tous</button>
-  <button class="filter-btn" onclick="filterCat('GH / IGF-1', this)">GH</button>
-  <button class="filter-btn" onclick="filterCat('Récupération', this)" data-i18n="db_cat_recov">Récupération</button>
-  <button class="filter-btn" onclick="filterCat('Anti-âge', this)" data-i18n="db_cat_anti">Anti-âge</button>
-  <button class="filter-btn" onclick="filterCat('Nootropique', this)" data-i18n="db_cat_neuro">Neuro</button>
-  <button class="filter-btn" onclick="filterCat('Perte de poids', this)" data-i18n="db_cat_fat">Poids</button>
-  <button class="filter-btn" onclick="filterCat('Sexuel', this)" data-i18n="db_cat_sex">Sexuel</button>
-  <button class="filter-btn" onclick="filterCat('Immunité', this)" data-i18n="db_cat_immun">Immunité</button>
-  <button class="filter-btn" onclick="filterCat('Cardio', this)" data-i18n="db_cat_cardio">Cardio</button>
-  <button class="filter-btn" onclick="filterCat('Peau', this)" data-i18n="db_cat_skin">Peau</button>
-</div>
+  // ── Tissus et récupération ─────────────────────────────────────
+  { id: 9, name: 'BPC-157', alias: 'Body Protective Compound 157 / PL 14736', cat: 'recov', admin: 'SC / IM / Oral', reg: 'review', phase: '',
+    effets: ['Tendons et ligaments', 'Protection gastrique', 'Inflammation', 'Cicatrisation', 'Neuroprotection', 'Vascularisation'],
+    secondaires: ['Nausées légères (rares)', 'Rougeur cutanée passagère', 'Baisse passagère de la tension'],
+    contreindications: 'Antécédents de tumeurs (prudence en raison d’une action pro-angiogénique).',
+    note: 'Étudié dans de nombreux modèles de lésions (tendons, muscles, tube digestif). Les données chez l’humain restent limitées.',
+    etudes: [],
+    en: { effets: ['Tendons and ligaments', 'Gastric protection', 'Inflammation', 'Wound healing', 'Neuroprotection', 'Vascularisation'],
+      secondaires: ['Mild nausea (rare)', 'Temporary skin flushing', 'Temporary drop in blood pressure'],
+      contreindications: 'History of tumours (caution because of a pro-angiogenic action).',
+      note: 'Studied in many injury models (tendons, muscles, digestive tract). Human data remain limited.' } },
+  { id: 10, name: 'TB-500', alias: 'Thymosin Beta-4 / Tβ4', cat: 'recov', admin: 'SC / IM', reg: 'review', phase: '',
+    effets: ['Régénération musculaire', 'Tendons', 'Souplesse', 'Endurance', 'Cicatrisation', 'Fibrose'],
+    secondaires: ['Fatigue passagère', 'Maux de tête', 'Nausées légères', 'Rougeur cutanée passagère'],
+    contreindications: 'Antécédents de cancer (prudence), grossesse.',
+    note: 'Fragment de la thymosine bêta-4, étudié pour une action générale sur la réparation des tissus. Données humaines limitées.',
+    etudes: [],
+    en: { effets: ['Muscle regeneration', 'Tendons', 'Flexibility', 'Endurance', 'Wound healing', 'Fibrosis'],
+      secondaires: ['Temporary fatigue', 'Headache', 'Mild nausea', 'Temporary skin flushing'],
+      contreindications: 'History of cancer (caution), pregnancy.',
+      note: 'Fragment of thymosin beta-4, studied for a body-wide action on tissue repair. Human data are limited.' } },
+  { id: 11, name: 'KPV', alias: 'Lys-Pro-Val', cat: 'recov', admin: 'SC / Oral', reg: 'review', phase: '',
+    effets: ['Inflammation', 'Protection intestinale', 'Cytokines', 'Immunomodulation', 'Cicatrisation des muqueuses'],
+    secondaires: ['Nausées légères (très rares)'],
+    contreindications: 'Immunosuppression sévère.',
+    note: 'Tripeptide dérivé de l’alpha-MSH, étudié surtout dans des modèles d’inflammation intestinale chronique (maladie de Crohn, colite).',
+    etudes: [],
+    en: { effets: ['Inflammation', 'Gut protection', 'Cytokines', 'Immunomodulation', 'Mucosal healing'],
+      secondaires: ['Mild nausea (very rare)'],
+      contreindications: 'Severe immunosuppression.',
+      note: 'Tripeptide derived from alpha-MSH, studied mainly in models of chronic intestinal inflammation (Crohn’s disease, colitis).' } },
+  { id: 12, name: 'GHK-Cu', alias: 'Copper Peptide GHK / Ghk-Cu', cat: 'recov', admin: 'SC / Topique', reg: 'review', phase: '',
+    effets: ['Régénération tissulaire', 'Collagène', 'Élastine', 'Cicatrisation', 'Vieillissement cutané', 'Neuroprotection', 'Densité osseuse'],
+    secondaires: ['Irritation cutanée légère (application sur la peau)', 'Effets généraux très rares'],
+    contreindications: 'Allergie au cuivre.',
+    note: 'Peptide présent naturellement dans le plasma humain, dont le taux diminue avec l’âge. Il est aussi utilisé en cosmétique.',
+    etudes: [],
+    en: { effets: ['Tissue regeneration', 'Collagen', 'Elastin', 'Wound healing', 'Skin ageing', 'Neuroprotection', 'Bone density'],
+      secondaires: ['Mild skin irritation (applied to skin)', 'Very rare body-wide effects'],
+      contreindications: 'Copper allergy.',
+      note: 'Peptide naturally present in human plasma, whose level declines with age. It is also used in cosmetics.' } },
+  { id: 13, name: 'LL-37', alias: 'Cathelicidin / CRAMP', cat: 'recov', admin: 'SC / Topique', reg: 'review', phase: '',
+    effets: ['Activité antimicrobienne', 'Cicatrisation des plaies', 'Inflammation', 'Angiogenèse', 'Immunité'],
+    secondaires: ['Inflammation locale (voie SC)', 'Rougeur (application sur la peau)'],
+    contreindications: 'Maladies auto-immunes actives, lupus.',
+    note: 'Peptide antimicrobien produit par l’organisme, étudié dans les plaies chroniques et les infections résistantes.',
+    etudes: [],
+    en: { effets: ['Antimicrobial activity', 'Wound healing', 'Inflammation', 'Angiogenesis', 'Immunity'],
+      secondaires: ['Local inflammation (SC route)', 'Redness (applied to skin)'],
+      contreindications: 'Active autoimmune diseases, lupus.',
+      note: 'Antimicrobial peptide produced by the body, studied in chronic wounds and resistant infections.' } },
 
-<div style="max-width:var(--content-desktop,1100px);margin:0 auto;padding:0 28px 16px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-    <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px"><span data-i18n="db_guide_title">📊 Guide — Avancement de la recherche</span></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--neutral)"><span data-i18n="phase_exp_label">⚪ Données limitées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_exp_desc">Très peu d'études disponibles</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--danger);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--danger)"><span data-i18n="phase_pre_label">🔴 Recherche animale</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_pre_desc">Testé uniquement sur des animaux</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--amber)"><span data-i18n="phase_p1_label">🟠 Premiers tests humains</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p1_desc">Sécurité vérifiée sur quelques personnes</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EAB308;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EAB308"><span data-i18n="phase_p2_label">🟡 Études en cours</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p2_desc">Efficacité testée sur des centaines de personnes</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--accent)"><span data-i18n="phase_p3_label">🟢 Études avancées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p3_desc">Testé sur des milliers — proche du marché</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--accent)"><span data-i18n="phase_est_label">✅ Largement utilisé</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_est_desc">Retours abondants, profil bien documenté</span></div></div></div>
-    </div>
-  </div>
-</div>
+  // ── Vieillissement ─────────────────────────────────────────────
+  { id: 14, name: 'Epithalon', alias: 'Epitalon / Epithalone / ALA-GLU-ASP-GLY', cat: 'anti', admin: 'SC / IV', reg: 'review', phase: '',
+    effets: ['Longueur des télomères', 'Mélatonine', 'Longévité', 'Rythme circadien', 'Antioxydants', 'Neuroprotection', 'Immunité'],
+    secondaires: ['Légère fatigue initiale (très rare)', 'Somnolence les premiers jours'],
+    contreindications: 'Grossesse, néoplasies actives.',
+    note: 'Tétrapeptide étudié surtout en Russie, notamment sur la télomérase et la glande pinéale.',
+    etudes: [],
+    en: { effets: ['Telomere length', 'Melatonin', 'Longevity', 'Circadian rhythm', 'Antioxidants', 'Neuroprotection', 'Immunity'],
+      secondaires: ['Mild initial fatigue (very rare)', 'Drowsiness in the first days'],
+      contreindications: 'Pregnancy, active neoplasia.',
+      note: 'Tetrapeptide studied mainly in Russia, notably on telomerase and the pineal gland.' } },
+  { id: 15, name: 'Thymalin', alias: 'Thymic peptide / Thymus extract', cat: 'anti', admin: 'SC / IM', reg: 'review', phase: '',
+    effets: ['Immunité T', 'Lymphocytes T', 'Vieillissement immunitaire', 'Maladies auto-immunes', 'Longévité'],
+    secondaires: ['Réaction au point d’injection', 'Légère fièvre initiale possible'],
+    contreindications: 'Maladies auto-immunes sévères.',
+    note: 'Extrait peptidique de thymus, étudié pour la fonction immunitaire cellulaire, qui diminue avec l’âge.',
+    etudes: [],
+    en: { effets: ['T-cell immunity', 'T lymphocytes', 'Immune ageing', 'Autoimmune diseases', 'Longevity'],
+      secondaires: ['Injection-site reaction', 'Possible mild initial fever'],
+      contreindications: 'Severe autoimmune diseases.',
+      note: 'Peptide extract of thymus, studied for cellular immune function, which declines with age.' } },
+  { id: 16, name: 'Pinealon', alias: 'EDR / Glu-Asp-Arg', cat: 'anti', admin: 'SC / Nasal', reg: 'review', phase: '',
+    effets: ['Neuroprotection', 'Mélatonine', 'Mémoire', 'Sommeil', 'Rythme circadien', 'Vieillissement cérébral'],
+    secondaires: ['Somnolence', 'Rêves plus intenses'],
+    contreindications: 'Grossesse.',
+    note: 'Tripeptide étudié pour son action sur la glande pinéale et le vieillissement cérébral.',
+    etudes: [],
+    en: { effets: ['Neuroprotection', 'Melatonin', 'Memory', 'Sleep', 'Circadian rhythm', 'Brain ageing'],
+      secondaires: ['Drowsiness', 'More vivid dreams'],
+      contreindications: 'Pregnancy.',
+      note: 'Tripeptide studied for its action on the pineal gland and brain ageing.' } },
+  { id: 17, name: 'Cortagen', alias: 'Ala-Glu-Asp-Pro', cat: 'anti', admin: 'SC', reg: 'review', phase: '',
+    effets: ['Fonction cardiaque', 'Arythmies', 'Régulation autonome', 'Vieillissement cardiovasculaire', 'Fibrose myocardique'],
+    secondaires: ['Très rares'],
+    contreindications: 'Infarctus récent (prudence).',
+    note: 'Fait partie des peptides « biorégulateurs » décrits par V. Khavinson, étudiés pour un ciblage propre à un organe (ici le muscle cardiaque).',
+    etudes: [],
+    en: { effets: ['Heart function', 'Arrhythmias', 'Autonomic regulation', 'Cardiovascular ageing', 'Myocardial fibrosis'],
+      secondaires: ['Very rare'],
+      contreindications: 'Recent heart attack (caution).',
+      note: 'One of the “bioregulator” peptides described by V. Khavinson, studied for organ-specific targeting (here the heart muscle).' } },
+  { id: 43, name: 'NAD+ / NMN', alias: 'Nicotinamide Mononucleotide', cat: 'anti', admin: 'Oral / SC', reg: 'review', phase: '',
+    effets: ['NAD+', 'Énergie', 'Longévité', 'Sirtuines', 'Métabolisme', 'Réparation de l’ADN', 'Vieillissement cellulaire'],
+    secondaires: ['Rougeur cutanée passagère (niacine)', 'Léger inconfort digestif', 'Insomnie en cas de prise le soir'],
+    contreindications: 'Certains cancers (prudence : le NAD+ favorise la survie des cellules).',
+    note: 'Petite molécule précurseur du NAD+, et non un peptide. Elle est étudiée dans les voies du vieillissement (sirtuines).',
+    etudes: [],
+    en: { effets: ['NAD+', 'Energy', 'Longevity', 'Sirtuins', 'Metabolism', 'DNA repair', 'Cellular ageing'],
+      secondaires: ['Temporary skin flushing (niacin)', 'Mild digestive discomfort', 'Insomnia if taken in the evening'],
+      contreindications: 'Some cancers (caution: NAD+ supports cell survival).',
+      note: 'Small molecule that is a precursor of NAD+, not a peptide. It is studied in ageing pathways (sirtuins).' } },
 
-<div class="db-grid" id="dbGrid"></div>
+  // ── Neurologie ─────────────────────────────────────────────────
+  { id: 18, name: 'Semax', alias: 'MEHFPGP / Met-Glu-His-Phe-Pro-Gly-Pro', cat: 'neuro', admin: 'Nasal / SC', reg: 'review', phase: '',
+    effets: ['BDNF', 'Attention et concentration', 'Mémoire de travail', 'Neuroprotection', 'Anxiété', 'Récupération après un AVC', 'Motivation'],
+    secondaires: ['Irritation nasale', 'Légère hausse de la tension', 'Insomnie en cas de prise tardive', 'Agitation'],
+    contreindications: 'Épilepsie, hypertension sévère.',
+    note: 'Peptide développé en Russie, analogue d’un fragment de l’ACTH, sans effet corticoïde décrit.',
+    etudes: [],
+    en: { effets: ['BDNF', 'Attention and focus', 'Working memory', 'Neuroprotection', 'Anxiety', 'Stroke recovery', 'Motivation'],
+      secondaires: ['Nasal irritation', 'Slight rise in blood pressure', 'Insomnia if taken late', 'Restlessness'],
+      contreindications: 'Epilepsy, severe hypertension.',
+      note: 'Peptide developed in Russia, an analogue of an ACTH fragment, with no corticosteroid effect described.' } },
+  { id: 19, name: 'Selank', alias: 'TP-7 / Thr-Lys-Pro-Arg-Pro-Gly-Pro', cat: 'neuro', admin: 'Nasal / SC', reg: 'review', phase: '',
+    effets: ['Anxiété', 'Mémoire', 'Stabilité émotionnelle', 'Immunité', 'BDNF', 'Humeur', 'Sommeil'],
+    secondaires: ['Somnolence légère', 'Irritation nasale', 'Légère sédation'],
+    contreindications: 'Aucune connue à ce jour.',
+    note: 'Analogue de la tuftsine. Les études décrivent un effet sur l’anxiété sans action directe sur les récepteurs GABA.',
+    etudes: [],
+    en: { effets: ['Anxiety', 'Memory', 'Emotional stability', 'Immunity', 'BDNF', 'Mood', 'Sleep'],
+      secondaires: ['Mild drowsiness', 'Nasal irritation', 'Mild sedation'],
+      contreindications: 'None known to date.',
+      note: 'Tuftsin analogue. Studies describe an effect on anxiety without direct action on GABA receptors.' } },
+  { id: 20, name: 'Dihexa', alias: 'PNB-0408 / N-hexanoic-Tyr-Ile-(6) aminohexanoic amide', cat: 'neuro', admin: 'Topique / SC', reg: 'review', phase: 'preclinical',
+    effets: ['BDNF et HGF', 'Neurogenèse', 'Mémoire à long terme', 'Maladie d’Alzheimer (modèles)', 'Plasticité synaptique', 'Cognition'],
+    secondaires: ['Peu connus (peptide récent)', 'Anxiété possible', 'Irritabilité'],
+    contreindications: 'Grossesse, antécédents de cancer (action pro-angiogénique).',
+    note: 'Très peu d’études chez l’humain : données précliniques seulement, notamment dans des modèles de la maladie d’Alzheimer.',
+    etudes: [],
+    en: { effets: ['BDNF and HGF', 'Neurogenesis', 'Long-term memory', 'Alzheimer’s disease (models)', 'Synaptic plasticity', 'Cognition'],
+      secondaires: ['Little known (recent peptide)', 'Possible anxiety', 'Irritability'],
+      contreindications: 'Pregnancy, history of cancer (pro-angiogenic action).',
+      note: 'Very few human studies: preclinical data only, notably in Alzheimer’s disease models.' } },
+  { id: 21, name: 'Cerebrolysin', alias: 'FPE 1070', cat: 'neuro', admin: 'IV / IM', reg: 'approved_some', phase: 'established',
+    regNote: 'Autorisé dans plusieurs pays d’Europe de l’Est et d’Asie, notamment pour les démences et les suites d’AVC.',
+    effets: ['Activité de type BDNF', 'Activité de type NGF', 'Neurogenèse', 'Neuroprotection', 'Mémoire', 'Récupération après un AVC', 'Maladie d’Alzheimer'],
+    secondaires: ['Agitation', 'Insomnie', 'Vertiges', 'Réaction au point d’injection'],
+    contreindications: 'Épilepsie, insuffisance rénale sévère, allergie aux protéines porcines.',
+    note: 'Mélange de peptides neurotrophiques d’origine porcine.',
+    etudes: [],
+    en: { regNote: 'Authorised in several countries in Eastern Europe and Asia, notably for dementia and after stroke.',
+      effets: ['BDNF-like activity', 'NGF-like activity', 'Neurogenesis', 'Neuroprotection', 'Memory', 'Stroke recovery', 'Alzheimer’s disease'],
+      secondaires: ['Restlessness', 'Insomnia', 'Dizziness', 'Injection-site reaction'],
+      contreindications: 'Epilepsy, severe kidney failure, allergy to porcine proteins.',
+      note: 'Mixture of neurotrophic peptides of porcine origin.' } },
+  { id: 22, name: 'N-Acétyl Sélénométhionine', alias: 'NAC-SeM / Selenopeptide', cat: 'neuro', admin: 'Oral / SC', reg: 'review', phase: '',
+    effets: ['Antioxydant cérébral', 'Neuroprotection', 'Sélénoprotéines', 'Protection mitochondriale', 'Vieillissement neurologique'],
+    secondaires: ['Hausse du sélénium sanguin', 'Nausées en cas d’excès'],
+    contreindications: 'Surcharge en sélénium.',
+    note: 'Le sélénium est toxique à forte dose ; les sources signalent l’intérêt d’un suivi biologique.',
+    etudes: [],
+    en: { name: 'N-Acetyl Selenomethionine',
+      effets: ['Brain antioxidant', 'Neuroprotection', 'Selenoproteins', 'Mitochondrial protection', 'Neurological ageing'],
+      secondaires: ['Raised blood selenium', 'Nausea in case of excess'],
+      contreindications: 'Selenium overload.',
+      note: 'Selenium is toxic at high doses; sources point to the value of laboratory monitoring.' } },
+  { id: 47, name: 'P21', alias: 'NAPVSIPQ / Neuropeptide P21', cat: 'neuro', admin: 'Nasal / SC', reg: 'review', phase: '',
+    effets: ['Neurogenèse', 'Mémoire', 'Dépression', 'Stress post-traumatique', 'Neuroprotection', 'BDNF local'],
+    secondaires: ['Peu documentés', 'Légère somnolence'],
+    contreindications: 'Peu de données.',
+    note: 'Peptide expérimental dérivé de l’ADNF. Les études chez l’humain sont encore limitées.',
+    etudes: [],
+    en: { effets: ['Neurogenesis', 'Memory', 'Depression', 'Post-traumatic stress', 'Neuroprotection', 'Local BDNF'],
+      secondaires: ['Poorly documented', 'Mild drowsiness'],
+      contreindications: 'Limited data.',
+      note: 'Experimental peptide derived from ADNF. Human studies are still limited.' } },
 
-<!-- LEGENDE + DISCLAIMER -->
-<div style="max-width:var(--content-desktop,1100px);margin:0 auto;padding:0 28px 20px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px;margin-bottom:16px">
-    <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px"><span data-i18n="db_guide_title">📊 Guide — Avancement de la recherche</span></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#9CA3AF;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--neutral)"><span data-i18n="phase_exp_label">⚪ Données limitées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_exp_desc">Très peu d'études disponibles</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--danger);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--danger)"><span data-i18n="phase_pre_label">🔴 Recherche animale</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_pre_desc">Testé uniquement sur des animaux</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--amber)"><span data-i18n="phase_p1_label">🟠 Premiers tests humains</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p1_desc">Sécurité vérifiée sur quelques personnes</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#EAB308;flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:#EAB308"><span data-i18n="phase_p2_label">🟡 Études en cours</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p2_desc">Efficacité testée sur des centaines de personnes</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--accent)"><span data-i18n="phase_p3_label">🟢 Études avancées</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_p3_desc">Testé sur des milliers — proche du marché</span></div></div></div>
-      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--accent)"><span data-i18n="phase_est_label">✅ Largement utilisé</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_est_desc">Retours abondants, profil bien documenté</span></div></div></div>
-    </div>
-  </div>
-  <div class="legal-disclaimer"><div class="legal-disclaimer-text"><strong data-i18n="db_disclaimer_title">Avertissement légal — Usage éducatif et informatif uniquement.</strong> <span data-i18n="db_disclaimer_body">Les peptides présentés sont des peptides de recherche. Leur acquisition, détention ou usage à des fins autres que la recherche scientifique peut être illégal dans votre pays. Les informations fournies ne constituent pas un avis médical ni une prescription. Consultez un professionnel de santé qualifié avant tout protocole. PeptideScanner décline toute responsabilité quant aux conséquences liées à l'usage des informations disponibles sur cette application.</span></div></div>
-</div>
+  // ── Métabolisme et poids ───────────────────────────────────────
+  { id: 23, name: 'Sémaglutide', alias: 'Ozempic / Wegovy / agoniste du GLP-1', cat: 'fat', admin: 'SC', reg: 'approved', phase: 'established',
+    regNote: 'Approuvé (FDA, EMA) pour le diabète de type 2 et la prise en charge de l’obésité, sur prescription.',
+    effets: ['Poids corporel', 'Appétit', 'Glycémie', 'Protection cardiovasculaire', 'Inflammation', 'Graisse viscérale'],
+    secondaires: ['Nausées (fréquentes au début)', 'Vomissements', 'Diarrhée', 'Pancréatite (rare)', 'Perte de masse musculaire possible'],
+    contreindications: 'Antécédent de cancer médullaire de la thyroïde, NEM2, grossesse, pancréatite.',
+    note: 'Médicament sur prescription. Les études signalent une possible perte de masse musculaire associée à la perte de poids.',
+    etudes: [],
+    en: { name: 'Semaglutide', alias: 'Ozempic / Wegovy / GLP-1 agonist',
+      regNote: 'Approved (FDA, EMA) for type 2 diabetes and weight management, on prescription.',
+      effets: ['Body weight', 'Appetite', 'Blood sugar', 'Cardiovascular protection', 'Inflammation', 'Visceral fat'],
+      secondaires: ['Nausea (common at first)', 'Vomiting', 'Diarrhoea', 'Pancreatitis (rare)', 'Possible loss of muscle mass'],
+      contreindications: 'History of medullary thyroid cancer, MEN2, pregnancy, pancreatitis.',
+      note: 'Prescription medicine. Studies report a possible loss of muscle mass alongside weight loss.' } },
+  { id: 24, name: 'Tirzepatide', alias: 'Mounjaro / Zepbound / double agoniste GIP et GLP-1', cat: 'fat', admin: 'SC', reg: 'approved', phase: 'established',
+    regNote: 'Approuvé par la FDA (États-Unis) pour le diabète de type 2 et la prise en charge de l’obésité, sur prescription.',
+    effets: ['Poids corporel', 'Tolérance digestive', 'Masse maigre', 'Glycémie', 'Triglycérides', 'Protection cardiovasculaire'],
+    secondaires: ['Nausées', 'Diarrhée', 'Constipation', 'Pancréatite (rare)'],
+    contreindications: 'Mêmes contre-indications que le sémaglutide.',
+    note: 'Médicament sur prescription, à double mécanisme (GIP et GLP-1).',
+    etudes: [],
+    en: { alias: 'Mounjaro / Zepbound / dual GIP and GLP-1 agonist',
+      regNote: 'Approved by the FDA (United States) for type 2 diabetes and weight management, on prescription.',
+      effets: ['Body weight', 'Digestive tolerance', 'Lean mass', 'Blood sugar', 'Triglycerides', 'Cardiovascular protection'],
+      secondaires: ['Nausea', 'Diarrhoea', 'Constipation', 'Pancreatitis (rare)'],
+      contreindications: 'Same contraindications as semaglutide.',
+      note: 'Prescription medicine with a dual mechanism (GIP and GLP-1).' } },
+  { id: 25, name: 'AOD-9604', alias: 'Advanced Obesity Drug / hGH frag 176-191', cat: 'fat', admin: 'SC', reg: 'review', phase: '',
+    effets: ['Lipolyse', 'Graisse abdominale', 'Métabolisme des lipides', 'Cartilage'],
+    secondaires: ['Rougeur cutanée légère (très rare)', 'Légère fatigue'],
+    contreindications: 'Grossesse.',
+    note: 'Fragment de la GH étudié pour son effet sur les graisses, sans effet décrit sur l’IGF-1 ni sur la glycémie.',
+    etudes: [],
+    en: { effets: ['Lipolysis', 'Abdominal fat', 'Lipid metabolism', 'Cartilage'],
+      secondaires: ['Mild skin flushing (very rare)', 'Mild fatigue'],
+      contreindications: 'Pregnancy.',
+      note: 'GH fragment studied for its effect on fat, with no effect described on IGF-1 or blood sugar.' } },
+  { id: 26, name: '5-Amino-1MQ', alias: '5-amino-1-methylquinolinium', cat: 'fat', admin: 'Oral', reg: 'review', phase: '',
+    effets: ['NAD+', 'Métabolisme de base', 'Adipogenèse', 'Énergie cellulaire', 'Obésité', 'Longévité'],
+    secondaires: ['Peu documentés (molécule récente)', 'Légère insomnie possible'],
+    contreindications: 'Peu de données disponibles.',
+    note: 'Petite molécule de recherche (inhibiteur de la NNMT), au mécanisme différent de celui des agonistes du GLP-1.',
+    etudes: [],
+    en: { effets: ['NAD+', 'Basal metabolism', 'Adipogenesis', 'Cellular energy', 'Obesity', 'Longevity'],
+      secondaires: ['Poorly documented (recent molecule)', 'Possible mild insomnia'],
+      contreindications: 'Limited data available.',
+      note: 'Small research molecule (NNMT inhibitor), with a different mechanism from GLP-1 agonists.' } },
+  { id: 44, name: 'Retatrutide', alias: 'LY3437943 / triple agoniste GLP-1, GIP et glucagon', cat: 'fat', admin: 'SC', reg: 'research', phase: 'phase3',
+    regNote: 'Non approuvé : essais de phase 3 en cours.',
+    effets: ['Poids corporel', 'Graisse du foie', 'Métabolisme énergétique', 'Protection cardiovasculaire'],
+    secondaires: ['Nausées', 'Vomissements', 'Diarrhée'],
+    contreindications: 'Mêmes contre-indications que les agonistes du GLP-1.',
+    note: 'Triple agoniste (GLP-1, GIP et glucagon). Les résultats publiés sont préliminaires.',
+    etudes: [],
+    en: { alias: 'LY3437943 / triple GLP-1, GIP and glucagon agonist',
+      regNote: 'Not approved: phase 3 trials under way.',
+      effets: ['Body weight', 'Liver fat', 'Energy metabolism', 'Cardiovascular protection'],
+      secondaires: ['Nausea', 'Vomiting', 'Diarrhoea'],
+      contreindications: 'Same contraindications as GLP-1 agonists.',
+      note: 'Triple agonist (GLP-1, GIP and glucagon). Published results are preliminary.' } },
+  { id: 50, name: 'Adipotide', alias: 'CKGGRAKDC-GG-D(KLAKLAK)2', cat: 'fat', admin: 'SC', reg: 'not_approved', phase: 'preclinical',
+    regNote: 'Aucune approbation chez l’humain.',
+    effets: ['Apoptose des adipocytes', 'Graisse abdominale profonde', 'Poids corporel', 'Vaisseaux du tissu adipeux'],
+    secondaires: ['Toxicité rénale possible', 'Déshydratation'],
+    contreindications: 'Insuffisance rénale, déshydratation. Peptide expérimental.',
+    note: 'Très expérimental : résultats précliniques (primates). Le profil de sécurité n’est pas établi.',
+    etudes: [],
+    en: { regNote: 'No approval in humans.',
+      effets: ['Fat-cell apoptosis', 'Deep abdominal fat', 'Body weight', 'Fat-tissue blood vessels'],
+      secondaires: ['Possible kidney toxicity', 'Dehydration'],
+      contreindications: 'Kidney failure, dehydration. Experimental peptide.',
+      note: 'Highly experimental: preclinical results (primates). The safety profile has not been established.' } },
 
-<!-- MODAL -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal" id="modalContent"></div>
-</div>
+  // ── Hormones et sexualité ──────────────────────────────────────
+  { id: 27, name: 'PT-141', alias: 'Bremelanotide / Vyleesi', cat: 'sex', admin: 'SC / Nasal', reg: 'approved', phase: 'established',
+    regNote: 'Approuvé par la FDA (États-Unis) pour la baisse du désir sexuel chez la femme.',
+    effets: ['Fonction sexuelle', 'Fonction érectile', 'Excitation', 'Système de la mélanocortine'],
+    secondaires: ['Nausées (fréquentes)', 'Rougeur cutanée passagère', 'Maux de tête', 'Hausse passagère de la tension', 'Hyperpigmentation en cas d’usage prolongé'],
+    contreindications: 'Hypertension non contrôlée, maladies cardiovasculaires sévères.',
+    note: 'Mécanisme central (récepteurs de la mélanocortine), différent de celui des inhibiteurs de la PDE5.',
+    etudes: [],
+    en: { regNote: 'Approved by the FDA (United States) for low sexual desire in women.',
+      effets: ['Sexual function', 'Erectile function', 'Arousal', 'Melanocortin system'],
+      secondaires: ['Nausea (common)', 'Temporary skin flushing', 'Headache', 'Temporary rise in blood pressure', 'Hyperpigmentation with prolonged use'],
+      contreindications: 'Uncontrolled hypertension, severe cardiovascular disease.',
+      note: 'Central mechanism (melanocortin receptors), different from that of PDE5 inhibitors.' } },
+  { id: 28, name: 'Kisspeptin-10', alias: 'Metastin / KP-10', cat: 'sex', admin: 'SC / IV', reg: 'review', phase: '',
+    effets: ['LH et FSH', 'Testostérone endogène', 'Libido', 'Fertilité masculine', 'Axe hypothalamo-hypophyso-gonadique'],
+    secondaires: ['Rougeur cutanée passagère', 'Nausées légères'],
+    contreindications: 'Selon le contexte hormonal.',
+    note: 'Régulateur de l’axe hypothalamo-hypophyso-gonadique, étudié dans l’hypogonadisme hypogonadotrope et la fertilité.',
+    etudes: [],
+    en: { effets: ['LH and FSH', 'Endogenous testosterone', 'Libido', 'Male fertility', 'Hypothalamic-pituitary-gonadal axis'],
+      secondaires: ['Temporary skin flushing', 'Mild nausea'],
+      contreindications: 'Depends on the hormonal context.',
+      note: 'Regulator of the hypothalamic-pituitary-gonadal axis, studied in hypogonadotropic hypogonadism and fertility.' } },
+  { id: 29, name: 'Oxytocine', alias: 'Pitocin / hormone de l’attachement', cat: 'sex', admin: 'Nasal / SC', reg: 'approved', phase: '',
+    regNote: 'Médicament autorisé en obstétrique (accouchement). Les effets décrits ci-dessous relèvent de la recherche.',
+    effets: ['Lien social', 'Confiance', 'Fonction sexuelle', 'Anxiété sociale', 'Empathie'],
+    secondaires: ['Anxiété paradoxale chez certaines personnes', 'Maux de tête', 'Nausées légères'],
+    contreindications: 'Troubles bipolaires actifs, schizophrénie.',
+    note: 'Neuropeptide produit par l’organisme. Recherche en cours sur l’autisme, le stress post-traumatique et les addictions.',
+    etudes: [],
+    en: { name: 'Oxytocin', alias: 'Pitocin / bonding hormone',
+      regNote: 'Medicine authorised in obstetrics (childbirth). The effects described below come from research.',
+      effets: ['Social bonding', 'Trust', 'Sexual function', 'Social anxiety', 'Empathy'],
+      secondaires: ['Paradoxical anxiety in some people', 'Headache', 'Mild nausea'],
+      contreindications: 'Active bipolar disorder, schizophrenia.',
+      note: 'Neuropeptide produced by the body. Research is ongoing on autism, post-traumatic stress and addiction.' } },
+  { id: 39, name: 'Gonadoréline', alias: 'GnRH / LHRH / Lupron (analogue)', cat: 'sex', admin: 'SC / IV', reg: 'review', phase: '',
+    effets: ['LH et FSH', 'Fonction testiculaire', 'Fertilité masculine', 'Hypogonadisme hypogonadotrope'],
+    secondaires: ['Rougeur cutanée passagère', 'Nausées', 'Sensibilité mammaire passagère'],
+    contreindications: 'Cancer de la prostate hormono-dépendant.',
+    note: 'Forme synthétique de la GnRH naturelle, étudiée pour l’exploration et la prise en charge de certains hypogonadismes.',
+    etudes: [],
+    en: { name: 'Gonadorelin',
+      effets: ['LH and FSH', 'Testicular function', 'Male fertility', 'Hypogonadotropic hypogonadism'],
+      secondaires: ['Temporary skin flushing', 'Nausea', 'Temporary breast tenderness'],
+      contreindications: 'Hormone-dependent prostate cancer.',
+      note: 'Synthetic form of natural GnRH, studied for the assessment and management of some forms of hypogonadism.' } },
+
+  // ── Immunité ───────────────────────────────────────────────────
+  { id: 30, name: 'Thymosin Alpha-1', alias: 'Tα1 / Thymalfasin / Zadaxin', cat: 'immun', admin: 'SC', reg: 'approved_some', phase: 'established',
+    regNote: 'Autorisé dans plus de 35 pays, notamment pour les hépatites virales et certains déficits immunitaires.',
+    effets: ['Lymphocytes T', 'Cellules NK', 'Immunomodulation', 'Hépatites B et C', 'Immunité anticancéreuse', 'Infections récurrentes', 'COVID-19'],
+    secondaires: ['Réaction locale (très rare)', 'Légère fièvre initiale'],
+    contreindications: 'Personnes transplantées sous immunosuppresseurs (précaution).',
+    note: 'Peptide du thymus, parmi les plus étudiés en clinique dans le domaine immunitaire.',
+    etudes: [],
+    en: { regNote: 'Authorised in more than 35 countries, notably for viral hepatitis and some immune deficiencies.',
+      effets: ['T lymphocytes', 'NK cells', 'Immunomodulation', 'Hepatitis B and C', 'Anti-cancer immunity', 'Recurrent infections', 'COVID-19'],
+      secondaires: ['Local reaction (very rare)', 'Mild initial fever'],
+      contreindications: 'Transplant recipients on immunosuppressants (caution).',
+      note: 'Thymus peptide, among the most clinically studied in the immune field.' } },
+  { id: 31, name: 'Vilon', alias: 'Lys-Glu / KE dipeptide', cat: 'immun', admin: 'SC', reg: 'review', phase: '',
+    effets: ['Immunité innée', 'Vasodilatation', 'Tension artérielle', 'Vieillissement vasculaire', 'Longévité'],
+    secondaires: ['Très rares'],
+    contreindications: 'Hypotension.',
+    note: 'Dipeptide de la série des biorégulateurs, étudié depuis une trentaine d’années, surtout en Russie.',
+    etudes: [],
+    en: { effets: ['Innate immunity', 'Vasodilation', 'Blood pressure', 'Vascular ageing', 'Longevity'],
+      secondaires: ['Very rare'],
+      contreindications: 'Low blood pressure.',
+      note: 'Dipeptide from the bioregulator series, studied for about thirty years, mainly in Russia.' } },
+
+  // ── Cardio-métabolique ─────────────────────────────────────────
+  { id: 32, name: 'SS-31', alias: 'Elamipretide / Bendavia / MTP-131', cat: 'cardio', admin: 'SC / IV', reg: 'review', phase: 'phase3',
+    effets: ['Production d’ATP cardiaque', 'Stress oxydatif mitochondrial', 'Protection cardiaque', 'Capacité physique', 'Insuffisance cardiaque', 'Vieillissement mitochondrial'],
+    secondaires: ['Réaction au point d’injection', 'Nausées légères (voie IV)'],
+    contreindications: 'Insuffisance rénale sévère.',
+    note: 'Peptide mitochondrial ciblant la cardiolipine, évalué en essais cliniques de phase 2 et 3 dans l’insuffisance cardiaque.',
+    etudes: [],
+    en: { effets: ['Cardiac ATP production', 'Mitochondrial oxidative stress', 'Heart protection', 'Physical capacity', 'Heart failure', 'Mitochondrial ageing'],
+      secondaires: ['Injection-site reaction', 'Mild nausea (IV route)'],
+      contreindications: 'Severe kidney failure.',
+      note: 'Mitochondrial peptide targeting cardiolipin, evaluated in phase 2 and 3 clinical trials in heart failure.' } },
+  { id: 33, name: 'MOTS-c', alias: 'Mitochondrial Open Reading Frame peptide', cat: 'cardio', admin: 'SC / IV', reg: 'review', phase: '',
+    effets: ['Sensibilité à l’insuline', 'Endurance', 'Voie AMPK', 'Obésité', 'Vieillissement métabolique', 'Tolérance au glucose', 'Protection cardiaque'],
+    secondaires: ['Peu documentés', 'Légère fatigue initiale'],
+    contreindications: 'Peu de données disponibles.',
+    note: 'Peptide codé par l’ADN mitochondrial, découvert récemment. Son taux diminue avec l’âge.',
+    etudes: [],
+    en: { effets: ['Insulin sensitivity', 'Endurance', 'AMPK pathway', 'Obesity', 'Metabolic ageing', 'Glucose tolerance', 'Heart protection'],
+      secondaires: ['Poorly documented', 'Mild initial fatigue'],
+      contreindications: 'Limited data available.',
+      note: 'Peptide encoded by mitochondrial DNA, discovered recently. Its level declines with age.' } },
+  { id: 34, name: 'Humanin', alias: 'HN / Mitochondrial peptide', cat: 'cardio', admin: 'SC', reg: 'review', phase: '',
+    effets: ['Neuroprotection (Alzheimer)', 'Protection cardiaque', 'Sensibilité à l’insuline', 'Longévité', 'Apoptose', 'Protection cérébrale'],
+    secondaires: ['Très rares'],
+    contreindications: 'Peu de données disponibles.',
+    note: 'Peptide codé par l’ADN mitochondrial. Des études d’observation associent des taux élevés à la longévité, par exemple chez des centenaires.',
+    etudes: [],
+    en: { effets: ['Neuroprotection (Alzheimer’s)', 'Heart protection', 'Insulin sensitivity', 'Longevity', 'Apoptosis', 'Brain protection'],
+      secondaires: ['Very rare'],
+      contreindications: 'Limited data available.',
+      note: 'Peptide encoded by mitochondrial DNA. Observational studies link high levels to longevity, for example in centenarians.' } },
+
+  // ── Peau ───────────────────────────────────────────────────────
+  { id: 35, name: 'Melanotan II', alias: 'MT-II', cat: 'skin', admin: 'SC', reg: 'review', phase: '',
+    effets: ['Mélanine cutanée', 'Pigmentation de la peau', 'Libido', 'Fonction érectile', 'Appétit', 'Photoprotection'],
+    secondaires: ['Nausées fréquentes', 'Rougeur cutanée passagère', 'Érections spontanées', 'Taches brunes', 'Fatigue', 'Apparition ou modification de grains de beauté'],
+    contreindications: 'Antécédents de mélanome, nævus dysplasiques, grossesse.',
+    note: 'Des modifications des grains de beauté sont signalées ; les sources insistent sur une surveillance dermatologique. Les effets sur la fonction sexuelle sont proches de ceux du PT-141.',
+    etudes: [],
+    en: { effets: ['Skin melanin', 'Skin pigmentation', 'Libido', 'Erectile function', 'Appetite', 'Photoprotection'],
+      secondaires: ['Frequent nausea', 'Temporary skin flushing', 'Spontaneous erections', 'Brown spots', 'Fatigue', 'New or changing moles'],
+      contreindications: 'History of melanoma, dysplastic naevi, pregnancy.',
+      note: 'Changes in moles are reported; sources stress dermatological monitoring. Effects on sexual function are similar to those of PT-141.' } },
+  { id: 36, name: 'Palmitoyl Pentapeptide-4', alias: 'Matrixyl / Pal-KTTKS', cat: 'skin', admin: 'Topique', reg: 'cosmetic', phase: '',
+    effets: ['Collagène I et III', 'Rides', 'Élasticité', 'Fermeté', 'Aspect de la peau', 'Fibronectine'],
+    secondaires: ['Irritation légère (très rare)'],
+    contreindications: 'Allergie aux palmitates.',
+    note: 'Ingrédient de nombreuses crèmes cosmétiques, évalué dans des études en double aveugle contre placebo.',
+    etudes: [],
+    en: { effets: ['Collagen I and III', 'Wrinkles', 'Elasticity', 'Firmness', 'Skin appearance', 'Fibronectin'],
+      secondaires: ['Mild irritation (very rare)'],
+      contreindications: 'Palmitate allergy.',
+      note: 'Ingredient in many cosmetic creams, evaluated in double-blind placebo-controlled studies.' } },
+  { id: 37, name: 'Argireline', alias: 'Acetyl Hexapeptide-3 / Acetyl hexapeptide-8', cat: 'skin', admin: 'Topique', reg: 'cosmetic', phase: '',
+    effets: ['Rides d’expression', 'Détente musculaire superficielle', 'Texture de la peau'],
+    secondaires: ['Léger engourdissement local (très rare)'],
+    contreindications: 'Grossesse (précaution).',
+    note: 'Ingrédient cosmétique qui agit en partie sur les protéines SNARE, sans injection. Un effet partiel est décrit.',
+    etudes: [],
+    en: { effets: ['Expression lines', 'Superficial muscle relaxation', 'Skin texture'],
+      secondaires: ['Mild local numbness (very rare)'],
+      contreindications: 'Pregnancy (caution).',
+      note: 'Cosmetic ingredient that partly acts on SNARE proteins, without injection. A partial effect is described.' } },
+  { id: 38, name: 'Leuphasyl', alias: 'Pentapeptide-18 / Lipotec', cat: 'skin', admin: 'Topique', reg: 'cosmetic', phase: '',
+    effets: ['Rides d’expression', 'Relaxation musculaire cutanée', 'Lissage de la peau'],
+    secondaires: ['Très rares'],
+    contreindications: 'Aucune connue.',
+    note: 'Ingrédient cosmétique dont le mécanisme est décrit comme proche de celui des enképhalines, au niveau de la peau.',
+    etudes: [],
+    en: { effets: ['Expression lines', 'Skin muscle relaxation', 'Skin smoothing'],
+      secondaires: ['Very rare'],
+      contreindications: 'None known.',
+      note: 'Cosmetic ingredient whose mechanism is described as close to that of enkephalins, at skin level.' } },
+
+  // ── Autres fiches de l'axe musculaire et digestif ──────────────
+  { id: 40, name: 'Follistatin 344', alias: 'FST-344', cat: 'gh', admin: 'IM', reg: 'review', phase: '',
+    effets: ['Myostatine', 'Masse musculaire', 'Force', 'Croissance musculaire locale', 'Récupération'],
+    secondaires: ['Peu documentés', 'Douleur au point d’injection', 'Fibrose locale possible'],
+    contreindications: 'Cancers hormono-dépendants.',
+    note: 'Très peu d’études chez l’humain. Une croissance musculaire asymétrique est décrite après injection locale.',
+    etudes: [],
+    en: { effets: ['Myostatin', 'Muscle mass', 'Strength', 'Local muscle growth', 'Recovery'],
+      secondaires: ['Poorly documented', 'Injection-site pain', 'Possible local fibrosis'],
+      contreindications: 'Hormone-dependent cancers.',
+      note: 'Very few human studies. Asymmetric muscle growth is described after local injection.' } },
+  { id: 41, name: 'Hexarelin', alias: 'Examorelin / EP-23905', cat: 'gh', admin: 'SC', reg: 'review', phase: '',
+    effets: ['Sécrétion de GH', 'Protection cardiaque', 'Masse musculaire', 'Force'],
+    secondaires: ['Perte d’effet rapide (désensibilisation)', 'Hausse du cortisol', 'Hausse de la prolactine', 'Rétention d’eau'],
+    contreindications: 'Hypertension, maladies cardiaques non stabilisées.',
+    note: 'Les études décrivent une désensibilisation rapide en cas d’usage continu, ainsi qu’un effet sur le cœur indépendant de la GH.',
+    etudes: [],
+    en: { effets: ['GH secretion', 'Heart protection', 'Muscle mass', 'Strength'],
+      secondaires: ['Rapid loss of effect (desensitisation)', 'Raised cortisol', 'Raised prolactin', 'Water retention'],
+      contreindications: 'Hypertension, unstable heart disease.',
+      note: 'Studies describe rapid desensitisation with continuous use, as well as an effect on the heart independent of GH.' } },
+  { id: 42, name: 'Larazotide', alias: 'AT-1001 / INN-202', cat: 'recov', admin: 'Oral', reg: 'research', phase: 'phase3',
+    regNote: 'En essais cliniques (maladie cœliaque) ; non approuvé à ce jour.',
+    effets: ['Perméabilité intestinale', 'Jonctions serrées', 'Inflammation intestinale', 'Maladie cœliaque', 'LPS sanguin'],
+    secondaires: ['Bien toléré dans les essais', 'Nausées légères (rares)'],
+    contreindications: 'Aucune connue.',
+    note: 'Régulateur des jonctions serrées de l’intestin, évalué en phase 3 dans la maladie cœliaque.',
+    etudes: [],
+    en: { regNote: 'In clinical trials (coeliac disease); not approved to date.',
+      effets: ['Intestinal permeability', 'Tight junctions', 'Intestinal inflammation', 'Coeliac disease', 'Blood LPS'],
+      secondaires: ['Well tolerated in trials', 'Mild nausea (rare)'],
+      contreindications: 'None known.',
+      note: 'Regulator of intestinal tight junctions, evaluated in phase 3 in coeliac disease.' } },
+  { id: 46, name: 'Mechano Growth Factor', alias: 'MGF / IGF-1Ec', cat: 'gh', admin: 'IM', reg: 'review', phase: '',
+    effets: ['Cellules satellites', 'Croissance musculaire locale', 'Récupération', 'Synthèse protéique locale', 'Réparation des fibres musculaires'],
+    secondaires: ['Douleur au point d’injection', 'Hypoglycémie possible', 'Croissance locale asymétrique'],
+    contreindications: 'Mêmes précautions que l’IGF-1.',
+    note: 'Variant d’épissage de l’IGF-1 produit localement par le muscle sollicité. À distinguer de l’IGF-1 LR3, d’action générale.',
+    etudes: [],
+    en: { effets: ['Satellite cells', 'Local muscle growth', 'Recovery', 'Local protein synthesis', 'Muscle fibre repair'],
+      secondaires: ['Injection-site pain', 'Possible hypoglycaemia', 'Asymmetric local growth'],
+      contreindications: 'Same precautions as IGF-1.',
+      note: 'Splice variant of IGF-1 produced locally by working muscle. Not to be confused with IGF-1 LR3, which acts body-wide.' } },
+  { id: 51, name: 'Ace-031', alias: 'ACVR2B / Myostatin inhibitor peptide', cat: 'gh', admin: 'SC / IV', reg: 'research', phase: '',
+    regNote: 'Non approuvé : essais cliniques suspendus en raison d’effets vasculaires.',
+    effets: ['Masse musculaire', 'Force', 'Myostatine et activine', 'Dystrophies musculaires', 'Sarcopénie'],
+    secondaires: ['Saignements de nez', 'Télangiectasies', 'Troubles des gencives', 'Hypertension'],
+    contreindications: 'Effets indésirables vasculaires signalés. Usage limité à la recherche.',
+    note: 'Essais cliniques suspendus pour effets vasculaires.',
+    etudes: [],
+    en: { regNote: 'Not approved: clinical trials suspended because of vascular effects.',
+      effets: ['Muscle mass', 'Strength', 'Myostatin and activin', 'Muscular dystrophies', 'Sarcopenia'],
+      secondaires: ['Nosebleeds', 'Telangiectasia', 'Gum problems', 'Hypertension'],
+      contreindications: 'Vascular side effects reported. Use limited to research.',
+      note: 'Clinical trials suspended because of vascular effects.' } }
+];
+</script>
 
 <script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const P = window.PS;   // outils communs (ps-app.js)
+let userId = null;
 
-// Map nom peptide → research_phase (chargé depuis Supabase)
-let PHASE_MAP = {};
+// Ordre d'affichage des catégories et des phases (codes internes → clés lib2_)
+const CATS = ['gh', 'recov', 'anti', 'neuro', 'fat', 'sex', 'immun', 'cardio', 'skin'];
+const PHASES = ['experimental', 'preclinical', 'phase1', 'phase2', 'phase3', 'established'];
+const REPORTS_KEY = 'ps_source_reports';
 
+let PHASE_MAP = {};                   // nom normalisé → research_phase (table Supabase « peptides »)
+const filters = { q: '', cat: 'all', phase: 'all' };
+let listScroll = 0;
+
+// ── Petits outils ──────────────────────────────────────────────
+function fmt(key, vars) {
+  let s = t(key);
+  Object.keys(vars || {}).forEach(k => { s = s.split('{' + k + '}').join(vars[k]); });
+  return s;
+}
+function norm(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+function isEn() { return P.lang() === 'en'; }
+function loc(p, field) {                      // texte de la fiche dans la langue active
+  if (isEn() && p.en && p.en[field] !== undefined) return p.en[field];
+  return p[field];
+}
+function displayName(p) { return loc(p, 'name') || p.name; }
+function catLabel(code) { return t('lib2_cat_' + code); }
+function phaseOf(p) {
+  const fromDb = PHASE_MAP[norm(p.name)] || (p.en && p.en.name ? PHASE_MAP[norm(p.en.name)] : null);
+  const ph = fromDb || p.phase || 'experimental';
+  return PHASES.indexOf(ph) >= 0 ? ph : 'experimental';
+}
+function routeLabel(p) {
+  const v = isEn() ? String(p.admin).replace(/Topique/g, 'Topical') : p.admin;
+  return fmt('lib2_route', { v: v });
+}
+function slugOf(p) { return encodeURIComponent(p.name); }
+
+// ── Lecture Supabase : phase de recherche par peptide ──────────
 async function loadPhases() {
   try {
-    const { data } = await sb.from('peptides').select('name, research_phase');
-    if (data) {
-      data.forEach(p => {
-        PHASE_MAP[p.name.toLowerCase()] = p.research_phase || 'experimental';
-      });
-    }
-  } catch(e) { console.warn('Phases non chargées:', e); }
+    const { data, error } = await sb.from('peptides').select('name, research_phase');
+    if (error || !data) return;
+    const map = {};
+    data.forEach(r => { if (r && r.name && r.research_phase) map[norm(r.name)] = r.research_phase; });
+    PHASE_MAP = map;
+  } catch (e) { console.warn('[bibliothèque] phases non chargées :', e); }
 }
 
-function getPhase(peptideName) {
-  return PHASE_MAP[peptideName.toLowerCase()] || 'experimental';
+// ── Filtrage ───────────────────────────────────────────────────
+function matches(p) {
+  if (filters.cat !== 'all' && p.cat !== filters.cat) return false;
+  if (filters.phase !== 'all' && phaseOf(p) !== filters.phase) return false;
+  const q = norm(filters.q);
+  if (!q) return true;
+  const hay = [p.name, p.alias, p.en && p.en.name, p.en && p.en.alias, catLabel(p.cat)]
+    .concat(p.effets, (p.en && p.en.effets) || []).map(norm).join(' | ');
+  return hay.indexOf(q) >= 0;
 }
-</script>
-<script>
-const PEPTIDES = [
-  // ── GH / IGF-1 ──────────────────────────────────────────────────────
-  {
-    id: 1, name: "CJC-1295", alias: "Modified GRF 1-29 (avec DAC)",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "1–2 mg / semaine", admin: "SC", duree: "8–12 semaines",
-    frequence: "1× / semaine",
-    protocole: "Injection SC une fois par semaine. Souvent combiné à un GHRP pour effet synergique. Cycle : 8–12 semaines ON, 4 semaines OFF.",
-    effets: ["↑ GH pulsatile", "↑ IGF-1", "Récupération musculaire", "Lipolyse", "Meilleur sommeil", "Rajeunissement cutané"],
-    secondaires: ["Rétention d'eau", "Engourdissements", "Fatigue légère", "Hypoglycémie possible"],
-    stacks: ["Ipamorelin", "GHRP-6", "GHRP-2", "MK-677"],
-    contreindications: "Diabète actif, cancer hormono-dépendant, grossesse.",
-    note: "La version avec DAC (Drug Affinity Complex) a une demi-vie prolongée (~8 jours). Préférer sans DAC pour un profil GH plus physiologique."
-  },
-  {
-    id: 2, name: "Ipamorelin", alias: "NNC 26-0161",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "200–300 mcg, 2–3×/jour", admin: "SC", duree: "8–16 semaines",
-    frequence: "2–3× / jour (réveil, post-entraînement, coucher)",
-    protocole: "Injection SC 15–30 min avant repas ou entraînement. Jeun de 2h avant injection recommandé. Cycle 12 semaines ON / 4 OFF.",
-    effets: ["↑ GH sélective", "Masse maigre", "Récupération rapide", "↓ Graisse corporelle", "Sommeil profond", "Anti-âge"],
-    secondaires: ["Flush cutané", "Léger mal de tête", "Fatigue initiale", "Faim accrue"],
-    stacks: ["CJC-1295", "GHRP-2", "Sermorelin", "IGF-1 LR3"],
-    contreindications: "Tumeurs actives, grossesse.",
-    note: "Sécrétologue GH le plus sélectif : ne stimule pas le cortisol ni la prolactine. Idéal pour débutants."
-  },
-  {
-    id: 3, name: "GHRP-6", alias: "Growth Hormone Releasing Hexapeptide",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "100–300 mcg, 3×/jour", admin: "SC / IM", duree: "4–12 semaines",
-    frequence: "3× / jour à jeun",
-    protocole: "Injection SC à jeun (réveil, pré-entraînement, coucher). Respecter 2h sans manger avant et 30 min après. Peut augmenter significativement l'appétit.",
-    effets: ["↑↑ GH", "↑ Appétit", "Prise de masse", "Récupération", "↑ IGF-1", "Protection gastrique"],
-    secondaires: ["Faim intense", "Rétention d'eau", "↑ Cortisol", "↑ Prolactine", "Somnolence"],
-    stacks: ["CJC-1295 sans DAC", "Ipamorelin", "IGF-1 LR3"],
-    contreindications: "Troubles alimentaires, diabète instable.",
-    note: "Plus puissant pour la GH que l'Ipamorelin mais effets secondaires plus marqués. L'appétit stimulé peut être un avantage en prise de masse."
-  },
-  {
-    id: 4, name: "GHRP-2", alias: "KP-102 / Pralmorelin",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "100–300 mcg, 2–3×/jour", admin: "SC", duree: "6–12 semaines",
-    frequence: "2–3× / jour à jeun",
-    protocole: "Similaire au GHRP-6 mais moins de stimulation de l'appétit. Injection SC à jeun. Souvent préféré pour la sèche.",
-    effets: ["↑ GH fort", "↓ Graisse", "Masse maigre", "↑ IGF-1", "Récupération"],
-    secondaires: ["↑ Cortisol", "↑ Prolactine", "Flush", "Fatigue"],
-    stacks: ["CJC-1295", "Ipamorelin", "Sermorelin"],
-    contreindications: "Tumeurs hormono-dépendantes.",
-    note: "Rapport GH/appétit plus favorable que GHRP-6. Bon choix pour la recomposition corporelle."
-  },
-  {
-    id: 5, name: "Sermorelin", alias: "GRF 1-29 / GHRH 1-29",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "200–500 mcg / soir", admin: "SC", duree: "3–6 mois",
-    frequence: "1× / soir au coucher",
-    protocole: "Injection SC 30 min avant le coucher à jeun. Cure longue possible (3–6 mois). Axe GH plus naturel que HGH exogène.",
-    effets: ["↑ GH nocturne", "Sommeil réparateur", "Composition corporelle", "Anti-âge", "Énergie"],
-    secondaires: ["Flush", "Maux de tête", "Somnolence", "Œdèmes légers"],
-    stacks: ["Ipamorelin", "GHRP-6", "Tesamorelin"],
-    contreindications: "Hypothyroïdie non traitée, néoplasie.",
-    note: "Stimule la sécrétion physiologique de GH. Option plus douce et plus longue que les GHRP purs."
-  },
-  {
-    id: 6, name: "IGF-1 LR3", alias: "Long-R3 IGF-1",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "20–120 mcg / jour", admin: "SC / IM", duree: "4–6 semaines",
-    frequence: "1× / jour post-entraînement",
-    protocole: "Injection SC ou IM post-entraînement dans le groupe musculaire travaillé. Cycle maximum 4–6 semaines. Surveillance glycémie recommandée.",
-    effets: ["↑ Synthèse protéique", "Hyperplasie musculaire", "Lipolyse", "Récupération extrême", "↑ Densité musculaire"],
-    secondaires: ["Hypoglycémie (risque élevé)", "Crampes", "Rétention d'eau", "Neuropathie"],
-    stacks: ["CJC-1295", "Ipamorelin", "TB-500", "BPC-157"],
-    contreindications: "Diabète, hypoglycémie, cancer, grossesse.",
-    note: "⚠️ Peptide avancé. Toujours avoir du sucre à portée. La demi-vie étendue (20–30h) le rend plus anabolique que l'IGF-1 natif."
-  },
-  {
-    id: 7, name: "Tesamorelin", alias: "TH9507 / Egrifta",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "1–2 mg / jour", admin: "SC", duree: "3–6 mois",
-    frequence: "1× / jour (matin)",
-    protocole: "Approuvé FDA pour la lipodystrophie VIH. Injection SC abdominale chaque matin. Réduction visible de la graisse viscérale en 4–8 semaines.",
-    effets: ["↓ Graisse viscérale", "↑ IGF-1", "Amélioration profil lipidique", "Composition corporelle", "Cognition"],
-    secondaires: ["Œdèmes", "Arthralgies", "Neuropathie périphérique", "Hyperglycémie"],
-    stacks: ["Ipamorelin", "CJC-1295", "Semaglutide"],
-    contreindications: "Cancer actif, grossesse, allergie au mannitol.",
-    note: "Seul GHRH analogue approuvé FDA. Très efficace pour réduction de la graisse abdominale profonde."
-  },
-  {
-    id: 8, name: "MK-677", alias: "Ibutamoren / Nutrabol",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "10–25 mg / jour", admin: "Oral", duree: "3–6 mois",
-    frequence: "1× / soir",
-    protocole: "Sécrétagogue GH oral. Prise le soir pour profiter du pic GH nocturne. Peut être utilisé en continu. Surveiller glycémie à jeun.",
-    effets: ["↑ GH + IGF-1 sustained", "Masse maigre", "↓ Graisse", "Sommeil profond", "Densité osseuse", "Peau & cheveux"],
-    secondaires: ["↑ Appétit marqué", "Rétention d'eau", "↑ Glycémie", "Somnolence", "Engourdissements"],
-    stacks: ["CJC-1295", "Ipamorelin", "Cardarine", "LGD-4033"],
-    contreindications: "Diabète de type 2, insuffisance cardiaque, cancer.",
-    note: "Techniquement un sécrétagogue non-peptidique mais souvent catégorisé avec les peptides GH. Commodité orale unique."
-  },
+function sorted(list) {
+  return list.slice().sort((a, b) => displayName(a).localeCompare(displayName(b), P.locale(), { sensitivity: 'base', numeric: true }));
+}
 
-  // ── RÉCUPÉRATION ─────────────────────────────────────────────────────
-  {
-    id: 9, name: "BPC-157", alias: "Body Protective Compound 157 / PL 14736",
-    cat: "Récupération", catClass: "cat-recov",
-    dosage: "250–500 mcg / jour", admin: "SC / IM / Oral", duree: "4–12 semaines",
-    frequence: "1–2× / jour",
-    protocole: "SC près de la zone lésée ou IM. Pour douleurs gastriques : oral dans eau froide. Matin à jeun + soir. Cycle 4–12 semaines selon indication.",
-    effets: ["Réparation tendons/ligaments", "Protection gastrique", "↓ Inflammation", "Cicatrisation accélérée", "Neuroprotection", "↑ Vascularisation"],
-    secondaires: ["Très rares : nausées légères", "Léger flush", "Hypotension transitoire"],
-    stacks: ["TB-500", "GHK-Cu", "IGF-1 LR3", "KPV"],
-    contreindications: "Antécédents de tumeurs (prudence, action pro-angiogénique).",
-    note: "L'un des peptides les plus polyvalents. Profil de sécurité excellent. Particulièrement efficace pour les blessures sportives chroniques."
-  },
-  {
-    id: 10, name: "TB-500", alias: "Thymosin Beta-4 / Tβ4",
-    cat: "Récupération", catClass: "cat-recov",
-    dosage: "2–2.5 mg, 2× / semaine (phase charge)", admin: "SC / IM", duree: "4–8 semaines",
-    frequence: "2×/sem (charge 4–6 sem) puis 1×/sem (entretien)",
-    protocole: "Phase de charge : 2–2.5 mg 2× semaine pendant 4–6 semaines. Phase entretien : 1–1.5 mg 1× semaine. Injection SC ou IM.",
-    effets: ["Régénération musculaire", "Réparation tendons", "↑ Flexibilité", "↑ Endurance", "Cicatrisation", "Réduction fibrose"],
-    secondaires: ["Fatigue temporaire", "Maux de tête", "Nausées légères", "Flush"],
-    stacks: ["BPC-157", "GHK-Cu", "IGF-1 LR3", "Ipamorelin"],
-    contreindications: "Antécédents de cancer (prudence), grossesse.",
-    note: "Synergie exceptionnelle avec BPC-157. TB-500 agit systémiquement, BPC-157 localement. Stack idéal pour blessures sportives."
-  },
-  {
-    id: 11, name: "KPV", alias: "Lys-Pro-Val",
-    cat: "Récupération", catClass: "cat-recov",
-    dosage: "200–500 mcg / jour", admin: "SC / Oral", duree: "4–8 semaines",
-    frequence: "1–2× / jour",
-    protocole: "Tripeptide anti-inflammatoire dérivé de l'alpha-MSH. SC ou oral. Particulièrement efficace pour MICI (Crohn, colite). Oral dans eau froide.",
-    effets: ["Anti-inflammatoire puissant", "Protection intestinale", "↓ Cytokines", "Immunomodulation", "Cicatrisation muqueuse"],
-    secondaires: ["Très rares : nausées légères"],
-    stacks: ["BPC-157", "LL-37", "Larazotide"],
-    contreindications: "Immunosuppression sévère.",
-    note: "Peptide peu connu mais très efficace pour l'inflammation chronique intestinale. À associer à BPC-157 pour troubles digestifs."
-  },
-  {
-    id: 12, name: "GHK-Cu", alias: "Copper Peptide GHK / Ghk-Cu",
-    cat: "Récupération", catClass: "cat-recov",
-    dosage: "1–2 mg / jour", admin: "SC / Topique", duree: "4–8 semaines",
-    frequence: "1× / jour",
-    protocole: "SC systémique ou application topique locale. Pour usage anti-âge : SC quotidien. Pour peau : crème à 1–5% GHK-Cu topique.",
-    effets: ["Régénération tissulaire", "↑ Collagène", "↑ Élastine", "Cicatrisation", "Anti-âge cutané", "Neuroprotection", "↑ Densité osseuse"],
-    secondaires: ["Irritation cutanée légère (topique)", "Très rares systémiques"],
-    stacks: ["BPC-157", "TB-500", "Epithalon", "GHK"],
-    contreindications: "Allergie au cuivre.",
-    note: "Peptide naturellement présent dans le plasma humain. Décline avec l'âge. Double usage systémique et cosmétique."
-  },
-  {
-    id: 13, name: "LL-37", alias: "Cathelicidin / CRAMP",
-    cat: "Récupération", catClass: "cat-recov",
-    dosage: "0.5–2 mg / jour", admin: "SC / Topique", duree: "4–6 semaines",
-    frequence: "1× / jour",
-    protocole: "Peptide antimicrobien endogène. SC pour effets systémiques, topique pour infections cutanées. Stimule la régénération et l'immunité innée.",
-    effets: ["Antimicrobien large spectre", "Cicatrisation plaies", "Anti-inflammatoire", "↑ Angiogenèse", "Immunostimulation"],
-    secondaires: ["Inflammation locale SC", "Rougeur topique"],
-    stacks: ["BPC-157", "KPV", "Thymosin Alpha-1"],
-    contreindications: "Maladies auto-immunes actives, lupus.",
-    note: "Particulièrement utile pour plaies chroniques, infections résistantes, et soutien immunitaire général."
-  },
+// ── Vue liste (maquette « library » / « empty-library ») ────────
+function renderList() {
+  const opt = (v, txt) => [v, txt];
+  const catOpts = [opt('all', t('lib2_f_cat_all'))].concat(CATS.map(c => opt(c, catLabel(c))));
+  const phOpts = [opt('all', t('lib2_f_phase_all'))].concat(PHASES.map(ph => opt(ph, t('lib2_ph_' + ph))));
+  document.title = 'PeptideScanner — ' + t('lib2_title');
+  document.getElementById('view').innerHTML =
+    '<div class="stack">' +
+    '<div class="page-intro"><h1 data-i18n="lib2_title">Bibliothèque</h1><p class="muted small" data-i18n="lib2_sub">Des sources pour comprendre</p></div>' +
+    '<div class="field"><label class="label" for="libSearch" data-i18n="lib2_search">Rechercher un peptide</label>' +
+      '<div class="input-wrap lib-search"><span class="search-ic">' + P.icon('magnifying-glass') + '</span>' +
+      '<input class="input" id="libSearch" name="libSearch" type="search" enterkeyhint="search" autocomplete="off" data-i18n-ph="lib2_search_ph" placeholder="Nom ou mot-clé" value="' + P.esc(filters.q) + '"></div></div>' +
+    '<div class="grid2">' +
+      P.select(t('lib2_f_cat'), 'libCat', catOpts, filters.cat) +
+      P.select(t('lib2_f_phase'), 'libPhase', phOpts, filters.phase) +
+    '</div>' +
+    '<p class="small muted" id="libCount" aria-live="polite"></p>' +
+    '<div id="libResults"></div>' +
+    '<div id="libNotice">' + P.notice(t('msg_info_not_reco')) + '</div>' +
+    '</div>';
+  PS_applyI18n();
 
-  // ── ANTI-ÂGE ─────────────────────────────────────────────────────────
-  {
-    id: 14, name: "Epithalon", alias: "Epitalon / Epithalone / ALA-GLU-ASP-GLY",
-    cat: "Anti-âge", catClass: "cat-anti",
-    dosage: "5–10 mg / jour", admin: "SC / IV", duree: "10–20 jours (2× / an)",
-    frequence: "1× / jour pendant 10–20 jours",
-    protocole: "Cure courte et intense : 10–20 injections consécutives de 5–10 mg SC ou IV. Répéter 2× par an. Effet sur les télomères et la pinéale.",
-    effets: ["↑ Longueur des télomères", "↑ Mélatonine", "↑ Longévité", "Régulation circadienne", "↑ Antioxydants", "Neuroprotection", "↑ Immunité"],
-    secondaires: ["Très rares : légère fatigue initiale", "Somnolence les premiers jours"],
-    stacks: ["GHK-Cu", "Thymalin", "Cortagen", "Pinealon"],
-    contreindications: "Grossesse, néoplasies actives.",
-    note: "Peptide tétramérique découvert en Russie. L'un des agents anti-vieillissement les mieux documentés. Active la télomérase."
-  },
-  {
-    id: 15, name: "Thymalin", alias: "Thymic peptide / Thymus extract",
-    cat: "Anti-âge", catClass: "cat-anti",
-    dosage: "10–20 mg / jour", admin: "SC / IM", duree: "10 jours (2× / an)",
-    frequence: "1× / jour pendant 10 jours",
-    protocole: "Cure de 10 jours : 10–20 mg SC ou IM quotidien. À répéter 1–2× par an. Restaure la fonction thymique déclinant avec l'âge.",
-    effets: ["Restauration immunité T", "↑ Lymphocytes T", "Anti-âge immunologique", "↓ Maladies auto-immunes", "Longévité"],
-    secondaires: ["Réaction locale injection", "Légère fièvre initiale possible"],
-    stacks: ["Epithalon", "Thymosin Alpha-1", "Vilon"],
-    contreindications: "Maladies auto-immunes sévères.",
-    note: "Extrait thymus peptidique. Particulièrement utile après 40 ans pour restaurer l'immunité cellulaire déclinante."
-  },
-  {
-    id: 16, name: "Pinealon", alias: "EDR / Glu-Asp-Arg",
-    cat: "Anti-âge", catClass: "cat-anti",
-    dosage: "5–10 mg / jour", admin: "SC / Nasal", duree: "10 jours",
-    frequence: "1× / jour pendant 10 jours",
-    protocole: "Peptide pinéal tripeptidique. SC ou nasal. Cure de 10 jours 1–2× par an. Synergie forte avec Epithalon pour le vieillissement cérébral.",
-    effets: ["Neuroprotection", "↑ Mélatonine endogène", "Mémoire", "Sommeil", "Régulation circadienne", "Anti-âge cérébral"],
-    secondaires: ["Somnolence", "Vivacité des rêves"],
-    stacks: ["Epithalon", "Semax", "Selank", "Cortagen"],
-    contreindications: "Grossesse.",
-    note: "Ciblé spécifiquement sur la glande pinéale. Idéal associé à l'Epithalon pour un protocole anti-âge complet."
-  },
-  {
-    id: 17, name: "Cortagen", alias: "Ala-Glu-Asp-Pro",
-    cat: "Anti-âge", catClass: "cat-anti",
-    dosage: "5–10 mg / jour", admin: "SC", duree: "10 jours",
-    frequence: "1× / jour",
-    protocole: "Peptide cardiaque tétramérique. Cure de 10 jours SC. Particulièrement ciblé sur la protection cardiovasculaire liée au vieillissement.",
-    effets: ["Protection cardiaque", "↓ Arythmies", "Régulation autonome", "Anti-âge cardiovasculaire", "↓ Fibrose myocardique"],
-    secondaires: ["Très rares"],
-    stacks: ["Epithalon", "Thymalin", "SS-31"],
-    contreindications: "Post-infarctus récent (prudence).",
-    note: "Partie des peptides peptidiques biorégulatoires de Khavinson. Ciblage organo-spécifique du myocarde."
-  },
+  const search = document.getElementById('libSearch');
+  search.addEventListener('input', () => { filters.q = search.value; renderResults(); });
+  search.addEventListener('keydown', e => { if (e.key === 'Enter') search.blur(); });
+  document.getElementById('libCat').addEventListener('change', e => { filters.cat = e.target.value; renderResults(); });
+  document.getElementById('libPhase').addEventListener('change', e => { filters.phase = e.target.value; renderResults(); });
+  renderResults();
+}
 
-  // ── NOOTROPIQUE / NEURO ───────────────────────────────────────────────
-  {
-    id: 18, name: "Semax", alias: "MEHFPGP / Met-Glu-His-Phe-Pro-Gly-Pro",
-    cat: "Nootropique", catClass: "cat-neuro",
-    dosage: "300–900 mcg / jour", admin: "Nasal / SC", duree: "2–4 semaines",
-    frequence: "2× / jour (matin et midi)",
-    protocole: "Spray nasal 1–2 gouttes par narine, 2× jour. Ou SC quotidien. Cycle : 2–4 semaines ON, 2 semaines OFF. Effet ressenti rapidement (j1–j3).",
-    effets: ["↑ BDNF", "↑ Focus & concentration", "↑ Mémoire de travail", "Neuroprotection", "↓ Anxiété", "Stroke recovery", "↑ Motivation"],
-    secondaires: ["Irritation nasale", "Légère hypertension", "Insomnie si pris tard", "Agitation"],
-    stacks: ["Selank", "Cerebrolysin", "Pinealon", "N-Acétyl Sélénométhionine"],
-    contreindications: "Épilepsie, HTA sévère.",
-    note: "Peptide nootropique développé en Russie. Analogue ACTH sans effet corticostéroïde. L'un des mieux documentés pour la cognition."
-  },
-  {
-    id: 19, name: "Selank", alias: "TP-7 / Thr-Lys-Pro-Arg-Pro-Gly-Pro",
-    cat: "Nootropique", catClass: "cat-neuro",
-    dosage: "250–750 mcg / jour", admin: "Nasal / SC", duree: "2–4 semaines",
-    frequence: "2–3× / jour",
-    protocole: "Spray nasal 1–2 gouttes/narine, 2–3× jour. La prise quotidienne régulière est préférable aux prises ponctuelles. Effet anxiolytique dès j1.",
-    effets: ["Anxiolytique puissant", "↑ Mémoire", "Stabilité émotionnelle", "↑ Immunité", "↑ BDNF", "Antidépresseur doux", "Sommeil"],
-    secondaires: ["Somnolence légère", "Irritation nasale", "Légère sédation"],
-    stacks: ["Semax", "Pinealon", "BPC-157"],
-    contreindications: "Aucune connue à ce jour.",
-    note: "Analogue de la tuftosine. Anxiolytique sans dépendance ni effets GABA. Idéal pour le stress chronique et les troubles anxieux."
-  },
-  {
-    id: 20, name: "Dihexa", alias: "PNB-0408 / N-hexanoic-Tyr-Ile-(6) aminohexanoic amide",
-    cat: "Nootropique", catClass: "cat-neuro",
-    dosage: "10–40 mg / semaine", admin: "Topique / SC", duree: "4–8 semaines",
-    frequence: "1–2× / semaine",
-    protocole: "Application cutanée (crème) ou SC. Peptide extrêmement puissant — faibles doses. Potentiellement 10 millions de fois plus puissant que le BDNF.",
-    effets: ["↑↑ BDNF & HGF", "Neurogenèse", "Mémoire long terme", "Récupération Alzheimer", "Synaptic plasticity", "Cognition extrême"],
-    secondaires: ["Peu connus (peptide récent)", "Possible anxiété à dose élevée", "Irritabilité"],
-    stacks: ["Semax", "Cerebrolysin", "Selank"],
-    contreindications: "Grossesse, antécédents de cancer (pro-angiogénique).",
-    note: "⚠️ Peptide très puissant, dosage précis requis. Peu d'études humaines ; données précliniques seulement pour Alzheimer."
-  },
-  {
-    id: 21, name: "Cerebrolysin", alias: "FPE 1070",
-    cat: "Nootropique", catClass: "cat-neuro",
-    dosage: "5–30 mL / jour (ampule)", admin: "IV / IM", duree: "10–20 jours",
-    frequence: "1× / jour pendant 10–20 jours",
-    protocole: "Mélange de peptides neurotrophiques. IV lente (perfusion) ou IM. Cure intense de 10–20 jours. Approuvé dans plusieurs pays pour démences.",
-    effets: ["BDNF-like", "NGF-like", "Neurogenèse", "Neuroprotection", "↑ Mémoire", "Recovery AVC", "Alzheimer ralentissement"],
-    secondaires: ["Agitation", "Insomnie", "Vertiges", "Réaction injection"],
-    stacks: ["Semax", "Pinealon", "Dihexa"],
-    contreindications: "Épilepsie, insuffisance rénale sévère, allergie protéines porcines.",
-    note: "Extrait porcin de facteurs neurotrophiques. Approuvé médicalement en Europe de l'Est et en Asie. Protocole cliniquement validé."
-  },
-  {
-    id: 22, name: "N-Acétyl Sélénométhionine", alias: "NAC-SeM / Selenopeptide",
-    cat: "Nootropique", catClass: "cat-neuro",
-    dosage: "200–400 mcg / jour", admin: "Oral / SC", duree: "4–8 semaines",
-    frequence: "1× / jour",
-    protocole: "Forme selenisée de méthionine. Puissant antioxydant mitochondrial cérébral. Oral ou SC. Protection neuronale longue durée.",
-    effets: ["Antioxydant cérébral", "Neuroprotection", "↑ Sélénoprotéines", "Protection mitochondriale", "Anti-âge neurologique"],
-    secondaires: ["↑ Sélénium sang (surveiller)", "Nausées si surdose"],
-    stacks: ["Semax", "Pinealon", "Epithalon"],
-    contreindications: "Surcharge en sélénium.",
-    note: "Dosage précis requis — le sélénium est toxique à haute dose. Surveillance biologique recommandée."
-  },
-
-  // ── PERTE DE POIDS ────────────────────────────────────────────────────
-  {
-    id: 23, name: "Semaglutide", alias: "Ozempic / Wegovy / GLP-1 agoniste",
-    cat: "Perte de poids", catClass: "cat-fat",
-    dosage: "0.25 → 2.4 mg / semaine", admin: "SC", duree: "Continu (12–52 sem)",
-    frequence: "1× / semaine (même jour)",
-    protocole: "Titration obligatoire : S1–4: 0.25 mg → S5–8: 0.5 mg → S9–12: 1 mg → S13+: 1.7–2.4 mg si toléré. Injection SC abdomen/cuisse/bras.",
-    effets: ["↓ Poids -15 à -20%", "↓ Appétit fort", "Glycémie", "Cardioprotection", "↓ Inflammation", "↓ Graisse viscérale"],
-    secondaires: ["Nausées (fréquentes début)", "Vomissements", "Diarrhée", "Pancréatite (rare)", "↓ Masse musculaire possible"],
-    stacks: ["Tirzepatide", "BPC-157 (protection gastrique)", "Tesamorelin", "Ipamorelin (préservation masse)"],
-    contreindications: "Cancer thyroïde médullaire (ATCD), NEM2, grossesse, pancréatite.",
-    note: "Médicament approuvé FDA/EMA. Révolution thérapeutique de la décennie. Surveiller masse musculaire — associer résistance et protéines."
-  },
-  {
-    id: 24, name: "Tirzepatide", alias: "Mounjaro / Zepbound / GIP+GLP-1 double agoniste",
-    cat: "Perte de poids", catClass: "cat-fat",
-    dosage: "2.5 → 15 mg / semaine", admin: "SC", duree: "Continu",
-    frequence: "1× / semaine",
-    protocole: "Titration : 2.5 mg 4 sem → 5 mg 4 sem → 7.5, 10, 12.5, 15 mg progressivement. Double mécanisme GIP+GLP-1 = perte de poids supérieure au semaglutide.",
-    effets: ["↓ Poids -20 à -25%", "Meilleure tolérance GI", "↑ Masse maigre vs GLP-1 seul", "Glycémie", "Triglycérides", "Cardioprotection"],
-    secondaires: ["Nausées (moins que sémaglutide)", "Diarrhée", "Constipation", "Pancréatite (rare)"],
-    stacks: ["BPC-157", "Ipamorelin/CJC (préservation musculaire)"],
-    contreindications: "Mêmes que semaglutide.",
-    note: "Efficacité supérieure au semaglutide en perte de poids. Profil GI souvent mieux toléré. Approbation FDA 2023."
-  },
-  {
-    id: 25, name: "AOD-9604", alias: "Advanced Obesity Drug / hGH frag 176-191",
-    cat: "Perte de poids", catClass: "cat-fat",
-    dosage: "250–300 mcg / jour", admin: "SC", duree: "12–24 semaines",
-    frequence: "1× / jour à jeun (matin)",
-    protocole: "Fragment C-terminal de la GH. Injection SC le matin à jeun. N'affecte pas l'IGF-1 ni la glycémie. Pur effet lipolytique.",
-    effets: ["Lipolyse ciblée", "↓ Graisse abdominale", "↑ Métabolisme lipidique", "Sans effets IGF-1", "Réparation cartilage"],
-    secondaires: ["Très rares : flush légère", "Légère fatigue"],
-    stacks: ["CJC-1295", "Ipamorelin", "Tesamorelin", "Semaglutide"],
-    contreindications: "Grossesse.",
-    note: "Fragment isolé de la GH responsable de l'effet lipolytique, sans les effets anaboliques. Profil de sécurité excellent."
-  },
-  {
-    id: 26, name: "5-Amino-1MQ", alias: "5-amino-1-methylquinolinium",
-    cat: "Perte de poids", catClass: "cat-fat",
-    dosage: "50–100 mg / jour", admin: "Oral", duree: "8–12 semaines",
-    frequence: "1–2× / jour",
-    protocole: "Inhibiteur NNMT. Oral, avec ou sans repas. Augmente le NAD+ cellulaire et l'activité mitochondriale. Effet sur la différenciation adipocytaire.",
-    effets: ["↑ NAD+", "↑ Métabolisme basal", "↓ Adipogenèse", "↑ Énergie cellulaire", "Effet anti-obésité", "Longévité"],
-    secondaires: ["Peu documentés (molécule récente)", "Légère insomnie possible"],
-    stacks: ["AOD-9604", "Semaglutide", "NMN"],
-    contreindications: "Peu de données disponibles.",
-    note: "Petite molécule de recherche innovante. Mécanisme différent des GLP-1 agonistes. Prometteur pour la résistance à l'obésité."
-  },
-
-  // ── SEXUEL / LIBIDO ───────────────────────────────────────────────────
-  {
-    id: 27, name: "PT-141", alias: "Bremelanotide / Vyleesi",
-    cat: "Sexuel", catClass: "cat-sex",
-    dosage: "0.5–2 mg / dose", admin: "SC / Nasal", duree: "À la demande",
-    frequence: "1–2h avant activité sexuelle",
-    protocole: "Injection SC 45–60 min avant ou spray nasal. Commencer à 0.5 mg, titrer selon tolérance. Ne pas dépasser 1× / 72h. Approuvé FDA (femmes).",
-    effets: ["↑ Désir sexuel ♀ et ♂", "↑ Érection", "↑ Excitation centrale", "↑ Orgasme", "Indépendant de la vascularisation"],
-    secondaires: ["Nausées (fréquentes)", "Flush", "Céphalées", "↑ PA transitoire", "Hyperpigmentation si usage chronique"],
-    stacks: ["Oxytocine", "BPC-157"],
-    contreindications: "HTA non contrôlée, maladies cardiovasculaires sévères.",
-    note: "Mécanisme central (mélanocortine) différent des PDE5i (Viagra). Efficace même en l'absence d'excitation physique. Approuvé hypoactivité désir féminin."
-  },
-  {
-    id: 28, name: "Kisspeptin-10", alias: "Metastin / KP-10",
-    cat: "Sexuel", catClass: "cat-sex",
-    dosage: "50–100 mcg / dose", admin: "SC / IV", duree: "Cycles pulsatiles",
-    frequence: "Pulsatile (1× / 90 min en protocole clinique)",
-    protocole: "Régulateur clé de l'axe hypothalamo-hypophyso-gonadique. Stimule LH, FSH, testostérone. Usage clinique pour hypogonadisme hypogonadotrope.",
-    effets: ["↑ LH & FSH", "↑ Testostérone naturelle", "↑ Libido", "Fertilité masculine", "Réactivation axe HHG après SARMs/stéroïdes"],
-    secondaires: ["Flush", "Nausées légères"],
-    stacks: ["PT-141", "Gonadoréline", "HCG"],
-    contreindications: "Dépendant du contexte hormonal.",
-    note: "Intéressant pour la relance post-cycle (PCT) naturelle et le soutien de la fertilité masculine."
-  },
-  {
-    id: 29, name: "Oxytocine", alias: "Pitocin / Hormone de l'attachement",
-    cat: "Sexuel", catClass: "cat-sex",
-    dosage: "10–40 UI / dose", admin: "Nasal / SC", duree: "À la demande / cycles courts",
-    frequence: "Situationnel (30 min avant)",
-    protocole: "Spray nasal intranasal 20–40 UI, 15–30 min avant interactions sociales ou intimité. SC possible pour effets plus durables.",
-    effets: ["↑ Lien affectif", "↑ Confiance", "↑ Plaisir sexuel", "↓ Anxiété sociale", "↑ Orgasme", "Empathie"],
-    secondaires: ["Anxiété paradoxale chez certains", "Céphalées", "Nausées légères"],
-    stacks: ["PT-141", "Selank"],
-    contreindications: "Troubles bipolaires actifs, schizophrénie.",
-    note: "Neuropeptide endogène. Administration nasale permet passage BBB. Recherche active sur autisme, PTSD, addiction."
-  },
-
-  // ── IMMUNITÉ ──────────────────────────────────────────────────────────
-  {
-    id: 30, name: "Thymosin Alpha-1", alias: "Tα1 / Thymalfasin / Zadaxin",
-    cat: "Immunité", catClass: "cat-immun",
-    dosage: "1.6 mg, 2× / semaine", admin: "SC", duree: "4–12 semaines",
-    frequence: "2× / semaine",
-    protocole: "Injection SC standard 1.6 mg 2× semaine. Approuvé dans 35+ pays pour hépatites virales, immunodéficience, cancer. Cycle variable selon indication.",
-    effets: ["↑ Lymphocytes T", "↑ NK cells", "Immunomodulation", "Hépatite B&C", "Immunité cancer", "↓ Infections récurrentes", "COVID recovery"],
-    secondaires: ["Très rares : réaction locale", "Légère fièvre initiale"],
-    stacks: ["Thymalin", "LL-37", "BPC-157"],
-    contreindications: "Transplantés sous immunosuppresseurs (précaution).",
-    note: "Peptide thymus approuvé médicalement dans 35+ pays. Probablement le peptide immunitaire le mieux documenté cliniquement."
-  },
-  {
-    id: 31, name: "Vilon", alias: "Lys-Glu / KE dipeptide",
-    cat: "Immunité", catClass: "cat-immun",
-    dosage: "0.1 mg / kg / jour", admin: "SC", duree: "10 jours (2× / an)",
-    frequence: "1× / jour pendant 10 jours",
-    protocole: "Dipeptide vaso-actif et immunostimulant. SC quotidien pendant 10 jours. Cure 1–2× par an. Partie de la série des peptides biorégulatoires.",
-    effets: ["↑ Immunité innée", "Vasodilatation", "↓ Hypertension", "Anti-âge vasculaire", "↑ Espérance de vie"],
-    secondaires: ["Très rares"],
-    stacks: ["Epithalon", "Thymalin", "Cortagen"],
-    contreindications: "Hypotension.",
-    note: "Dipeptide simple mais effets anti-âge documentés sur 30 ans d'études russes. Synergie avec Epithalon pour longévité."
-  },
-
-  // ── CARDIO / MÉTABOLIQUE ──────────────────────────────────────────────
-  {
-    id: 32, name: "SS-31", alias: "Elamipretide / Bendavia / MTP-131",
-    cat: "Cardio", catClass: "cat-cardio",
-    dosage: "0.05–0.25 mg/kg / jour", admin: "SC / IV", duree: "4–12 semaines",
-    frequence: "1× / jour",
-    protocole: "Peptide mitochondrial ciblant la cardiolipine. SC ou IV. Restaure la fonction mitochondriale cardiaque et réduit l'oxydation lipidique.",
-    effets: ["↑ ATP cardiaque", "↓ ROS mitochondriaux", "Cardioprotection", "↑ Performance physique", "Insuffisance cardiaque", "Anti-âge mitochondrial"],
-    secondaires: ["Réaction injection", "Nausées légères IV"],
-    stacks: ["Cortagen", "BPC-157", "MitoQ"],
-    contreindications: "Insuffisance rénale sévère.",
-    note: "En essais cliniques phase 2/3 pour insuffisance cardiaque. Résultats exceptionnels sur la fonction mitochondriale."
-  },
-  {
-    id: 33, name: "MOTS-c", alias: "Mitochondrial Open Reading Frame peptide",
-    cat: "Cardio", catClass: "cat-cardio",
-    dosage: "5–10 mg / semaine", admin: "SC / IV", duree: "8–16 semaines",
-    frequence: "1–2× / semaine",
-    protocole: "Peptide encodé dans l'ADN mitochondrial. SC hebdomadaire. Améliore la sensibilité à l'insuline et les performances d'endurance.",
-    effets: ["↑ Sensibilité insuline", "↑ Endurance", "↑ AMPK", "↓ Obésité", "Anti-âge métabolique", "↑ Tolérance glucose", "Protection cardiaque"],
-    secondaires: ["Peu documentés", "Légère fatigue initiale"],
-    stacks: ["SS-31", "Humanin", "BPC-157"],
-    contreindications: "Peu de données disponibles.",
-    note: "Peptide mitochondrial découvert récemment. Décline avec l'âge. Rôle clé dans le vieillissement métabolique."
-  },
-  {
-    id: 34, name: "Humanin", alias: "HN / Mitochondrial peptide",
-    cat: "Cardio", catClass: "cat-cardio",
-    dosage: "2–4 mg / semaine", admin: "SC", duree: "8–12 semaines",
-    frequence: "1–2× / semaine",
-    protocole: "Second peptide majeur encodé par l'ADN mitochondrial. SC hebdomadaire. Neuroprotecteur et cardiaque. Corrèle avec la longévité humaine.",
-    effets: ["Neuroprotection Alzheimer", "Cardioprotection", "↑ Sensibilité insuline", "↑ Longévité", "↓ Apoptose", "Protection cérébrale"],
-    secondaires: ["Très rares"],
-    stacks: ["MOTS-c", "SS-31", "Epithalon"],
-    contreindications: "Peu de données disponibles.",
-    note: "Corrèle avec la longévité dans les études humaines. Les centenaires ont des niveaux élevés d'Humanin."
-  },
-
-  // ── PEAU / COSMÉTIQUE ─────────────────────────────────────────────────
-  {
-    id: 35, name: "Melanotan II", alias: "MT-II",
-    cat: "Peau", catClass: "cat-skin",
-    dosage: "0.25–1 mg / dose", admin: "SC", duree: "Variable (selon teinte voulue)",
-    frequence: "Quotidien (phase charge) → 2–3×/sem (entretien)",
-    protocole: "Phase charge : 0.25–0.5 mg/jour SC jusqu'à teinte désirée (4–8 sem). Entretien : 0.5–1 mg, 2–3× semaine. S'activer au soleil pour meilleur résultat.",
-    effets: ["↑ Mélanine cutanée", "Bronzage durable", "↑ Libido (effet PT-141)", "↑ Érection", "↓ Appétit légère", "Photoprotection"],
-    secondaires: ["Nausées fréquentes", "Flush", "Érection spontanée", "Taches brunes", "Fatigue", "↑ Grains de beauté (surveiller)"],
-    stacks: ["PT-141", "BPC-157"],
-    contreindications: "Antécédents mélanome, nevi dysplasiques, grossesse.",
-    note: "⚠️ Surveiller les nevi régulièrement. Consultation dermatologue recommandée avant usage. Effets PT-141 souvent non désirés."
-  },
-  {
-    id: 36, name: "Palmitoyl Pentapeptide-4", alias: "Matrixyl / Pal-KTTKS",
-    cat: "Peau", catClass: "cat-skin",
-    dosage: "3–5% (topique)", admin: "Topique", duree: "Continue (cosmétique)",
-    frequence: "2× / jour (matin et soir)",
-    protocole: "Application topique. Stimule la synthèse de collagène I, III et fibronectine. Principal actif anti-âge de nombreuses crèmes haut de gamme.",
-    effets: ["↑ Collagène I & III", "↓ Rides", "↑ Élasticité", "Fermeté", "Éclat", "↑ Fibronectine"],
-    secondaires: ["Très rares : irritation légère"],
-    stacks: ["GHK-Cu topique", "Rétinol", "Vitamine C"],
-    contreindications: "Allergie aux palmitates.",
-    note: "L'un des peptides cosmétiques les plus validés scientifiquement. Efficacité démontrée en double-aveugle vs placebo."
-  },
-  {
-    id: 37, name: "Argireline", alias: "Acetyl Hexapeptide-3 / Acetyl hexapeptide-8",
-    cat: "Peau", catClass: "cat-skin",
-    dosage: "5–10% (topique)", admin: "Topique", duree: "Continue",
-    frequence: "2× / jour",
-    protocole: "Application topique sur rides d'expression. Inhibe partiellement les SNARE protéines (mécanisme botox-like). Résultats progressifs sur 4–8 semaines.",
-    effets: ["↓ Rides expression", "Détente musculaire superficielle", "↑ Peau lisse", "Effet botox topique doux"],
-    secondaires: ["Très rares : léger engourdissement local"],
-    stacks: ["Matrixyl", "GHK-Cu", "Leuphasyl"],
-    contreindications: "Grossesse (précaution).",
-    note: "Appelé 'Botox topique'. Efficacité partielle mais sans injections. Idéal en prévention rides d'expression."
-  },
-  {
-    id: 38, name: "Leuphasyl", alias: "Pentapeptide-18 / Lipotec",
-    cat: "Peau", catClass: "cat-skin",
-    dosage: "4–5% (topique)", admin: "Topique", duree: "Continue",
-    frequence: "2× / jour",
-    protocole: "Synergique avec Argireline pour réduction des rides d'expression. Mécanisme opioïde superficiel, complémentaire d'Argireline.",
-    effets: ["↓ Rides expression (synergie)", "Relaxation musculaire cutanée", "↑ Lissage", "Effet cumulatif avec Argireline"],
-    secondaires: ["Très rares"],
-    stacks: ["Argireline", "Matrixyl", "GHK-Cu"],
-    contreindications: "Aucune connue.",
-    note: "Association Argireline + Leuphasyl = effet anti-ride expression nettement supérieur à chaque peptide seul."
-  },
-
-  // ── DIVERS / AUTRES ───────────────────────────────────────────────────
-  {
-    id: 39, name: "Gonadoréline", alias: "GnRH / LHRH / Lupron (analogue)",
-    cat: "Sexuel", catClass: "cat-sex",
-    dosage: "100 mcg pulsatile / 90 min", admin: "SC / IV pulsatile", duree: "Variable (relance)",
-    frequence: "Pulsatile 1× / 90 min (pompe) ou 2–3×/semaine (PCT)",
-    protocole: "Pour PCT post-cycle : 100 mcg SC 2–3×/semaine pendant 4–6 semaines. Stimule LH et FSH endogènes pour relancer la testostérone naturelle.",
-    effets: ["↑ LH & FSH", "Relance testiculaire", "Fertilité masculine", "PCT post-SARMs/stéroïdes", "Hypogonadisme hypogonadotrope"],
-    secondaires: ["Flush", "Nausées", "Sensibilité mammaire transitoire"],
-    stacks: ["HCG", "Kisspeptin-10", "Clomid (non-peptidique)"],
-    contreindications: "Cancer prostate hormono-dépendant.",
-    note: "Outil de PCT sous-utilisé mais très physiologique. Préférable au HCG seul pour maintenir la sensibilité des récepteurs LH."
-  },
-  {
-    id: 40, name: "Follistatin 344", alias: "FST-344",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "50–100 mcg / jour", admin: "IM", duree: "10–30 jours",
-    frequence: "1× / jour",
-    protocole: "Inhibiteur de la myostatine endogène. IM dans le groupe musculaire cible. Cycle court et intense. Hypertrophie locale possible.",
-    effets: ["↓ Myostatine", "↑ Masse musculaire", "↑ Force", "Hypertrophie locale", "Récupération"],
-    secondaires: ["Peu documentés", "Douleur injection", "Possible fibrose locale si abus"],
-    stacks: ["IGF-1 LR3", "CJC-1295", "TB-500"],
-    contreindications: "Cancers hormono-dépendants.",
-    note: "⚠️ Peptide très avancé et peu d'études humaines. L'injection locale peut créer une hypertrophie asymétrique non naturelle."
-  },
-  {
-    id: 41, name: "Hexarelin", alias: "Examorelin / EP-23905",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "100–200 mcg, 2–3×/jour", admin: "SC", duree: "4–8 semaines",
-    frequence: "2–3× / jour à jeun",
-    protocole: "GHRP puissant. Désensibilisation rapide si usage continu — alterner semaines ON/OFF. Effet cardioprotecteur documenté en plus de la GH.",
-    effets: ["↑ GH très fort", "Cardioprotection", "↑ Masse musculaire", "↑ Force", "↑ Cortisol modéré"],
-    secondaires: ["Désensibilisation rapide", "↑ Cortisol", "↑ Prolactine", "Rétention eau"],
-    stacks: ["CJC-1295 sans DAC", "Ipamorelin"],
-    contreindications: "HTA, maladies cardiaques non stabilisées.",
-    note: "Plus puissant des GHRP pour la GH mais avec désensibilisation rapide. Intérêt particulier pour la protection cardiaque."
-  },
-  {
-    id: 42, name: "Larazotide", alias: "AT-1001 / INN-202",
-    cat: "Récupération", catClass: "cat-recov",
-    dosage: "0.5–5 mg / jour", admin: "Oral", duree: "4–12 semaines",
-    frequence: "3× / jour avant repas",
-    protocole: "Regulateur de la perméabilité intestinale (tight junctions). Oral 3× jour avant repas. En développement clinique pour maladie cœliaque et intestin poreux.",
-    effets: ["↓ Perméabilité intestinale", "↑ Tight junctions", "↓ Inflammation intestinale", "Coeliakie", "Leaky gut", "↓ LPS sanguin"],
-    secondaires: ["Bien toléré", "Rarement : nausées légères"],
-    stacks: ["BPC-157", "KPV", "LL-37"],
-    contreindications: "Aucune connue.",
-    note: "Peptide en phase 3 clinique. Solution prometteuse pour l'hyperperméabilité intestinale chronique."
-  },
-  {
-    id: 43, name: "NAD+ / NMN", alias: "Nicotinamide Mononucleotide",
-    cat: "Anti-âge", catClass: "cat-anti",
-    dosage: "250–1000 mg / jour", admin: "Oral / SC", duree: "Continue",
-    frequence: "1× / jour (matin)",
-    protocole: "Précurseur NAD+. Oral le matin. SC pour biodisponibilité supérieure. Associé à la Sirtuine-1 et aux voies de longévité mitochondriale.",
-    effets: ["↑ NAD+", "↑ Énergie", "Longévité", "↑ Sirtuines", "Métabolisme", "Réparation ADN", "Anti-âge cellulaire"],
-    secondaires: ["Flush (niacine)", "Léger inconfort GI", "Insomnie si pris le soir"],
-    stacks: ["Epithalon", "MOTS-c", "Resveratrol", "5-Amino-1MQ"],
-    contreindications: "Certains cancers (prudence — NAD+ pro-survie cellulaire).",
-    note: "Techniquement une petite molécule, pas un peptide, mais central dans les protocoles de longévité avec les peptides."
-  },
-  {
-    id: 44, name: "Retatrutide", alias: "LY3437943 / Triple agoniste GLP-1/GIP/Glucagon",
-    cat: "Perte de poids", catClass: "cat-fat",
-    dosage: "1–12 mg / semaine", admin: "SC", duree: "Continue",
-    frequence: "1× / semaine",
-    protocole: "Triple agoniste GLP-1/GIP/récepteur glucagon. Phase 2/3 clinique. Perte de poids supérieure au tirzepatide dans les essais préliminaires.",
-    effets: ["↓ Poids -24%+ (données préliminaires)", "↓ Graisse hépatique", "↑ Métabolisme énergétique", "Cardioprotection"],
-    secondaires: ["Nausées", "Vomissements", "Diarrhée (profil GLP-1 classique)"],
-    stacks: ["BPC-157 (gastro)", "Ipamorelin (préservation musculaire)"],
-    contreindications: "Mêmes que GLP-1 agonistes.",
-    note: "⚠️ Non approuvé (phase 3 en cours). Résultats préliminaires en cours d'évaluation. Suite de la recherche à suivre après le tirzepatide."
-  },
-  {
-    id: 45, name: "BPC-157 + TB-500 (Stack)", alias: "Blend récupération / TB-BPC",
-    cat: "Récupération", catClass: "cat-recov",
-    dosage: "BPC: 250 mcg + TB: 2 mg / dose", admin: "SC", duree: "4–8 semaines",
-    frequence: "BPC: 2×/jour · TB: 2×/semaine",
-    protocole: "Le stack récupération le plus populaire. BPC-157 agit localement, TB-500 systémiquement. Synergie documentée sur tendons, muscles, os et vaisseaux.",
-    effets: ["Régénération complète", "Tendons & ligaments", "Récupération musculaire", "Réparation osseuse", "Vascularisation", "Réduction cicatrices"],
-    secondaires: ["Voir BPC-157 et TB-500 séparément"],
-    stacks: ["GHK-Cu", "IGF-1 LR3", "Ipamorelin"],
-    contreindications: "Voir fiches individuelles.",
-    note: "Stack de référence pour toute blessure sportive. Commencer par BPC-157 seul, ajouter TB-500 la semaine suivante."
-  },
-  {
-    id: 46, name: "Mechano Growth Factor", alias: "MGF / IGF-1Ec",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "200–400 mcg post-entraînement", admin: "IM (local)", duree: "4–8 semaines",
-    frequence: "2–3× / semaine (jours d'entraînement)",
-    protocole: "Variant d'épissage de l'IGF-1 produit localement par le muscle sollicité. IM dans le groupe musculaire entraîné, dans l'heure post-effort.",
-    effets: ["Activation cellules satellites", "Hypertrophie locale", "Récupération", "↑ Synthèse protéique locale", "Réparation fibres"],
-    secondaires: ["Douleur injection", "Hypoglycémie possible", "Croissance locale asymétrique"],
-    stacks: ["IGF-1 LR3", "CJC-1295", "Ipamorelin", "TB-500"],
-    contreindications: "Mêmes précautions qu'IGF-1.",
-    note: "Pour usage local et ciblé. MGF + IGF-1 LR3 = stack anabolique avancé. Ne pas confondre avec IGF-1 LR3 (action systémique vs locale)."
-  },
-  {
-    id: 47, name: "P21", alias: "NAPVSIPQ / Neuropeptide P21",
-    cat: "Nootropique", catClass: "cat-neuro",
-    dosage: "300–600 mcg / jour", admin: "Nasal / SC", duree: "2–4 semaines",
-    frequence: "1–2× / jour",
-    protocole: "Peptide nootropique dérivé de l'ADNF. Spray nasal ou SC. Neurogenèse hippocampique. Études sur dépression résistante et PTSD.",
-    effets: ["Neurogenèse", "↑ Mémoire", "↓ Dépression", "PTSD", "Neuroprotection", "↑ BDNF local"],
-    secondaires: ["Peu documentés", "Légère somnolence"],
-    stacks: ["Semax", "Selank", "BPC-157"],
-    contreindications: "Peu de données.",
-    note: "Peptide expérimental prometteur pour la neurogenèse adulte. Études humaines encore limitées."
-  },
-  {
-    id: 48, name: "Gonadoréline (relance)", alias: "hLHRH / Fertirelin",
-    cat: "Sexuel", catClass: "cat-sex",
-    dosage: "100 mcg / 2× semaine", admin: "SC", duree: "4–6 semaines",
-    frequence: "2× / semaine",
-    protocole: "Utilisé spécifiquement en relance post-cycle. 100 mcg SC 2× semaine pendant 4–6 semaines. Stimule l'axe HHG naturellement. Alternative au HCG.",
-    effets: ["Relance axe HHG", "↑ Testostérone naturelle", "↑ Spermatogenèse", "Fertilité", "PCT naturel"],
-    secondaires: ["Flush", "Bouffées chaleur légères"],
-    stacks: ["Kisspeptin-10", "BPC-157"],
-    contreindications: "Cancer prostate hormono-dépendant.",
-    note: "Alternative plus physiologique au HCG pour la relance. Maintient la sensibilité des récepteurs LH testiculaires."
-  },
-  {
-    id: 49, name: "Copper Peptide (GHK)", alias: "GHK / Glycyl-L-Histidyl-L-Lysine",
-    cat: "Peau", catClass: "cat-skin",
-    dosage: "1–3% (topique) / 1 mg SC", admin: "Topique / SC", duree: "4–8 semaines",
-    frequence: "2× / jour (topique) · 1× / jour (SC)",
-    protocole: "Forme non-cuivrée du GHK-Cu. Topique pour peau, SC pour effets systémiques. Stimule collagène, élastine, et facteurs de croissance.",
-    effets: ["↑ Collagène & Élastine", "Cicatrisation", "↑ Vascularisation dermique", "↓ Inflammation", "Rajeunissement"],
-    secondaires: ["Irritation topique légère possible"],
-    stacks: ["Matrixyl", "Argireline", "GHK-Cu systémique"],
-    contreindications: "Allergie aux métaux (forme Cu).",
-    note: "Version sans cuivre du GHK. Effets plus doux. Idéal pour peaux sensibles en cosmétique."
-  },
-  {
-    id: 50, name: "Adipotide", alias: "CKGGRAKDC-GG-D(KLAKLAK)2",
-    cat: "Perte de poids", catClass: "cat-fat",
-    dosage: "0.5–2 mg/kg / jour", admin: "SC", duree: "4–8 semaines",
-    frequence: "1× / jour",
-    protocole: "Peptide pro-apoptotique ciblant les vaisseaux du tissu adipeux. SC quotidien. Études chez les primates montrent réduction significative de l'obésité.",
-    effets: ["Apoptose adipocytes", "↓ Graisse abdominale profonde", "↓ Poids", "Ciblage vasculaire tissus gras"],
-    secondaires: ["Toxicité rénale possible à doses élevées", "Déshydratation"],
-    stacks: ["AOD-9604", "Semaglutide"],
-    contreindications: "⚠️ Insuffisance rénale, déshydratation. Peptide expérimental — prudence maximale.",
-    note: "⚠️ Très expérimental. Aucune approbation humaine. Résultats précliniques prometteurs mais profil de sécurité à confirmer."
-  },
-  {
-    id: 51, name: "Ace-031", alias: "ACVR2B / Myostatin inhibitor peptide",
-    cat: "GH / IGF-1", catClass: "cat-gh",
-    dosage: "1–3 mg/kg (clinique)", admin: "SC / IV", duree: "4–8 semaines",
-    frequence: "1× / semaine",
-    protocole: "Inhibiteur puissant de la myostatine et activine. Essais cliniques pour dystrophies musculaires. Masse musculaire et force très augmentées.",
-    effets: ["↑ Masse musculaire forte", "↑ Force", "↓ Myostatine & Activine", "Dystrophies musculaires", "Sarcopénie"],
-    secondaires: ["Saignements nasaux", "Télangiectasies", "Troubles gencives", "Hypertension"],
-    stacks: ["Follistatin 344", "IGF-1 LR3"],
-    contreindications: "⚠️ Effets secondaires vasculaires. Usage en recherche uniquement.",
-    note: "⚠️ Essais cliniques suspendus pour effets vasculaires. Usage très avancé et risqué. Réservé à la recherche."
-  },
-  {
-    id: 52, name: "SS-31 (Elamipretide)", alias: "MTP-131 / Bendavia / D-Arg-2'6'-Dmt-Lys-Phe-NH2",
-    cat: "Cardio", catClass: "cat-cardio",
-    dosage: "0.1 mg/kg / jour", admin: "SC / IV", duree: "4–12 semaines",
-    frequence: "1× / jour",
-    protocole: "Peptide mitochondrial de 4 acides aminés. Cible spécifiquement la cardiolipine de la membrane mitochondriale interne. Restaure la chaîne respiratoire.",
-    effets: ["↑ Production ATP", "↓ ROS", "Cardioprotection", "Neuroprotection", "Rénaux (protection)", "↑ Performance"],
-    secondaires: ["Réaction locale injection", "Légère fatigue initiale"],
-    stacks: ["MOTS-c", "Humanin", "Cortagen"],
-    contreindications: "Insuffisance rénale sévère.",
-    note: "Phase 3 pour insuffisance cardiaque. L'un des peptides mitochondriaux les plus avancés cliniquement."
+function renderResults() {
+  const box = document.getElementById('libResults');
+  if (!box) return;
+  const total = PEPTIDES.length;
+  const list = sorted(PEPTIDES.filter(matches));
+  const filtered = list.length !== total;
+  const countEl = document.getElementById('libCount');
+  const noticeEl = document.getElementById('libNotice');
+  if (!list.length) {
+    countEl.textContent = '';
+    countEl.classList.add('hidden');
+    noticeEl.classList.add('hidden');
+    box.innerHTML = '<section class="card">' +
+      P.empty(t('lib2_empty_title'), t('lib2_empty_text'), 'magnifying-glass', t('lib2_empty_cta'), null, 'lib-reset') + '</section>';
+    const reset = box.querySelector('[data-ps-action="lib-reset"]');
+    if (reset) reset.addEventListener('click', resetFilters);
+    return;
   }
-];
-
-// Catégorie → couleur CSS class
-function getCatClass(cat) {
-  const map = {
-    "GH / IGF-1": "cat-gh",
-    "Récupération": "cat-recov",
-    "Anti-âge": "cat-anti",
-    "Nootropique": "cat-neuro",
-    "Perte de poids": "cat-fat",
-    "Sexuel": "cat-sex",
-    "Immunité": "cat-immun",
-    "Cardio": "cat-cardio",
-    "Peau": "cat-skin"
-  };
-  return map[cat] || "cat-gh";
+  countEl.classList.remove('hidden');
+  noticeEl.classList.remove('hidden');
+  countEl.textContent = filtered
+    ? fmt(list.length === 1 ? 'lib2_count_of_one' : 'lib2_count_of', { n: list.length, total: total })
+    : fmt('lib2_count', { n: total });
+  box.innerHTML = '<section class="card lib-list"><div class="list" role="list" aria-label="' + P.esc(t('lib2_list_aria')) + '">' +
+    list.map(p =>
+      '<a class="list-row" role="listitem" href="#p=' + slugOf(p) + '">' + P.icon('book-open') +
+      '<div class="grow"><strong>' + P.esc(displayName(p)) + '</strong>' +
+      '<div class="muted small">' + P.esc(catLabel(p.cat) + ' · ' + t('lib2_ph_' + phaseOf(p))) + '</div></div>' +
+      P.icon('chevron-right', 'chev') + '</a>').join('') +
+    '</div></section>';
+  box.querySelectorAll('a.list-row').forEach(a => a.addEventListener('click', () => { listScroll = window.scrollY; }));
 }
 
-// Fiches masquées pour la version store (14/10/2026) : la fiche « Stack » et la fiche
-// « relance » décrivent des protocoles, 49 et 52 sont des doublons (GHK-Cu, SS-31).
-// Les données restent ci-dessus ; elles ne sont simplement plus affichées.
-// Dosage, fréquence, durée, protocole, stacks et note ne sont plus affichés non plus
-// (règles Apple 1.4.1/1.4.2 et Google « contenu santé ») : l'appli documente, elle ne prescrit pas.
-const HIDDEN_IDS = [45, 48, 49, 52];
-const PEPTIDES_SHOWN = PEPTIDES.filter(p => !HIDDEN_IDS.includes(p.id));
+function resetFilters() {
+  filters.q = ''; filters.cat = 'all'; filters.phase = 'all';
+  renderList();
+  const s = document.getElementById('libSearch'); if (s) s.focus();
+}
 
-let currentCat = 'all';
-let currentSearch = '';
+// ── Vue fiche (maquette « peptide ») ────────────────────────────
+function findPeptide(slug) {
+  let key = slug;
+  try { key = decodeURIComponent(slug); } catch (e) {}
+  const n = norm(key);
+  return PEPTIDES.find(p => norm(p.name) === n || (p.en && p.en.name && norm(p.en.name) === n) || String(p.id) === key) || null;
+}
 
-function renderCards() {
-  const grid = document.getElementById('dbGrid');
-  const search = currentSearch.toLowerCase();
-  let shown = 0;
+function regBlock(p) {
+  const code = p.reg || 'review';
+  let sub;
+  if (code === 'review') sub = t('lib2_reg_review_sub');
+  else if (code === 'cosmetic') sub = t('lib2_reg_cosmetic_sub');
+  else sub = (loc(p, 'regNote') ? loc(p, 'regNote') + ' ' : '') + t('lib2_reg_country');
+  return '<div><span class="eyebrow" data-i18n="lib2_reg_eyebrow">Statut réglementaire</span><h2>' + P.esc(t('lib2_reg_' + code)) + '</h2>' +
+    '<p class="small muted">' + P.esc(sub) + '</p></div>';
+}
 
-  grid.innerHTML = '';
+function studiesBlock(p) {
+  const list = Array.isArray(p.etudes) ? p.etudes : [];
+  let html = '<h2 data-i18n="lib2_studies">Études et sources</h2>' +
+    '<p class="small muted" style="margin-top:12px" data-i18n="lib2_studies_format">Chaque référence comporte : auteurs, année, titre, type d’étude, population ou modèle, DOI ou lien et date de consultation.</p>';
+  if (!list.length) return html + '<p class="help" data-i18n="lib2_studies_none">Aucune étude n’est citée pour le moment.</p>';
+  return html + '<div class="mt-2">' + list.map(s => {
+    const head = [s.authors, s.year].filter(Boolean).join(', ');
+    const link = s.link && /^https?:\/\//.test(s.link)
+      ? '<a class="small" href="' + P.esc(s.link) + '" target="_blank" rel="noopener">' + P.esc(s.link) + '</a>' : '';
+    return '<div class="lib-study"><strong class="small">' + P.esc(s.title || '') + '</strong>' +
+      (head || s.type ? '<div class="muted small">' + P.esc([head, s.type].filter(Boolean).join(' · ')) + '</div>' : '') + link + '</div>';
+  }).join('') + '</div>';
+}
 
-  PEPTIDES_SHOWN.forEach(p => {
-    const matchCat = currentCat === 'all' || p.cat === currentCat;
-    const matchSearch = !search ||
-      p.name.toLowerCase().includes(search) ||
-      p.alias.toLowerCase().includes(search) ||
-      p.cat.toLowerCase().includes(search) ||
-      p.effets.some(e => e.toLowerCase().includes(search));
+function renderPeptide(p) {
+  const ph = phaseOf(p);
+  const alias = loc(p, 'alias');
+  const effets = loc(p, 'effets') || [];
+  const sec = loc(p, 'secondaires') || [];
+  const contra = loc(p, 'contreindications');
+  const note = loc(p, 'note');
+  document.title = 'PeptideScanner — ' + displayName(p);
+  document.getElementById('view').innerHTML =
+    '<div class="stack">' +
+    '<a class="back-row lib-back" href="#"><span class="icon-btn" aria-hidden="true">' + P.icon('chevron-left') + '</span><span data-i18n="lib2_title">Bibliothèque</span></a>' +
+    '<div class="page-intro"><h1 id="pepTitle" tabindex="-1">' + P.esc(displayName(p)) + '</h1>' +
+      (alias ? '<p class="muted small lib-sub">' + P.esc(alias) + '</p>' : '') +
+      '<p class="muted small">' + P.esc(catLabel(p.cat)) + ' · ' + P.esc(routeLabel(p)) + '</p></div>' +
+    P.notice(t('lib2_notice_doc')) +
+    '<section class="card"><div class="stack">' + regBlock(p) + '<hr class="divider">' +
+      '<div><span class="eyebrow" data-i18n="lib2_research_eyebrow">État de la recherche</span><h2>' + P.esc(t('lib2_ph_' + ph)) + '</h2>' +
+      '<p class="small muted">' + P.esc(t('lib2_ph_' + ph + '_desc')) + '</p></div></div></section>' +
+    '<section class="card"><h2 data-i18n="lib2_effects">Effets étudiés</h2>' +
+      (effets.length ? '<div class="pills mt-3">' + effets.map(e => '<span class="pill info">' + P.esc(e) + '</span>').join('') + '</div>'
+                     : '<p class="small muted mt-3" data-i18n="lib2_none">Non renseigné.</p>') + '</section>' +
+    '<section class="card"><h2 data-i18n="lib2_safety">Effets indésirables et contre-indications</h2>' +
+      '<h3 class="lib-h3" data-i18n="lib2_side">Effets indésirables signalés</h3>' +
+      (sec.length ? '<ul class="lib-bullets">' + sec.map(s => '<li>' + P.esc(s) + '</li>').join('') + '</ul>'
+                  : '<p class="small muted" data-i18n="lib2_none">Non renseigné.</p>') +
+      '<h3 class="lib-h3" data-i18n="lib2_contra">Contre-indications et précautions</h3>' +
+      '<p class="small muted">' + (contra ? P.esc(contra) : P.esc(t('lib2_none'))) + '</p>' +
+      (note ? '<h3 class="lib-h3" data-i18n="lib2_note">À savoir</h3><p class="small muted">' + P.esc(note) + '</p>' : '') +
+    '</section>' +
+    '<section class="card">' + studiesBlock(p) + '</section>' +
+    '<section class="card"><h2 data-i18n="lib2_limits">Ce que la fiche ne conclut pas</h2>' +
+      '<p class="small muted" style="margin-top:12px" data-i18n="lib2_limits_text">Un résultat de recherche ne constitue pas une recommandation personnelle. Pour une décision médicale, adressez-vous à un professionnel de santé.</p></section>' +
+    '<button class="btn secondary full" type="button" id="reportBtn" data-i18n="lib2_report_btn">Signaler une source à corriger</button>' +
+    '</div>';
+  PS_applyI18n();
+  document.getElementById('reportBtn').addEventListener('click', () => openReport(p));
+  window.scrollTo(0, 0);
+  const h = document.getElementById('pepTitle'); if (h) h.focus({ preventScroll: true });
+}
 
-    if (!matchCat || !matchSearch) return;
-    shown++;
+function renderNotFound() {
+  document.getElementById('view').innerHTML =
+    '<div class="stack"><a class="back-row lib-back" href="#"><span class="icon-btn" aria-hidden="true">' + P.icon('chevron-left') + '</span><span data-i18n="lib2_title">Bibliothèque</span></a>' +
+    '<section class="card">' + P.empty(t('lib2_nf_title'), t('lib2_nf_text'), 'book-open', t('lib2_nf_cta'), '#') + '</section></div>';
+  PS_applyI18n();
+  window.scrollTo(0, 0);
+}
 
-    const card = document.createElement('div');
-    card.className = 'pep-card';
-    card.onclick = () => openModal(p.id);
-    card.innerHTML = `
-      <div class="card-top">
-        <div>
-          <div class="card-name">${p.name}</div>
-          <div class="card-alias">${p.alias}</div>
-          <div class="card-cat">
-          <span class="cat ${getCatClass(p.cat)}">${p.cat}</span>
-          ${phaseMiniBadge(getPhase(p.name))}
-        </div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;padding-left:10px">
-          <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.7rem;color:var(--muted)">Admin</div>
-          <div style="font-weight:700;font-size:.88rem;color:var(--accent);margin-top:4px">${p.admin}</div>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="effects-list">
-          ${p.effets.slice(0,4).map(e => `<span class="effect-tag">${translateEffect(e)}</span>`).join('')}
-          ${p.effets.length > 4 ? `<span class="effect-tag" style="color:var(--accent)">+${p.effets.length-4}</span>` : ''}
-        </div>
-      </div>
-    `;
-    grid.appendChild(card);
+// ── Feuille « Signaler une source à corriger » (sans réseau) ────
+function readReports() {
+  try { const v = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+}
+function openReport(p) {
+  const body =
+    '<p class="small muted">' + P.esc(displayName(p)) + '</p>' +
+    P.field(t('lib2_report_ref'), 'repRef', '', 'text', '', '', 'placeholder="' + P.esc(t('lib2_report_ref_ph')) + '" autocomplete="off"') +
+    '<div class="field"><label class="label" for="repNote">' + P.esc(t('lib2_report_note')) + '</label>' +
+      '<textarea class="textarea" id="repNote" name="repNote" rows="4" placeholder="' + P.esc(t('lib2_report_note_ph')) + '" aria-describedby="repHelp"></textarea>' +
+      '<p class="help" id="repHelp">' + P.esc(t('lib2_report_help')) + '</p></div>' +
+    '<p class="error-text hidden" id="repErr" role="alert"></p>' +
+    '<button class="btn full" type="button" id="repOk">' + P.esc(t('lib2_report_ok')) + '</button>';
+  P.openSheet(t('lib2_report_title'), body, d => {
+    d.querySelector('#repOk').onclick = () => {
+      const ref = d.querySelector('#repRef').value.trim();
+      const note = d.querySelector('#repNote').value.trim();
+      const err = d.querySelector('#repErr');
+      if (!ref && !note) {
+        d.querySelector('#repRef').setAttribute('aria-invalid', 'true');
+        err.textContent = t('lib2_report_err'); err.classList.remove('hidden');
+        return;
+      }
+      const list = readReports();
+      list.push({ peptide: p.name, ref: ref, note: note, at: P.localStamp(psDayStr(), P.nowHM()) });
+      let saved = true;
+      try { localStorage.setItem(REPORTS_KEY, JSON.stringify(list.slice(-200))); } catch (e) { saved = false; }
+      if (!saved) { err.textContent = t('msg_save_error'); err.classList.remove('hidden'); return; }
+      P.closeSheet();
+      P.toast(t('lib2_report_done'));
+    };
   });
+}
 
-  if (shown === 0) {
-    grid.innerHTML = `<div class="no-results"><span>🔬</span>Aucun peptide trouvé pour "${currentSearch}".<br>${t("db_no_results_sub")}</div>`;
+// ── Routage par l'adresse : #p=<nom> ouvre une fiche ───────────
+function route() {
+  const h = location.hash || '';
+  if (h.indexOf('#p=') === 0) {
+    const p = findPeptide(h.slice(3));
+    if (p) renderPeptide(p); else renderNotFound();
+    return;
   }
-
-  document.getElementById('shownCount').textContent = shown;
+  renderList();
+  requestAnimationFrame(() => window.scrollTo(0, listScroll || 0));
 }
 
-function filterCat(cat, btn) {
-  currentCat = cat;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderCards();
-}
-
-function filterPeptides() {
-  currentSearch = document.getElementById('searchInput').value;
-  renderCards();
-}
-
-function openModal(id) {
-  const p = PEPTIDES.find(x => x.id === id);
-  if (!p) return;
-  const phase = getPhase(p.name);
-
-  document.getElementById('modalContent').innerHTML = `
-    <div class="modal-header">
-      <div>
-        <div class="modal-name">${p.name}</div>
-        <div class="modal-alias">${p.alias}</div>
-        <span class="cat ${getCatClass(p.cat)}">${p.cat}</span>
-      </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    ${phaseVisualFull(phase)}
-    <div class="modal-body">
-      <div class="modal-section">
-        <h4>${t('db_modal_admin')}</h4>
-        <p>${p.admin}</p>
-      </div>
-
-      <div class="modal-section">
-        <h4>${t('db_modal_effects')}</h4>
-        <ul>${p.effets.map(e => `<li class="pos">${e}</li>`).join('')}</ul>
-      </div>
-
-      <div class="modal-section">
-        <h4>${t('db_modal_side_effects')}</h4>
-        <ul>${p.secondaires.map(e => `<li class="neg">${e}</li>`).join('')}</ul>
-      </div>
-
-      <div class="modal-section">
-        <h4>${t('db_modal_contra')}</h4>
-        <ul><li class="warn">${p.contreindications}</li></ul>
-      </div>
-
-      <div class="disclaimer">
-        ${t('db_modal_disclaimer')}
-      </div>
-    </div>
-  `;
-
-  document.getElementById('modalOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal(event) {
-  if (event && event.target !== document.getElementById('modalOverlay')) return;
-  document.getElementById('modalOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    document.getElementById('modalOverlay').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-});
-
-// Init — charger les phases depuis Supabase puis render
-document.getElementById('totalCount').textContent = PEPTIDES_SHOWN.length;
-
-
-function translateEffect(str) {
-  if (PS_getLang() !== 'en') return str;
-  const map = {'↑ GH pulsatile': '↑ Pulsatile GH', '↑ GH sélective': '↑ Selective GH', '↑ GH fort': '↑ Strong GH', '↑ GH très fort': '↑ Very strong GH', '↑ GH nocturne': '↑ Nocturnal GH', '↑ GH + IGF-1 sustained': '↑ GH + IGF-1 sustained', '↑↑ GH': '↑↑ GH', '↑ IGF-1': '↑ IGF-1', '↑↑ BDNF & HGF': '↑↑ BDNF & HGF', '↑ BDNF': '↑ BDNF', '↑ BDNF local': '↑ Local BDNF', '↑ AMPK': '↑ AMPK', '↑ ATP cardiaque': '↑ Cardiac ATP', '↑ Angiogenèse': '↑ Angiogenesis', '↑ Antioxydants': '↑ Antioxidants', '↑ Appétit': '↑ Appetite', '↑ Collagène': '↑ Collagen', '↑ Collagène & Élastine': '↑ Collagen & Elastin', '↑ Collagène I & III': '↑ Collagen I & III', '↑ Confiance': '↑ Confidence', '↑ Cortisol modéré': '↑ Moderate cortisol', '↑ Densité musculaire': '↑ Muscle density', '↑ Densité osseuse': '↑ Bone density', '↑ Désir sexuel ♀ et ♂': '↑ Sexual desire ♀ & ♂', '↑ Endurance': '↑ Endurance', '↑ Espérance de vie': '↑ Life expectancy', '↑ Excitation centrale': '↑ Central arousal', '↑ Fibronectine': '↑ Fibronectin', '↑ Flexibilité': '↑ Flexibility', '↑ Focus & concentration': '↑ Focus & concentration', '↑ Force': '↑ Strength', '↑ Immunité': '↑ Immunity', '↑ Immunité innée': '↑ Innate immunity', '↑ LH & FSH': '↑ LH & FSH', '↑ Libido': '↑ Libido', '↑ Libido (effet PT-141)': '↑ Libido (PT-141 effect)', '↑ Lien affectif': '↑ Emotional bond', '↑ Lissage': '↑ Smoothing', '↑ Longueur des télomères': '↑ Telomere length', '↑ Longévité': '↑ Longevity', '↑ Lymphocytes T': '↑ T lymphocytes', '↑ Masse maigre vs GLP-1 seul': '↑ Lean mass vs GLP-1 alone', '↑ Masse musculaire': '↑ Muscle mass', '↑ Masse musculaire forte': '↑ Strong muscle mass', '↑ Motivation': '↑ Motivation', '↑ Mélanine cutanée': '↑ Skin melanin', '↑ Mélatonine': '↑ Melatonin', '↑ Mélatonine endogène': '↑ Endogenous melatonin', '↑ Mémoire': '↑ Memory', '↑ Mémoire de travail': '↑ Working memory', '↑ Métabolisme basal': '↑ Basal metabolism', '↑ Métabolisme lipidique': '↑ Lipid metabolism', '↑ Métabolisme énergétique': '↑ Energy metabolism', '↑ NAD+': '↑ NAD+', '↑ NK cells': '↑ NK cells', '↑ Orgasme': '↑ Orgasm', '↑ Peau lisse': '↑ Smooth skin', '↑ Performance': '↑ Performance', '↑ Performance physique': '↑ Physical performance', '↑ Plaisir sexuel': '↑ Sexual pleasure', '↑ Production ATP': '↑ ATP production', '↑ Sensibilité insuline': '↑ Insulin sensitivity', '↑ Sirtuines': '↑ Sirtuins', '↑ Spermatogenèse': '↑ Spermatogenesis', '↑ Synthèse protéique': '↑ Protein synthesis', '↑ Synthèse protéique locale': '↑ Local protein synthesis', '↑ Sélénoprotéines': '↑ Selenoproteins', '↑ Testostérone naturelle': '↑ Natural testosterone', '↑ Tight junctions': '↑ Tight junctions', '↑ Tolérance glucose': '↑ Glucose tolerance', '↑ Vascularisation': '↑ Vascularization', '↑ Vascularisation dermique': '↑ Dermal vascularization', '↑ Élasticité': '↑ Elasticity', '↑ Élastine': '↑ Elastin', '↑ Énergie': '↑ Energy', '↑ Énergie cellulaire': '↑ Cellular energy', '↑ Érection': '↑ Erection', '↓ Adipogenèse': '↓ Adipogenesis', '↓ Anxiété': '↓ Anxiety', '↓ Anxiété sociale': '↓ Social anxiety', '↓ Apoptose': '↓ Apoptosis', '↓ Appétit fort': '↓ Strong appetite', '↓ Appétit légère': '↓ Mild appetite', '↓ Arythmies': '↓ Arrhythmias', '↓ Cytokines': '↓ Cytokines', '↓ Dépression': '↓ Depression', '↓ Fibrose myocardique': '↓ Myocardial fibrosis', '↓ Graisse': '↓ Fat', '↓ Graisse abdominale': '↓ Abdominal fat', '↓ Graisse abdominale profonde': '↓ Deep abdominal fat', '↓ Graisse corporelle': '↓ Body fat', '↓ Graisse hépatique': '↓ Hepatic fat', '↓ Graisse viscérale': '↓ Visceral fat', '↓ Hypertension': '↓ Hypertension', '↓ Infections récurrentes': '↓ Recurrent infections', '↓ Inflammation': '↓ Inflammation', '↓ Inflammation intestinale': '↓ Intestinal inflammation', '↓ LPS sanguin': '↓ Blood LPS', '↓ Maladies auto-immunes': '↓ Autoimmune diseases', '↓ Myostatine': '↓ Myostatin', '↓ Myostatine & Activine': '↓ Myostatin & Activin', '↓ Obésité': '↓ Obesity', '↓ Perméabilité intestinale': '↓ Intestinal permeability', '↓ Poids': '↓ Weight', '↓ Poids -15 à -20%': '↓ Weight -15 to -20%', '↓ Poids -20 à -25%': '↓ Weight -20 to -25%', '↓ Poids -24%+ (données préliminaires)': '↓ Weight -24%+ (preliminary data)', '↓ ROS': '↓ ROS', '↓ ROS mitochondriaux': '↓ Mitochondrial ROS', '↓ Rides': '↓ Wrinkles', '↓ Rides expression': '↓ Expression lines', '↓ Rides expression (synergie)': '↓ Expression lines (synergy)', 'Activation cellules satellites': 'Satellite cell activation', 'Alzheimer ralentissement': 'Alzheimer slowdown', 'Amélioration profil lipidique': 'Lipid profile improvement', 'Anti-inflammatoire': 'Anti-inflammatory', 'Anti-inflammatoire puissant': 'Powerful anti-inflammatory', 'Anti-âge': 'Anti-aging', 'Anti-âge cardiovasculaire': 'Cardiovascular anti-aging', 'Anti-âge cellulaire': 'Cellular anti-aging', 'Anti-âge cutané': 'Skin anti-aging', 'Anti-âge cérébral': 'Brain anti-aging', 'Anti-âge immunologique': 'Immunological anti-aging', 'Anti-âge mitochondrial': 'Mitochondrial anti-aging', 'Anti-âge métabolique': 'Metabolic anti-aging', 'Anti-âge neurologique': 'Neurological anti-aging', 'Anti-âge vasculaire': 'Vascular anti-aging', 'Antidépresseur doux': 'Mild antidepressant', 'Antimicrobien large spectre': 'Broad-spectrum antimicrobial', 'Antioxydant cérébral': 'Brain antioxidant', 'Anxiolytique puissant': 'Powerful anxiolytic', 'Apoptose adipocytes': 'Adipocyte apoptosis', 'BDNF-like': 'BDNF-like', 'Bronzage durable': 'Lasting tan', 'COVID recovery': 'COVID recovery', 'Cardioprotection': 'Cardioprotection', 'Ciblage vasculaire tissus gras': 'Adipose tissue vascular targeting', 'Cicatrisation': 'Healing', 'Cicatrisation accélérée': 'Accelerated healing', 'Cicatrisation muqueuse': 'Mucosal healing', 'Cicatrisation plaies': 'Wound healing', 'Coeliakie': 'Celiac disease', 'Cognition': 'Cognition', 'Cognition extrême': 'Extreme cognition', 'Composition corporelle': 'Body composition', 'Densité osseuse': 'Bone density', 'Dystrophies musculaires': 'Muscular dystrophies', 'Détente musculaire superficielle': 'Superficial muscle relaxation', 'Effet anti-obésité': 'Anti-obesity effect', 'Effet botox topique doux': 'Mild topical botox effect', 'Effet cumulatif avec Argireline': 'Cumulative effect with Argireline', 'Empathie': 'Empathy', 'Fermeté': 'Firmness', 'Fertilité': 'Fertility', 'Fertilité masculine': 'Male fertility', 'Glycémie': 'Blood sugar', 'Hyperplasie musculaire': 'Muscle hyperplasia', 'Hypertrophie locale': 'Local hypertrophy', 'Hypogonadisme hypogonadotrope': 'Hypogonadotropic hypogonadism', 'Hépatite B&C': 'Hepatitis B&C', 'Immunité cancer': 'Cancer immunity', 'Immunomodulation': 'Immunomodulation', 'Immunostimulation': 'Immunostimulation', 'Indépendant de la vascularisation': 'Independent of vascularization', 'Insuffisance cardiaque': 'Heart failure', 'Leaky gut': 'Leaky gut', 'Lipolyse': 'Lipolysis', 'Lipolyse ciblée': 'Targeted lipolysis', 'Longévité': 'Longevity', 'Masse maigre': 'Lean mass', 'Meilleur sommeil': 'Better sleep', 'Meilleure tolérance GI': 'Better GI tolerance', 'Mémoire': 'Memory', 'Mémoire long terme': 'Long-term memory', 'Métabolisme': 'Metabolism', 'NGF-like': 'NGF-like', 'Neurogenèse': 'Neurogenesis', 'Neuroprotection': 'Neuroprotection', 'Neuroprotection Alzheimer': 'Alzheimer neuroprotection', 'PCT naturel': 'Natural PCT', 'PCT post-SARMs/stéroïdes': 'Post-SARMs/steroids PCT', 'PTSD': 'PTSD', 'Peau & cheveux': 'Skin & hair', 'Photoprotection': 'Photoprotection', 'Prise de masse': 'Muscle gain', 'Protection cardiaque': 'Cardiac protection', 'Protection cérébrale': 'Brain protection', 'Protection gastrique': 'Gastric protection', 'Protection intestinale': 'Intestinal protection', 'Protection mitochondriale': 'Mitochondrial protection', 'Rajeunissement': 'Rejuvenation', 'Rajeunissement cutané': 'Skin rejuvenation', 'Recovery AVC': 'Stroke recovery', 'Relance axe HHG': 'HPG axis restart', 'Relance testiculaire': 'Testicular restart', 'Relaxation musculaire cutanée': 'Cutaneous muscle relaxation', 'Restauration immunité T': 'T immunity restoration', 'Réactivation axe HHG après SARMs/stéroïdes': 'HPG axis reactivation post-SARMs/steroids', 'Récupération': 'Recovery', 'Récupération Alzheimer': 'Alzheimer recovery', 'Récupération extrême': 'Extreme recovery', 'Récupération musculaire': 'Muscle recovery', 'Récupération rapide': 'Fast recovery', 'Réduction cicatrices': 'Scar reduction', 'Réduction fibrose': 'Fibrosis reduction', 'Régulation autonome': 'Autonomic regulation', 'Régulation circadienne': 'Circadian regulation', 'Régénération complète': 'Complete regeneration', 'Régénération musculaire': 'Muscle regeneration', 'Régénération tissulaire': 'Tissue regeneration', 'Rénaux (protection)': 'Kidney protection', 'Réparation ADN': 'DNA repair', 'Réparation cartilage': 'Cartilage repair', 'Réparation fibres': 'Fiber repair', 'Réparation osseuse': 'Bone repair', 'Réparation tendons': 'Tendon repair', 'Réparation tendons/ligaments': 'Tendon/ligament repair', 'Sans effets IGF-1': 'No IGF-1 effects', 'Sarcopénie': 'Sarcopenia', 'Sommeil': 'Sleep', 'Sommeil profond': 'Deep sleep', 'Sommeil réparateur': 'Restorative sleep', 'Stabilité émotionnelle': 'Emotional stability', 'Stroke recovery': 'Stroke recovery', 'Synaptic plasticity': 'Synaptic plasticity', 'Tendons & ligaments': 'Tendons & ligaments', 'Triglycérides': 'Triglycerides', 'Vascularisation': 'Vascularization', 'Vasodilatation': 'Vasodilation', 'Éclat': 'Radiance', 'Énergie': 'Energy'};
-  return map[str] || str;
-}
-
-function translateDuration(str) {
-  if (PS_getLang() !== 'en') return str;
-  return str
-    .replace(/semaines?/g, 'weeks')
-    .replace(/semaine/g, 'week')
-    .replace(/mois/g, 'months')
-    .replace(/jours?/g, 'days')
-    .replace(/jour/g, 'day')
-    .replace(/Continu/g, 'Ongoing')
-    .replace(/À la demande/g, 'On demand');
-}
-
-function getPhaseData() { return {
-  'experimental': { emoji:'', label:t('phase_exp_label'), desc:t('phase_exp_desc_dot'), color:'#9CA3AF', steps:0 },
-  'preclinical':  { emoji:'', label:t('phase_pre_label'), desc:t('phase_pre_desc_dot'), color:'var(--danger)', steps:1 },
-  'phase1':       { emoji:'', label:t('phase_p1_label'),  desc:t('phase_p1_desc_dot'),  color:'var(--amber)', steps:2 },
-  'phase2':       { emoji:'', label:t('phase_p2_label'),  desc:t('phase_p2_desc_dot'),  color:'#EAB308', steps:3 },
-  'phase3':       { emoji:'', label:t('phase_p3_label'),  desc:t('phase_p3_desc_dot'),  color:'var(--accent)', steps:4 },
-  'established':  { emoji:'', label:t('phase_est_label'), desc:t('phase_est_desc_dot'), color:'var(--accent)', steps:5 },
-}; }
-const PHASE_STEPS = () => [t('phase_step1'),t('phase_step2'),t('phase_step3'),t('phase_step4'),t('phase_step5')];
-
-function phaseMiniBadge(phase) {
-  const d = getPhaseData()[phase] || getPhaseData()['experimental'];
-  return '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:.6rem;font-weight:700;background:'+d.color+'22;color:'+d.color+';border:1px solid '+d.color+'44;margin-left:4px">'+d.label+'</span>';
-}
-
-function phaseVisualFull(phase) {
-  const d = getPhaseData()[phase] || getPhaseData()['experimental'];
-  const steps = PHASE_STEPS().map((lbl, i) => {
-    const active = i < d.steps;
-    return '<div style="flex:1;text-align:center">'
-      + '<div style="height:5px;border-radius:3px;margin-bottom:3px;background:'+(active?d.color:'var(--border)')+'"></div>'
-      + '<div style="font-size:.52rem;color:'+(active?d.color:'#9CA3AF')+';font-weight:'+(active?'700':'400')+'">'+lbl+'</div>'
-      + '</div>';
-  }).join('');
-  return '<div style="margin:12px 0;padding:12px;background:'+d.color+'0D;border:1px solid '+d.color+'33;border-radius:10px">'
-    + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
-    + '<div style="width:8px;height:8px;border-radius:50%;background:'+d.color+'"></div>'
-    + '<span style="font-size:.75rem;font-weight:700;color:'+d.color+'">'+d.label+'</span>'
-    + '</div>'
-    + '<div style="display:flex;gap:3px;margin-bottom:5px">'+steps+'</div>'
-    + '<div style="font-size:.68rem;color:var(--neutral);font-style:italic">'+d.desc+'</div>'
-    + '</div>';
-}
-
-// Render immédiat + traductions
-document.getElementById('shownCount').textContent = PEPTIDES_SHOWN.length;
-document.getElementById('totalCount').textContent = PEPTIDES_SHOWN.length;
-
-function initPage() {
-  renderCards();
-  // Appliquer toutes les traductions data-i18n
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    const val = t(key);
-    if (val && val !== key) el.textContent = val;
-  });
-  // Placeholders
-  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    const key = el.getAttribute('data-i18n-ph');
-    const val = t(key);
-    if (val && val !== key) el.placeholder = val;
-  });
-  PS_renderLangSwitcher();
-  document.getElementById('shownCount').textContent =
-    document.querySelectorAll('.pep-card:not(.hidden)').length || PEPTIDES_SHOWN.length;
-}
-
-// Init immédiat
-window.addEventListener('load', () => {
-  initPage();
-  loadPhases().then(() => initPage());
-});
-
-// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
 PS_initShell();
-document.querySelectorAll('[data-ps-i]').forEach(el=>{el.innerHTML=PS_icon(el.dataset.psI);});
+document.getElementById('view').innerHTML = P.skeleton();
 
-async function psLogout() {
-  try { await sb.auth.signOut(); } catch(e) {}
-  window.location.href = '/login.html';
+async function init() {
+  const session = await P.requireSession(sb);
+  if (!session) return;
+  userId = session.user.id;
+  const { data: profil } = await sb.from('profiles').select('*').eq('id', userId).single();
+  if (profil) PS_loadLangFromProfile(sb, userId, profil.lang);
+  route();                                   // les fiches sont locales : affichage immédiat
+  await loadPhases();                        // puis les phases de recherche à jour
+  if (Object.keys(PHASE_MAP).length) {
+    if ((location.hash || '').indexOf('#p=') === 0) route(); else renderResults();
+  }
 }
-function psFillAvatar() {
-  if (typeof sb === 'undefined' || !sb.auth) return;
-  sb.auth.getUser().then(({data}) => {
-    const n = (data && data.user && (data.user.user_metadata && data.user.user_metadata.full_name)) ||
-              (data && data.user && data.user.email) || '';
-    const btn = document.getElementById('avatarButton');
-    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
-  }).catch(function(){});
-}
-document.addEventListener('DOMContentLoaded', function () {
-  psFillAvatar();
-  if (window.PS_applyI18n) PS_applyI18n();
-  if (window.PS_renderLangSwitcher) PS_renderLangSwitcher();
-});
-
+window.addEventListener('hashchange', route);
+init().catch(e => { console.error(e); document.getElementById('view').innerHTML = P.errorState(init); });
 </script>
-<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
-  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
-  <a class="nav-item" href="cure.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
-  <a class="nav-item" href="inventaire.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
-  <a class="nav-item" href="poids.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
-  <a class="nav-item is-active" href="peptide-database.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
-</div></nav>
 </body>
 </html>

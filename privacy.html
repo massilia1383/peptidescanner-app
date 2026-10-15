@@ -2,17 +2,23 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
 <title>Politique de confidentialité — PeptideScanner</title>
-<script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <link rel="stylesheet" href="/peptidescanner.css">
 <link rel="stylesheet" href="/legal.css">
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
 <!--
   Réécrite le 15/10/2026 (lot 3). Doit rester EXACTEMENT alignée sur ce que fait l'appli :
   les fiches « confidentialité » d'Apple (App Privacy) et de Google (Data safety) seront remplies d'après ce texte.
@@ -22,173 +28,167 @@
   notifications locales, suppression de compte dans l'appli, consentement explicite pour les données de santé.
   Région d'hébergement Supabase : à vérifier dans le tableau de bord Supabase (Settings → General).
   Texte rédigé sans avis juridique : à faire relire avant publication.
+  Mise en forme « Clarté » (maquette « privacy » du kit) le 15/10/2026 : en-tête du kit, contenu dans une
+  carte .legal, sommaire en liste de liens, encarts en .notice. Textes juridiques inchangés (seul le chemin
+  « Profil → Zone de danger → … » devient « Profil → … », la zone de danger n'existant plus).
+  Page lisible sans compte : pas de session demandée, pas de Supabase. Texte juridique en français seulement.
 -->
 </head>
-<body>
-
-<header class="legal-topbar">
-  <a class="legal-brand" href="/dashboard.html"><img src="/brand/logo-clarte.svg" alt="" width="28" height="28">PeptideScanner</a>
-  <a class="legal-back" href="/dashboard.html" onclick="if (history.length > 1) { history.back(); return false; }">← Retour</a>
-</header>
-
-<main class="legal-wrap">
-
-  <div class="legal-head">
-    <div class="legal-eyebrow">Données personnelles</div>
-    <h1 class="legal-title">Politique de confidentialité</h1>
-    <div class="legal-meta">Dernière mise à jour : 15 octobre 2026 · Règlement (UE) 2016/679 (RGPD)</div>
-  </div>
-
-  <div class="legal-box is-ok">
-    <p><strong>L'essentiel</strong> : vos données servent uniquement à faire fonctionner l'application. Elles ne sont jamais vendues, ne servent à aucune publicité, et vous pouvez les exporter ou les supprimer vous-même depuis l'application.</p>
-  </div>
-
-  <nav class="legal-toc" aria-label="Sommaire">
-    <h2>Sommaire</h2>
-    <ol>
-      <li><a href="#p1">Responsable du traitement</a></li>
-      <li><a href="#p2">Données collectées</a></li>
-      <li><a href="#p3">Finalités et bases légales</a></li>
-      <li><a href="#p4">Données de santé</a></li>
-      <li><a href="#p5">Destinataires et sous-traitants</a></li>
-      <li><a href="#p6">Hébergement et transferts</a></li>
-      <li><a href="#p7">Durée de conservation</a></li>
-      <li><a href="#p8">Vos droits</a></li>
-      <li><a href="#p9">Stockage sur l'appareil et notifications</a></li>
-      <li><a href="#p10">Sécurité</a></li>
-      <li><a href="#p11">Contact</a></li>
-    </ol>
-  </nav>
-
-  <section class="legal-section" id="p1">
-    <h2>1. Responsable du traitement</h2>
-    <ul>
-      <li><strong>Rivage Labs</strong>, micro-entreprise — <span class="legal-todo">[Nom et prénom — À compléter]</span></li>
-      <li>Adresse : <span class="legal-todo">[À compléter]</span></li>
-      <li>Email : privacy@peptidescanner.app</li>
-    </ul>
-  </section>
-
-  <section class="legal-section" id="p2">
-    <h2>2. Données collectées</h2>
-    <div class="legal-table-wrap">
-      <table class="legal-table">
-        <thead><tr><th>Catégorie</th><th>Données</th><th>Obligatoire</th></tr></thead>
-        <tbody>
-          <tr><td>Compte</td><td>Adresse email, mot de passe (stocké sous forme chiffrée irréversible par Supabase), prénom</td><td>Email et mot de passe : oui</td></tr>
-          <tr><td>Profil</td><td>Niveau d'expérience, taille, objectif, langue, seringues possédées</td><td>Non</td></tr>
-          <tr><td>Avertissement</td><td>Date d'acceptation de l'avertissement d'utilisation</td><td>Oui</td></tr>
-          <tr><td>Cures</td><td>Peptide, dose saisie, dates, fréquence, notes</td><td>Non</td></tr>
-          <tr><td>Injections</td><td>Date, heure, créneau, cure associée</td><td>Non</td></tr>
-          <tr><td>Notes du jour</td><td>Texte libre saisi par l'utilisateur</td><td>Non</td></tr>
-          <tr><td>Poids</td><td>Date, valeur, note</td><td>Non</td></tr>
-          <tr><td>Stock</td><td>Flacons, quantités, reconstitution, conservation</td><td>Non</td></tr>
-          <tr><td>Alertes</td><td>Rappels et alertes créés par l'utilisateur</td><td>Non</td></tr>
-          <tr><td>Abonnement</td><td>Statut Premium, identifiant d'achat transmis par Apple ou Google via RevenueCat (aucune donnée bancaire)</td><td>Abonnés uniquement</td></tr>
-          <tr><td>Technique</td><td>Adresse IP et informations de connexion conservées dans les journaux du serveur</td><td>Oui (technique)</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>L'application ne contient <strong>aucun outil de mesure d'audience, aucune publicité et aucun traceur</strong>.</p>
-  </section>
-
-  <section class="legal-section" id="p3">
-    <h2>3. Finalités et bases légales</h2>
-    <div class="legal-table-wrap">
-      <table class="legal-table">
-        <thead><tr><th>Finalité</th><th>Base légale</th></tr></thead>
-        <tbody>
-          <tr><td>Créer et gérer votre compte</td><td>Exécution du contrat (CGU)</td></tr>
-          <tr><td>Enregistrer et afficher vos cures, injections, poids, stock et notes</td><td>Votre consentement explicite (données de santé, voir §4)</td></tr>
-          <tr><td>Gérer l'abonnement Premium</td><td>Exécution du contrat</td></tr>
-          <tr><td>Emails liés au compte (confirmation, mot de passe oublié)</td><td>Exécution du contrat</td></tr>
-          <tr><td>Sécurité et journaux techniques</td><td>Intérêt légitime</td></tr>
-          <tr><td>Obligations comptables et fiscales (abonnés)</td><td>Obligation légale</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="legal-section" id="p4">
-    <h2>4. Données de santé</h2>
-    <p>Les informations sur vos cures, injections, notes et votre poids sont des <strong>données de santé</strong> au sens du RGPD. Elles ne sont traitées qu'avec votre <strong>consentement explicite</strong>, recueilli à la première ouverture de l'application. Vous pouvez retirer ce consentement à tout moment en supprimant vos données ou votre compte.</p>
-    <ul>
-      <li>Elles ne sont <strong>jamais vendues</strong>, ni utilisées à des fins publicitaires ou commerciales.</li>
-      <li>Elles ne sont <strong>jamais partagées</strong> avec un employeur, un assureur ou un organisme de santé.</li>
-      <li>Chaque utilisateur n'accède qu'à ses propres données (règles d'accès appliquées par la base de données).</li>
-    </ul>
-    <div class="legal-box is-warning">
-      <p>Ces données ne constituent pas un dossier médical. PeptideScanner n'est pas un dispositif médical.</p>
-    </div>
-  </section>
-
-  <section class="legal-section" id="p5">
-    <h2>5. Destinataires et sous-traitants</h2>
-    <p>Vos données ne sont accessibles qu'à l'éditeur et aux prestataires strictement nécessaires :</p>
-    <ul>
-      <li><strong>Supabase</strong> — hébergement de la base de données et des comptes ;</li>
-      <li><strong>RevenueCat</strong> — gestion du statut des abonnements (reçoit un identifiant de compte et les informations d'achat transmises par Apple ou Google, jamais vos données de santé) ;</li>
-      <li><strong>Apple</strong> et <strong>Google</strong> — distribution de l'application et paiement des abonnements, selon leurs propres politiques ;</li>
-      <li>les autorités, uniquement sur demande légale.</li>
-    </ul>
-  </section>
-
-  <section class="legal-section" id="p6">
-    <h2>6. Hébergement et transferts</h2>
-    <p>La base de données est hébergée dans l'<strong>Union européenne</strong> (Supabase). Certains prestataires (RevenueCat, Apple, Google) sont établis aux États-Unis ; les transferts éventuels sont encadrés par les garanties prévues par le RGPD (clauses contractuelles types de la Commission européenne ou cadre de protection des données UE–États-Unis).</p>
-  </section>
-
-  <section class="legal-section" id="p7">
-    <h2>7. Durée de conservation</h2>
-    <div class="legal-table-wrap">
-      <table class="legal-table">
-        <thead><tr><th>Données</th><th>Durée</th></tr></thead>
-        <tbody>
-          <tr><td>Compte et données de suivi</td><td>Tant que le compte existe</td></tr>
-          <tr><td>Après « Supprimer mon compte »</td><td>Effacement immédiat de la base ; disparition des copies de sauvegarde techniques sous 30 jours au plus</td></tr>
-          <tr><td>Journaux techniques</td><td>90 jours au plus</td></tr>
-          <tr><td>Pièces comptables (abonnés)</td><td>Durée légale (10 ans)</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="legal-section" id="p8">
-    <h2>8. Vos droits</h2>
-    <p>Vous disposez des droits d'accès, de rectification, d'effacement, de portabilité, de limitation et d'opposition, ainsi que du droit de retirer votre consentement à tout moment. Plusieurs se font directement dans l'application :</p>
-    <ul>
-      <li><strong>Exporter vos données</strong> : Profil → Exporter mes données (fichier JSON) ;</li>
-      <li><strong>Supprimer vos données de suivi</strong> : Profil → Zone de danger → Supprimer toutes mes données ;</li>
-      <li><strong>Supprimer votre compte</strong> : Profil → Zone de danger → Supprimer mon compte.</li>
-    </ul>
-    <p>Pour toute autre demande : <strong>privacy@peptidescanner.app</strong> (réponse sous 30 jours). Vous pouvez aussi introduire une réclamation auprès de la CNIL (cnil.fr).</p>
-  </section>
-
-  <section class="legal-section" id="p9">
-    <h2>9. Stockage sur l'appareil et notifications</h2>
-    <p>L'application enregistre sur votre téléphone quelques réglages (langue, thème clair ou sombre, réglages des rappels) et la session de connexion. Ces informations ne servent qu'au fonctionnement de l'application.</p>
-    <p>Les <strong>rappels d'injection</strong> sont programmés localement par votre téléphone, avec votre autorisation ; aucun service de notification extérieur n'est utilisé. Vous pouvez les désactiver dans l'application ou dans les réglages du téléphone.</p>
-  </section>
-
-  <section class="legal-section" id="p10">
-    <h2>10. Sécurité</h2>
-    <p>Les échanges entre l'application et le serveur sont chiffrés (HTTPS). Les données sont chiffrées au repos par l'hébergeur et protégées par des règles d'accès par utilisateur. Aucune clé secrète n'est présente dans l'application.</p>
-  </section>
-
-  <section class="legal-section" id="p11">
-    <h2>11. Contact</h2>
-    <p>Données personnelles : <strong>privacy@peptidescanner.app</strong> — objet : [RGPD] + votre demande.</p>
-  </section>
-
-  <footer class="legal-footer">
-    <div>© 2026 Rivage Labs — PeptideScanner</div>
-    <nav>
-      <a href="/cgu.html">CGU</a>
-      <a href="/privacy.html">Confidentialité</a>
-      <a href="/mentions-legales.html">Mentions légales</a>
+<body data-tab="" data-back="profil.html" data-title="legal2_t_privacy">
+<a class="sr-only" href="#main">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content" tabindex="-1">
+    <div class="page-intro"><h1 data-i18n="legal2_h_privacy">Politique de confidentialité</h1><p class="muted small">Dernière mise à jour : 15 octobre 2026 · Règlement (UE) 2016/679 (RGPD)</p></div>
+    <div id="legalFrOnly" hidden><div class="notice"><span class="legal-ni" data-ps-i="information-circle"></span><div><p data-i18n="legal2_fr_only">Ce document est disponible en français.</p></div></div></div>
+    <div class="notice success"><span class="legal-ni" data-ps-i="information-circle"></span><div><p><strong>L'essentiel</strong> : vos données servent uniquement à faire fonctionner l'application. Elles ne sont jamais vendues, ne servent à aucune publicité, et vous pouvez les exporter ou les supprimer vous-même depuis l'application.</p></div></div>
+    <nav class="card legal-toc" aria-labelledby="legalTocTitle">
+      <h2 class="eyebrow" id="legalTocTitle" data-i18n="legal2_toc">Sommaire</h2>
+      <div class="list">
+      <a class="list-row legal-toc-row" href="#p1"><span class="grow">1. Responsable du traitement</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      <a class="list-row legal-toc-row" href="#p2"><span class="grow">2. Données collectées</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      <a class="list-row legal-toc-row" href="#p3"><span class="grow">3. Finalités et bases légales</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      <a class="list-row legal-toc-row" href="#p4"><span class="grow">4. Données de santé</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      <a class="list-row legal-toc-row" href="#p5"><span class="grow">5. Destinataires et sous-traitants</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      <a class="list-row legal-toc-row" href="#p6"><span class="grow">6. Hébergement et transferts</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      <a class="list-row legal-toc-row" href="#p7"><span class="grow">7. Durée de conservation</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      <a class="list-row legal-toc-row" href="#p8"><span class="grow">8. Vos droits</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      <a class="list-row legal-toc-row" href="#p9"><span class="grow">9. Stockage sur l'appareil et notifications</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      <a class="list-row legal-toc-row" href="#p10"><span class="grow">10. Sécurité</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      <a class="list-row legal-toc-row" href="#p11"><span class="grow">11. Contact</span><span class="legal-chev" data-ps-i="chevron-right" data-ps-cl="chev"></span></a>
+      </div>
     </nav>
-  </footer>
+    <article class="card legal">
+      <section class="legal-section" id="p1">
+        <h2>1. Responsable du traitement</h2>
+        <ul>
+          <li><strong>Rivage Labs</strong>, micro-entreprise — <span class="legal-todo">[Nom et prénom — À compléter]</span></li>
+          <li>Adresse : <span class="legal-todo">[À compléter]</span></li>
+          <li>Email : privacy@peptidescanner.app</li>
+        </ul>
+      </section>
 
-</main>
+      <section class="legal-section" id="p2">
+        <h2>2. Données collectées</h2>
+        <div class="legal-table-wrap" data-scroll-x tabindex="0">
+          <table class="table legal-table">
+            <thead><tr><th>Catégorie</th><th>Données</th><th>Obligatoire</th></tr></thead>
+            <tbody>
+              <tr><td>Compte</td><td>Adresse email, mot de passe (stocké sous forme chiffrée irréversible par Supabase), prénom</td><td>Email et mot de passe : oui</td></tr>
+              <tr><td>Profil</td><td>Niveau d'expérience, taille, objectif, langue, seringues possédées</td><td>Non</td></tr>
+              <tr><td>Avertissement</td><td>Date d'acceptation de l'avertissement d'utilisation</td><td>Oui</td></tr>
+              <tr><td>Cures</td><td>Peptide, dose saisie, dates, fréquence, notes</td><td>Non</td></tr>
+              <tr><td>Injections</td><td>Date, heure, créneau, cure associée</td><td>Non</td></tr>
+              <tr><td>Notes du jour</td><td>Texte libre saisi par l'utilisateur</td><td>Non</td></tr>
+              <tr><td>Poids</td><td>Date, valeur, note</td><td>Non</td></tr>
+              <tr><td>Stock</td><td>Flacons, quantités, reconstitution, conservation</td><td>Non</td></tr>
+              <tr><td>Alertes</td><td>Rappels et alertes créés par l'utilisateur</td><td>Non</td></tr>
+              <tr><td>Abonnement</td><td>Statut Premium, identifiant d'achat transmis par Apple ou Google via RevenueCat (aucune donnée bancaire)</td><td>Abonnés uniquement</td></tr>
+              <tr><td>Technique</td><td>Adresse IP et informations de connexion conservées dans les journaux du serveur</td><td>Oui (technique)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>L'application ne contient <strong>aucun outil de mesure d'audience, aucune publicité et aucun traceur</strong>.</p>
+      </section>
+
+      <section class="legal-section" id="p3">
+        <h2>3. Finalités et bases légales</h2>
+        <div class="legal-table-wrap" data-scroll-x tabindex="0">
+          <table class="table legal-table">
+            <thead><tr><th>Finalité</th><th>Base légale</th></tr></thead>
+            <tbody>
+              <tr><td>Créer et gérer votre compte</td><td>Exécution du contrat (CGU)</td></tr>
+              <tr><td>Enregistrer et afficher vos cures, injections, poids, stock et notes</td><td>Votre consentement explicite (données de santé, voir §4)</td></tr>
+              <tr><td>Gérer l'abonnement Premium</td><td>Exécution du contrat</td></tr>
+              <tr><td>Emails liés au compte (confirmation, mot de passe oublié)</td><td>Exécution du contrat</td></tr>
+              <tr><td>Sécurité et journaux techniques</td><td>Intérêt légitime</td></tr>
+              <tr><td>Obligations comptables et fiscales (abonnés)</td><td>Obligation légale</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="legal-section" id="p4">
+        <h2>4. Données de santé</h2>
+        <p>Les informations sur vos cures, injections, notes et votre poids sont des <strong>données de santé</strong> au sens du RGPD. Elles ne sont traitées qu'avec votre <strong>consentement explicite</strong>, recueilli à la première ouverture de l'application. Vous pouvez retirer ce consentement à tout moment en supprimant vos données ou votre compte.</p>
+        <ul>
+          <li>Elles ne sont <strong>jamais vendues</strong>, ni utilisées à des fins publicitaires ou commerciales.</li>
+          <li>Elles ne sont <strong>jamais partagées</strong> avec un employeur, un assureur ou un organisme de santé.</li>
+          <li>Chaque utilisateur n'accède qu'à ses propres données (règles d'accès appliquées par la base de données).</li>
+        </ul>
+        <div class="notice warning"><span class="legal-ni" data-ps-i="information-circle"></span><div><p>Ces données ne constituent pas un dossier médical. PeptideScanner n'est pas un dispositif médical.</p></div></div>
+      </section>
+
+      <section class="legal-section" id="p5">
+        <h2>5. Destinataires et sous-traitants</h2>
+        <p>Vos données ne sont accessibles qu'à l'éditeur et aux prestataires strictement nécessaires :</p>
+        <ul>
+          <li><strong>Supabase</strong> — hébergement de la base de données et des comptes ;</li>
+          <li><strong>RevenueCat</strong> — gestion du statut des abonnements (reçoit un identifiant de compte et les informations d'achat transmises par Apple ou Google, jamais vos données de santé) ;</li>
+          <li><strong>Apple</strong> et <strong>Google</strong> — distribution de l'application et paiement des abonnements, selon leurs propres politiques ;</li>
+          <li>les autorités, uniquement sur demande légale.</li>
+        </ul>
+      </section>
+
+      <section class="legal-section" id="p6">
+        <h2>6. Hébergement et transferts</h2>
+        <p>La base de données est hébergée dans l'<strong>Union européenne</strong> (Supabase). Certains prestataires (RevenueCat, Apple, Google) sont établis aux États-Unis ; les transferts éventuels sont encadrés par les garanties prévues par le RGPD (clauses contractuelles types de la Commission européenne ou cadre de protection des données UE–États-Unis).</p>
+      </section>
+
+      <section class="legal-section" id="p7">
+        <h2>7. Durée de conservation</h2>
+        <div class="legal-table-wrap" data-scroll-x tabindex="0">
+          <table class="table legal-table">
+            <thead><tr><th>Données</th><th>Durée</th></tr></thead>
+            <tbody>
+              <tr><td>Compte et données de suivi</td><td>Tant que le compte existe</td></tr>
+              <tr><td>Après « Supprimer mon compte »</td><td>Effacement immédiat de la base ; disparition des copies de sauvegarde techniques sous 30 jours au plus</td></tr>
+              <tr><td>Journaux techniques</td><td>90 jours au plus</td></tr>
+              <tr><td>Pièces comptables (abonnés)</td><td>Durée légale (10 ans)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="legal-section" id="p8">
+        <h2>8. Vos droits</h2>
+        <p>Vous disposez des droits d'accès, de rectification, d'effacement, de portabilité, de limitation et d'opposition, ainsi que du droit de retirer votre consentement à tout moment. Plusieurs se font directement dans l'application :</p>
+        <ul>
+          <li><strong>Exporter vos données</strong> : Profil → Exporter mes données (fichier JSON) ;</li>
+          <li><strong>Supprimer vos données de suivi</strong> : Profil → Supprimer toutes mes données ;</li>
+          <li><strong>Supprimer votre compte</strong> : Profil → Supprimer mon compte.</li>
+        </ul>
+        <p>Pour toute autre demande : <strong>privacy@peptidescanner.app</strong> (réponse sous 30 jours). Vous pouvez aussi introduire une réclamation auprès de la CNIL (cnil.fr).</p>
+      </section>
+
+      <section class="legal-section" id="p9">
+        <h2>9. Stockage sur l'appareil et notifications</h2>
+        <p>L'application enregistre sur votre téléphone quelques réglages (langue, thème clair ou sombre, réglages des rappels) et la session de connexion. Ces informations ne servent qu'au fonctionnement de l'application.</p>
+        <p>Les <strong>rappels d'injection</strong> sont programmés localement par votre téléphone, avec votre autorisation ; aucun service de notification extérieur n'est utilisé. Vous pouvez les désactiver dans l'application ou dans les réglages du téléphone.</p>
+      </section>
+
+      <section class="legal-section" id="p10">
+        <h2>10. Sécurité</h2>
+        <p>Les échanges entre l'application et le serveur sont chiffrés (HTTPS). Les données sont chiffrées au repos par l'hébergeur et protégées par des règles d'accès par utilisateur. Aucune clé secrète n'est présente dans l'application.</p>
+      </section>
+
+      <section class="legal-section" id="p11">
+        <h2>11. Contact</h2>
+        <p>Données personnelles : <strong>privacy@peptidescanner.app</strong> — objet : [RGPD] + votre demande.</p>
+      </section>
+    </article>
+    <footer class="screen-footer legal-foot">
+      <p>© 2026 Rivage Labs — PeptideScanner</p>
+      <nav class="legal-foot-links" aria-labelledby="legalFootTitle"><span class="sr-only" id="legalFootTitle" data-i18n="legal2_other">Autres pages légales</span><a class="text-link" href="/cgu.html" data-i18n="legal2_t_terms">CGU</a> <span aria-hidden="true">·</span> <a class="text-link" href="/mentions-legales.html" data-i18n="legal2_t_imprint">Mentions légales</a></nav>
+    </footer>
+  </main>
+</div>
+<script>
+PS_initShell();
+// Le texte juridique n'existe qu'en français : on le signale en anglais.
+if (PS_getLang() === 'en') document.getElementById('legalFrOnly').hidden = false;
+document.documentElement.lang = 'fr';
+PS_applyI18n();
+</script>
 </body>
 </html>

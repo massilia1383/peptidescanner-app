@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>PeptideScanner — Premium</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
+<link rel="stylesheet" href="/peptidescanner.css">
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
+<style>
+  /* Premium — maquette « premium » du kit (13c). Créée le 15/10/2026.
+     Aucune offre, aucun prix, aucun essai fictif : le bouton d'achat reste désactivé
+     tant que l'offre réelle du store (RevenueCat, achats Apple / Google) n'est pas chargée. */
+  .prem-offer-text { margin: 10px 0; }
+  .screen-footer a { display: inline-flex; align-items: center; min-height: 44px; }
+</style>
+</head>
+<!-- Sous-écran du profil : pas d'onglet actif, barre d'onglets conservée -->
+<body data-tab="" data-back="profil.html">
+<a class="sr-only" href="#main">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content" tabindex="-1">
+    <div class="page-intro"><h1 data-i18n="prem2_title">Plus de recul sur votre suivi</h1><p class="muted small" data-i18n="prem2_sub">Premium, si vous en avez besoin.</p></div>
+    <div id="view" class="stack"></div>
+  </main>
+  <nav id="psTabbar"></nav>
+</div>
+
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
+<script>
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const P = window.PS;   // outils communs (ps-app.js)
+let userId = null, profil = {};
+
+PS_initShell();
+document.getElementById('view').innerHTML = P.skeleton();
+
+async function init() {
+  const session = await P.requireSession(sb);
+  if (!session) return;
+  userId = session.user.id;
+  const { data } = await sb.from('profiles').select('*').eq('id', userId).single();
+  profil = data || {};
+  PS_loadLangFromProfile(sb, userId, profil.lang);
+  render();
+}
+
+function feature(title, sub, icon) {
+  return '<div class="list-row">' + P.icon(icon) + '<div class="grow"><strong>' + P.esc(t(title)) + '</strong>' +
+    '<div class="muted small">' + P.esc(t(sub)) + '</div></div></div>';
+}
+
+function render() {
+  // L'offre réelle sera chargée par RevenueCat (lot à venir). En attendant : offre non chargée.
+  const offer = profil.premium
+    ? '<section class="card"><h2>' + P.esc(t('prem2_active_title')) + '</h2>' +
+        '<p class="muted small prem-offer-text">' + P.esc(t('prem2_active_text')) + '</p></section>'
+    : '<section class="card"><h2>' + P.esc(t('prem2_offer_title')) + '</h2>' +
+        '<p class="muted small prem-offer-text">' + P.esc(t('prem2_offer_text')) + '</p>' +
+        '<button class="btn full" type="button" disabled aria-describedby="premOfferHelp">' + P.esc(t('prem2_offer_btn')) + '</button>' +
+        '<p class="help" id="premOfferHelp">' + P.esc(t('prem2_offer_help')) + '</p></section>';
+
+  document.getElementById('view').innerHTML =
+    '<section class="card"><div class="stack">' +
+      feature('prem2_f1', 'prem2_f1_sub', 'calendar-days') +
+      feature('prem2_f2', 'prem2_f2_sub', 'chart-bar') +
+      feature('prem2_f3', 'prem2_f3_sub', 'arrow-down-tray') +
+    '</div></section>' +
+    '<p class="small muted">' + P.esc(t('prem2_free')) + '</p>' +
+    offer +
+    '<button class="btn ghost full" type="button" id="premRestore">' + P.esc(t('prem2_restore')) + '</button>' +
+    '<a class="btn secondary full" href="dashboard.html">' + P.esc(t('prem2_continue')) + '</a>' +
+    '<p class="screen-footer"><a href="cgu.html">' + P.esc(t('prem2_terms')) + '</a> · <a href="privacy.html">' + P.esc(t('prem2_privacy')) + '</a></p>';
+
+  document.getElementById('premRestore').onclick = () => P.toast(t('prem2_restore_msg'));
+  PS_applyI18n();
+}
+
+init().catch(e => { console.error(e); document.getElementById('view').innerHTML = P.errorState(init); });
+</script>
+</body>
+</html>

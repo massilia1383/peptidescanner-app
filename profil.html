@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
 <title>PeptideScanner — Profil</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -10,543 +11,239 @@
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
-<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst==='light'||_pst==='dark')document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <link rel="stylesheet" href="/peptidescanner.css">
-<link rel="stylesheet" href="/peptidescanner-extra.css">
-<style>
-  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
-  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
-     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
-     les noms propres a cette page. */
-  :root {
-    --surface2: var(--surface-muted);
-    --accent2:  var(--info);
-    --accent3:  var(--amber);
-    --nav-h:    var(--bottomnav-h, 64px);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:var(--font-ui); background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:120px; }
-  .content { padding:16px 20px 0; width:100%; max-width:100%; margin:0 auto; }
-  @media (min-width: 768px)  { .content { max-width: 720px; } }
-  @media (min-width: 1024px) { .content { max-width: var(--content-desktop, 1100px); } }
-
-  /* AVATAR */
-  .avatar-section { display:flex; flex-direction:column; align-items:center; padding:24px 0 20px; }
-  .avatar { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:2rem; margin-bottom:12px; border:3px solid rgba(36,87,214,.3); }
-  .avatar-name { font-size:1.2rem; font-weight:700; margin-bottom:4px; }
-  .avatar-plan { padding:4px 14px; border-radius:100px; font-size:.72rem; font-weight:700; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
-  .plan-free { background:var(--neutral-soft); color:var(--muted); border:1px solid var(--border); }
-  .plan-premium { background:var(--amber-soft); color:var(--accent3); border:1px solid rgba(128,80,0,.3); }
-
-  /* SECTION */
-  .section-label { font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; margin:16px 0 8px; }
-  .settings-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:4px; }
-  .settings-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid rgba(30,45,69,.5); transition:background .15s; cursor:pointer; }
-  .settings-row:last-child { border-bottom:none; }
-  .settings-row:hover { background:rgba(255,255,255,.02); }
-  .settings-row.editing { background:var(--accent-soft); }
-  .row-icon { width:36px; height:36px; border-radius:10px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:.95rem; flex-shrink:0; }
-  .row-info { flex:1; }
-  .row-label { font-size:.84rem; font-weight:600; margin-bottom:2px; }
-  .row-val { font-size:.75rem; color:var(--muted); }
-  .row-arrow { color:var(--muted); font-size:.85rem; }
-  .row-edit-input { width:100%; background:var(--surface2); border:1px solid var(--accent); border-radius:8px; padding:6px 10px; color:var(--text); font-family:inherit; font-size:.84rem; outline:none; }
-
-  /* PREMIUM CARD */
-  .premium-card {
-    background:linear-gradient(135deg, var(--accent-soft) 0%, var(--info-soft) 100%);
-    border:1px solid rgba(36,87,214,.25); border-radius:18px; padding:20px; margin-bottom:4px;
-  }
-  .premium-card h3 { font-size:1rem; font-weight:700; margin-bottom:6px; }
-  .premium-card p { font-size:.82rem; color:var(--muted); line-height:1.6; margin-bottom:16px; }
-  .features-list { list-style:none; margin-bottom:16px; }
-  .features-list li { font-size:.82rem; color:var(--text); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
-  .features-list li::before { content:'✓'; color:var(--accent); font-weight:700; }
-  .premium-btn { width:100%; padding:13px; border-radius:10px; border:none; background:var(--accent); color:var(--accent-on); font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; }
-  .premium-btn:hover { opacity:.85; }
-
-  /* STATS CARD */
-  .stats-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:4px; }
-  .stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
-  .stat-box { background:var(--surface2); border-radius:10px; padding:12px; text-align:center; }
-  .stat-box-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.3rem; font-weight:700; color:var(--accent); }
-  .stat-box-label { font-size:.65rem; color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:.8px; }
-
-  /* DANGER ZONE */
-  .form-select { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s; cursor:pointer; }
-  .form-select:focus { border-color:var(--accent); }
-
-  /* EQUIPMENT TOGGLE */
-  .syringe-toggle {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 12px; background:var(--surface2); border-radius:10px;
-    border:1.5px solid var(--border); transition:all .2s;
-  }
-  .syringe-toggle.active { border-color:var(--accent); background:var(--accent-soft); }
-  .syringe-toggle-info { display:flex; align-items:center; gap:10px; }
-  .syringe-toggle-label { font-size:.84rem; font-weight:600; }
-  .syringe-toggle-sub { font-size:.68rem; color:var(--muted); margin-top:2px; }
-  .toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
-  .toggle input { opacity:0; width:0; height:0; }
-  .toggle-slider { position:absolute; inset:0; border-radius:24px; background:var(--border); cursor:pointer; transition:.3s; }
-  .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; border-radius:50%; background:#fff; transition:.3s; box-shadow:0 1px 4px rgba(0,0,0,.15); }
-  .toggle input:checked + .toggle-slider { background:var(--accent); }
-  .toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
-  /* (14/10/2026) Ici traînait la fin d'une ancienne règle .danger-btn sans son sélecteur : elle avalait la règle suivante. Retirée. */
-  /* Style de base des boutons de la zone de danger : il manquait depuis la migration
-     (les boutons s'affichaient comme des boutons bruts du navigateur). 14/10/2026 */
-  .danger-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:48px; margin-bottom:10px; padding:12px 16px; border-radius:10px; border:1px solid var(--danger); background:var(--surface); color:var(--danger); font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:background .18s; }
-  .danger-btn:hover { background:var(--danger-soft); }
-
-  /* BOTTOM NAV */
-  .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(255,255,255,.97); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; height:var(--nav-h); padding:0 8px; }
-  .toast { position:fixed; bottom:calc(var(--nav-h)+16px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:var(--accent-on); padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
-  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-</style>
-</head>
-<body>
-<header class="app-topbar">
-  <div class="topbar-inner">
-    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
-    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
-    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
-  </div>
-</header>
-<div class="menu-popover" id="avatarMenu" hidden>
-  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
-  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
-  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
-  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
-  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
-</div>
-
-<div class="content">
-
-<div class="page-intro"><h1 data-i18n="nav_profile">Profil</h1><p data-i18n="intro_profil_sub">Votre compte et vos préférences</p></div>
-
-  <!-- AVATAR -->
-  <div class="avatar-section">
-    <div class="avatar" id="avatarEmoji">👤</div>
-    <div class="avatar-name" id="displayName">—</div>
-    <div class="avatar-plan plan-free" id="planBadge">Plan Gratuit</div>
-  </div>
-
-  <!-- INFOS PERSO -->
-  <div class="section-label"><span data-i18n="profil_info">Informations personnelles</span></div>
-  <div class="settings-card">
-    <div class="settings-row" onclick="editField('prenom','Prénom')">
-      <div class="row-icon" style="display:grid;place-items:center;color:var(--accent)" data-ps-i="user-circle"></div>
-      <div class="row-info"><div class="row-label" data-i18n="profil_name">Prénom</div><div class="row-val" id="val-prenom">—</div></div>
-      <div class="row-arrow">›</div>
-    </div>
-    <div class="settings-row" onclick="editField('age','Âge')">
-      <div class="row-icon" style="display:grid;place-items:center;color:var(--accent)" data-ps-i="calendar-days"></div>
-      <div class="row-info"><div class="row-label" data-i18n="profil_experience">Expérience</div><div class="row-val" id="val-age">—</div></div>
-      <div class="row-arrow">›</div>
-    </div>
-    <div class="settings-row" onclick="editField('taille','Taille (cm)')">
-      <div class="row-icon" style="display:grid;place-items:center;color:var(--accent)" data-ps-i="scale"></div>
-      <div class="row-info"><div class="row-label" data-i18n="profil_height">Taille</div><div class="row-val" id="val-taille">—</div></div>
-      <div class="row-arrow">›</div>
-    </div>
-    <div class="settings-row" onclick="editField('objectif','Objectif principal')">
-      <div class="row-icon" style="display:grid;place-items:center;color:var(--accent)" data-ps-i="check-circle"></div>
-      <div class="row-info"><div class="row-label" data-i18n="profil_goal">Objectif</div><div class="row-val" id="val-objectif">—</div></div>
-      <div class="row-arrow">›</div>
-    </div>
-  </div>
-
-  <!-- MES STATS -->
-  <div class="section-label"><span data-i18n="profil_stats">Mes statistiques</span></div>
-  <div class="stats-card">
-    <div class="stats-grid" id="statsGrid"></div>
-  </div>
-
-  <!-- ABONNEMENT -->
-  <div class="section-label"><span data-i18n="profil_subscription">Abonnement</span></div>
-  <div class="premium-card" id="premiumCard"></div>
-
-  <!-- ÉQUIPEMENT -->
-  <div class="section-label"><span data-i18n="profil_equipment">Mon équipement</span></div>
-  <div class="settings-card" id="equipmentCard">
-    <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
-      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px"><span data-i18n="profil_syringes">💉 Mes seringues</span></div>
-      <div style="font-size:.74rem;color:var(--muted);margin-bottom:12px;line-height:1.5"><span data-i18n="profil_syringes_sub">Sélectionnez les seringues que vous possédez. Le calculateur s'adaptera automatiquement.</span></div>
-      <div id="syringeToggles" style="display:flex;flex-direction:column;gap:8px"></div>
-    </div>
-    <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
-      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px"><span data-i18n="profil_needle_type">🧪 Type d'aiguille préféré</span></div>
-      <select class="form-select" id="needlePreference" onchange="saveEquipment()" style="margin-top:8px">
-        <option value="4mm">4 mm — Très mince (SC abdominal)</option>
-        <option value="6mm">6 mm — Standard SC</option>
-        <option value="8mm">8 mm — SC/IM superficiel</option>
-        <option value="12mm">12 mm — IM profond</option>
-        <option value="25mm">25 mm — IM deltoid</option>
-      </select>
-    </div>
-    <div style="padding:14px 16px">
-      <div style="font-size:.8rem;font-weight:700;margin-bottom:4px"><span data-i18n="profil_solvent">💧 Solvant de reconstitution préféré</span></div>
-      <select class="form-select" id="solventPreference" onchange="saveEquipment()" style="margin-top:8px">
-        <option value="bac" data-i18n="solvent_bac">Eau bactériostatique (BAC) — Recommandé</option>
-        <option value="water" data-i18n="solvent_water">Eau stérile pour injection</option>
-        <option value="saline" data-i18n="solvent_saline">Sérum physiologique 0.9%</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- PARAMÈTRES -->
-  <div class="section-label"><span data-i18n="profil_settings">Paramètres</span></div>
-  <div class="settings-card">
-    <div class="settings-row" onclick="window.location='peptide-database.html'">
-      <div class="row-icon" style="display:grid;place-items:center;color:var(--accent)" data-ps-i="book-open"></div>
-      <div class="row-info"><div class="row-label"><span data-i18n="profil_biblio_link">Bibliothèque peptides</span></div><div class="row-val"><span data-i18n="profil_biblio_count">48 peptides référencés</span></div></div>
-      <div class="row-arrow">›</div>
-    </div>
-    <div class="settings-row" onclick="toggleLang()">
-      <div class="row-icon" style="display:grid;place-items:center;color:var(--accent)" data-ps-i="information-circle"></div>
-      <div class="row-info"><div class="row-label" data-i18n="profil_lang">Langue</div><div class="row-val" id="langVal">Français</div></div>
-      <div class="row-arrow">›</div>
-    </div>
-    <div class="settings-row" onclick="exportData()">
-      <div class="row-icon" style="display:grid;place-items:center;color:var(--accent)" data-ps-i="arrow-down-tray"></div>
-      <div class="row-info"><div class="row-label"><span data-i18n="profil_export">Exporter mes données</span></div><div class="row-val"><span data-i18n="profil_export_sub">JSON — toutes mes cures et mesures</span></div></div>
-      <div class="row-arrow">›</div>
-    </div>
-  </div>
-
-  <!-- DANGER -->
-  <div class="section-label"><span data-i18n="profil_danger">Zone de danger</span></div>
-  <button class="danger-btn" onclick="logout()" style="border-color:rgba(36,87,214,.3);background:var(--info-soft);color:var(--info)"><span data-i18n="profil_logout">🚪 Se déconnecter</span></button>
-  <button class="danger-btn" onclick="resetData()"><span data-i18n="profil_reset">🗑 Supprimer toutes mes données</span></button>
-  <button class="danger-btn" onclick="deleteAccount()" style="background:var(--danger);color:#fff;border-color:var(--danger)"><span data-i18n="profil_delete_account">Supprimer mon compte</span></button>
-  <p style="font-size:.72rem;color:var(--muted);margin:6px 2px 0;line-height:1.5"><span data-i18n="profil_delete_account_sub">Efface définitivement votre compte et toutes vos données. Action irréversible.</span></p>
-
-  <div style="text-align:center;padding:20px 0;color:var(--muted);font-size:.72rem;font-family:var(--font-data);font-variant-numeric:tabular-nums">
-    <span data-i18n="profil_version">PeptideScanner v1.0 · Usage éducatif uniquement</span>
-  </div>
-</div>
-
-<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
-  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
-  <a class="nav-item" href="cure.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
-  <a class="nav-item" href="inventaire.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
-  <a class="nav-item" href="poids.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
-  <a class="nav-item" href="peptide-database.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
-</div></nav>
-<div class="toast" id="toast"></div>
-
 <script src="/lang.js"></script>
 <script src="/assets/assets-bundle.js"></script>
 <script src="/ps-app.js"></script>
+<style>
+  /* Profil — maquette « profile » du kit (11 · Profil) + liste « legal » (12) dans une feuille.
+     Réécrit le 15/10/2026 (refonte Clarté à 100 %). Jetons du kit uniquement. */
+  .prof-id h2 { overflow-wrap: anywhere; }
+  .prof-id p { overflow-wrap: anywhere; }
+  .prof-danger { display: grid; gap: 4px; }
+  .prof-danger .btn { width: 100%; }
+</style>
+</head>
+<!-- Sous-écran : pas d'onglet actif, retour vers l'accueil, barre d'onglets conservée -->
+<body data-tab="" data-back="dashboard.html">
+<a class="sr-only" href="#main">Aller au contenu</a>
+<div class="page">
+  <header id="psHeader"></header>
+  <main id="main" class="content" tabindex="-1">
+    <div class="page-intro"><h1 data-i18n="nav_profile">Profil</h1><p class="muted small" data-i18n="intro_profil_sub">Votre compte et vos préférences</p></div>
+    <div id="view" class="stack"></div>
+  </main>
+  <nav id="psTabbar"></nav>
+</div>
+
 <script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
 const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const P = window.PS;   // outils communs (ps-app.js)
+let userId = null, userEmail = '', profil = {};
 
-function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+PS_initShell();
+document.getElementById('view').innerHTML = P.skeleton();
 
-let userId=null, userEmail='', profil={}, allCures=[], allInjections=[], allWeights=[];
-let editingField=null;
+// Choix proposés (valeurs enregistrées dans profiles.experience / profiles.goal).
+// Les valeurs du parcours d'arrivée (used, schedule, weight) et les anciens textes libres
+// sont conservés tels quels : ils apparaissent comme option tant que l'utilisateur ne change rien.
+const EXP_OPTS  = [['none', 'prof2_no_answer'], ['new', 'prof2_exp_new'], ['familiar', 'prof2_exp_familiar']];
+const GOAL_OPTS = [['organize', 'prof2_goal_organize'], ['history', 'prof2_goal_history'], ['none', 'prof2_no_answer']];
+const KNOWN_LABELS = { used: 'prof2_exp_used', schedule: 'prof2_goal_schedule', weight: 'prof2_goal_weight' };
+
+function options(list, current) {
+  const out = list.map(o => [o[0], t(o[1])]);
+  if (current && !out.some(o => o[0] === current)) out.push([current, KNOWN_LABELS[current] ? t(KNOWN_LABELS[current]) : current]);
+  return out;
+}
+function currentTheme() {
+  let v = null; try { v = localStorage.getItem('ps_theme'); } catch (e) {}
+  return (v === 'light' || v === 'dark') ? v : 'system';
+}
 
 async function init() {
-  const { data } = await sb.auth.getSession();
-  if (!data?.session) { window.location.href='/login.html'; return; }
-  userId    = data.session.user.id;
-  userEmail = data.session.user.email;
-
-  const [pRes,cRes,iRes,wRes] = await Promise.all([
-    sb.from('profiles').select('*').eq('id',userId).single(),
-    sb.from('cures').select('*').eq('user_id',userId),
-    sb.from('injections').select('id,cure_id').eq('user_id',userId),
-    sb.from('weight_logs').select('*').eq('user_id',userId).order('logged_at',{ascending:true})
-  ]);
-  profil        = pRes.data  || {};
-  allCures      = cRes.data  || [];
-  allInjections = iRes.data  || [];
-  allWeights    = wRes.data  || [];
-
-  // Si pas de pseudo, proposer d'en créer un
-  if (!profil.full_name) showPseudoPrompt();
-
+  const session = await P.requireSession(sb);
+  if (!session) return;
+  userId = session.user.id;
+  userEmail = session.user.email || '';
+  const { data } = await sb.from('profiles').select('*').eq('id', userId).single();
+  profil = data || {};
+  PS_loadLangFromProfile(sb, userId, profil.lang);
   render();
-  renderEquipment();
+  // Message laissé avant le rechargement dû au changement de langue
+  try { if (sessionStorage.getItem('prof2_saved')) { sessionStorage.removeItem('prof2_saved'); P.toast(t('prof2_saved')); } } catch (e) {}
 }
 
-// ── PROMPT PSEUDO (première connexion) ────────────────────────
-function showPseudoPrompt() {
-  const banner = document.createElement('div');
-  banner.id = 'pseudoBanner';
-  banner.style.cssText = 'background:var(--accent-soft);border:1.5px solid rgba(36,87,214,.2);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;';
-  banner.innerHTML = `
-    <span style="font-size:1.4rem">👋</span>
-    <div style="flex:1">
-      <div style="font-size:.84rem;font-weight:600;margin-bottom:6px">Choisissez votre pseudo</div>
-      <div style="display:flex;gap:8px">
-        <input id="pseudoInput" type="text" placeholder="Ex: James" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.84rem;outline:none;background:var(--surface)">
-        <button onclick="savePseudo()" style="padding:8px 16px;background:var(--accent);color:var(--accent-on);border:none;border-radius:8px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer">OK</button>
-      </div>
-    </div>`;
-  const content = document.querySelector('.content');
-  if (content) content.insertBefore(banner, content.firstChild);
+function row(tag, attrs, icon, title, sub, chevron) {
+  return '<' + tag + ' class="list-row" ' + attrs + '>' + P.icon(icon) +
+    '<div class="grow"><strong>' + P.esc(title) + '</strong>' + (sub ? '<div class="muted small">' + P.esc(sub) + '</div>' : '') + '</div>' +
+    (chevron ? P.icon('chevron-right', 'chev') : '') + '</' + tag + '>';
 }
 
-async function savePseudo() {
-  const val = document.getElementById('pseudoInput')?.value.trim();
-  if (!val) return;
-  await sb.from('profiles').update({ full_name: val }).eq('id', userId);
-  profil.full_name = val;
-  document.getElementById('pseudoBanner')?.remove();
-  showToast(t('profil_pseudo_saved'));
-  render();
-  // Mettre à jour le dashboard aussi
-  localStorage.setItem('ps_display_name', val);
-}
-
-// ── RENDER ─────────────────────────────────────────────────────
 function render() {
-  const name = profil.full_name || '—';
-  const nameEl   = document.getElementById('displayName');
-  const avatarEl = document.getElementById('avatarEmoji');
-  if (nameEl)   nameEl.textContent   = name;
-  if (avatarEl) avatarEl.textContent = profil.full_name ? profil.full_name[0].toUpperCase() : '👤';
+  const name = profil.full_name || '';
+  const shown = name || (userEmail ? userEmail.split('@')[0] : t('prof2_no_name'));
+  document.getElementById('view').innerHTML =
+    // Carte d'identité du compte
+    '<section class="card prof-id"><div class="row">' + P.icon('user-circle') +
+      '<div class="grow"><h2>' + P.esc(shown) + '</h2><p class="small muted">' + P.esc(userEmail) + '</p></div></div></section>' +
+    // Préférences
+    '<form id="profileForm" class="stack" novalidate>' +
+      P.field(t('profil_name'), 'profName', '', 'text', name, '', 'autocomplete="given-name" maxlength="60" placeholder="' + P.esc(t('prof2_name_ph')) + '"') +
+      P.select(t('profil_experience'), 'profExperience', options(EXP_OPTS, profil.experience), profil.experience || 'none') +
+      P.select(t('prof2_goal'), 'profGoal', options(GOAL_OPTS, profil.goal), profil.goal || 'organize') +
+      P.select(t('profil_lang'), 'profLang', [['fr', t('prof2_lang_fr')], ['en', t('prof2_lang_en')]], PS_getLang()) +
+      P.select(t('prof2_theme'), 'profTheme', [['light', t('prof2_theme_light')], ['dark', t('prof2_theme_dark')], ['system', t('prof2_theme_system')]], currentTheme()) +
+      '<div id="profFeedback"></div>' +
+      '<button class="btn full" type="submit" id="profSave">' + P.esc(t('prof2_save')) + '</button>' +
+    '</form>' +
+    // Compte, rappels, légal, export, déconnexion
+    '<section class="card">' +
+      row('a', 'href="premium.html"', 'credit-card', t('profil_subscription'), profil.premium ? t('profil_prem_active') : t('prof2_sub_discover'), true) +
+      row('a', 'href="alertes.html"', 'bell', t('prof2_reminders'), t('prof2_reminders_sub'), true) +
+      row('button', 'type="button" id="profLegal" aria-haspopup="dialog"', 'document-text', t('prof2_legal'), t('prof2_legal_sub'), true) +
+      row('button', 'type="button" id="profExport"', 'arrow-down-tray', t('profil_export'), t('prof2_export_sub'), false) +
+      row('button', 'type="button" id="profLogout"', 'arrow-right', t('profil_logout'), '', false) +
+    '</section>' +
+    // Suppressions (toujours confirmées)
+    '<div class="prof-danger">' +
+      '<button class="btn ghost full" type="button" id="profDelete">' + P.esc(t('profil_delete_account')) + '</button>' +
+      '<button class="btn ghost full" type="button" id="profReset">' + P.esc(t('profil_reset')) + '</button>' +
+    '</div>' +
+    '<p class="screen-footer">' + P.esc(t('prof2_version')) + '</p>';
 
-  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val||t('profil_not_filled'); };
-  set('val-prenom',  profil.full_name);
-  set('val-age',     profil.experience || null);
-  // Chercher taille dans metadata
-  const taille = profil.height_cm || localStorage.getItem('ps_height_cm');
-  set('val-taille', taille ? taille + ' cm' : null);
-  set('val-objectif', profil.goal);
+  document.getElementById('profileForm').addEventListener('submit', e => { e.preventDefault(); savePrefs(); });
+  // L'apparence s'applique tout de suite (réglage du téléphone, enregistré dans ps_theme)
+  document.getElementById('profTheme').addEventListener('change', e => P.applyTheme(e.target.value));
+  document.getElementById('profLegal').onclick = openLegal;
+  document.getElementById('profExport').onclick = exportData;
+  document.getElementById('profLogout').onclick = () => P.logout(sb);
+  document.getElementById('profDelete').onclick = deleteAccount;
+  document.getElementById('profReset').onclick = resetData;
+  PS_applyI18n();
+}
 
-  const badge = document.getElementById('planBadge');
-  if (badge) {
-    badge.textContent = profil.premium ? t('profil_plan_prem') : t('profil_plan_free');
-    badge.className   = 'avatar-plan ' + (profil.premium ? 'plan-premium' : 'plan-free');
+// ── Enregistrer les préférences ─────────────────────────────────
+async function savePrefs() {
+  const btn = document.getElementById('profSave');
+  const fb = document.getElementById('profFeedback');
+  fb.innerHTML = '';
+  const name = document.getElementById('profName').value.trim().slice(0, 60);
+  const payload = {
+    full_name: name || null,
+    experience: document.getElementById('profExperience').value,
+    goal: document.getElementById('profGoal').value
+  };
+  const theme = document.getElementById('profTheme').value;
+  const lang = document.getElementById('profLang').value;
+  btn.disabled = true; btn.setAttribute('aria-busy', 'true');
+  let error = null;
+  try { const r = await sb.from('profiles').update(payload).eq('id', userId); error = r && r.error; } catch (e) { error = e; }
+  btn.disabled = false; btn.removeAttribute('aria-busy');
+  if (error) { fb.innerHTML = P.notice(t('msg_save_error'), 'error'); return; }
+  Object.assign(profil, payload);
+  try { if (name) localStorage.setItem('ps_display_name', name); else localStorage.removeItem('ps_display_name'); } catch (e) {}
+  P.applyTheme(theme);
+  if (lang !== PS_getLang()) {
+    // PS_setLang enregistre profiles.lang puis recharge la page
+    try { sessionStorage.setItem('prof2_saved', '1'); } catch (e) {}
+    await PS_setLang(lang);
+    return;
   }
-  renderStats();
-  renderPremium(profil.premium);
-}
-
-function renderStats() {
-  const totalInj  = allInjections.length;
-  const completed = allCures.filter(c => {
-    if (!c.start_date||!c.duration_days) return false;
-    const e=psDay(c.start_date); e.setDate(e.getDate()+c.duration_days); return e<new Date();
-  });
-  const wLost = allWeights.length>1
-    ? (allWeights[allWeights.length-1].weight_kg - allWeights[0].weight_kg).toFixed(1)
-    : null;
-  const grid = document.getElementById('statsGrid');
-  if (!grid) return;
-  grid.innerHTML = `
-    <div class="stat-box"><div class="stat-box-val">${allCures.length}</div><div class="stat-box-label">Cures totales</div></div>
-    <div class="stat-box"><div class="stat-box-val">${totalInj}</div><div class="stat-box-label">Injections</div></div>
-    <div class="stat-box"><div class="stat-box-val">${completed.length}</div><div class="stat-box-label">Cures finies</div></div>
-    <div class="stat-box"><div class="stat-box-val" style="color:${wLost<0?'var(--accent)':'var(--danger)'}">${wLost!==null?(wLost>0?'+':'')+wLost+' kg':'— kg'}</div><div class="stat-box-label">Variation poids</div></div>`;
-}
-
-function renderPremium(isPremium) {
-  const c = document.getElementById('premiumCard');
-  if (!c) return;
-  if (isPremium) {
-    c.innerHTML = `<h3>${t('profil_prem_active')}</h3><p>${t('profil_prem_active_sub')}</p>
-    <ul class="features-list"><li>${t('profil_feat5')}</li><li>${t('profil_feat6')}</li><li>${t('profil_feat3')}</li></ul>`;
-  } else {
-    // Pas d'achat ici tant que RevenueCat n'est pas branché (achats Apple / Google).
-    // L'ancien bouton passait le profil en Premium sans paiement : retiré le 14/10/2026.
-    c.innerHTML = `<h3>${t('profil_prem_soon')}</h3><p>${t('profil_prem_soon_sub')}</p>
-    <ul class="features-list"><li>${t('profil_feat1')}</li><li>${t('profil_feat2')}</li><li>${t('profil_feat3')}</li></ul>`;
-  }
-}
-
-// ── EDIT CHAMPS ────────────────────────────────────────────────
-const FIELD_MAP = {
-  'prenom':  { db: 'full_name',   label: t('profil_name') },
-  'age':     { db: 'experience',  label: t('profil_experience') },   // le champ « age » stocke l'expérience (pas de colonne âge)
-  'taille':  { db: null,          label: t('profil_height') },   // stocké en localStorage + profiles
-  'objectif':{ db: 'goal',        label: t('profil_goal') },
-};
-
-function editField(key, label) {
-  if (editingField===key) { cancelEdit(); return; }
-  editingField = key;
-  const valEl = document.getElementById('val-'+key);
-  if (!valEl) return;
-  let cur = '';
-  if (key==='prenom')   cur = profil.full_name   || '';
-  if (key==='age')      cur = profil.experience  || '';
-  if (key==='taille')   cur = profil.height_cm   || localStorage.getItem('ps_height_cm') || '';
-  if (key==='objectif') cur = profil.goal        || '';
-  valEl.innerHTML = `<div style="display:flex;gap:6px;align-items:center">
-    <input class="row-edit-input" id="edit-input" value="${cur}" placeholder="${label}" style="flex:1" onkeydown="if(event.key==='Enter')saveField('${key}')">
-    <button onclick="saveField('${key}')" style="padding:6px 12px;background:var(--accent);color:var(--accent-on);border:none;border-radius:8px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap">✓</button>
-    <button onclick="cancelEdit()" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.8rem;cursor:pointer">✕</button>
-  </div>`;
-  setTimeout(()=>document.getElementById('edit-input')?.focus(),50);
-}
-
-function cancelEdit() { editingField=null; render(); }
-
-async function saveField(key) {
-  const val = document.getElementById('edit-input')?.value.trim();
-  if (!val) { cancelEdit(); return; }
-  const map = FIELD_MAP[key];
-  if (key==='taille') {
-    // Stocker la taille en localStorage ET dans le profil si colonne existe
-    localStorage.setItem('ps_height_cm', val);
-    profil.height_cm = val;
-    // Tenter de sauvegarder dans Supabase si la colonne existe
-    try { await sb.from('profiles').update({ height_cm: parseInt(val) }).eq('id', userId); } catch(e) {}
-  } else if (map?.db) {
-    await sb.from('profiles').update({ [map.db]: val }).eq('id', userId);
-    profil[map.db] = val;
-    if (key==='prenom') localStorage.setItem('ps_display_name', val);
-  }
-  editingField=null;
-  showToast(t('profil_updated') + ' ' + map.label);
   render();
+  P.toast(t('prof2_saved'));
 }
 
-// Suppression du compte (exigée par Apple 5.1.1(v) et Google Play).
+// ── Informations légales (liste « legal » du kit) ──────────────
+function openLegal() {
+  P.openSheet(t('prof2_legal'),
+    '<div class="list">' +
+      row('a', 'href="cgu.html"', 'document-text', t('prof2_legal_terms'), t('prof2_legal_terms_sub'), true) +
+      row('a', 'href="privacy.html"', 'shield-check', t('prof2_legal_privacy'), t('prof2_legal_privacy_sub'), true) +
+      row('a', 'href="mentions-legales.html"', 'information-circle', t('prof2_legal_imprint'), t('prof2_legal_imprint_sub'), true) +
+    '</div>');
+}
+
+// ── Export JSON de toutes les données ──────────────────────────
+async function exportData() {
+  try {
+    const [cRes, iRes, wRes, invRes, aRes] = await Promise.all([
+      sb.from('cures').select('*').eq('user_id', userId),
+      sb.from('injections').select('*').eq('user_id', userId),
+      sb.from('weight_logs').select('*').eq('user_id', userId),
+      sb.from('inventory').select('*').eq('user_id', userId),
+      sb.from('alerts').select('*').eq('user_id', userId)
+    ]);
+    const data = {
+      profil, cures: cRes.data || [], injections: iRes.data || [], poids: wRes.data || [],
+      inventaire: invRes.data || [], alertes: aRes.data || [],
+      exportDate: P.localStamp(psDayStr(), P.nowHM())   // heure locale
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'peptidescanner-export-' + psDayStr() + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    P.toast(t('profil_export_done'));
+  } catch (e) {
+    console.error(e);
+    P.toast(t('prof2_export_error'));
+  }
+}
+
+// ── Suppression du compte (Apple 5.1.1(v), Google Play) ────────
 // La fonction serveur « delete-account » supprime l'utilisateur de l'authentification ;
 // la base efface ensuite profil, cures, injections, poids, stock et alertes en cascade.
 async function deleteAccount() {
-  if (!confirm(t('profil_delete_confirm1'))) return;
-  if (!confirm(t('profil_delete_confirm2'))) return;
+  const ok = await P.confirm({ title: t('prof2_del_title'), text: t('prof2_del_text'),
+    cancel: t('prof2_del_keep'), ok: t('prof2_del_ok'), danger: true });
+  if (!ok) return;
+  P.toast(t('prof2_deleting'));
   try {
     const { error } = await sb.functions.invoke('delete-account', { body: {} });
     if (error) throw error;
   } catch (e) {
-    showToast(t('profil_delete_error'));
+    P.toast(t('profil_delete_error'));
     return;
   }
+  try { await PS_cancelReminders(); } catch (e) {}
   try { await sb.auth.signOut(); } catch (e) {}
   try { localStorage.removeItem('ps_display_name'); localStorage.removeItem('ps_height_cm'); } catch (e) {}
-  window.location.href = '/login.html';
+  location.href = '/login.html';
 }
 
-// ── ÉQUIPEMENT ─────────────────────────────────────────────────
-const SYRINGES = [
-  { id:'U30',  label:t('syringe_u30_label'),  sub:t('syringe_u30_sub') },
-  { id:'U50',  label:t('syringe_u50_label'),  sub:t('syringe_u50_sub') },
-  { id:'U100', label:t('syringe_u100_label'), sub:t('syringe_u100_sub') },
-  { id:'U200', label:t('syringe_u200_label'), sub:t('syringe_u200_sub') },
-];
-
-function renderEquipment() {
-  const eq = JSON.parse(localStorage.getItem('ps_equipment')||'{"syringes":["U50","U100"],"needle":"6mm","solvent":"bac"}');
-  const container = document.getElementById('syringeToggles');
-  if (!container) return;
-  container.innerHTML = SYRINGES.map(s => {
-    const active=(eq.syringes||['U50','U100']).includes(s.id);
-    return `<div class="syringe-toggle ${active?'active':''}" id="st_${s.id}">
-      <div class="syringe-toggle-info"><span style="font-size:1.2rem">💉</span>
-        <div><div class="syringe-toggle-label">${s.label}</div><div class="syringe-toggle-sub">${s.sub}</div></div>
-      </div>
-      <label class="toggle"><input type="checkbox" ${active?'checked':''} onchange="toggleSyringe('${s.id}',this.checked)"><span class="toggle-slider"></span></label>
-    </div>`;
-  }).join('');
-  const n=document.getElementById('needlePreference'); if(n) n.value=eq.needle||'6mm';
-  const s=document.getElementById('solventPreference'); if(s) s.value=eq.solvent||'bac';
-}
-
-function toggleSyringe(id, enabled) {
-  const eq=JSON.parse(localStorage.getItem('ps_equipment')||'{"syringes":["U50","U100"]}');
-  let syringes=eq.syringes||['U50','U100'];
-  if(enabled){if(!syringes.includes(id))syringes.push(id);}
-  else{syringes=syringes.filter(s=>s!==id);}
-  if(syringes.length===0){showToast(t('alerts_fill_all'));return;}
-  eq.syringes=syringes;
-  localStorage.setItem('ps_equipment',JSON.stringify(eq));
-  document.getElementById('st_'+id)?.classList.toggle('active',enabled);
-  showToast(t('save')+' ✓');
-}
-
-function saveEquipment() {
-  const eq=JSON.parse(localStorage.getItem('ps_equipment')||'{}');
-  const n=document.getElementById('needlePreference'); if(n) eq.needle=n.value;
-  const s=document.getElementById('solventPreference'); if(s) eq.solvent=s.value;
-  localStorage.setItem('ps_equipment',JSON.stringify(eq));
-  showToast(t('save')+' ✓');
-}
-
-// ── EXPORT / LOGOUT / RESET ────────────────────────────────────
-async function exportData() {
-  const [cRes,iRes,wRes]=await Promise.all([
-    sb.from('cures').select('*').eq('user_id',userId),
-    sb.from('injections').select('*').eq('user_id',userId),
-    sb.from('weight_logs').select('*').eq('user_id',userId)
-  ]);
-  const data={profil,cures:cRes.data,injections:iRes.data,poids:wRes.data,exportDate:new Date().toISOString()};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='peptidescanner-export-'+psDayStr()+'.json';
-  a.click();
-  showToast(t('profil_export_done'));
-}
-
-async function logout() {
-  if(!confirm(t('profil_logout_confirm'))) return;
-  await sb.auth.signOut();
-  window.location.href='login.html';
-}
-
+// ── Supprimer toutes les données de suivi (le compte reste) ────
 async function resetData() {
-  if(!confirm(t('profil_reset_confirm1'))) return;
-  if(!confirm(t('profil_reset_confirm2'))) return;
-  await Promise.all([
-    sb.from('injections').delete().eq('user_id',userId),
-    sb.from('cures').delete().eq('user_id',userId),
-    sb.from('weight_logs').delete().eq('user_id',userId),
-    sb.from('inventory').delete().eq('user_id',userId),
-    sb.from('alerts').delete().eq('user_id',userId),
-  ]);
-  showToast(t('profil_reset_done'));
-  setTimeout(()=>window.location='dashboard.html',1500);
+  const ok = await P.confirm({ title: t('prof2_reset_title'), text: t('prof2_reset_text'),
+    cancel: t('prof2_reset_keep'), ok: t('prof2_reset_ok'), danger: true });
+  if (!ok) return;
+  try {
+    const res = await Promise.all([
+      sb.from('injections').delete().eq('user_id', userId),
+      sb.from('cures').delete().eq('user_id', userId),
+      sb.from('weight_logs').delete().eq('user_id', userId),
+      sb.from('inventory').delete().eq('user_id', userId),
+      sb.from('alerts').delete().eq('user_id', userId)
+    ]);
+    if (res.some(r => r && r.error)) throw res.find(r => r && r.error).error;
+  } catch (e) {
+    console.error(e);
+    P.toast(t('prof2_reset_error'));
+    return;
+  }
+  try { await PS_cancelReminders(); } catch (e) {}
+  P.toast(t('prof2_reset_done'));
+  setTimeout(() => { location.href = 'dashboard.html'; }, 1500);
 }
 
-function toggleLang() {
-  PS_setLang(PS_getLang()==='fr' ? 'en' : 'fr');
-}
-document.addEventListener('click',e=>{
-  if(editingField&&!e.target.closest('.settings-row')&&!e.target.closest('.row-edit-input'))cancelEdit();
-});
-
-init().then(() => {
-  PS_applyI18n();
-  PS_renderLangSwitcher();
-  const lv = document.getElementById('langVal');
-  if(lv) lv.textContent = PS_getLang()==='fr'?'Français':'English';
-});
-
-// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
-PS_initShell();
-document.querySelectorAll('[data-ps-i]').forEach(el=>{el.innerHTML=PS_icon(el.dataset.psI);});
-
-async function psLogout() {
-  try { await sb.auth.signOut(); } catch(e) {}
-  window.location.href = '/login.html';
-}
-function psFillAvatar() {
-  if (typeof sb === 'undefined' || !sb.auth) return;
-  sb.auth.getUser().then(({data}) => {
-    const n = (data && data.user && (data.user.user_metadata && data.user.user_metadata.full_name)) ||
-              (data && data.user && data.user.email) || '';
-    const btn = document.getElementById('avatarButton');
-    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
-  }).catch(function(){});
-}
-document.addEventListener('DOMContentLoaded', function () {
-  psFillAvatar();
-  if (window.PS_applyI18n) PS_applyI18n();
-  if (window.PS_renderLangSwitcher) PS_renderLangSwitcher();
-});
-
+init().catch(e => { console.error(e); document.getElementById('view').innerHTML = P.errorState(init); });
 </script>
 </body>
 </html>

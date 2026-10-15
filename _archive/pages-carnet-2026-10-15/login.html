@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Connexion — PeptideScanner</title>
+  <script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
+  <script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="PeptideScanner">
+  <link rel="stylesheet" href="/peptidescanner.css">
+  <!--
+    Lot D (14/10/2026) : page de connexion passée au design « Carnet de protocole ».
+    Couleurs et polices viennent de peptidescanner.css (mode sombre compris).
+    Classes préfixées auth- pour ne pas entrer en conflit avec .card / .tabs du design.
+    Plus de lien « Accueil » : la landing est archivée (appli stores uniquement).
+  -->
+  <style>
+    body{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px calc(32px + env(safe-area-inset-bottom));}
+    .auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+    .auth-logo img{width:40px;height:40px;}
+    .auth-logo-name{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.3px;}
+    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;width:100%;max-width:420px;}
+    .auth-title{font-size:22px;font-weight:700;letter-spacing:-.4px;margin-bottom:6px;color:var(--text);}
+    .auth-subtitle{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
+    .auth-tabs{display:flex;background:var(--surface-muted);border-radius:10px;padding:3px;margin-bottom:24px;gap:3px;}
+    .auth-tab{flex:1;min-height:40px;padding:9px;font-family:inherit;font-size:14px;font-weight:500;color:var(--muted);background:transparent;border:none;border-radius:8px;cursor:pointer;transition:background .18s,color .18s;}
+    .auth-tab.active{background:var(--surface);color:var(--text);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.06);}
+    .auth-field{margin-bottom:16px;display:grid;gap:7px;}
+    .auth-field label{font-size:13px;font-weight:700;color:var(--text-soft);}
+    .auth-field input{width:100%;min-height:48px;padding:11px 13px;font-family:inherit;font-size:16px;color:var(--text);background:var(--surface-elevated);border:1px solid var(--border);border-radius:10px;outline:none;transition:border-color .18s,box-shadow .18s;}
+    .auth-field input:focus{border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring);}
+    .auth-submit{width:100%;min-height:48px;padding:12px;font-family:inherit;font-size:15px;font-weight:700;color:var(--accent-on);background:var(--accent);border:none;border-radius:10px;cursor:pointer;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .18s;}
+    .auth-submit:hover{background:var(--accent-hover);}
+    .auth-submit:active{background:var(--accent-pressed);}
+    .auth-submit:disabled{opacity:.6;cursor:not-allowed;}
+    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .msg{display:none;padding:12px 14px;border-radius:10px;font-size:14px;margin-bottom:16px;line-height:1.45;}
+    .msg.error{display:block;background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger);}
+    .msg.success{display:block;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-border);}
+    .forgot{text-align:right;}
+    .forgot a{font-size:13px;color:var(--info);text-decoration:none;font-weight:600;}
+    /* Lot 3 : case obligatoire à l'inscription (18 ans et plus + CGU + confidentialité) */
+    .terms-check{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-muted);cursor:pointer;}
+    .terms-check input{width:20px;height:20px;flex-shrink:0;margin:1px 0 0;accent-color:var(--accent);}
+    .terms-check span{font-size:13px;line-height:1.5;color:var(--text);}
+    .terms-check a{color:var(--info);text-decoration:none;font-weight:600;}
+    #confirmScreen{display:none;text-align:center;padding:8px 0;}
+    .confirm-icon{width:56px;height:56px;margin:0 auto 16px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;}
+    .confirm-title{font-size:20px;font-weight:700;margin-bottom:10px;color:var(--text);}
+    .confirm-text{font-size:14px;color:var(--muted);line-height:1.6;}
+    .confirm-email{font-weight:700;color:var(--text);}
+    .resend-btn{background:none;border:1px solid var(--border);border-radius:10px;min-height:44px;padding:10px 20px;font-family:inherit;font-size:14px;color:var(--text);cursor:pointer;margin-top:20px;}
+    .resend-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .lang-wrap{position:fixed;top:calc(12px + env(safe-area-inset-top));right:16px;z-index:10;}
+  </style>
+</head>
+<body>
+
+  <div class="lang-wrap" id="langToggleBtn"></div>
+
+  <div class="auth-logo">
+    <span class="brand-logo" data-ps-logo style="width:40px;height:40px;color:var(--accent)"></span>
+    <span class="auth-logo-name">PeptideScanner</span>
+  </div>
+
+  <div class="auth-card">
+    <div id="confirmScreen">
+      <div class="confirm-icon"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+      <div class="confirm-title" id="confirmTitle"></div>
+      <p class="confirm-text" id="confirmText1"></p>
+      <p class="confirm-text" style="margin-top:10px;" id="confirmText2"></p>
+      <button class="resend-btn" id="resendBtn"></button>
+    </div>
+
+    <div id="authForm">
+      <div class="auth-title" id="formTitle"></div>
+      <div class="auth-subtitle" id="formSubtitle"></div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')"></button>
+        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')"></button>
+      </div>
+      <div class="msg" id="msgBox"></div>
+      <div class="auth-field">
+        <label for="email" id="labelEmail"></label>
+        <input type="email" id="email" autocomplete="email" />
+      </div>
+      <div class="auth-field" id="nameGroup" style="display:none;">
+        <label for="fullName" id="labelName"></label>
+        <input type="text" id="fullName" autocomplete="given-name" />
+      </div>
+      <div class="auth-field">
+        <label for="password" id="labelPassword"></label>
+        <input type="password" id="password" autocomplete="current-password" />
+        <div class="forgot" id="forgotRow">
+          <a href="#" onclick="sendPasswordReset(event)" id="forgotLink"></a>
+        </div>
+      </div>
+      <div class="auth-field" id="confirmGroup" style="display:none;">
+        <label for="passwordConfirm" id="labelConfirmPw"></label>
+        <input type="password" id="passwordConfirm" autocomplete="new-password" />
+      </div>
+      <label class="terms-check" id="termsRow" style="display:none;">
+        <input type="checkbox" id="termsBox">
+        <span><span id="termsText"></span>
+        <a href="/cgu.html" id="termsCgu"></a><span id="termsAnd"> et notre </span><a href="/privacy.html" id="termsPrivacy"></a>.</span>
+      </label>
+      <button class="auth-submit" id="submitBtn" onclick="handleSubmit()"></button>
+    </div>
+  </div>
+
+  <script>
+    // ── Appliquer les traductions statiques ──────────────────
+    function applyLoginI18n() {
+      document.getElementById('tabLogin').textContent  = t('login_tab_login');
+      document.getElementById('tabRegister').textContent = t('login_tab_register');
+      document.getElementById('labelEmail').textContent    = t('login_email');
+      document.getElementById('labelName').textContent     = t('login_name');
+      document.getElementById('labelPassword').textContent = t('login_password');
+      document.getElementById('labelConfirmPw').textContent= t('login_confirm_pw');
+      document.getElementById('forgotLink').textContent    = t('login_forgot');
+      document.getElementById('confirmTitle').textContent  = t('login_confirm_title');
+      document.getElementById('confirmText2').textContent  = t('login_confirm_text2');
+      document.getElementById('resendBtn').textContent     = t('login_resend');
+      document.getElementById('termsText').textContent     = t('login_terms') + ' ';
+      document.getElementById('termsCgu').textContent      = t('login_terms_cgu');
+      document.getElementById('termsAnd').textContent      = ' ' + (PS_getLang() === 'fr' ? 'et notre' : 'and our') + ' ';
+      document.getElementById('termsPrivacy').textContent  = t('login_terms_privacy');
+      // Placeholders
+      document.getElementById('email').placeholder         = t('login_email_ph');
+      document.getElementById('fullName').placeholder      = t('login_name_ph');
+      document.getElementById('password').placeholder      = t('login_password_ph');
+      document.getElementById('passwordConfirm').placeholder = t('login_confirm_pw_ph');
+      // Formulaire titre
+      setTabTexts('login');
+    }
+
+    function setTabTexts(tab) {
+      var isReg = tab === 'register';
+      document.getElementById('formTitle').textContent    = isReg ? t('login_register_title')    : t('login_title');
+      document.getElementById('formSubtitle').textContent = isReg ? t('login_register_subtitle') : t('login_subtitle');
+      document.getElementById('submitBtn').textContent    = isReg ? t('login_register_submit')   : t('login_submit');
+    }
+
+    PS_renderLangSwitcher();
+PS_initShell();
+    applyLoginI18n();
+  </script>
+
+  <script src="/vendor/supabase-2.117.3.umd.js"></script>
+  <script>
+    // Lot 2 (14/10/2026) : la page passe en UMD comme toutes les autres (fin de l'exception
+    // « login en module »). supabase.js (ESM via esm.sh) est archivé dans _archive/.
+    // L'ancienne migration localStorage → Supabase après connexion est retirée : elle servait
+    // aux comptes de l'époque localStorage, il n'en existe plus.
+    var supabase = window.supabase.createClient(
+      'https://dkwztwlkjewdzfichkgk.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk'
+    );
+    async function signUp(email, password) {
+      var res = await supabase.auth.signUp({ email: email, password: password });
+      return { user: (res.data && res.data.user) || null, error: res.error };
+    }
+    async function signIn(email, password) {
+      var res = await supabase.auth.signInWithPassword({ email: email, password: password });
+      return { user: (res.data && res.data.user) || null, session: (res.data && res.data.session) || null, error: res.error };
+    }
+    function formatError(error) {
+      if (!error) return null;
+      var fr = PS_getLang() === 'fr';
+      var messages = {
+        'Invalid login credentials': fr ? 'Email ou mot de passe incorrect.' : 'Wrong email or password.',
+        'Email not confirmed':       fr ? 'Confirme ton email avant de te connecter.' : 'Please confirm your email before signing in.',
+        'User already registered':   fr ? 'Un compte existe déjà avec cet email.' : 'An account already exists with this email.'
+      };
+      return messages[error.message] || error.message || (fr ? 'Une erreur est survenue.' : 'Something went wrong.');
+    }
+
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session) window.location.href = '/dashboard.html';
+    })();
+
+    window.currentTab = 'login';
+
+    window.switchTab = function(tab) {
+      window.currentTab = tab;
+      var isRegister = tab === 'register';
+      document.getElementById('tabLogin').classList.toggle('active', !isRegister);
+      document.getElementById('tabRegister').classList.toggle('active', isRegister);
+      document.getElementById('nameGroup').style.display    = isRegister ? 'grid' : 'none';
+      document.getElementById('confirmGroup').style.display = isRegister ? 'grid' : 'none';
+      document.getElementById('forgotRow').style.display    = isRegister ? 'none'  : 'block';
+      document.getElementById('termsRow').style.display     = isRegister ? 'flex' : 'none';
+      setTabTexts(tab);
+      clearMsg();
+    };
+
+    // Ouvrir directement l'onglet Inscription si l'URL contient ?signup=1
+    try {
+      if (new URLSearchParams(window.location.search).get('signup') === '1') {
+        window.switchTab('register');
+      }
+    } catch (e) {}
+
+    window.handleSubmit = async function() {
+      clearMsg();
+      var email    = document.getElementById('email').value.trim();
+      var password = document.getElementById('password').value;
+      if (!email || !password) { showMsg(t('login_fill_fields'), 'error'); return; }
+      if (password.length < 6) { showMsg(t('login_pw_short'), 'error'); return; }
+      if (window.currentTab === 'register') {
+        var confirm = document.getElementById('passwordConfirm').value;
+        if (password !== confirm) { showMsg(t('login_pw_mismatch'), 'error'); return; }
+        if (!document.getElementById('termsBox').checked) { showMsg(t('login_terms_required'), 'error'); return; }
+      }
+      setLoading(true);
+      if (window.currentTab === 'login') {
+        var { user, error } = await signIn(email, password);
+        if (error) { showMsg(formatError(error), 'error'); setLoading(false); return; }
+        window.location.href = '/dashboard.html';
+      } else {
+        var { user, error } = await signUp(email, password);
+        if (error) { showMsg(formatError(error), 'error'); setLoading(false); return; }
+        var fullName = document.getElementById('fullName').value.trim();
+        if (fullName && user) {
+          await supabase.from('profiles').update({ full_name: fullName }).eq('id', user.id);
+        }
+        setLoading(false);
+        showConfirmScreen(email);
+      }
+    };
+
+    window.sendPasswordReset = async function(e) {
+      e.preventDefault();
+      var email = document.getElementById('email').value.trim();
+      if (!email) { showMsg(t('login_reset_email_required'), 'error'); return; }
+      var { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password.html',
+      });
+      if (error) showMsg(formatError(error), 'error');
+      else showMsg(t('login_reset_sent'), 'success');
+    };
+
+    window.resendConfirmation = async function() {
+      var email = document.getElementById('confirmEmail').textContent;
+      var { error } = await supabase.auth.resend({ type: 'signup', email });
+      if (!error) {
+        document.getElementById('resendBtn').textContent = '✓ ' + t('login_resend');
+        document.getElementById('resendBtn').disabled = true;
+      }
+    };
+    document.getElementById('resendBtn').addEventListener('click', window.resendConfirmation);
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') window.handleSubmit();
+    });
+
+    function setLoading(loading) {
+      var btn = document.getElementById('submitBtn');
+      btn.disabled = loading;
+      btn.innerHTML = loading ? '<div class="spinner"></div>'
+        : (window.currentTab === 'login' ? t('login_submit') : t('login_register_submit'));
+    }
+    function showMsg(text, type) {
+      var box = document.getElementById('msgBox');
+      box.textContent = text; box.className = 'msg ' + type;
+    }
+    function clearMsg() {
+      var box = document.getElementById('msgBox');
+      box.className = 'msg'; box.textContent = '';
+    }
+    function showConfirmScreen(email) {
+      document.getElementById('authForm').style.display = 'none';
+      document.getElementById('confirmScreen').style.display = 'block';
+      var p = document.getElementById('confirmText1');
+      p.textContent = t('login_confirm_text1');
+      var em = document.createElement('span');
+      em.className = 'confirm-email'; em.id = 'confirmEmail'; em.textContent = email;
+      p.appendChild(document.createElement('br')); p.appendChild(em);
+    }
+  </script>
+</body>
+</html>

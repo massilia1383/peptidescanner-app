@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PeptideScanner — Poids</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="PeptideScanner">
+<link rel="stylesheet" href="/peptidescanner.css">
+<link rel="stylesheet" href="/peptidescanner-extra.css">
+<style>
+  @import url('/fonts/fonts.css'); /* polices embarquées (14/10/2026) */
+  /* Les jetons partages (--bg --surface --border --accent --text --muted --danger)
+     viennent de peptidescanner.css et suivent le mode sombre. On n'alias ici que
+     les noms propres a cette page, pour que TOUTES ses regles existantes prennent
+     automatiquement la nouvelle palette. */
+  :root {
+    --surface2: var(--surface-muted);
+    --accent2:  var(--info);
+    --accent3:  var(--amber);
+    --nav-h:    var(--bottomnav-h, 64px);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:var(--font-ui); background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--bottomnav-h,64px) + 32px + env(safe-area-inset-bottom)); }
+
+  /* Topbar, navigation basse et tiroir viennent desormais de peptidescanner.css */
+
+  /* UX-02 : trois paliers de largeur au lieu des 480px figes */
+  .content { padding:16px 20px 0; width:100%; max-width:100%; margin:0 auto; }
+  @media (min-width: 768px)  { .content { max-width: 720px; } }
+  @media (min-width: 1024px) { .content { max-width: var(--content-desktop, 1100px); } }
+  @media (min-width:768px)  { .content { max-width:var(--content-tablet,720px); } }
+  @media (min-width:1024px) { .content { max-width:var(--content-desktop,1100px); } }
+
+  /* PERIOD TABS */
+  .period-tabs { display:flex; gap:6px; margin-bottom:16px; }
+  .period-tab { flex:1; padding:8px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--muted); font-size:.78rem; font-weight:600; cursor:pointer; text-align:center; transition:all .2s; }
+  .period-tab.active { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
+
+  /* STATS */
+  .weight-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+  .ws-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px 10px; text-align:center; }
+  .ws-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.2rem; font-weight:700; margin-bottom:4px; }
+  .ws-val.green { color:var(--accent); }
+  .ws-val.neutral { color:var(--text); }
+  .ws-val.red { color:var(--text); }
+  .ws-val.amber { color:var(--accent3); }
+  .ws-label { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; }
+
+  /* CHART */
+  .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
+  .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .chart-header h3 { font-size:.9rem; font-weight:600; }
+  .chart-unit { font-size:.75rem; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
+  .chart-wrap { position:relative; height:180px; }
+  .chart-wrap svg { width:100%; height:100%; overflow:visible; }
+  .chart-labels { display:flex; justify-content:space-between; margin-top:6px; }
+  .chart-labels span { font-size:.65rem; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
+
+  /* TOOLTIP */
+  .chart-tooltip {
+    position:absolute; background:var(--surface2); border:1px solid var(--border);
+    border-radius:8px; padding:6px 10px; font-size:.75rem; pointer-events:none;
+    opacity:0; transition:opacity .15s; white-space:nowrap; z-index:10;
+  }
+  .chart-tooltip.show { opacity:1; }
+  .tt-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-weight:700; color:var(--accent); }
+  .tt-date { color:var(--muted); font-size:.68rem; }
+
+  /* ADD WEIGHT */
+  .add-weight-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
+  .add-weight-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
+  .weight-input-row { display:flex; gap:10px; align-items:center; }
+  .weight-num-input {
+    flex:1; background:var(--surface2); border:1px solid var(--border);
+    border-radius:12px; padding:14px 16px; color:var(--text);
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.4rem; font-weight:700;
+    outline:none; text-align:center; transition:border-color .2s;
+  }
+  .weight-num-input:focus { border-color:var(--accent); }
+  .weight-unit { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1rem; color:var(--muted); flex-shrink:0; }
+  .weight-add-btn { background:var(--accent); color:var(--accent-on); border:none; border-radius:12px; padding:14px 20px; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; flex-shrink:0; }
+  .weight-add-btn:hover { opacity:.85; }
+  .weight-date-row { display:flex; gap:10px; align-items:center; margin-top:10px; }
+  .weight-date-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:inherit; font-size:.84rem; outline:none; }
+  .weight-note-input { flex:2; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:inherit; font-size:.84rem; outline:none; }
+  .weight-note-input::placeholder { color:var(--muted); }
+  /* Sans min-width:0 les champs ne peuvent pas retrecir sous leur largeur
+     intrinseque et debordent de la carte en dessous de 420px. */
+  .weight-note-input, .weight-num-input { min-width:0; }
+  .weight-date-input { flex:0 0 auto; min-width:150px; }
+  .weight-note-input:focus, .weight-date-input:focus { border-color:var(--accent); }
+
+  /* HISTORY */
+  @media (min-width: 1024px) {
+    .content { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);
+               column-gap:22px; align-content:start; }
+    .period-tabs      { grid-column:1 / -1; grid-row:1; }
+    .weight-stats     { grid-column:1; grid-row:2; align-self:start; }
+    .chart-card       { grid-column:1; grid-row:3 / span 2; align-self:start; }
+    .add-weight-card  { grid-column:2; grid-row:2; }
+    .bmi-card         { grid-column:2; grid-row:3; align-self:start; }
+    .history-card     { grid-column:1 / -1; grid-row:5; }
+  }
+
+  .history-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
+  .history-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
+  .hist-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .hist-item:last-child { border-bottom:none; padding-bottom:0; }
+  .hist-date { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.72rem; color:var(--muted); flex-shrink:0; width:56px; }
+  .hist-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1rem; font-weight:700; color:var(--accent); }
+  .hist-diff { font-size:.75rem; margin-left:4px; }
+  .hist-diff.up { color:var(--muted); }
+  .hist-diff.down { color:var(--muted); }
+  .hist-note { font-size:.75rem; color:var(--muted); flex:1; margin-left:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hist-del { background:transparent; border:none; color:var(--border); cursor:pointer; font-size:.85rem; padding:4px; transition:color .2s; flex-shrink:0; }
+  .hist-del:hover { color:var(--danger); }
+
+  /* BMI */
+  .bmi-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
+  .bmi-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
+  .bmi-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:2rem; font-weight:700; }
+  .bmi-bar { height:8px; background:var(--border); border-radius:4px; margin:12px 0 6px; overflow:hidden; position:relative; }
+  .bmi-fill { height:100%; border-radius:4px; transition:width .5s; }
+  .bmi-labels { display:flex; justify-content:space-between; font-size:.65rem; color:var(--muted); }
+  .bmi-status { font-size:.82rem; margin-top:8px; font-weight:600; }
+
+
+
+  .empty-chart { display:flex; align-items:center; justify-content:center; height:180px; color:var(--muted); font-size:.85rem; flex-direction:column; gap:8px; }
+  .empty-chart span { font-size:2rem; }
+</style>
+</head>
+<body>
+
+<header class="app-topbar">
+  <div class="topbar-inner">
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
+  </div>
+</header>
+<div class="menu-popover" id="avatarMenu" hidden>
+  <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
+  <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
+  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
+</div>
+
+<div class="content">
+
+<div class="page-intro"><h1 data-i18n="nav_weight">Poids</h1><p data-i18n="intro_weight_sub">Vos mesures, sans objectif imposé</p></div>
+<div class="section-tabs">
+  <a class="section-tab" href="poids.html" aria-current="page" data-i18n="nav_weight">Poids</a>
+  <a class="section-tab" href="analytics.html" data-i18n="analytics_title">Analyse</a>
+</div>
+
+
+  <!-- PERIOD -->
+  <div class="period-tabs">
+    <div class="period-tab active" onclick="setPeriod(7,this)"><span data-i18n="weight_period_7">7j</span></div>
+    <div class="period-tab" onclick="setPeriod(30,this)"><span data-i18n="weight_period_30">30j</span></div>
+    <div class="period-tab" onclick="setPeriod(90,this)"><span data-i18n="weight_period_90">3 mois</span></div>
+    <div class="period-tab" onclick="setPeriod(0,this)"><span data-i18n="weight_period_all">Tout</span></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="weight-stats" id="weightStats"></div>
+
+  <!-- CHART -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <h3 data-i18n="weight_chart_title">Évolution</h3>
+      <span class="chart-unit">kg</span>
+    </div>
+    <div class="chart-wrap" id="chartWrap">
+      <div class="empty-chart" id="emptyChart"><span id="emptyChartIcon"></span><span id="emptyChartMsg">Ajoutez votre premier poids</span></div>
+      <svg id="mainChart" style="display:none"></svg>
+      <div class="chart-tooltip" id="tooltip"><div class="tt-val" id="ttVal"></div><div class="tt-date" id="ttDate"></div></div>
+    </div>
+    <div class="chart-labels" id="chartLabels"></div>
+  </div>
+
+  <!-- ADD WEIGHT -->
+  <div class="add-weight-card">
+    <h3 data-i18n="weight_add_title">Enregistrer mon poids</h3>
+    <div class="weight-input-row">
+      <input class="weight-num-input" id="weightInput" type="number" step="0.1" min="30" max="300" placeholder="75.0">
+      <span class="weight-unit">kg</span>
+      <button class="weight-add-btn" onclick="addWeight()"><span data-i18n="weight_add_btn">Ajouter</span></button>
+    </div>
+    <div class="weight-date-row">
+      <input class="weight-date-input" id="weightDate" type="date">
+      <input class="weight-note-input" id="weightNote" type="text" data-i18n-ph="weight_note_ph" placeholder="Note (optionnel)">
+    </div>
+  </div>
+
+  <!-- BMI -->
+  <div class="bmi-card" id="bmiCard" style="display:none">
+    <h3 data-i18n="weight_bmi_title">IMC</h3>
+    <div id="bmiContent"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-card">
+    <h3 data-i18n="weight_history">Historique</h3>
+    <div id="historyList"><div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">Aucune donnée</div></div>
+  </div>
+
+</div>
+
+<nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
+  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item" href="inventaire.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
+  <a class="nav-item is-active" href="poids.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
+  <a class="nav-item" href="peptide-database.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
+</div></nav>
+
+<div class="ps-toast" id="toast"></div>
+
+<script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
+<script>
+const SUPABASE_URL      = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const todayStr = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
+let userId=null, allWeights=[], currentPeriod=30, editId=null, heightCm=null;
+
+async function init() {
+  const { data } = await sb.auth.getSession();
+  if (!data?.session) { window.location.href='/login.html'; return; }
+  userId = data.session.user.id;
+  document.getElementById('weightDate').value = todayStr;
+
+  // Récupérer la taille depuis le profil ou localStorage
+  const { data: profil } = await sb.from('profiles').select('*').eq('id', userId).single();
+  if(profil) PS_loadLangFromProfile(sb, userId, profil.lang);
+  heightCm = profil?.height_cm || parseInt(localStorage.getItem('ps_height_cm')) || null;
+
+  await loadData();
+}
+
+async function loadData() {
+  const { data } = await sb.from('weight_logs').select('*').eq('user_id',userId).order('logged_at',{ascending:true}).limit(365);
+  allWeights = data || [];
+
+  // Si premier ajout et pas de taille → afficher le modal taille
+  if (allWeights.length === 0 && !heightCm) showHeightPrompt();
+
+  render();
+}
+
+// ── MODAL TAILLE (premier ajout) ──────────────────────────────
+function showHeightPrompt() {
+  const existing = document.getElementById('heightPrompt');
+  if (existing) return;
+  const el = document.createElement('div');
+  el.id = 'heightPrompt';
+  el.style.cssText = 'background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:14px;padding:16px;margin-bottom:12px;';
+  el.innerHTML = `
+    <div style="font-size:.84rem;font-weight:700;margin-bottom:4px;color:var(--accent)">${t('weight_height_title')}</div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">${t('weight_height_sub')}</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="heightInput" type="number" min="100" max="250" placeholder="178" style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:.9rem;outline:none">
+      <span style="color:var(--muted);font-size:.84rem">cm</span>
+      <button onclick="saveHeight()" style="padding:10px 16px;background:var(--accent);color:var(--accent-on);border:none;border-radius:10px;font-family:inherit;font-weight:700;cursor:pointer">OK</button>
+    </div>`;
+  const addCard = document.querySelector('.add-weight-card');
+  if (addCard) addCard.insertAdjacentElement('beforebegin', el);
+}
+
+async function saveHeight() {
+  const val = parseInt(document.getElementById('heightInput')?.value);
+  if (!val || val < 100 || val > 250) { showToast(t('weight_height_inv')); return; }
+  heightCm = val;
+  localStorage.setItem('ps_height_cm', val);
+  try { await sb.from('profiles').update({ height_cm: val }).eq('id', userId); } catch(e) {}
+  document.getElementById('heightPrompt')?.remove();
+  showToast(t('weight_height_saved'));
+  render();
+}
+
+// ── ADD WEIGHT ─────────────────────────────────────────────────
+async function addWeight() {
+  // Si pas de taille, demander d'abord
+  if (!heightCm) { showHeightPrompt(); showToast(t('weight_height_first')); return; }
+  const kg   = parseFloat(document.getElementById('weightInput').value);
+  const date = document.getElementById('weightDate').value;
+  const note = document.getElementById('weightNote').value;
+  if (!kg||kg<30||kg>300) { showToast(t('weight_invalid')); return; }
+  if (!date) { showToast(t('weight_date_req')); return; }
+  await sb.from('weight_logs').insert({user_id:userId, weight_kg:kg, logged_at:date, notes:note||null});
+  document.getElementById('weightInput').value='';
+  document.getElementById('weightNote').value='';
+  showToast(t('weight_saved')+kg+' kg');
+  await loadData();
+}
+
+// ── EDIT WEIGHT ────────────────────────────────────────────────
+function startEdit(id, currentKg, currentNotes) {
+  editId = id;
+  // Remplacer la ligne par un formulaire d'édition
+  const item = document.querySelector(`[data-id="${id}"]`);
+  if (!item) return;
+  item.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;flex:1">
+      <input id="editKg" type="number" step="0.1" value="${currentKg}" style="width:80px;padding:6px 10px;border:1.5px solid var(--accent);border-radius:8px;font-family:inherit;font-size:.84rem;outline:none">
+      <span style="font-size:.78rem;color:var(--muted)">kg</span>
+      <input id="editNote" type="text" value="${currentNotes||''}" placeholder="Note..." style="flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.78rem;outline:none">
+    </div>
+    <div style="display:flex;gap:6px">
+      <button onclick="saveEdit('${id}')" style="padding:6px 12px;background:var(--accent);color:var(--accent-on);border:none;border-radius:8px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer">✓</button>
+      <button onclick="cancelEdit()" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.78rem;cursor:pointer">✕</button>
+    </div>`;
+  document.getElementById('editKg')?.focus();
+}
+
+async function saveEdit(id) {
+  const kg   = parseFloat(document.getElementById('editKg')?.value);
+  const note = document.getElementById('editNote')?.value.trim();
+  if (!kg||kg<30||kg>300) { showToast(t('weight_invalid')); return; }
+  await sb.from('weight_logs').update({weight_kg:kg, notes:note||null}).eq('id',id);
+  editId=null;
+  showToast(t('weight_modified'));
+  await loadData();
+}
+
+function cancelEdit() { editId=null; render(); }
+
+async function deleteWeight(id) {
+  await sb.from('weight_logs').delete().eq('id',id);
+  showToast(t('weight_deleted'));
+  await loadData();
+}
+
+function focusInput() { document.getElementById('weightInput').focus(); document.getElementById('weightInput').scrollIntoView({behavior:'smooth'}); }
+
+function setPeriod(days,btn) {
+  currentPeriod=days;
+  document.querySelectorAll('.period-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function getFiltered() {
+  if(currentPeriod===0) return allWeights;
+  const cutoff=new Date(TODAY); cutoff.setDate(cutoff.getDate()-currentPeriod);
+  return allWeights.filter(w=>new Date(w.logged_at)>=cutoff);
+}
+
+function render() {
+  const filtered=getFiltered();
+  renderStats(allWeights,filtered);
+  renderChart(filtered, allWeights);
+  renderHistory(allWeights);
+  renderBMI(allWeights);
+}
+
+function renderStats(all,filtered) {
+  const c=document.getElementById('weightStats');
+  if(all.length===0){c.innerHTML='';return;}
+  const latest=all[all.length-1];
+  const first=filtered[0];
+  const diff=filtered.length>1?(latest.weight_kg-first.weight_kg).toFixed(1):null;
+  const sign=diff>0?'+':'';
+  const cls=diff>0?'red':diff<0?'green':'amber';
+  c.innerHTML=`
+    <div class="ws-card"><div class="ws-val green">${latest.weight_kg}</div><div class="ws-label">${t('weight_current')}</div></div>
+    <div class="ws-card"><div class="ws-val ${cls}">${diff!==null?sign+diff:'—'}</div><div class="ws-label">${t('weight_variation')}</div></div>
+    <div class="ws-card"><div class="ws-val amber">${filtered.length}</div><div class="ws-label">${t('weight_measures')}</div></div>`;
+}
+
+function renderChart(weights, all) {
+  const svg=document.getElementById('mainChart');
+  const empty=document.getElementById('emptyChart');
+  const labels=document.getElementById('chartLabels');
+  if(weights.length<2){
+    svg.style.display='none';empty.style.display='flex';labels.innerHTML='';
+    // Trois situations differentes : aucune mesure du tout, aucune sur la periode
+    // choisie, ou une seule. Le message doit dire laquelle, sinon la page semble
+    // vide alors que l'historique juste en dessous contient des mesures.
+    const msg=document.getElementById('emptyChartMsg');
+    if(msg){
+      if(!all||all.length===0)      msg.textContent=t('weight_add_first');
+      else if(weights.length===0)   msg.textContent=t('weight_none_period');
+      else                          msg.textContent=t('weight_need_two');
+    }
+    return;
+  }
+  svg.style.display='block';empty.style.display='none';
+  const _cw = document.getElementById('chartWrap');
+  const W = Math.max(320, Math.round(_cw ? _cw.clientWidth : 400));
+  const H=180,PL=32,PR=10,PT=10,PB=20;
+  const vals=weights.map(w=>w.weight_kg);
+  const mn=Math.min(...vals)-0.5,mx=Math.max(...vals)+0.5;
+  const pts=vals.map((v,i)=>({
+    x:PL+(i/(vals.length-1))*(W-PL-PR),
+    y:PT+(1-(v-mn)/(mx-mn))*(H-PT-PB),
+    kg:v,date:weights[i].logged_at
+  }));
+  let gridHtml='';
+  for(let i=0;i<=4;i++){
+    const y=PT+i*(H-PT-PB)/4;
+    gridHtml+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="var(--border)" stroke-width="1"/>
+    <text x="${PL-4}" y="${y+4}" fill="var(--muted)" font-size="9" text-anchor="end" font-family="Inter, sans-serif">${(mx-(mx-mn)*i/4).toFixed(1)}</text>`;
+  }
+  const line=pts.map((p,i)=>i===0?`M${p.x},${p.y}`:`L${p.x},${p.y}`).join(' ');
+  const area=line+` L${pts[pts.length-1].x},${H-PB} L${PL},${H-PB} Z`;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.innerHTML=`<defs><linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--accent)" stop-opacity=".2"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+  </linearGradient></defs>${gridHtml}
+  <path d="${area}" fill="url(#aG)"/>
+  <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+  ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="var(--accent)"/>`).join('')}`;
+  const step=Math.max(1,Math.floor(weights.length/5));
+  labels.innerHTML=pts.filter((_,i)=>i%step===0||i===pts.length-1)
+    .map(p=>`<span>${new Date(p.date).toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'})}</span>`).join('');
+}
+
+function renderHistory(all) {
+  const list=document.getElementById('historyList');
+  const sorted=[...all].sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
+  if(sorted.length===0){list.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.84rem">'+t('weight_no_data')+'</div>';return;}
+  list.innerHTML=sorted.slice(0,30).map((w,i)=>{
+    const prev=sorted[i+1];
+    let diffHtml='';
+    if(prev){const d=(w.weight_kg-prev.weight_kg).toFixed(1);const s=d>0?'+':'';const c=d>0?'up':'down';diffHtml=`<span class="hist-diff ${c}">${s}${d}</span>`;}
+    return `<div class="hist-item" data-id="${w.id}">
+      <span class="hist-date">${new Date(w.logged_at).toLocaleDateString(PS_getLang()==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'})}</span>
+      <span class="hist-val">${w.weight_kg} kg${diffHtml}</span>
+      ${w.notes?`<span class="hist-note">${w.notes}</span>`:'<span class="hist-note"></span>'}
+      <div style="display:flex;gap:4px">
+        <button class="hist-del" onclick="startEdit('${w.id}',${w.weight_kg},'${w.notes||''}')" title="Modifier" style="background:var(--accent-soft);color:var(--accent);border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;display:grid;place-items:center;padding:0">${PS_icon('pencil-square')}</button>
+        <button class="hist-del" onclick="deleteWeight('${w.id}')">${PS_icon('trash')}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderBMI(all) {
+  const card=document.getElementById('bmiCard');
+  if(!heightCm||all.length===0){card.style.display='none';return;}
+  card.style.display='block';
+  const latest=all[all.length-1];
+  const h=heightCm/100;
+  const bmi=(latest.weight_kg/(h*h)).toFixed(1);
+  let status,color,pct;
+  if(bmi<18.5){status=t('weight_bmi_under');color='var(--info)';pct=Math.max(5,(bmi/40)*100);}
+  else if(bmi<25){status=t('weight_bmi_normal');color='var(--accent)';pct=(bmi/40)*100;}
+  else if(bmi<30){status=t('weight_bmi_over');color='var(--accent3)';pct=(bmi/40)*100;}
+  else{status=t('weight_bmi_obese');color='var(--terra)';pct=Math.min(95,(bmi/40)*100);}
+  document.getElementById('bmiContent').innerHTML=`
+    <div class="bmi-val" style="color:${color}">${bmi}</div>
+    <div class="bmi-bar"><div class="bmi-fill" style="width:${pct}%;background:${color}"></div></div>
+    <div class="bmi-labels"><span>16</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div>
+    <div class="bmi-status" style="color:${color}">${status}</div>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:4px">${t('weight_bmi_height')} ${heightCm} ${t('weight_bmi_unit')} ${latest.weight_kg} kg</div>`;
+}
+
+// ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
+PS_initShell();
+
+let _rzT;
+window.addEventListener('resize', () => {
+  clearTimeout(_rzT);
+  _rzT = setTimeout(() => { if (allWeights.length) render(); }, 180);
+});
+
+async function psLogout() {
+  try { await sb.auth.signOut(); } catch(e) {}
+  window.location.href = '/login.html';
+}
+
+init().then(()=>{
+  const _ei=document.getElementById('emptyChartIcon'); if(_ei) _ei.innerHTML=PS_icon('scale');
+  PS_applyI18n();
+  PS_renderLangSwitcher();
+  // Initiale du prenom dans l'avatar
+  sb.auth.getUser().then(({data}) => {
+    const n = data?.user?.user_metadata?.full_name || data?.user?.email || '';
+    const btn = document.getElementById('avatarButton');
+    if (btn && n) btn.textContent = n.trim().charAt(0).toUpperCase();
+  }).catch(()=>{});
+});
+</script>
+</body>
+</html>

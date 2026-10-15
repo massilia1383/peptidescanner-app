@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Avant de commencer — PeptideScanner</title>
+  <script src="/lang.js"></script>
+  <script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
+  <script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/peptidescanner.css">
+  <!--
+    Créée le 15/10/2026 (lot 3). Premier écran après la connexion, tant que l'avertissement
+    n'a pas été accepté. Recueille aussi le consentement explicite pour les données de santé (RGPD art. 9).
+    L'acceptation est enregistrée sur le compte lui-même (user_metadata.disclaimer_accepted_at,
+    version 1) : pas de colonne, donc pas de SQL. dashboard.html renvoie ici si elle manque.
+    Pensée pour devenir le premier écran du futur tunnel d'arrivée.
+  -->
+  <style>
+    body{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(64px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));}
+    .w-logo{display:flex;align-items:center;gap:10px;margin-bottom:22px;}
+    .w-logo img{width:40px;height:40px;}
+    .w-logo span{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.3px;}
+    .w-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:100%;max-width:460px;}
+    .w-icon{width:48px;height:48px;border-radius:50%;background:var(--amber-soft);color:var(--amber);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+    .w-title{font-size:22px;font-weight:700;letter-spacing:-.4px;color:var(--text);margin:0 0 14px;}
+    .w-list{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:10px;}
+    .w-list li{position:relative;padding-left:20px;font-size:15px;line-height:1.55;color:var(--text-soft);}
+    .w-list li::before{content:'';position:absolute;left:4px;top:.6em;width:6px;height:6px;border-radius:50%;background:var(--accent);}
+    .w-check{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-muted);cursor:pointer;margin-bottom:16px;}
+    .w-check input{width:22px;height:22px;flex-shrink:0;margin:1px 0 0;accent-color:var(--accent);}
+    .w-check span{font-size:14px;line-height:1.5;color:var(--text);}
+    .w-check a{color:var(--info);}
+    .w-btn{width:100%;min-height:48px;padding:12px;border:none;border-radius:10px;background:var(--accent);color:var(--accent-on);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+    .w-btn:disabled{opacity:.45;cursor:not-allowed;}
+    .w-msg{display:none;margin-top:12px;padding:10px 12px;border-radius:10px;font-size:14px;background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger);}
+    .w-out{display:block;margin-top:16px;text-align:center;font-size:14px;color:var(--muted);text-decoration:none;background:none;border:none;font-family:inherit;cursor:pointer;width:100%;}
+    .lang-wrap{position:fixed;top:calc(12px + env(safe-area-inset-top));right:16px;z-index:10;}
+  </style>
+</head>
+<body>
+  <div class="lang-wrap" id="langToggleBtn"></div>
+
+  <div class="w-logo"><span class="brand-logo" data-ps-logo style="width:40px;height:40px;color:var(--accent)"></span><span>PeptideScanner</span></div>
+
+  <main class="w-card">
+    <div class="w-icon"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Zm0 6v5m0 3v.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h1 class="w-title" data-i18n="warn_title">Avant de commencer</h1>
+    <ul class="w-list">
+      <li data-i18n="warn_p1">PeptideScanner est un outil d'organisation et d'information. Il ne fournit ni avis médical, ni diagnostic, ni prescription, et ne recommande aucune dose.</li>
+      <li data-i18n="warn_p2">Certains peptides ne sont pas autorisés comme médicaments : leur usage peut être interdit ou encadré dans votre pays.</li>
+      <li data-i18n="warn_p3">Vérifiez toujours vous-même les valeurs saisies et calculées, et consultez un professionnel de santé avant toute décision.</li>
+      <li data-i18n="warn_p4">Vos cures, injections et votre poids sont des données de santé : elles sont enregistrées uniquement pour faire fonctionner l'appli, jamais vendues ni partagées.</li>
+    </ul>
+    <label class="w-check">
+      <input type="checkbox" id="acceptBox">
+      <span><span data-i18n="warn_accept">J'ai 18 ans ou plus, j'ai compris cet avertissement et j'accepte que mes données de suivi soient enregistrées selon la</span> <a href="/privacy.html" data-i18n="warn_privacy_link">politique de confidentialité</a>.</span>
+    </label>
+    <button class="w-btn" id="continueBtn" type="button" disabled data-i18n="warn_continue">Continuer</button>
+    <div class="w-msg" id="msgBox"></div>
+    <button class="w-out" id="logoutBtn" type="button" data-i18n="profil_logout">Se déconnecter</button>
+  </main>
+
+<script src="/vendor/supabase-2.117.3.umd.js"></script>
+<script>
+const SUPABASE_URL = 'https://dkwztwlkjewdzfichkgk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrd3p0d2xramV3ZHpmaWNoa2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MjYwOTAsImV4cCI6MjA5NzQwMjA5MH0.iT7ylcNvPCf2jMUYfJlsDJcoGjPolphQWONFusAAlAk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const WARN_VERSION = 1;   // à augmenter si le texte change de façon importante : l'écran sera redemandé
+
+const box = document.getElementById('acceptBox');
+const btn = document.getElementById('continueBtn');
+box.addEventListener('change', function () { btn.disabled = !box.checked; });
+
+async function initWarn() {
+  const { data } = await sb.auth.getSession();
+  if (!data || !data.session) { window.location.href = '/login.html'; return; }
+  const meta = data.session.user.user_metadata || {};
+  if (meta.disclaimer_accepted_at && Number(meta.disclaimer_version) >= WARN_VERSION) {
+    window.location.replace('/dashboard.html');
+  }
+}
+
+btn.addEventListener('click', async function () {
+  if (!box.checked) return;
+  btn.disabled = true;
+  const { error } = await sb.auth.updateUser({
+    data: { disclaimer_accepted_at: new Date().toISOString(), disclaimer_version: WARN_VERSION }
+  });
+  if (error) {
+    const m = document.getElementById('msgBox');
+    m.textContent = t('warn_error'); m.style.display = 'block';
+    btn.disabled = false;
+    return;
+  }
+  window.location.replace('/dashboard.html');
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async function () {
+  try { await sb.auth.signOut(); } catch (e) {}
+  window.location.href = '/login.html';
+});
+
+PS_applyI18n();
+PS_renderLangSwitcher();
+PS_initShell();
+initWarn();
+</script>
+</body>
+</html>

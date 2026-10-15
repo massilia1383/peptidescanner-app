@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════
-// PeptideScanner — Service Worker v1.0
+// PeptideScanner — Service Worker v3.0 (design Clarté 100 %, 15/10/2026)
 // Cache offline + mise à jour automatique
 // ═══════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'peptidescanner-v2.0';
-const CACHE_STATIC = 'peptidescanner-static-v2.0';
-const CACHE_DYNAMIC = 'peptidescanner-dynamic-v2.0';
+const CACHE_NAME = 'peptidescanner-v3.0';
+const CACHE_STATIC = 'peptidescanner-static-v3.0';
+const CACHE_DYNAMIC = 'peptidescanner-dynamic-v3.0';
 
 // ── FICHIERS À METTRE EN CACHE (core app shell) ────────────────
 const STATIC_ASSETS = [
@@ -23,14 +23,16 @@ const STATIC_ASSETS = [
   '/analytics.html',
   '/reset-password.html',
   '/avertissement.html',
+  '/onboarding.html',
+  '/premium.html',
   '/cgu.html',
   '/privacy.html',
   '/mentions-legales.html',
   '/legal.css',
   '/lang.js',
   '/ps-app.js',
+  '/ps-calc.js',
   '/peptidescanner.css',
-  '/peptidescanner-extra.css',
   '/fonts/fonts.css',
   '/fonts/InterVariable.woff2',
   '/assets/assets-bundle.js',

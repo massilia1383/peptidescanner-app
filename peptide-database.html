@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
 <script src="/ps-app.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>PeptideScanner — Bibliothèque complète</title>
@@ -10,7 +11,9 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#FBF7F1">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
@@ -30,7 +33,7 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  body { font-family: var(--font-ui), sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
   /* NAV */
   nav {
@@ -39,7 +42,7 @@
     border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 200;
     backdrop-filter: blur(12px);
   }
-  .logo { font-family: 'Space Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .logo { font-family: var(--font-data), monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
   .nav-back { color: var(--muted); font-size: .85rem; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color .2s; }
   .nav-back:hover { color: var(--accent); }
 
@@ -47,12 +50,12 @@
   .page-header {
     max-width: var(--content-desktop, 1100px); margin: 0 auto; padding: 48px 28px 32px;
   }
-  .page-eyebrow { font-family: 'Space Mono', monospace; font-size: .72rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+  .page-eyebrow { font-family: var(--font-data), monospace; font-size: .72rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
   .db-hero-title { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 700; margin-bottom: 10px; }
   .page-sub { color: var(--muted); font-size: .95rem; line-height: 1.6; }
   .stats-row { display: flex; gap: 28px; margin-top: 24px; flex-wrap: wrap; }
   .stat { display: flex; flex-direction: column; }
-  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+  .stat-val { font-family: var(--font-data), monospace; font-size: 1.6rem; font-weight: 700; color: var(--accent); }
   .stat-label { font-size: .72rem; color: var(--muted); margin-top: 2px; }
 
   /* CONTROLS */
@@ -75,7 +78,7 @@
     font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .2s;
     white-space: nowrap;
   }
-  .filter-btn:hover, .filter-btn.active { background: var(--accent-soft); border-color: rgba(22,107,90,.4); color: var(--accent); }
+  .filter-btn:hover, .filter-btn.active { background: var(--accent-soft); border-color: rgba(36,87,214,.4); color: var(--accent); }
   .filter-btn.active { background: var(--accent-soft); }
 
   /* CATEGORY COLORS */
@@ -103,7 +106,7 @@
     border-radius: 18px; overflow: hidden; cursor: pointer;
     transition: all .25s; position: relative;
   }
-  .pep-card:hover { border-color: rgba(22,107,90,.35); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.4); }
+  .pep-card:hover { border-color: rgba(36,87,214,.35); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.4); }
   .pep-card.hidden { display: none; }
 
   .card-top {
@@ -112,7 +115,7 @@
     display: flex; justify-content: space-between; align-items: flex-start;
   }
   .card-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
-  .card-alias { font-size: .75rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .card-alias { font-size: .75rem; color: var(--muted); font-family: var(--font-data), monospace; }
   .card-cat { margin-top: 8px; }
 
   .card-body { padding: 16px 20px; }
@@ -122,7 +125,7 @@
   }
   .info-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; flex-shrink: 0; }
   .info-val { font-size: .82rem; font-weight: 600; text-align: right; }
-  .info-val.mono { font-family: 'Space Mono', monospace; color: var(--accent); font-size: .78rem; }
+  .info-val.mono { font-family: var(--font-data), monospace; color: var(--accent); font-size: .78rem; }
 
   .effects-list { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
   .effect-tag {
@@ -139,7 +142,7 @@
   .shop-btn {
     padding: 6px 14px; border-radius: 7px;
     background: var(--accent-soft); color: var(--accent);
-    font-size: .75rem; font-weight: 700; border: 1px solid rgba(22,107,90,.2);
+    font-size: .75rem; font-weight: 700; border: 1px solid rgba(36,87,214,.2);
     cursor: pointer; transition: all .2s; font-family: inherit;
     text-decoration: none; display: inline-block;
   }
@@ -175,7 +178,7 @@
   .modal-close:hover { border-color: var(--danger); color: var(--danger); }
   .modal-body { padding: 24px 28px 28px; }
   .modal-name { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
-  .modal-alias { font-family: 'Space Mono', monospace; font-size: .78rem; color: var(--muted); margin-bottom: 10px; }
+  .modal-alias { font-family: var(--font-data), monospace; font-size: .78rem; color: var(--muted); margin-bottom: 10px; }
 
   .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
   .modal-info-box {
@@ -184,24 +187,24 @@
   }
   .modal-info-box .lbl { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
   .modal-info-box .val { font-size: .9rem; font-weight: 600; line-height: 1.4; }
-  .modal-info-box .val.green { color: var(--accent); font-family: 'Space Mono', monospace; }
+  .modal-info-box .val.green { color: var(--accent); font-family: var(--font-data), monospace; }
 
   .modal-section { margin-top: 20px; }
-  .modal-section h4 { font-size: .78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; font-family: 'Space Mono', monospace; }
+  .modal-section h4 { font-size: .78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; font-family: var(--font-data), monospace; }
   .modal-section p { font-size: .88rem; line-height: 1.7; color: var(--text); }
   .modal-section ul { list-style: none; display: flex; flex-wrap: wrap; gap: 7px; }
   .modal-section ul li {
     padding: 4px 12px; border-radius: 7px; font-size: .78rem;
     background: var(--surface2); border: 1px solid var(--border);
   }
-  .modal-section ul li.pos { border-color: rgba(22,107,90,.25); color: var(--accent); background: var(--accent-soft); }
-  .modal-section ul li.neg { border-color: rgba(161,50,40,.25); color: var(--danger); background: var(--danger-soft); }
-  .modal-section ul li.stack { border-color: rgba(53,92,154,.25); color: var(--accent2); background: var(--info-soft); }
-  .modal-section ul li.warn { border-color: rgba(128,91,0,.25); color: var(--accent3); background: var(--amber-soft); }
+  .modal-section ul li.pos { border-color: rgba(36,87,214,.25); color: var(--accent); background: var(--accent-soft); }
+  .modal-section ul li.neg { border-color: rgba(180,35,56,.25); color: var(--danger); background: var(--danger-soft); }
+  .modal-section ul li.stack { border-color: rgba(36,87,214,.25); color: var(--accent2); background: var(--info-soft); }
+  .modal-section ul li.warn { border-color: rgba(128,80,0,.25); color: var(--accent3); background: var(--amber-soft); }
 
   .modal-cta {
     margin-top: 24px; padding: 14px; border-radius: 10px;
-    background: var(--accent-soft); border: 1px solid rgba(22,107,90,.2);
+    background: var(--accent-soft); border: 1px solid rgba(36,87,214,.2);
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
   }
   .modal-cta p { font-size: .82rem; color: var(--muted); }
@@ -215,7 +218,7 @@
 
   .disclaimer {
     margin-top: 14px; padding: 10px 14px; border-radius: 8px;
-    background: var(--amber-soft); border: 1px solid rgba(128,91,0,.2);
+    background: var(--amber-soft); border: 1px solid rgba(128,80,0,.2);
     font-size: .75rem; color: var(--muted); line-height: 1.5;
   }
 
@@ -241,14 +244,14 @@
 
   /* DISCLAIMER JURIDIQUE */
   .legal-disclaimer {
-    background:var(--amber-soft); border:1px solid rgba(128,91,0,.2);
+    background:var(--amber-soft); border:1px solid rgba(128,80,0,.2);
     border-radius:12px; padding:12px 16px; margin:12px 0;
     display:flex; gap:10px; align-items:flex-start;
   }
   .legal-disclaimer.compact { padding:8px 12px; margin:8px 0; border-radius:8px; }
   .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
-  .legal-disclaimer-text { font-size:.72rem; color:#92400E; line-height:1.5; }
-  .legal-disclaimer-text strong { color:#78350F; }
+  .legal-disclaimer-text { font-size:.72rem; color:var(--warning); line-height:1.5; }
+  .legal-disclaimer-text strong { color:var(--warning); }
 
   /* PHASE VISUELLE */
   .phase-visual { margin:10px 0; }
@@ -275,24 +278,23 @@
 
 <header class="app-topbar">
   <div class="topbar-inner">
-    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner"><img class="brand-symbol" src="/brand/brand-mark.svg" alt="" width="36" height="36"></a>
-    <div class="brand-name">PeptideScanner</div>
-    <div class="page-title-wrap"><h1 class="page-title" data-i18n="db_nav_title">Bibliothèque</h1></div>
-    <div id="langToggleBtn"></div>
-    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6 2.5 6.5 2.5 6.5H4s2.5-.5 2.5-6.5M9.5 19a2.8 2.8 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
-    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">J</button>
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
   </div>
 </header>
 <div class="menu-popover" id="avatarMenu" hidden>
   <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
   <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
-  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
+  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
 </div>
 
 <div class="page-header">
   <div class="page-eyebrow" data-i18n="db_eyebrow">Bibliothèque · Base de données</div>
   <div class="db-hero-title" data-i18n="db_title">Référentiel peptidique complet</div>
-  <div class="page-sub" data-i18n="db_sub">Chaque peptide référencé avec ses dosages, protocoles, effets et stacks recommandés.</div>
+  <div class="page-sub" data-i18n="db_sub">Fiches documentaires : phase de recherche, effets étudiés, effets indésirables et contre-indications. Aucune recommandation de dose.</div>
   <div class="stats-row">
     <div class="stat"><span class="stat-val" id="totalCount">48</span><span class="stat-label" data-i18n="db_stat_peptides">Peptides référencés</span></div>
     <div class="stat"><span class="stat-val">9</span><span class="stat-label" data-i18n="db_stat_categories">Catégories</span></div>
@@ -302,7 +304,7 @@
 
 <div class="controls">
   <div class="search-wrap">
-    <span class="search-icon">🔍</span>
+    <span class="search-icon" style="display:grid;place-items:center" data-ps-i="magnifying-glass"></span>
     <input class="search-input" id="searchInput" data-i18n-ph="db_search_ph" placeholder="Rechercher un peptide, effet, catégorie…" oninput="filterPeptides()">
   </div>
   <button class="filter-btn active" onclick="filterCat('all', this)" data-i18n="db_all">Tous</button>
@@ -346,7 +348,7 @@
       <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:3px"></div><div><div style="font-size:.75rem;font-weight:700;color:var(--accent)"><span data-i18n="phase_est_label">✅ Largement utilisé</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:1px"><span data-i18n="phase_est_desc">Retours abondants, profil bien documenté</span></div></div></div>
     </div>
   </div>
-  <div class="legal-disclaimer"><span class="legal-disclaimer-icon">⚠️</span><div class="legal-disclaimer-text"><strong data-i18n="db_disclaimer_title">Avertissement légal — Usage éducatif et informatif uniquement.</strong> <span data-i18n="db_disclaimer_body">Les peptides présentés sont des peptides de recherche. Leur acquisition, détention ou usage à des fins autres que la recherche scientifique peut être illégal dans votre pays. Les informations fournies ne constituent pas un avis médical ni une prescription. Consultez un professionnel de santé qualifié avant tout protocole. PeptideScanner décline toute responsabilité quant aux conséquences liées à l'usage des informations disponibles sur cette application.</span></div></div>
+  <div class="legal-disclaimer"><div class="legal-disclaimer-text"><strong data-i18n="db_disclaimer_title">Avertissement légal — Usage éducatif et informatif uniquement.</strong> <span data-i18n="db_disclaimer_body">Les peptides présentés sont des peptides de recherche. Leur acquisition, détention ou usage à des fins autres que la recherche scientifique peut être illégal dans votre pays. Les informations fournies ne constituent pas un avis médical ni une prescription. Consultez un professionnel de santé qualifié avant tout protocole. PeptideScanner décline toute responsabilité quant aux conséquences liées à l'usage des informations disponibles sur cette application.</span></div></div>
 </div>
 
 <!-- MODAL -->
@@ -625,7 +627,7 @@ const PEPTIDES = [
     secondaires: ["Peu connus (peptide récent)", "Possible anxiété à dose élevée", "Irritabilité"],
     stacks: ["Semax", "Cerebrolysin", "Selank"],
     contreindications: "Grossesse, antécédents de cancer (pro-angiogénique).",
-    note: "⚠️ Peptide très puissant, dosage précis requis. Peu d'études humaines mais résultats précliniques exceptionnels pour Alzheimer."
+    note: "⚠️ Peptide très puissant, dosage précis requis. Peu d'études humaines ; données précliniques seulement pour Alzheimer."
   },
   {
     id: 21, name: "Cerebrolysin", alias: "FPE 1070",
@@ -925,7 +927,7 @@ const PEPTIDES = [
     secondaires: ["Nausées", "Vomissements", "Diarrhée (profil GLP-1 classique)"],
     stacks: ["BPC-157 (gastro)", "Ipamorelin (préservation musculaire)"],
     contreindications: "Mêmes que GLP-1 agonistes.",
-    note: "⚠️ Non approuvé (phase 3 en cours). Résultats préliminaires exceptionnels. Probablement la prochaine révolution après le tirzepatide."
+    note: "⚠️ Non approuvé (phase 3 en cours). Résultats préliminaires en cours d'évaluation. Suite de la recherche à suivre après le tirzepatide."
   },
   {
     id: 45, name: "BPC-157 + TB-500 (Stack)", alias: "Blend récupération / TB-BPC",
@@ -1084,7 +1086,7 @@ function renderCards() {
         </div>
         </div>
         <div style="text-align:right;flex-shrink:0;padding-left:10px">
-          <div style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted)">Admin</div>
+          <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.7rem;color:var(--muted)">Admin</div>
           <div style="font-weight:700;font-size:.88rem;color:var(--accent);margin-top:4px">${p.admin}</div>
         </div>
       </div>
@@ -1199,18 +1201,18 @@ function translateDuration(str) {
 }
 
 function getPhaseData() { return {
-  'experimental': { emoji:'⚪', label:t('phase_exp_label'), desc:t('phase_exp_desc_dot'), color:'#9CA3AF', steps:0 },
-  'preclinical':  { emoji:'🔴', label:t('phase_pre_label'), desc:t('phase_pre_desc_dot'), color:'var(--danger)', steps:1 },
-  'phase1':       { emoji:'🟠', label:t('phase_p1_label'),  desc:t('phase_p1_desc_dot'),  color:'var(--amber)', steps:2 },
-  'phase2':       { emoji:'🟡', label:t('phase_p2_label'),  desc:t('phase_p2_desc_dot'),  color:'#EAB308', steps:3 },
-  'phase3':       { emoji:'🟢', label:t('phase_p3_label'),  desc:t('phase_p3_desc_dot'),  color:'var(--accent)', steps:4 },
-  'established':  { emoji:'✅', label:t('phase_est_label'), desc:t('phase_est_desc_dot'), color:'var(--accent)', steps:5 },
+  'experimental': { emoji:'', label:t('phase_exp_label'), desc:t('phase_exp_desc_dot'), color:'#9CA3AF', steps:0 },
+  'preclinical':  { emoji:'', label:t('phase_pre_label'), desc:t('phase_pre_desc_dot'), color:'var(--danger)', steps:1 },
+  'phase1':       { emoji:'', label:t('phase_p1_label'),  desc:t('phase_p1_desc_dot'),  color:'var(--amber)', steps:2 },
+  'phase2':       { emoji:'', label:t('phase_p2_label'),  desc:t('phase_p2_desc_dot'),  color:'#EAB308', steps:3 },
+  'phase3':       { emoji:'', label:t('phase_p3_label'),  desc:t('phase_p3_desc_dot'),  color:'var(--accent)', steps:4 },
+  'established':  { emoji:'', label:t('phase_est_label'), desc:t('phase_est_desc_dot'), color:'var(--accent)', steps:5 },
 }; }
 const PHASE_STEPS = () => [t('phase_step1'),t('phase_step2'),t('phase_step3'),t('phase_step4'),t('phase_step5')];
 
 function phaseMiniBadge(phase) {
   const d = getPhaseData()[phase] || getPhaseData()['experimental'];
-  return '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:.6rem;font-weight:700;background:'+d.color+'22;color:'+d.color+';border:1px solid '+d.color+'44;margin-left:4px">'+d.emoji+' '+d.label+'</span>';
+  return '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:.6rem;font-weight:700;background:'+d.color+'22;color:'+d.color+';border:1px solid '+d.color+'44;margin-left:4px">'+d.label+'</span>';
 }
 
 function phaseVisualFull(phase) {
@@ -1225,7 +1227,7 @@ function phaseVisualFull(phase) {
   return '<div style="margin:12px 0;padding:12px;background:'+d.color+'0D;border:1px solid '+d.color+'33;border-radius:10px">'
     + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
     + '<div style="width:8px;height:8px;border-radius:50%;background:'+d.color+'"></div>'
-    + '<span style="font-size:.75rem;font-weight:700;color:'+d.color+'">'+d.emoji+' '+d.label+'</span>'
+    + '<span style="font-size:.75rem;font-weight:700;color:'+d.color+'">'+d.label+'</span>'
     + '</div>'
     + '<div style="display:flex;gap:3px;margin-bottom:5px">'+steps+'</div>'
     + '<div style="font-size:.68rem;color:var(--neutral);font-style:italic">'+d.desc+'</div>'
@@ -1262,41 +1264,8 @@ window.addEventListener('load', () => {
 });
 
 // ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
-const _drawer = document.getElementById('moreDrawer');
-function setDrawer(open) {
-  if (!_drawer) return;
-  _drawer.classList.toggle('is-open', open);
-  _drawer.setAttribute('aria-hidden', String(!open));
-  document.body.style.overflow = open ? 'hidden' : '';
-}
-document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
-document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
-if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
-
-const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
-if (_avaBtn && _avaMenu) {
-  _avaBtn.addEventListener('click', () => {
-    const open = _avaMenu.hidden;
-    _avaMenu.hidden = !open;
-    _avaBtn.setAttribute('aria-expanded', String(open));
-  });
-  document.addEventListener('click', e => {
-    if (!_avaMenu.hidden && !_avaMenu.contains(e.target) && !_avaBtn.contains(e.target)) {
-      _avaMenu.hidden = true; _avaBtn.setAttribute('aria-expanded', 'false');
-    }
-  });
-}
-const _themeBtn = document.getElementById('themeToggle');
-if (_themeBtn) _themeBtn.addEventListener('click', () => {
-  const root = document.documentElement;
-  const dark = root.dataset.theme === 'dark' ||
-               (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
-  root.dataset.theme = dark ? 'light' : 'dark';
-  try { localStorage.setItem('ps_theme', root.dataset.theme); } catch(e) {}
-  if (_avaMenu) _avaMenu.hidden = true;
-});
-try { const _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch(e) {}
+PS_initShell();
+document.querySelectorAll('[data-ps-i]').forEach(el=>{el.innerHTML=PS_icon(el.dataset.psI);});
 
 async function psLogout() {
   try { await sb.auth.signOut(); } catch(e) {}
@@ -1319,21 +1288,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </script>
 <nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
-  <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
-  <a class="nav-item" href="cure.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
-  <a class="nav-item" href="poids.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18V6m0 12h16M7 14l4-4 3 2 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_weight">Poids</span></a>
-  <a class="nav-item" href="inventaire.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4H8zM7 7h10l2 4v9H5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_stock">Stock</span></a>
-  <button class="nav-item is-active" type="button" data-more-open><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg><span class="nav-label" data-i18n="nav_more">Plus</span></button>
+  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item" href="inventaire.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
+  <a class="nav-item" href="poids.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
+  <a class="nav-item is-active" href="peptide-database.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
 </div></nav>
-<div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
-  <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
-  <div class="drawer-grid">
-    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>48 peptides</span></a>
-    <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
-    <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
-    <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
-    <a class="drawer-link" href="cgu.html"><strong data-i18n="nav_legal">Pages légales</strong><span>CGU · Confidentialité</span></a>
-  </div>
-</aside></div>
 </body>
 </html>

@@ -3,9 +3,9 @@
 // Cache offline + mise à jour automatique
 // ═══════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'peptidescanner-v1.4';
-const CACHE_STATIC = 'peptidescanner-static-v1.4';
-const CACHE_DYNAMIC = 'peptidescanner-dynamic-v1.4';
+const CACHE_NAME = 'peptidescanner-v2.0';
+const CACHE_STATIC = 'peptidescanner-static-v2.0';
+const CACHE_DYNAMIC = 'peptidescanner-dynamic-v2.0';
 
 // ── FICHIERS À METTRE EN CACHE (core app shell) ────────────────
 const STATIC_ASSETS = [
@@ -32,6 +32,8 @@ const STATIC_ASSETS = [
   '/peptidescanner.css',
   '/peptidescanner-extra.css',
   '/fonts/fonts.css',
+  '/fonts/InterVariable.woff2',
+  '/assets/assets-bundle.js',
   '/vendor/supabase-2.117.3.umd.js',
   '/manifest.json'
 ];
@@ -183,18 +185,18 @@ async function offlineFallback(request) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>PeptideScanner — Hors ligne</title>
         <style>
-          body { font-family: sans-serif; background: #F8F9FA; color: #1F2937;
+          body { font-family: sans-serif; background: #F4F7FC; color: #17243A;
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; min-height: 100vh; text-align: center; padding: 24px; }
           .icon { font-size: 4rem; margin-bottom: 20px; }
-          h1 { font-size: 1.4rem; margin-bottom: 10px; color: #0D9488; }
+          h1 { font-size: 1.4rem; margin-bottom: 10px; color: #2457D6; }
           p { color: #6B7280; line-height: 1.6; max-width: 300px; }
-          button { margin-top: 24px; padding: 12px 28px; background: #0D9488; color: #fff;
+          button { margin-top: 24px; padding: 12px 28px; background: #2457D6; color: #fff;
             border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
         </style>
       </head>
       <body>
-        <div class="icon">📡</div>
+        
         <h1>Vous êtes hors ligne</h1>
         <p>PeptideScanner nécessite une connexion pour certaines fonctionnalités.<br>
         Vos données locales restent accessibles.</p>

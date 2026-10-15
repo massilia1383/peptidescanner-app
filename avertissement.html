@@ -5,13 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Avant de commencer — PeptideScanner</title>
   <script src="/lang.js"></script>
-  <script src="/ps-app.js"></script>
+  <script src="/assets/assets-bundle.js"></script>
+<script src="/ps-app.js"></script>
   <script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#FBF7F1">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="/peptidescanner.css">
   <!--
     Créée le 15/10/2026 (lot 3). Premier écran après la connexion, tant que l'avertissement
@@ -45,7 +47,7 @@
 <body>
   <div class="lang-wrap" id="langToggleBtn"></div>
 
-  <div class="w-logo"><img src="/brand/brand-mark.svg" alt="" width="40" height="40"><span>PeptideScanner</span></div>
+  <div class="w-logo"><span class="brand-logo" data-ps-logo style="width:40px;height:40px;color:var(--accent)"></span><span>PeptideScanner</span></div>
 
   <main class="w-card">
     <div class="w-icon"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Zm0 6v5m0 3v.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -107,6 +109,7 @@ document.getElementById('logoutBtn').addEventListener('click', async function ()
 
 PS_applyI18n();
 PS_renderLangSwitcher();
+PS_initShell();
 initWarn();
 </script>
 </body>

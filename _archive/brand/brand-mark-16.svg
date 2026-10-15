@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="img" aria-labelledby="title">
+  <title id="title">PeptideScanner tiny mark</title>
+  <g fill="none" stroke="#166B5A" stroke-width="1.35" stroke-linecap="round">
+    <path d="M5.5 2.5H4a1.5 1.5 0 0 0-1.5 1.5v1.5"/>
+    <path d="M10.5 2.5H12A1.5 1.5 0 0 1 13.5 4v1.5"/>
+    <path d="M13.5 10.5V12a1.5 1.5 0 0 1-1.5 1.5h-1.5"/>
+    <path d="M5.5 13.5H4A1.5 1.5 0 0 1 2.5 12v-1.5"/>
+  </g>
+  <circle cx="8" cy="8" r="1.55" fill="#355C9A"/>
+</svg>

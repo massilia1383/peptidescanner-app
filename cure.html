@@ -8,7 +8,9 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#FBF7F1">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
@@ -27,7 +29,7 @@
     --nav-h:    var(--bottomnav-h, 64px);
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--bottomnav-h,64px) + 32px + env(safe-area-inset-bottom)); }
+  body { font-family:var(--font-ui); background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--bottomnav-h,64px) + 32px + env(safe-area-inset-bottom)); }
 
   .topbar h1 { font-size:1.1rem; font-weight:700; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
@@ -44,7 +46,7 @@
     background:var(--surface); color:var(--muted); font-size:.8rem; font-weight:600;
     cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0;
   }
-  .cure-tab.active { background:var(--accent-soft); border-color:rgba(22,107,90,.4); color:var(--accent); }
+  .cure-tab.active { background:var(--accent-soft); border-color:rgba(36,87,214,.4); color:var(--accent); }
 
   /* Selecteur de cure — remplace les onglets scrollables (UX-03) */
   .cure-select-wrap { margin-bottom:18px; }
@@ -55,7 +57,7 @@
   .cure-select {
     width:100%; padding:14px 56px 14px 16px;
     background:var(--accent-soft);
-    border:2px solid rgba(22,107,90,.28); border-radius:14px;
+    border:2px solid rgba(36,87,214,.28); border-radius:14px;
     color:var(--text); font-family:inherit; font-size:1rem; font-weight:700;
     outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'><rect width='36' height='36' rx='10' fill='%230D9488'/><path d='M12 15l6 6 6-6' stroke='%23FFFFFF' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
@@ -63,7 +65,7 @@
     transition:border-color .2s, background-color .2s;
   }
   .cure-select:hover { background-color:var(--accent-soft); }
-  .cure-select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(22,107,90,.14); }
+  .cure-select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(36,87,214,.14); }
 
   /* CURE INFO CARD */
   .cure-info {
@@ -74,7 +76,7 @@
   .ci-name { font-size:1.1rem; font-weight:700; }
   .ci-status {
     padding:4px 10px; border-radius:100px; font-size:.7rem; font-weight:700;
-    font-family:'Space Mono',monospace;
+    font-family:var(--font-data);font-variant-numeric:tabular-nums;
   }
   .ci-status.active { background:var(--accent-soft); color:var(--accent); }
   .ci-status.ended { background:rgba(107,122,153,.1); color:var(--muted); }
@@ -82,12 +84,12 @@
   .ci-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
   .ci-box { background:var(--surface2); border-radius:10px; padding:10px; }
   .ci-box-label { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:4px; }
-  .ci-box-val { font-family:'Space Mono',monospace; font-size:.88rem; font-weight:700; color:var(--accent); }
+  .ci-box-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.88rem; font-weight:700; color:var(--accent); }
 
   /* COMPLIANCE BAR */
   .compliance-row { display:flex; justify-content:space-between; align-items:center; margin-top:14px; margin-bottom:6px; }
   .compliance-row span { font-size:.75rem; color:var(--muted); }
-  .compliance-row strong { font-family:'Space Mono',monospace; font-size:.85rem; color:var(--accent); }
+  .compliance-row strong { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.85rem; color:var(--accent); }
   .comp-bar { height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
   .comp-fill { height:100%; border-radius:3px; background:linear-gradient(90deg, var(--accent), var(--accent2)); transition:width .5s ease; }
 
@@ -96,7 +98,7 @@
   .cal-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
   .cal-nav button { background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); width:32px; height:32px; cursor:pointer; font-size:.9rem; transition:all .2s; }
   .cal-nav button:hover { border-color:var(--accent); color:var(--accent); }
-  .cal-month { font-size:.95rem; font-weight:700; font-family:'Space Mono',monospace; }
+  .cal-month { font-size:.95rem; font-weight:700; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
   .cal-days-header { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; margin-bottom:6px; }
   .cal-day-label { text-align:center; font-size:.65rem; color:var(--muted); font-weight:600; padding:4px 0; }
   .cal-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; }
@@ -108,12 +110,12 @@
   }
   .cal-day.cal-empty { cursor:default; }
   .cal-day.outside { color:var(--border); cursor:default; }
-  .cal-day.done { background:var(--accent-soft); color:var(--accent); border-color:rgba(22,107,90,.2); }
-  .cal-day.partial { background:var(--amber-soft); color:var(--accent3); border-color:rgba(128,91,0,.2); }
-  .cal-day.missed { background:var(--danger-soft); color:var(--danger); border-color:rgba(161,50,40,.15); }
+  .cal-day.done { background:var(--status-done-soft); color:var(--status-done); }
+  .cal-day.partial { background:var(--status-partial-soft); color:var(--status-partial); }
+  .cal-day.missed { background:var(--status-missed-soft); color:var(--status-missed); }
   .cal-day.rest { background:var(--surface2); color:var(--muted); }
-  .cal-day.shifted { background:var(--amber-soft); color:var(--accent3); border:1px dashed rgba(128,91,0,.45); }
-  .day-shift { font-size:.52rem; font-weight:700; color:var(--accent3); line-height:1; margin-top:2px; letter-spacing:-.3px; }
+  .cal-day.shifted { background:var(--status-shifted-soft); color:var(--status-shifted); border:1px dashed var(--status-shifted); }
+  .day-shift { font-size:.52rem; font-weight:700; color:var(--status-shifted); line-height:1; margin-top:2px; letter-spacing:-.3px; }
   .dd-rest-banner { text-align:center; padding:12px 12px 4px; color:var(--muted); font-size:.84rem; }
   /* Feuille de confirmation — meme style que dashboard.html */
   .inj-confirm-overlay {
@@ -135,12 +137,12 @@
   .inj-confirm-sub { font-size:.78rem; color:var(--muted); margin-bottom:18px; }
   .inj-confirm-btns { display:flex; gap:10px; }
   .inj-confirm-btn-cancel { flex:1; padding:13px; border-radius:12px; border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer; }
-  .inj-confirm-btn-ok { flex:2; padding:13px; border-radius:12px; border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; }
+  .inj-confirm-btn-ok { flex:2; padding:13px; border-radius:12px; border:none; background:var(--accent); color:var(--accent-on); font-family:inherit; font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .2s; }
   .inj-confirm-btn-ok:hover { opacity:.85; }
   .inj-confirm-btn-ok.danger { background:var(--danger); }
 
   .dd-report {
-    background:var(--amber-soft); border:1px solid rgba(128,91,0,.35);
+    background:var(--amber-soft); border:1px solid rgba(128,80,0,.35);
     border-radius:12px; padding:10px 14px; margin:10px 0;
     color:var(--accent3); font-size:.8rem; font-weight:600; text-align:center;
   }
@@ -149,23 +151,23 @@
   .dd-link-q { font-size:.78rem; color:var(--muted); font-weight:600; margin-bottom:8px; text-align:center; }
   .dd-link-row { display:flex; gap:8px; }
   .dd-link-select { flex:1; min-width:0; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:9px 11px; color:var(--text); font-family:inherit; font-size:.8rem; outline:none; cursor:pointer; }
-  .dd-link-btn { flex-shrink:0; background:var(--accent3); color:#fff; border:none; border-radius:10px; padding:9px 16px; font-family:inherit; font-size:.8rem; font-weight:700; cursor:pointer; }
+  .dd-link-btn { flex-shrink:0; background:var(--accent); color:var(--accent-on); border:none; border-radius:10px; padding:9px 16px; font-family:inherit; font-size:.8rem; font-weight:700; cursor:pointer; }
   .dd-shift-hint  { text-align:center; padding:0 12px 10px; color:var(--accent3); font-size:.74rem; font-weight:600; }
-  .inj-slot.shifted { border-color:rgba(128,91,0,.45); }
-  .cal-day.today { border-color:var(--accent) !important; box-shadow:0 0 0 1px rgba(22,107,90,.5); }
+  .inj-slot.shifted { border-color:rgba(128,80,0,.45); }
+  .cal-day.today { border-color:var(--accent) !important; box-shadow:0 0 0 1px rgba(36,87,214,.5); }
   .cal-day.future-day { color:var(--muted); background:var(--surface2); opacity:.3; cursor:default; }
   .cal-day.future-inj { 
     color:var(--info); 
     background:var(--info-soft); 
-    border:1.5px solid rgba(53,92,154,.4);
+    border:1.5px solid rgba(36,87,214,.4);
     font-weight:700;
     cursor:default; 
   }
-  .day-dot.blue { background:var(--info); width:5px; height:5px; }
-  .day-dot { width:4px; height:4px; border-radius:50%; position:absolute; bottom:4px; }
-  .day-dot.green { background:var(--accent); }
-  .day-dot.amber { background:var(--accent3); }
-  .day-dot.red { background:var(--danger); }
+  .day-dot { position:absolute; bottom:2px; font-size:.5rem; font-weight:800; line-height:1; }
+  .day-dot.green::after { content:'\2713'; color:var(--status-done); }
+  .day-dot.amber::after { content:'\25D0'; color:var(--status-partial); }
+  .day-dot.red::after   { content:'\2014'; color:var(--status-missed); }
+  .day-dot.blue::after  { content:'\25CB'; color:var(--status-planned); }
 
   /* LEGEND */
   .legend { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
@@ -200,8 +202,8 @@
     background:var(--surface2); border-radius:12px; margin-bottom:8px;
     cursor:pointer; transition:all .2s; border:1px solid var(--border);
   }
-  .inj-slot:hover { border-color:rgba(22,107,90,.3); }
-  .inj-slot.done { border-color:rgba(22,107,90,.25); background:var(--accent-soft); }
+  .inj-slot:hover { border-color:rgba(36,87,214,.3); }
+  .inj-slot.done { border-color:rgba(36,87,214,.25); background:var(--accent-soft); }
   .slot-check {
     width:32px; height:32px; border-radius:9px; flex-shrink:0;
     display:flex; align-items:center; justify-content:center; font-size:.9rem;
@@ -212,41 +214,39 @@
   .slot-info { flex:1; }
   .slot-name { font-size:.86rem; font-weight:600; }
   .slot-detail { font-size:.72rem; color:var(--muted); margin-top:2px; }
-  .slot-time { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); }
+  .slot-time { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.72rem; color:var(--muted); }
   .slot-time-input {
-    font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted);
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.72rem; color:var(--muted);
     border:1px solid transparent; border-radius:6px; padding:3px 6px;
     background:transparent; cursor:pointer; transition:all .2s; width:82px;
     -webkit-appearance:none;
   }
   .slot-time-input:hover { border-color:var(--border); background:var(--surface); }
-  .slot-time-input:focus { outline:none; border-color:var(--accent); background:var(--surface); color:var(--accent); box-shadow:0 0 0 2px rgba(22,107,90,.12); }
-  .slot-time-input.saved { border-color:rgba(22,107,90,.4); color:var(--accent); }
+  .slot-time-input:focus { outline:none; border-color:var(--accent); background:var(--surface); color:var(--accent); box-shadow:0 0 0 2px rgba(36,87,214,.12); }
+  .slot-time-input.saved { border-color:rgba(36,87,214,.4); color:var(--accent); }
 
   /* NOTES */
   .note-area { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-family:inherit; font-size:.84rem; resize:none; outline:none; margin-top:10px; transition:border-color .2s; }
   .note-area:focus { border-color:var(--accent); }
-  .save-note-btn { margin-top:8px; padding:8px 18px; background:var(--accent); color:#000; border:none; border-radius:8px; font-family:inherit; font-size:.8rem; font-weight:700; cursor:pointer; }
+  .save-note-btn { margin-top:8px; padding:8px 18px; background:var(--accent); color:var(--accent-on); border:none; border-radius:8px; font-family:inherit; font-size:.8rem; font-weight:700; cursor:pointer; }
 
   /* STATS SECTION */
   .stats-section { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
-  .stats-section h3 { font-size:.82rem; font-weight:700; margin-bottom:14px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-family:'Space Mono',monospace; }
+  .stats-section h3 { font-size:.82rem; font-weight:700; margin-bottom:14px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
   .stat-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(30,45,69,.5); }
   .stat-row:last-child { border-bottom:none; }
   .stat-row-key { font-size:.84rem; color:var(--muted); }
-  .stat-row-val { font-family:'Space Mono',monospace; font-size:.88rem; font-weight:700; }
+  .stat-row-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.88rem; font-weight:700; }
 
   /* BOTTOM NAV */
 
   /* TOAST */
-  .ps-toast { position:fixed; bottom:calc(var(--nav-h)+16px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#000; padding:10px 20px; border-radius:100px; font-size:.82rem; font-weight:700; opacity:0; pointer-events:none; transition:all .3s; z-index:300; white-space:nowrap; }
-  .ps-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
   /* EMPTY STATE */
   .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
   .empty-state span { font-size:2.5rem; display:block; margin-bottom:12px; }
   .empty-state p { font-size:.9rem; line-height:1.6; margin-bottom:20px; }
-  .empty-btn { background:var(--accent); color:#000; border:none; padding:12px 24px; border-radius:10px; font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; }
+  .empty-btn { background:var(--accent); color:var(--accent-on); border:none; padding:12px 24px; border-radius:10px; font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; }
 
   /* ADD CURE MODAL */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:400; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .25s; backdrop-filter:blur(4px); }
@@ -272,29 +272,29 @@
   .form-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:11px 14px; color:var(--text); font-family:inherit; font-size:.88rem; outline:none; transition:border-color .2s; }
   .form-input:focus { border-color:var(--accent); }
   .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .submit-btn { width:100%; padding:14px; border-radius:12px; border:none; background:var(--accent); color:#000; font-family:inherit; font-size:.95rem; font-weight:700; cursor:pointer; margin-top:6px; }
-  .delete-btn { width:100%; padding:12px; border-radius:12px; border:1px solid rgba(161,50,40,.3); background:var(--danger-soft); color:var(--danger); font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; margin-top:8px; }
+  .submit-btn { width:100%; padding:14px; border-radius:12px; border:none; background:var(--accent); color:var(--accent-on); font-family:inherit; font-size:.95rem; font-weight:700; cursor:pointer; margin-top:6px; }
+  .delete-btn { width:100%; padding:12px; border-radius:12px; border:1px solid rgba(180,35,56,.3); background:var(--danger-soft); color:var(--danger); font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; margin-top:8px; }
 
   /* DISCLAIMER JURIDIQUE */
   .legal-disclaimer {
-    background:var(--amber-soft); border:1px solid rgba(128,91,0,.2);
+    background:var(--amber-soft); border:1px solid rgba(128,80,0,.2);
     border-radius:12px; padding:12px 16px; margin:12px 0;
     display:flex; gap:10px; align-items:flex-start;
   }
   .legal-disclaimer.compact { padding:8px 12px; margin:8px 0; border-radius:8px; }
   .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
-  .legal-disclaimer-text { font-size:.72rem; color:#92400E; line-height:1.5; }
-  .legal-disclaimer-text strong { color:#78350F; }
+  .legal-disclaimer-text { font-size:.72rem; color:var(--warning); line-height:1.5; }
+  .legal-disclaimer-text strong { color:var(--warning); }
   .phase-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700; }
-  .phase-established  { background:var(--accent-soft);  color:#065F46; border:1px solid rgba(22,107,90,.2); }
-  .phase-preclinical  { background:var(--info-soft);  color:var(--info); border:1px solid rgba(53,92,154,.2); }
-  .phase-phase1       { background:var(--amber-soft);  color:#78350F; border:1px solid rgba(128,91,0,.2); }
-  .phase-phase2       { background:var(--amber-soft);  color:#7C2D12; border:1px solid rgba(128,91,0,.2); }
-  .phase-phase3       { background:var(--info-soft);  color:#4C1D95; border:1px solid rgba(53,92,154,.2); }
-  .phase-experimental { background:var(--danger-soft);  color:#7F1D1D; border:1px solid rgba(161,50,40,.15); }
+  .phase-established  { background:var(--success-bg); color:var(--success); }
+  .phase-preclinical  { background:var(--accent-soft); color:var(--accent); }
+  .phase-phase1       { background:var(--warning-bg); color:var(--warning); }
+  .phase-phase2       { background:var(--warning-bg); color:var(--warning); }
+  .phase-phase3       { background:var(--status-partial-soft); color:var(--status-partial); }
+  .phase-experimental { background:var(--error-bg); color:var(--error); }
 
   /* ── TITRATION ─────────────────────────────────────────── */
-  .titration-toggle { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:var(--accent-soft); border:1px solid rgba(22,107,90,.2); border-radius:12px; cursor:pointer; }
+  .titration-toggle { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:var(--accent-soft); border:1px solid rgba(36,87,214,.2); border-radius:12px; cursor:pointer; }
   .titration-toggle-label { font-size:.85rem; font-weight:600; color:var(--accent); }
   .titration-toggle-sub { font-size:.72rem; color:var(--muted); margin-top:2px; }
   .titration-toggle-switch { width:36px; height:20px; background:var(--border); border-radius:100px; position:relative; transition:background .2s; flex-shrink:0; }
@@ -305,11 +305,11 @@
   .titration-section.visible { display:block; }
   .titration-palier { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:8px; }
   .titration-palier-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-  .titration-palier-num { font-size:.72rem; font-weight:700; color:var(--accent); font-family:'Space Mono',monospace; background:var(--accent-soft); padding:2px 8px; border-radius:100px; }
+  .titration-palier-num { font-size:.72rem; font-weight:700; color:var(--accent); font-family:var(--font-data);font-variant-numeric:tabular-nums; background:var(--accent-soft); padding:2px 8px; border-radius:100px; }
   .titration-palier-remove { background:none; border:none; color:var(--muted); cursor:pointer; font-size:.9rem; padding:2px 6px; border-radius:6px; }
   .titration-palier-remove:hover { color:var(--danger); }
   .titration-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .titration-add-btn { width:100%; padding:10px; border:1.5px dashed rgba(22,107,90,.3); background:transparent; color:var(--accent); border-radius:10px; font-family:inherit; font-size:.82rem; font-weight:600; cursor:pointer; margin-top:4px; }
+  .titration-add-btn { width:100%; padding:10px; border:1.5px dashed rgba(36,87,214,.3); background:transparent; color:var(--accent); border-radius:10px; font-family:inherit; font-size:.82rem; font-weight:600; cursor:pointer; margin-top:4px; }
   .titration-add-btn:disabled { opacity:.4; cursor:not-allowed; }
 
 </style>
@@ -318,41 +318,32 @@
 
 <header class="app-topbar">
   <div class="topbar-inner">
-    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner"><img class="brand-symbol" src="/brand/brand-mark.svg" alt="" width="36" height="36"></a>
-    <div class="brand-name">PeptideScanner</div>
-    <div class="page-title-wrap"><h1 class="page-title" data-i18n="nav_cure">Cure</h1></div>
-    <div id="langToggleBtn"></div>
-    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6 2.5 6.5 2.5 6.5H4s2.5-.5 2.5-6.5M9.5 19a2.8 2.8 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
-    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">J</button>
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
   </div>
 </header>
 <div class="menu-popover" id="avatarMenu" hidden>
   <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
   <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
-  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
+  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
 </div>
 
-<div class="content" id="mainContent">
-  <!-- Généré par JS -->
+<div class="content" style="padding-bottom:0">
+<div class="page-intro"><h1 data-i18n="nav_cure">Cure</h1><p data-i18n="intro_cure_sub">Calendrier et notes personnelles</p></div>
+</div>
+<div class="content" id="mainContent">  <!-- Généré par JS -->
 </div>
 
 <nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
-  <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
-  <a class="nav-item is-active" href="cure.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
-  <a class="nav-item" href="poids.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18V6m0 12h16M7 14l4-4 3 2 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_weight">Poids</span></a>
-  <a class="nav-item" href="inventaire.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4H8zM7 7h10l2 4v9H5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_stock">Stock</span></a>
-  <button class="nav-item" type="button" data-more-open><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg><span class="nav-label" data-i18n="nav_more">Plus</span></button>
+  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item is-active" href="cure.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item" href="inventaire.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
+  <a class="nav-item" href="poids.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
+  <a class="nav-item" href="peptide-database.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
 </div></nav>
-<div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
-  <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
-  <div class="drawer-grid">
-    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>48 peptides</span></a>
-    <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
-    <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
-    <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
-    <a class="drawer-link" href="cgu.html"><strong data-i18n="nav_legal">Pages légales</strong><span>CGU · Confidentialité</span></a>
-  </div>
-</aside></div>
 <button class="ps-fab" type="button" onclick="openAddCure()" aria-label="Nouvelle cure"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
 
 <div class="modal-overlay" id="addCureModal" onclick="closeIfOverlay(event)">
@@ -413,7 +404,7 @@
       <!-- Section paliers -->
       <div class="titration-section" id="titrationSection">
         <!-- Palier 1 = dosage principal + durée configurable -->
-        <div class="titration-palier" style="margin-bottom:8px;background:var(--accent-soft);border-color:rgba(22,107,90,.2)">
+        <div class="titration-palier" style="margin-bottom:8px;background:var(--accent-soft);border-color:rgba(36,87,214,.2)">
           <div class="titration-palier-header">
             <span class="titration-palier-num" id="palier1Label">Palier 1</span>
           </div>
@@ -452,6 +443,7 @@
 <div class="ps-toast" id="toast"></div>
 
 <script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
 <script src="/ps-app.js"></script>
 <script src="/vendor/supabase-2.117.3.umd.js"></script>
 <script>
@@ -572,7 +564,7 @@ function getDayNote(ds) {
 function render() {
   const c = document.getElementById('mainContent');
   if (allCures.length === 0) {
-    c.innerHTML = `<div class="empty-state"><span>📅</span><p>${t('cure_empty').replace('\n','<br>')}</p><button class="empty-btn" onclick="openAddCure()">+ Nouvelle cure</button></div>`;
+    c.innerHTML = `<div class="empty-state"><span style="display:flex;justify-content:center;color:var(--accent)">${PS_icon('calendar-days')}</span><p>${t('cure_empty').replace('\n','<br>')}</p><button class="empty-btn" onclick="openAddCure()">+ Nouvelle cure</button></div>`;
     return;
   }
   if (!currentCureId || !allCures.find(x => x.id === currentCureId)) currentCureId = allCures[0].id;
@@ -680,7 +672,7 @@ function render() {
       <h3>${t('cure_stats')}</h3>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_done')}</span><span class="stat-row-val" style="color:var(--accent)">${onPlan}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_expected')}</span><span class="stat-row-val">${totalExp}</span></div>
-      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_missed')}</span><span class="stat-row-val" style="color:var(--danger)">${missedCt}</span></div>
+      <div class="stat-row"><span class="stat-row-key">${t('cure_inj_missed')}</span><span class="stat-row-val" style="color:var(--status-missed)">${missedCt}</span></div>
       ${offPlan > 0 ? `<div class="stat-row"><span class="stat-row-key">${t('cure_inj_offplan')}</span><span class="stat-row-val" style="color:var(--accent3)">${offPlan}</span></div>` : ''}
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_remaining')}</span><span class="stat-row-val" style="color:var(--accent2)">${remaining}</span></div>
       <div class="stat-row"><span class="stat-row-key">${t('cure_inj_total_planned')}</span><span class="stat-row-val">${totalPlanned}</span></div>
@@ -771,11 +763,11 @@ function renderCalendar() {
     <div class="cal-days-header">${DAYS_SHORT().map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>
     <div class="cal-grid">${daysHtml}</div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-soft);border:1px solid rgba(22,107,90,.2)"></div><span data-i18n="cure_legend_done">Fait</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--amber-soft);border:1px solid rgba(128,91,0,.2)"></div><span data-i18n="cure_legend_partial">Partiel</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--amber-soft);border:1px dashed rgba(128,91,0,.45)"></div><span data-i18n="cure_legend_shifted">Décalée</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--danger-soft);border:1px solid rgba(161,50,40,.15)"></div><span data-i18n="cure_legend_missed">Manqué</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--info-soft);border:1.5px solid rgba(53,92,154,.4)"></div><span data-i18n="cure_legend_planned">Prévu</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--status-done-soft);border:1px solid var(--status-done)"></div><span data-i18n="cure_legend_done">Fait</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--status-partial-soft);border:1px solid var(--status-partial)"></div><span data-i18n="cure_legend_partial">Partiel</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--status-shifted-soft);border:1px dashed var(--status-shifted)"></div><span data-i18n="cure_legend_shifted">Décalée</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--status-missed-soft);border:1px solid var(--status-missed)"></div><span data-i18n="cure_legend_missed">Manqué</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--status-planned-soft);border:1.5px solid var(--status-planned)"></div><span data-i18n="cure_legend_planned">Prévu</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--surface2)"></div><span data-i18n="cure_legend_rest">Repos</span></div>
     </div>`;
 }
@@ -890,7 +882,7 @@ function selectDay(ds, clickable) {
     </div>
     ${reportBanner}
     ${(!isRestDay || isPast) ? `
-    <div style="background:var(--accent-soft);border:1.5px solid rgba(22,107,90,.18);border-radius:14px;padding:12px 14px;margin:10px 0">
+    <div style="background:var(--accent-soft);border:1.5px solid rgba(36,87,214,.18);border-radius:14px;padding:12px 14px;margin:10px 0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600">${t('cure_suggested_site')}</div>
         <button onclick="cycleSite('${ds}')" style="font-size:.68rem;color:var(--accent);background:none;border:none;cursor:pointer;font-weight:600">${t('cure_change_site')}</button>
@@ -973,7 +965,7 @@ async function updateInjTime(input) {
     // Injection existante → update
     const { error } = await sb.from('injections').update({ injected_at: newISOTime }).eq('id', injId);
     if (error) {
-      showToast('⚠️ Erreur sauvegarde'); input.style.borderColor='var(--danger)';
+      showToast('Erreur de sauvegarde'); input.style.borderColor='var(--danger)';
       setTimeout(() => input.style.borderColor='', 1500);
     } else {
       input.classList.add('saved');
@@ -1607,46 +1599,7 @@ function closeIfOverlay(e) { if(e.target===document.getElementById('addCureModal
 
 
 // ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
-const _drawer = document.getElementById('moreDrawer');
-function setDrawer(open) {
-  if (!_drawer) return;
-  _drawer.classList.toggle('is-open', open);
-  _drawer.setAttribute('aria-hidden', String(!open));
-  document.body.style.overflow = open ? 'hidden' : '';
-}
-document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
-document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
-if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Escape') return;
-  const m = document.getElementById('addCureModal');
-  if (m && m.classList.contains('open')) { closeModal(); return; }
-  setDrawer(false);
-});
-
-const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
-if (_avaBtn && _avaMenu) {
-  _avaBtn.addEventListener('click', () => {
-    const open = _avaMenu.hidden;
-    _avaMenu.hidden = !open;
-    _avaBtn.setAttribute('aria-expanded', String(open));
-  });
-  document.addEventListener('click', e => {
-    if (!_avaMenu.hidden && !_avaMenu.contains(e.target) && !_avaBtn.contains(e.target)) {
-      _avaMenu.hidden = true; _avaBtn.setAttribute('aria-expanded', 'false');
-    }
-  });
-}
-const _themeBtn = document.getElementById('themeToggle');
-if (_themeBtn) _themeBtn.addEventListener('click', () => {
-  const root = document.documentElement;
-  const dark = root.dataset.theme === 'dark' ||
-               (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
-  root.dataset.theme = dark ? 'light' : 'dark';
-  try { localStorage.setItem('ps_theme', root.dataset.theme); } catch(e) {}
-  if (_avaMenu) _avaMenu.hidden = true;
-});
-try { const _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch(e) {}
+PS_initShell();
 
 async function psLogout() {
   try { await sb.auth.signOut(); } catch(e) {}

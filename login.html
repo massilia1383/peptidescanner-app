@@ -5,13 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Connexion — PeptideScanner</title>
   <script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
 <script src="/ps-app.js"></script>
   <script>try { var _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#FBF7F1">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
@@ -68,7 +70,7 @@
   <div class="lang-wrap" id="langToggleBtn"></div>
 
   <div class="auth-logo">
-    <img src="/brand/brand-mark.svg" alt="" width="40" height="40">
+    <span class="brand-logo" data-ps-logo style="width:40px;height:40px;color:var(--accent)"></span>
     <span class="auth-logo-name">PeptideScanner</span>
   </div>
 
@@ -151,6 +153,7 @@
     }
 
     PS_renderLangSwitcher();
+PS_initShell();
     applyLoginI18n();
   </script>
 

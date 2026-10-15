@@ -8,7 +8,9 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#FBF7F1">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
@@ -27,7 +29,7 @@
     --success:  var(--accent);
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
+  body { font-family:var(--font-ui); background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h)+20px); }
 
   /* TOPBAR */
   .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; box-shadow:0 1px 8px rgba(0,0,0,.06); }
@@ -39,13 +41,13 @@
 
   /* WARNING BANNER */
   .warning-banner {
-    background:var(--danger-soft); border:1.5px solid rgba(161,50,40,.2);
+    background:var(--warning-bg); border:0;
     border-radius:14px; padding:14px 16px; margin-bottom:20px;
     display:flex; gap:10px; align-items:flex-start;
   }
-  .warning-banner-icon { font-size:1.4rem; flex-shrink:0; }
+  .warning-banner-icon { display:none; }
   .warning-banner-text { font-size:.78rem; line-height:1.6; color:var(--text); }
-  .warning-banner-text strong { color:var(--danger); display:block; margin-bottom:2px; }
+  .warning-banner-text strong { color:var(--warning); display:block; margin-bottom:2px; }
 
   /* TABS */
   .module-tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:20px; scrollbar-width:none; }
@@ -65,7 +67,7 @@
   /* SECTION TITLE */
   .section-title {
     font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px;
-    color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:10px;
+    color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; margin-bottom:10px;
   }
 
   /* INPUT CARD */
@@ -82,7 +84,7 @@
   .form-input {
     width:100%; background:var(--surface2); border:1.5px solid var(--border);
     border-radius:10px; padding:12px 14px; color:var(--text);
-    font-family:'Space Mono',monospace; font-size:1rem; font-weight:700;
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1rem; font-weight:700;
     outline:none; transition:border-color .2s;
   }
   .form-input:focus { border-color:var(--accent); background:#fff; }
@@ -99,7 +101,7 @@
   .bac-btns { display:flex; gap:8px; flex-wrap:wrap; }
   .bac-btn {
     padding:10px 16px; border-radius:10px; border:1.5px solid var(--border);
-    background:var(--surface2); color:var(--muted); font-family:'Space Mono',monospace;
+    background:var(--surface2); color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums;
     font-size:.84rem; font-weight:700; cursor:pointer; transition:all .2s;
   }
   .bac-btn.selected { border-color:var(--accent2); background:var(--info-soft); color:var(--accent2); }
@@ -108,20 +110,20 @@
   /* RESULT CARD */
   .result-card {
     background:linear-gradient(135deg, var(--accent-soft), var(--info-soft));
-    border:1.5px solid rgba(22,107,90,.25); border-radius:18px;
+    border:1.5px solid rgba(36,87,214,.25); border-radius:18px;
     padding:20px; margin-bottom:16px; display:none;
   }
   .result-card.show { display:block; animation:fadeIn .3s ease; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  .result-title { font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--accent); font-family:'Space Mono',monospace; margin-bottom:14px; }
+  .result-title { font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--accent); font-family:var(--font-data);font-variant-numeric:tabular-nums; margin-bottom:14px; }
   .result-main {
     display:flex; align-items:center; gap:16px; margin-bottom:16px;
     padding:14px; background:var(--surface); border-radius:12px;
     border:1px solid var(--border);
   }
-  .result-val { font-family:'Space Mono',monospace; font-size:2rem; font-weight:700; color:var(--accent); line-height:1; }
+  .result-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:2rem; font-weight:700; color:var(--accent); line-height:1; }
   .result-unit { font-size:.78rem; color:var(--muted); margin-top:3px; }
-  .result-formula { font-size:.8rem; color:var(--muted); font-family:'Space Mono',monospace; }
+  .result-formula { font-size:.8rem; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
   .result-formula strong { color:var(--accent2); }
 
   /* ── SERINGUE PREMIUM ── */
@@ -131,13 +133,13 @@
     background:linear-gradient(160deg,#f0f9ff 0%,#ffffff 60%,#f8faff 100%);
     border:1px solid #dde8f5;
     border-radius:22px; padding:20px 20px 16px;
-    box-shadow:0 4px 24px rgba(22,107,90,.06), 0 1px 4px rgba(53,92,154,.06);
+    box-shadow:0 4px 24px rgba(36,87,214,.06), 0 1px 4px rgba(36,87,214,.06);
     position:relative; overflow:hidden;
   }
   .syringe-wrap::before {
     content:''; position:absolute; top:0; right:0;
     width:120px; height:120px;
-    background:radial-gradient(circle at top right, rgba(22,107,90,.06) 0%, transparent 70%);
+    background:radial-gradient(circle at top right, rgba(36,87,214,.06) 0%, transparent 70%);
     pointer-events:none;
   }
 
@@ -156,10 +158,10 @@
   .syringe-svg {
     width:90px; height:360px;
     touch-action:none; cursor:ns-resize;
-    filter:drop-shadow(0 4px 12px rgba(53,92,154,.15));
+    filter:drop-shadow(0 4px 12px rgba(36,87,214,.15));
     transition:filter .2s;
   }
-  .syringe-svg:active { filter:drop-shadow(0 2px 6px rgba(53,92,154,.25)); }
+  .syringe-svg:active { filter:drop-shadow(0 2px 6px rgba(36,87,214,.25)); }
 
   /* Hint drag */
   .syringe-interactive-wrap { display:flex; flex-direction:column; align-items:center; }
@@ -173,7 +175,7 @@
   .syringe-info { flex:1; display:flex; flex-direction:column; gap:10px; padding-top:4px; }
 
   .syringe-dose-display {
-    font-family:'Space Mono',monospace; font-size:2rem; font-weight:700;
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:2rem; font-weight:700;
     color:var(--accent); line-height:1; letter-spacing:-.03em;
   }
   .syringe-dose-label {
@@ -182,24 +184,24 @@
   }
 
   .syringe-chip {
-    background:#fff; border:1.5px solid rgba(53,92,154,.18);
+    background:#fff; border:1.5px solid rgba(36,87,214,.18);
     border-radius:12px; padding:10px 14px;
-    box-shadow:0 1px 4px rgba(53,92,154,.06);
+    box-shadow:0 1px 4px rgba(36,87,214,.06);
   }
   .syringe-chip-val {
-    font-family:'Space Mono',monospace; font-size:1.15rem; font-weight:700;
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.15rem; font-weight:700;
     color:var(--accent2); line-height:1;
   }
   .syringe-chip-label { font-size:.64rem; color:var(--muted); margin-top:4px; letter-spacing:.5px; text-transform:uppercase; }
 
   .syringe-verify-box {
-    background:var(--accent-soft); border:1px solid rgba(22,107,90,.15);
+    background:var(--accent-soft); border:1px solid rgba(36,87,214,.15);
     border-radius:10px; padding:9px 12px;
     font-size:.72rem; color:var(--muted); line-height:1.5;
   }
 
   /* Drag active glow */
-  .syringe-svg.dragging { filter:drop-shadow(0 0 10px rgba(22,107,90,.35)); }
+  .syringe-svg.dragging { filter:drop-shadow(0 0 10px rgba(36,87,214,.35)); }
 
   /* Graduation highlight */
   @keyframes gradPop {
@@ -222,25 +224,25 @@
     padding:10px 14px; text-align:left; font-size:.68rem;
     text-transform:uppercase; letter-spacing:.8px; color:var(--muted);
     background:var(--surface2); border-bottom:1px solid var(--border);
-    font-family:'Space Mono',monospace;
+    font-family:var(--font-data);font-variant-numeric:tabular-nums;
   }
   tbody tr { border-bottom:1px solid rgba(226,232,240,.5); transition:background .15s; }
   tbody tr:hover { background:var(--accent-soft); }
   tbody tr.highlighted { background:var(--accent-soft); border-left:3px solid var(--accent); }
   tbody td { padding:10px 14px; font-size:.84rem; }
   tbody td:first-child { font-weight:600; }
-  tbody td.mono { font-family:'Space Mono',monospace; color:var(--accent2); }
-  tbody td.units { font-family:'Space Mono',monospace; font-weight:700; color:var(--accent); }
+  tbody td.mono { font-family:var(--font-data);font-variant-numeric:tabular-nums; color:var(--accent2); }
+  tbody td.units { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-weight:700; color:var(--accent); }
 
   /* EXPLAINER */
   .explainer-card {
-    background:var(--info-soft); border:1px solid rgba(53,92,154,.15);
+    background:var(--info-soft); border:1px solid rgba(36,87,214,.15);
     border-radius:14px; padding:16px; margin-bottom:12px;
   }
   .explainer-card h4 { font-size:.84rem; font-weight:700; color:var(--accent2); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
   .explainer-card p { font-size:.8rem; color:var(--muted); line-height:1.6; }
   .explainer-card .formula {
-    font-family:'Space Mono',monospace; background:var(--surface2);
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; background:var(--surface2);
     border-radius:8px; padding:10px 12px; margin-top:8px;
     font-size:.82rem; color:var(--text); border:1px solid var(--border);
   }
@@ -258,21 +260,21 @@
   .step-num {
     width:40px; height:40px; border-radius:50%; flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
-    font-family:'Space Mono',monospace; font-size:.88rem; font-weight:700;
+    font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.88rem; font-weight:700;
     z-index:1;
   }
   .step-content {
     flex:1; background:var(--surface); border:1px solid var(--border);
     border-radius:14px; padding:14px; margin-bottom:0;
   }
-  .step-weeks { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; font-family:'Space Mono',monospace; }
-  .step-dose { font-family:'Space Mono',monospace; font-size:1.2rem; font-weight:700; margin-bottom:4px; }
+  .step-weeks { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
+  .step-dose { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.2rem; font-weight:700; margin-bottom:4px; }
   .step-label { font-size:.78rem; font-weight:600; margin-bottom:4px; }
   .step-expect { font-size:.75rem; color:var(--muted); line-height:1.5; }
   .step-warning {
     display:flex; align-items:center; gap:6px; margin-top:8px;
     padding:6px 10px; background:var(--amber-soft);
-    border-radius:8px; border:1px solid rgba(128,91,0,.2);
+    border-radius:8px; border:1px solid rgba(128,80,0,.2);
     font-size:.72rem; color:var(--accent3);
   }
 
@@ -282,7 +284,7 @@
   }
   .recon-num {
     width:32px; height:32px; border-radius:10px; flex-shrink:0;
-    background:var(--accent); color:#fff;
+    background:var(--accent); color:var(--accent-on);
     display:flex; align-items:center; justify-content:center;
     font-weight:700; font-size:.88rem; margin-top:2px;
   }
@@ -292,9 +294,9 @@
     margin-top:6px; padding:6px 10px; border-radius:8px;
     font-size:.72rem; display:flex; align-items:center; gap:5px;
   }
-  .tip-green { background:var(--accent-soft); color:#059669; border:1px solid rgba(22,107,90,.2); }
-  .tip-red { background:var(--danger-soft); color:var(--danger); border:1px solid rgba(161,50,40,.15); }
-  .tip-blue { background:var(--info-soft); color:var(--accent2); border:1px solid rgba(53,92,154,.15); }
+  .tip-green { background:var(--accent-soft); color:#059669; border:1px solid rgba(36,87,214,.2); }
+  .tip-red { background:var(--danger-soft); color:var(--danger); border:1px solid rgba(180,35,56,.15); }
+  .tip-blue { background:var(--info-soft); color:var(--accent2); border:1px solid rgba(36,87,214,.15); }
 
   /* MATERIEL GRID */
   .materiel-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
@@ -323,17 +325,17 @@
     padding:24px 22px; max-width:360px; width:100%;
     box-shadow:0 20px 60px rgba(0,0,0,.18);
     transform:scale(.95); transition:transform .25s;
-    border:1.5px solid rgba(161,50,40,.2);
+    border:1.5px solid rgba(180,35,56,.2);
   }
   .modal-overlay.show .modal-box { transform:scale(1); }
   .modal-icon { font-size:2.4rem; text-align:center; margin-bottom:12px; }
   .modal-title { font-size:1rem; font-weight:700; text-align:center; margin-bottom:6px; color:var(--danger); }
   .modal-sub { font-size:.8rem; color:var(--muted); text-align:center; line-height:1.6; margin-bottom:18px; }
   .modal-dose-badge {
-    background:var(--danger-soft); border:1px solid rgba(161,50,40,.2);
+    background:var(--danger-soft); border:1px solid rgba(180,35,56,.2);
     border-radius:12px; padding:12px 16px; margin-bottom:18px; text-align:center;
   }
-  .modal-dose-val { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--danger); }
+  .modal-dose-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.4rem; font-weight:700; color:var(--danger); }
   .modal-dose-label { font-size:.7rem; color:var(--muted); margin-top:3px; }
   .modal-btns { display:flex; flex-direction:column; gap:10px; }
   .modal-btn-confirm {
@@ -352,7 +354,7 @@
 
   /* ── SPLIT DOSE ── */
   .split-dose-card {
-    background:var(--info-soft); border:1.5px solid rgba(53,92,154,.2);
+    background:var(--info-soft); border:1.5px solid rgba(36,87,214,.2);
     border-radius:16px; padding:16px; margin-top:12px; display:none;
   }
   .split-dose-card.show { display:block; animation:fadeIn .3s ease; }
@@ -370,22 +372,22 @@
     font-weight:700; font-size:.82rem; flex-shrink:0;
   }
   .split-draw-info { flex:1; }
-  .split-draw-val { font-family:'Space Mono',monospace; font-size:.95rem; font-weight:700; color:var(--accent2); }
+  .split-draw-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.95rem; font-weight:700; color:var(--accent2); }
   .split-draw-label { font-size:.68rem; color:var(--muted); margin-top:2px; }
 
   /* ── SÉLECTION AUTO SERINGUE ── */
   .syringe-auto-badge {
     display:inline-flex; align-items:center; gap:5px;
-    background:var(--accent-soft); border:1px solid rgba(22,107,90,.25);
+    background:var(--accent-soft); border:1px solid rgba(36,87,214,.25);
     border-radius:100px; padding:3px 10px; font-size:.68rem;
     font-weight:700; color:var(--accent); margin-left:8px;
-    font-family:'Space Mono',monospace;
+    font-family:var(--font-data);font-variant-numeric:tabular-nums;
   }
 
   /* CALC BTN */
   .calc-btn {
     width:100%; padding:13px; border-radius:12px; border:none;
-    background:var(--accent); color:#fff; font-family:inherit;
+    background:var(--accent); color:var(--accent-on); font-family:inherit;
     font-size:.95rem; font-weight:700; cursor:pointer; transition:all .2s;
     margin-top:4px;
   }
@@ -393,7 +395,7 @@
 
   /* SAFETY CARD */
   .safety-card {
-    background:var(--danger-soft); border:1.5px solid rgba(161,50,40,.15);
+    background:var(--danger-soft); border:1.5px solid rgba(180,35,56,.15);
     border-radius:14px; padding:16px; margin-bottom:12px;
   }
   .safety-card h4 { font-size:.86rem; font-weight:700; color:var(--danger); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
@@ -403,46 +405,52 @@
 
   /* DISCLAIMER JURIDIQUE */
   .legal-disclaimer {
-    background:var(--amber-soft); border:1px solid rgba(128,91,0,.2);
+    background:var(--amber-soft); border:1px solid rgba(128,80,0,.2);
     border-radius:12px; padding:12px 16px; margin:12px 0;
     display:flex; gap:10px; align-items:flex-start;
   }
   .legal-disclaimer.compact { padding:8px 12px; margin:8px 0; border-radius:8px; }
   .legal-disclaimer-icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
-  .legal-disclaimer-text { font-size:.72rem; color:#92400E; line-height:1.5; }
-  .legal-disclaimer-text strong { color:#78350F; }
+  .legal-disclaimer-text { font-size:.72rem; color:var(--warning); line-height:1.5; }
+  .legal-disclaimer-text strong { color:var(--warning); }
   .phase-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:100px; font-size:.65rem; font-weight:700; }
-  .phase-established  { background:var(--accent-soft);  color:#065F46; border:1px solid rgba(22,107,90,.2); }
-  .phase-preclinical  { background:var(--info-soft);  color:var(--info); border:1px solid rgba(53,92,154,.2); }
-  .phase-phase1       { background:var(--amber-soft);  color:#78350F; border:1px solid rgba(128,91,0,.2); }
-  .phase-phase2       { background:var(--amber-soft);  color:#7C2D12; border:1px solid rgba(128,91,0,.2); }
-  .phase-phase3       { background:var(--info-soft);  color:#4C1D95; border:1px solid rgba(53,92,154,.2); }
-  .phase-experimental { background:var(--danger-soft);  color:#7F1D1D; border:1px solid rgba(161,50,40,.15); }
+  .phase-established  { background:var(--success-bg); color:var(--success); border:1px solid rgba(36,87,214,.2); }
+  .phase-preclinical  { background:var(--info-soft);  color:var(--info); border:1px solid rgba(36,87,214,.2); }
+  .phase-phase1       { background:var(--warning-bg); color:var(--warning); border:1px solid rgba(128,80,0,.2); }
+  .phase-phase2       { background:var(--warning-bg); color:var(--warning); border:1px solid rgba(128,80,0,.2); }
+  .phase-phase3       { background:var(--status-partial-soft); color:var(--status-partial); border:1px solid rgba(36,87,214,.2); }
+  .phase-experimental { background:var(--error-bg); color:var(--error); border:1px solid rgba(180,35,56,.15); }
 </style>
 </head>
 <body>
 
 <header class="app-topbar">
   <div class="topbar-inner">
-    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner"><img class="brand-symbol" src="/brand/brand-mark.svg" alt="" width="36" height="36"></a>
-    <div class="brand-name">PeptideScanner</div>
-    <div class="page-title-wrap"><h1 class="page-title" data-i18n="calc_title">Calculateur</h1></div>
-    <div id="langToggleBtn"></div>
-    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6 2.5 6.5 2.5 6.5H4s2.5-.5 2.5-6.5M9.5 19a2.8 2.8 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
-    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">J</button>
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
   </div>
 </header>
 <div class="menu-popover" id="avatarMenu" hidden>
   <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
   <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
-  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
+  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
 </div>
 
 <div class="content">
 
+<div class="page-intro"><h1 data-i18n="calc_title">Calculateur</h1><p data-i18n="intro_calc_sub">Vos valeurs, votre calcul</p></div>
+<div class="section-tabs">
+  <a class="section-tab" href="inventaire.html" data-i18n="nav_stock">Stock</a>
+  <a class="section-tab" href="calculateur.html" aria-current="page" data-i18n="calc_title">Calculateur</a>
+</div>
+
+
   <!-- WARNING -->
   <div class="warning-banner">
-    <div class="warning-banner-icon">⚠️</div>
+    
     <div class="warning-banner-text">
       <strong data-i18n="disclaimer_title">Usage éducatif uniquement</strong>
       <span data-i18n="calc_warning_sub">Ce calculateur est un outil d'information. Vérifiez toujours vos calculs avant toute injection. Consultez un professionnel de santé avant tout protocole. PeptideScanner décline toute responsabilité en cas d'erreur de dosage.</span>
@@ -518,24 +526,37 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
         <div style="background:var(--surface);border-radius:10px;padding:12px;border:1px solid var(--border);text-align:center">
           <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Pour 1 mg</div>
-          <div style="font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--accent2)" id="units-per-mg">— unités</div>
+          <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:1.1rem;font-weight:700;color:var(--accent2)" id="units-per-mg">— unités</div>
           <div style="font-size:.65rem;color:var(--muted);margin-top:2px" id="ml-per-mg">— mL</div>
         </div>
         <div style="background:var(--surface);border-radius:10px;padding:12px;border:1px solid var(--border);text-align:center">
           <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">1 unité =</div>
-          <div style="font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--accent3)" id="mcg-per-unit">— mcg</div>
+          <div style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:1.1rem;font-weight:700;color:var(--accent3)" id="mcg-per-unit">— mcg</div>
           <div style="font-size:.65rem;color:var(--muted);margin-top:2px">par unité seringue</div>
         </div>
-      </div>
-      <div style="background:var(--accent-soft);border-radius:10px;padding:10px 12px;font-size:.78rem;color:var(--text);border:1px solid rgba(22,107,90,.15)">
-        <strong style="color:var(--accent)">✓ Durée estimée du flacon :</strong> <span id="vial-duration">—</span>
       </div>
     </div>
 
     <!-- SERINGUE RECONSTITUTION -->
+    <div class="calc-card" id="kit-material-card" style="display:none">
+      <h3 data-i18n="calc_material_title">Aperçu du matériel</h3>
+      <p data-i18n="calc_material_sub">Choisissez votre seringue : le trait indique le niveau exact pour la dose choisie dans le tableau.</p>
+      <div class="form-group">
+        <label class="form-label" data-i18n="calc_material_label">Seringue</label>
+        <select class="form-select" id="kitSyringeSelect" onchange="updateKitPreview()">
+          <option value="30">U-100 · 30 U (0,3 ml) — pas 0,5 U</option>
+          <option value="50" selected>U-100 · 50 U (0,5 ml) — pas 1 U</option>
+          <option value="100">U-100 · 100 U (1 ml) — pas 2 U</option>
+        </select>
+      </div>
+      <div class="equipment-pair"><div id="kitVial"></div><div id="kitSyringe"></div></div>
+      <p class="field-help" id="kitCaption" data-i18n="calc_material_wait">Le niveau apparaît après le choix d'une dose.</p>
+      <div id="kitWarn"></div>
+    </div>
+
     <div class="syringe-section" id="recon-syringe-section" style="display:none">
       <div class="syringe-wrap">
-        <div class="syringe-title">💉 Visualiser la seringue</div>
+        <div class="syringe-title" data-i18n="calc_syringe_view">Visualiser la seringue</div>
         <div class="syringe-sub">Cliquez sur une ligne du tableau pour voir la graduation. Ou glissez le piston.</div>
         <div class="syringe-visual">
           <div class="syringe-svg-wrap">
@@ -564,37 +585,37 @@
                     <rect x="29" y="28" width="28" height="284" rx="5"/>
                   </clipPath>
                 </defs>
-                <rect x="27" y="26" width="32" height="288" rx="7" fill="rgba(53,92,154,.08)"/>
+                <rect x="27" y="26" width="32" height="288" rx="7" fill="rgba(36,87,214,.08)"/>
                 <rect x="29" y="28" width="28" height="284" rx="5" fill="url(#bodyGrad2)" stroke="#a8c8e8" stroke-width="1.2"/>
                 <rect x="31" y="30" width="4" height="280" rx="2" fill="rgba(255,255,255,.55)"/>
                 <rect x="52" y="30" width="2" height="280" rx="1" fill="rgba(255,255,255,.25)"/>
                 <g clip-path="url(#bodyClip2)">
                   <rect id="liquidFill2" x="29" y="28" width="28" height="0" fill="url(#liquidGrad2)"/>
-                  <rect id="liquidSurface2" x="29" y="28" width="28" height="1.5" fill="rgba(22,107,90,.4)" rx="1"/>
+                  <rect id="liquidSurface2" x="29" y="28" width="28" height="1.5" fill="rgba(36,87,214,.4)" rx="1"/>
                 </g>
                 <g fill="none">
                   <line id="g2_0"   x1="29" y1="28"    x2="41" y2="28"    stroke="var(--neutral)" stroke-width="1.1"/>
-                  <text x="27" y="32"    font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Space Mono" font-weight="bold">0</text>
+                  <text x="27" y="32"    font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Inter" font-weight="bold">0</text>
                   <line id="g2_10"  x1="29" y1="56.4"  x2="40" y2="56.4"  stroke="var(--neutral)" stroke-width=".9"/>
-                  <text x="27" y="60"    font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Space Mono">10</text>
+                  <text x="27" y="60"    font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">10</text>
                   <line id="g2_20"  x1="29" y1="84.8"  x2="40" y2="84.8"  stroke="var(--neutral)" stroke-width=".9"/>
-                  <text x="27" y="88.5"  font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Space Mono">20</text>
+                  <text x="27" y="88.5"  font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">20</text>
                   <line id="g2_30"  x1="29" y1="113.2" x2="40" y2="113.2" stroke="var(--neutral)" stroke-width=".9"/>
-                  <text x="27" y="117"   font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Space Mono">30</text>
+                  <text x="27" y="117"   font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">30</text>
                   <line id="g2_40"  x1="29" y1="141.6" x2="40" y2="141.6" stroke="var(--neutral)" stroke-width=".9"/>
-                  <text x="27" y="145.5" font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Space Mono">40</text>
-                  <line id="g2_50"  x1="29" y1="170"   x2="43" y2="170"   stroke="#1e293b" stroke-width="1.3"/>
-                  <text x="27" y="174"   font-size="8"   fill="#1e293b" text-anchor="end" font-family="Space Mono" font-weight="bold">50</text>
+                  <text x="27" y="145.5" font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">40</text>
+                  <line id="g2_50"  x1="29" y1="170"   x2="43" y2="170"   stroke="var(--text)" stroke-width="1.3"/>
+                  <text x="27" y="174"   font-size="8"   fill="var(--text)" text-anchor="end" font-family="Inter" font-weight="bold">50</text>
                   <line id="g2_60"  x1="29" y1="198.4" x2="40" y2="198.4" stroke="var(--neutral)" stroke-width=".9"/>
-                  <text x="27" y="202"   font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Space Mono">60</text>
+                  <text x="27" y="202"   font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">60</text>
                   <line id="g2_70"  x1="29" y1="226.8" x2="40" y2="226.8" stroke="var(--neutral)" stroke-width=".9"/>
-                  <text x="27" y="230.5" font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Space Mono">70</text>
+                  <text x="27" y="230.5" font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">70</text>
                   <line id="g2_80"  x1="29" y1="255.2" x2="40" y2="255.2" stroke="var(--neutral)" stroke-width=".9"/>
-                  <text x="27" y="259"   font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Space Mono">80</text>
+                  <text x="27" y="259"   font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">80</text>
                   <line id="g2_90"  x1="29" y1="283.6" x2="40" y2="283.6" stroke="var(--neutral)" stroke-width=".9"/>
-                  <text x="27" y="287.5" font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Space Mono">90</text>
-                  <line id="g2_100" x1="29" y1="312"   x2="43" y2="312"   stroke="#1e293b" stroke-width="1.1"/>
-                  <text x="27" y="316"   font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Space Mono" font-weight="bold">100</text>
+                  <text x="27" y="287.5" font-size="7"   fill="var(--neutral)" text-anchor="end" font-family="Inter">90</text>
+                  <line id="g2_100" x1="29" y1="312"   x2="43" y2="312"   stroke="var(--text)" stroke-width="1.1"/>
+                  <text x="27" y="316"   font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Inter" font-weight="bold">100</text>
                   <line x1="29" y1="42.2"  x2="36" y2="42.2"  stroke="var(--muted)" stroke-width=".7"/>
                   <line x1="29" y1="70.6"  x2="36" y2="70.6"  stroke="var(--muted)" stroke-width=".7"/>
                   <line x1="29" y1="99"    x2="36" y2="99"    stroke="var(--muted)" stroke-width=".7"/>
@@ -607,10 +628,10 @@
                   <line x1="29" y1="297.8" x2="36" y2="297.8" stroke="var(--muted)" stroke-width=".7"/>
                 </g>
                 <g id="doseArrow2" transform="translate(0,0)" style="transition:transform .4s cubic-bezier(.4,0,.2,1)">
-                  <line x1="57" y1="28" x2="67" y2="28" stroke="var(--danger)" stroke-width="1.6"/>
-                  <polygon points="57,25 57,31 62,28" fill="var(--danger)"/>
-                  <rect x="67" y="19" width="20" height="18" rx="5" fill="var(--danger)"/>
-                  <text id="arrowLabel2" x="77" y="31" font-size="7.5" fill="#fff" font-family="Space Mono" font-weight="bold" text-anchor="middle">0U</text>
+                  <line x1="57" y1="28" x2="67" y2="28" stroke="var(--accent)" stroke-width="1.6"/>
+                  <polygon points="57,25 57,31 62,28" fill="var(--accent)"/>
+                  <rect x="67" y="19" width="20" height="18" rx="5" fill="var(--accent)"/>
+                  <text id="arrowLabel2" x="77" y="31" font-size="7.5" fill="var(--accent-on)" font-family="Inter" font-weight="bold" text-anchor="middle">0U</text>
                 </g>
                 <g id="pistonGroup2" style="transition:transform .4s cubic-bezier(.4,0,.2,1); cursor:ns-resize;">
                   <rect x="27" y="30" width="32" height="5" rx="2.5" fill="#1a4f8a" opacity=".7"/>
@@ -655,7 +676,7 @@
     <!-- TABLEAU DE RÉFÉRENCE -->
     <div class="dose-table-wrap" id="recon-table" style="display:none">
       <div class="dose-table-header">
-        <h3>📊 Tableau de référence rapide</h3>
+        <h3 data-i18n="calc_table_title">Tableau de référence rapide</h3>
         <p id="table-subtitle">Seringue insuline U-100 (1mL = 100 unités)</p>
       </div>
       <table>
@@ -673,7 +694,7 @@
 
     <!-- EXPLICATION SERINGUE -->
     <div class="explainer-card">
-      <h4>💉 Comprendre la seringue insuline U-100</h4>
+      <h4>Comprendre la seringue insuline U-100</h4>
       <p>Une seringue insuline U-100 contient <strong>1mL = 100 unités</strong>. Les graduations vont de 0 à 100. C'est le standard mondial pour les injections SC.</p>
       <div class="formula">
         Unités = Dose souhaitée (mg) ÷ Concentration (mg/mL) × <strong>100</strong>
@@ -707,7 +728,7 @@
           <label class="form-label">Concentration du flacon reconstitué</label>
           <div class="form-row">
             <input class="form-input" id="concInput" type="number" placeholder="5" min="0.01" max="100" step="0.01" oninput="calculateDosage()">
-            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:'Space Mono',monospace;font-size:.88rem;color:var(--muted)">mg / mL</div>
+            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.88rem;color:var(--muted)">mg / mL</div>
           </div>
         </div>
         <div class="form-group">
@@ -725,7 +746,7 @@
       <!-- BLOC IU -->
       <div id="blockIU" style="display:none">
         <div class="explainer-card" style="margin-bottom:14px">
-          <h4>💡 Comment fonctionnent les IU ?</h4>
+          <h4>Comment fonctionnent les IU ?</h4>
           <p>Pour HGH : 1 mg = 3 IU (environ). Pour HCG : 1 flacon = valeur indiquée en IU. Entrez la concentration en IU/mL après reconstitution.</p>
           <div class="formula">Volume (mL) = Dose (IU) ÷ Concentration (IU/mL)</div>
         </div>
@@ -733,14 +754,14 @@
           <label class="form-label">Concentration après reconstitution</label>
           <div class="form-row">
             <input class="form-input" id="concIU" type="number" placeholder="100" min="1" max="10000" step="1" oninput="calculateDosage()">
-            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:'Space Mono',monospace;font-size:.88rem;color:var(--muted)">IU / mL</div>
+            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.88rem;color:var(--muted)">IU / mL</div>
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">Dose souhaitée</label>
           <div class="form-row">
             <input class="form-input" id="doseIU" type="number" placeholder="2" min="0.1" max="10000" step="0.1" oninput="calculateDosage()">
-            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:'Space Mono',monospace;font-size:.88rem;color:var(--muted)">IU</div>
+            <div style="display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);padding:12px;font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.88rem;color:var(--muted)">IU</div>
           </div>
         </div>
       </div>
@@ -760,7 +781,7 @@
 
       <div class="syringe-section">
         <div class="syringe-wrap">
-          <div class="syringe-title">🩺 Seringue insuline — Position exacte</div>
+          <div class="syringe-title">Seringue insuline — Position exacte</div>
           <div class="syringe-sub">Le piston indique exactement où s'arrêter pour votre dose.</div>
 
           <div class="syringe-visual">
@@ -799,7 +820,7 @@
 
                   <!-- ── CORPS ── -->
                   <!-- Ombre externe corps -->
-                  <rect x="27" y="26" width="32" height="288" rx="7" fill="rgba(53,92,154,.08)"/>
+                  <rect x="27" y="26" width="32" height="288" rx="7" fill="rgba(36,87,214,.08)"/>
                   <!-- Corps principal -->
                   <rect x="29" y="28" width="28" height="284" rx="5" fill="url(#bodyGrad)" stroke="#a8c8e8" stroke-width="1.2"/>
                   <!-- Reflet gauche (ligne de lumière) -->
@@ -811,45 +832,45 @@
                   <g clip-path="url(#bodyClip)">
                     <rect id="liquidFill" x="29" y="28" width="28" height="0" fill="url(#liquidGrad)"/>
                     <!-- Ligne de surface liquide -->
-                    <rect id="liquidSurface" x="29" y="28" width="28" height="1.5" fill="rgba(22,107,90,.4)" rx="1"/>
+                    <rect id="liquidSurface" x="29" y="28" width="28" height="1.5" fill="rgba(36,87,214,.4)" rx="1"/>
                   </g>
 
                   <!-- ── GRADUATIONS ── -->
                   <g fill="none">
                     <!-- Graduation 0 -->
                     <line id="grad0"   x1="29" y1="28"  x2="41" y2="28"  stroke="var(--neutral)" stroke-width="1.1"/>
-                    <text x="27" y="32"  font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Space Mono" font-weight="bold">0</text>
+                    <text x="27" y="32"  font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Inter" font-weight="bold">0</text>
 
                     <!-- 10 -->
                     <line id="grad10"  x1="29" y1="56.4" x2="40" y2="56.4" stroke="var(--neutral)" stroke-width=".9"/>
-                    <text x="27" y="60"  font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Space Mono">10</text>
+                    <text x="27" y="60"  font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">10</text>
                     <!-- 20 -->
                     <line id="grad20"  x1="29" y1="84.8" x2="40" y2="84.8" stroke="var(--neutral)" stroke-width=".9"/>
-                    <text x="27" y="88.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Space Mono">20</text>
+                    <text x="27" y="88.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">20</text>
                     <!-- 30 -->
                     <line id="grad30"  x1="29" y1="113.2" x2="40" y2="113.2" stroke="var(--neutral)" stroke-width=".9"/>
-                    <text x="27" y="117" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Space Mono">30</text>
+                    <text x="27" y="117" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">30</text>
                     <!-- 40 -->
                     <line id="grad40"  x1="29" y1="141.6" x2="40" y2="141.6" stroke="var(--neutral)" stroke-width=".9"/>
-                    <text x="27" y="145.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Space Mono">40</text>
+                    <text x="27" y="145.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">40</text>
                     <!-- 50 — renforcé -->
-                    <line id="grad50"  x1="29" y1="170" x2="43" y2="170"   stroke="#1e293b" stroke-width="1.3"/>
-                    <text x="27" y="174" font-size="8" fill="#1e293b" text-anchor="end" font-family="Space Mono" font-weight="bold">50</text>
+                    <line id="grad50"  x1="29" y1="170" x2="43" y2="170"   stroke="var(--text)" stroke-width="1.3"/>
+                    <text x="27" y="174" font-size="8" fill="var(--text)" text-anchor="end" font-family="Inter" font-weight="bold">50</text>
                     <!-- 60 -->
                     <line id="grad60"  x1="29" y1="198.4" x2="40" y2="198.4" stroke="var(--neutral)" stroke-width=".9"/>
-                    <text x="27" y="202" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Space Mono">60</text>
+                    <text x="27" y="202" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">60</text>
                     <!-- 70 -->
                     <line id="grad70"  x1="29" y1="226.8" x2="40" y2="226.8" stroke="var(--neutral)" stroke-width=".9"/>
-                    <text x="27" y="230.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Space Mono">70</text>
+                    <text x="27" y="230.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">70</text>
                     <!-- 80 -->
                     <line id="grad80"  x1="29" y1="255.2" x2="40" y2="255.2" stroke="var(--neutral)" stroke-width=".9"/>
-                    <text x="27" y="259" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Space Mono">80</text>
+                    <text x="27" y="259" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">80</text>
                     <!-- 90 -->
                     <line id="grad90"  x1="29" y1="283.6" x2="40" y2="283.6" stroke="var(--neutral)" stroke-width=".9"/>
-                    <text x="27" y="287.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Space Mono">90</text>
+                    <text x="27" y="287.5" font-size="7" fill="var(--neutral)" text-anchor="end" font-family="Inter">90</text>
                     <!-- 100 -->
-                    <line id="grad100" x1="29" y1="312" x2="43" y2="312"   stroke="#1e293b" stroke-width="1.1"/>
-                    <text x="27" y="316" font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Space Mono" font-weight="bold">100</text>
+                    <line id="grad100" x1="29" y1="312" x2="43" y2="312"   stroke="var(--text)" stroke-width="1.1"/>
+                    <text x="27" y="316" font-size="7.5" fill="var(--neutral)" text-anchor="end" font-family="Inter" font-weight="bold">100</text>
 
                     <!-- Sub-graduations 5U -->
                     <line x1="29" y1="42.2"  x2="36" y2="42.2"  stroke="var(--muted)" stroke-width=".7"/>
@@ -867,12 +888,12 @@
                   <!-- ── INDICATEUR DOSE (droite) ── -->
                   <g id="doseArrow" transform="translate(0,0)" style="transition:transform .4s cubic-bezier(.4,0,.2,1)">
                     <!-- Ligne -->
-                    <line x1="57" y1="28" x2="67" y2="28" stroke="var(--danger)" stroke-width="1.6"/>
+                    <line x1="57" y1="28" x2="67" y2="28" stroke="var(--accent)" stroke-width="1.6"/>
                     <!-- Triangle -->
-                    <polygon points="57,25 57,31 62,28" fill="var(--danger)"/>
+                    <polygon points="57,25 57,31 62,28" fill="var(--accent)"/>
                     <!-- Badge -->
-                    <rect x="67" y="19" width="20" height="18" rx="5" fill="var(--danger)"/>
-                    <text id="arrowLabel" x="77" y="31" font-size="7.5" fill="#fff" font-family="Space Mono" font-weight="bold" text-anchor="middle">0U</text>
+                    <rect x="67" y="19" width="20" height="18" rx="5" fill="var(--accent)"/>
+                    <text id="arrowLabel" x="77" y="31" font-size="7.5" fill="var(--accent-on)" font-family="Inter" font-weight="bold" text-anchor="middle">0U</text>
                   </g>
 
                   <!-- ── PISTON ── -->
@@ -932,13 +953,13 @@
           </div>
 
           <!-- INSTRUCTION CLAIRE -->
-          <div style="background:var(--accent-soft);border:1px solid rgba(22,107,90,.18);border-radius:12px;padding:12px 14px;font-size:.8rem;line-height:1.6;color:var(--text)" id="syringe-instruction">
+          <div style="background:var(--accent-soft);border:1px solid rgba(36,87,214,.18);border-radius:12px;padding:12px 14px;font-size:.8rem;line-height:1.6;color:var(--text)" id="syringe-instruction">
             Remplissez les champs ci-dessus pour obtenir les instructions précises.
           </div>
 
           <!-- SPLIT DOSE -->
           <div class="split-dose-card" id="splitDoseCard">
-            <div class="split-dose-title">✂️ Diviser la dose en plusieurs tirages</div>
+            <div class="split-dose-title">Diviser la dose en plusieurs tirages</div>
             <div id="splitDoseDraws"></div>
           </div>
         </div>
@@ -946,14 +967,14 @@
 
       <!-- VÉRIFICATION -->
       <div class="explainer-card" id="dosage-explainer" style="display:none">
-        <h4>🔢 Calcul détaillé</h4>
+        <h4>Calcul détaillé</h4>
         <div class="formula" id="dosage-formula-text">—</div>
       </div>
     </div>
 
     <!-- SAFETY -->
     <div class="safety-card">
-      <h4>🛑 Règles de sécurité absolues</h4>
+      <h4>Règles de sécurité</h4>
       <div class="safety-item"><div class="safety-dot"></div><span>Vérifiez TOUJOURS votre calcul deux fois avant d'injecter</span></div>
       <div class="safety-item"><div class="safety-dot"></div><span>Si le résultat vous semble anormal, ne pas injecter — recalculez</span></div>
       <div class="safety-item"><div class="safety-dot"></div><span>Utilisez toujours une aiguille neuve à chaque injection</span></div>
@@ -1105,22 +1126,12 @@
 </div><!-- /content -->
 
 <nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
-  <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
-  <a class="nav-item" href="cure.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
-  <a class="nav-item" href="poids.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18V6m0 12h16M7 14l4-4 3 2 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_weight">Poids</span></a>
-  <a class="nav-item" href="inventaire.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4H8zM7 7h10l2 4v9H5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_stock">Stock</span></a>
-  <button class="nav-item is-active" type="button" data-more-open><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg><span class="nav-label" data-i18n="nav_more">Plus</span></button>
+  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item is-active" href="inventaire.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
+  <a class="nav-item" href="poids.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
+  <a class="nav-item" href="peptide-database.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
 </div></nav>
-<div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
-  <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
-  <div class="drawer-grid">
-    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>48 peptides</span></a>
-    <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
-    <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
-    <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
-    <a class="drawer-link" href="cgu.html"><strong data-i18n="nav_legal">Pages légales</strong><span>CGU · Confidentialité</span></a>
-  </div>
-</aside></div>
 <!-- ── MODALE DOSE HAUTE ── -->
 <div class="modal-overlay" id="highDoseModal">
   <div class="modal-box">
@@ -1139,6 +1150,7 @@
 </div>
 
 <script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
 <script src="/ps-app.js"></script>
 <script>
 // ── MODULE SWITCH ─────────────────────────────────────────────
@@ -1185,11 +1197,6 @@ function calculateReconstitution() {
   document.getElementById('ml-per-mg').textContent = mlPerMg.toFixed(3) + ' mL';
   document.getElementById('mcg-per-unit').textContent = mcgPerUnit.toFixed(1) + ' mcg';
 
-  // Durée estimée (dose moyenne 250mcg/j pour peptides SC)
-  const totalMcg = mgValue * 1000;
-  const avgDailyMcg = 500; // 2 injections de 250mcg
-  const days = Math.floor(totalMcg / avgDailyMcg);
-  document.getElementById('vial-duration').textContent = `${t('calc_approx')} ${days} ${t('days')} ${t('calc_at_500')}`;
 
   document.getElementById('recon-result').classList.add('show');
 
@@ -1276,7 +1283,37 @@ function selectReconDose(units, ml, doseLabel) {
   // Highlight ligne tableau
   document.querySelectorAll('#dose-table-body tr').forEach(tr => tr.style.background = '');
   event && event.currentTarget && (event.currentTarget.style.background = 'var(--accent-soft)');
+
+  // Aperçu du matériel (kit Clarté)
+  _kitSel = { units: units, ml: parseFloat(ml) };
+  const _kc = document.getElementById('kit-material-card');
+  if (_kc) { _kc.style.display = 'block'; renderKitPreview(); }
 }
+
+// ── Aperçu du matériel (kit Clarté) ───────────────────────────
+let _kitSel = { units:null, ml:null, label:'' };
+function renderKitPreview() {
+  const sel = document.getElementById('kitSyringeSelect');
+  if (!sel) return;
+  const cap = Number(sel.value);
+  document.getElementById('kitVial').innerHTML = PS_asset('vial-half');
+  document.getElementById('kitSyringe').innerHTML = PS_asset('syringe-' + cap);
+  const warn = document.getElementById('kitWarn');
+  const capEl = document.getElementById('kitCaption');
+  if (_kitSel.units == null) { capEl.textContent = t('calc_material_wait'); warn.innerHTML = ''; return; }
+  if (_kitSel.units > cap) {
+    const alt = [30, 50, 100].find(c => c >= _kitSel.units);
+    warn.innerHTML = '<div class="notice warning" style="margin-top:10px">' + t('calc_material_overflow') +
+      (alt ? ' ' + t('calc_material_take') + ' ' + alt + ' U.' : '') + '</div>';
+    capEl.textContent = '';
+  } else {
+    warn.innerHTML = '';
+    PS_updateLevel(document.querySelector('#kitSyringe svg'), 'syringe', _kitSel.ml, _kitSel.units,
+      _kitSel.ml.toFixed(3).replace('.', ',') + ' ml · ' + _kitSel.units.toFixed(1).replace('.', ',') + ' U');
+    capEl.textContent = t('calc_material_caption');
+  }
+}
+function updateKitPreview() { renderKitPreview(); }
 
 // Drag seringue reconstitution
 (function initReconDrag() {
@@ -1765,41 +1802,7 @@ PS_applyI18n();
 PS_renderLangSwitcher();
 
 // ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
-const _drawer = document.getElementById('moreDrawer');
-function setDrawer(open) {
-  if (!_drawer) return;
-  _drawer.classList.toggle('is-open', open);
-  _drawer.setAttribute('aria-hidden', String(!open));
-  document.body.style.overflow = open ? 'hidden' : '';
-}
-document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
-document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
-if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
-
-const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
-if (_avaBtn && _avaMenu) {
-  _avaBtn.addEventListener('click', () => {
-    const open = _avaMenu.hidden;
-    _avaMenu.hidden = !open;
-    _avaBtn.setAttribute('aria-expanded', String(open));
-  });
-  document.addEventListener('click', e => {
-    if (!_avaMenu.hidden && !_avaMenu.contains(e.target) && !_avaBtn.contains(e.target)) {
-      _avaMenu.hidden = true; _avaBtn.setAttribute('aria-expanded', 'false');
-    }
-  });
-}
-const _themeBtn = document.getElementById('themeToggle');
-if (_themeBtn) _themeBtn.addEventListener('click', () => {
-  const root = document.documentElement;
-  const dark = root.dataset.theme === 'dark' ||
-               (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
-  root.dataset.theme = dark ? 'light' : 'dark';
-  try { localStorage.setItem('ps_theme', root.dataset.theme); } catch(e) {}
-  if (_avaMenu) _avaMenu.hidden = true;
-});
-try { const _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch(e) {}
+PS_initShell();
 
 async function psLogout() {
   try { await sb.auth.signOut(); } catch(e) {}

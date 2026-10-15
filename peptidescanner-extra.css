@@ -5,16 +5,7 @@
    Corrected topbar: 390px keeps 5 visible columns and 44px touch targets.
    Mobile uses a single 44px language toggle; tablet/desktop keep the FR/EN segmented control.
    -------------------------------------------------------------------------- */
-.brand-link {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-control);
-  text-decoration: none;
-}
-.brand-link:hover { background: var(--surface-muted); }
-.brand-symbol { width: 36px; height: 36px; }
+/* .brand-link : défini par peptidescanner.css (design Clarté, logo + nom). */
 .mobile-lang-btn {
   width: 44px;
   height: 44px;

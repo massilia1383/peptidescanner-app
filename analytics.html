@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script src="/lang.js"></script>
+<script src="/assets/assets-bundle.js"></script>
 <script src="/ps-app.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>PeptideScanner — Analyse</title>
@@ -10,7 +11,9 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#FBF7F1">
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<script>try{var _pst=localStorage.getItem('ps_theme');if(_pst)document.documentElement.dataset.theme=_pst}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PeptideScanner">
@@ -29,7 +32,7 @@
     --green:    var(--accent);
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:120px; }
+  body { font-family:var(--font-ui); background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:120px; }
   .period-bar { display:flex; align-items:center; justify-content:space-between; gap:12px;
                  width:100%; max-width:100%; margin:0 auto; padding:14px 20px 0; }
   .period-label { font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
@@ -39,20 +42,20 @@
   .content { padding:16px 20px 0; width:100%; max-width:100%; margin:0 auto; }
   @media (min-width: 768px)  { .content { max-width: 720px; } }
   @media (min-width: 1024px) { .content { max-width: var(--content-desktop, 1100px); } }
-  .scan-score-card { background:linear-gradient(135deg, var(--accent-soft) 0%, var(--info-soft) 100%); border:1.5px solid rgba(22,107,90,.2); border-radius:22px; padding:24px 20px; margin-bottom:16px; position:relative; overflow:hidden; box-shadow:0 4px 20px rgba(22,107,90,.06); }
+  .scan-score-card { background:linear-gradient(135deg, var(--accent-soft) 0%, var(--info-soft) 100%); border:1.5px solid rgba(36,87,214,.2); border-radius:22px; padding:24px 20px; margin-bottom:16px; position:relative; overflow:hidden; box-shadow:0 4px 20px rgba(36,87,214,.06); }
   .score-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
-  .score-label { font-size:.68rem; color:var(--accent); text-transform:uppercase; letter-spacing:2px; font-family:'Space Mono',monospace; margin-bottom:4px; }
+  .score-label { font-size:.68rem; color:var(--accent); text-transform:uppercase; letter-spacing:2px; font-family:var(--font-data);font-variant-numeric:tabular-nums; margin-bottom:4px; }
   .score-title { font-size:1rem; font-weight:700; }
   .score-ring-wrap { position:relative; width:80px; height:80px; flex-shrink:0; }
   .score-ring-wrap svg { transform:rotate(-90deg); }
   .score-ring-bg { fill:none; stroke:var(--border); stroke-width:6; }
   .score-ring-fill { fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset .8s ease; }
-  .score-number { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Space Mono',monospace; }
+  .score-number { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
   .score-num { font-size:1.4rem; font-weight:700; line-height:1; }
   .score-max { font-size:.6rem; color:var(--muted); }
   .score-breakdown { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px; }
-  .score-item { background:rgba(255,255,255,.7); border:1px solid rgba(22,107,90,.12); border-radius:10px; padding:10px 8px; text-align:center; }
-  .score-item-val { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; margin-bottom:3px; }
+  .score-item { background:rgba(255,255,255,.7); border:1px solid rgba(36,87,214,.12); border-radius:10px; padding:10px 8px; text-align:center; }
+  .score-item-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1rem; font-weight:700; margin-bottom:3px; }
   .score-item-label { font-size:.62rem; color:var(--muted); }
   .insights-wrap { margin-bottom:16px; }
   .insight-card { background:var(--surface); border-radius:16px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:flex-start; gap:12px; border:1px solid var(--border); }
@@ -64,7 +67,7 @@
   .insight-body { flex:1; }
   .insight-title { font-size:.86rem; font-weight:700; margin-bottom:3px; }
   .insight-text { font-size:.76rem; color:var(--muted); line-height:1.5; }
-  .insight-badge { display:inline-block; margin-top:6px; padding:2px 8px; border-radius:100px; font-size:.65rem; font-weight:700; font-family:'Space Mono',monospace; }
+  .insight-badge { display:inline-block; margin-top:6px; padding:2px 8px; border-radius:100px; font-size:.65rem; font-weight:700; font-family:var(--font-data);font-variant-numeric:tabular-nums; }
   .badge-green { background:var(--accent-soft); color:var(--green); }
   .badge-amber { background:var(--amber-soft); color:var(--accent3); }
   .badge-red { background:var(--danger-soft); color:var(--danger); }
@@ -78,7 +81,7 @@
   .chart-wrap { position:relative; height:160px; }
   .chart-wrap svg { width:100%; height:100%; overflow:visible; }
   .chart-labels { display:flex; justify-content:space-between; margin-top:6px; }
-  .chart-labels span { font-size:.62rem; color:var(--muted); font-family:'Space Mono',monospace; }
+  .chart-labels span { font-size:.62rem; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
   .heatmap-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:16px; }
   .heatmap-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
   .heatmap-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
@@ -91,12 +94,12 @@
   .heatmap-legend { display:flex; align-items:center; gap:6px; margin-top:10px; font-size:.65rem; color:var(--muted); }
   .heatmap-legend-dots { display:flex; gap:3px; }
   .heatmap-legend-dot { width:10px; height:10px; border-radius:2px; }
-  .projection-card { background:linear-gradient(135deg, var(--info-soft), var(--accent-soft)); border:1px solid rgba(53,92,154,.18); border-radius:18px; padding:18px; margin-bottom:16px; }
+  .projection-card { background:linear-gradient(135deg, var(--info-soft), var(--accent-soft)); border:1px solid rgba(36,87,214,.18); border-radius:18px; padding:18px; margin-bottom:16px; }
   .projection-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; }
   .proj-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
   .proj-row:last-child { border-bottom:none; }
   .proj-label { font-size:.82rem; color:var(--muted); }
-  .proj-val { font-family:'Space Mono',monospace; font-size:.88rem; font-weight:700; }
+  .proj-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:.88rem; font-weight:700; }
   .proj-val.green { color:var(--accent); }
   .proj-val.amber { color:var(--accent3); }
   .proj-val.blue { color:var(--accent2); }
@@ -106,12 +109,12 @@
   .weekly-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; }
   .weekly-bar-bg { flex:1; width:100%; background:var(--surface2); border-radius:4px; position:relative; overflow:hidden; }
   .weekly-bar-fill { position:absolute; bottom:0; left:0; right:0; border-radius:4px; transition:height .5s ease; }
-  .weekly-bar-label { font-size:.6rem; color:var(--muted); font-family:'Space Mono',monospace; }
+  .weekly-bar-label { font-size:.6rem; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; }
   .weekly-bar-pct { font-size:.6rem; color:var(--muted); }
   .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
   .stat-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; }
   .stat-box-label { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; }
-  .stat-box-val { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; line-height:1; margin-bottom:4px; }
+  .stat-box-val { font-family:var(--font-data);font-variant-numeric:tabular-nums; font-size:1.4rem; font-weight:700; line-height:1; margin-bottom:4px; }
   .stat-box-sub { font-size:.7rem; color:var(--muted); }
   .stat-box-trend { font-size:.72rem; margin-top:4px; font-weight:600; }
   .trend-up { color:var(--green); }
@@ -120,29 +123,28 @@
   .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
   .empty-state span { font-size:2.5rem; display:block; margin-bottom:12px; }
   .empty-state p { font-size:.88rem; line-height:1.6; margin-bottom:20px; }
-  .empty-btn { background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:10px; font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; }
+  .empty-btn { background:var(--accent); color:var(--accent-on); border:none; padding:12px 24px; border-radius:10px; font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; }
   .loading-state { text-align:center; padding:60px 20px; color:var(--muted); font-size:.88rem; }
-  .section-label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:10px; margin-top:4px; }
+  .section-label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-family:var(--font-data);font-variant-numeric:tabular-nums; margin-bottom:10px; margin-top:4px; }
   .legal-disclaimer { display:flex; align-items:flex-start; gap:8px; background:#FEF3C7; border:1px solid var(--amber); border-radius:10px; padding:10px 14px; margin:12px 20px; }
-  .legal-disclaimer-text { font-size:.72rem; color:#92400E; line-height:1.5; }
+  .legal-disclaimer-text { font-size:.72rem; color:var(--warning); line-height:1.5; }
 </style>
 </head>
 <body>
 
 <header class="app-topbar">
   <div class="topbar-inner">
-    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner"><img class="brand-symbol" src="/brand/brand-mark.svg" alt="" width="36" height="36"></a>
-    <div class="brand-name">PeptideScanner</div>
-    <div class="page-title-wrap"><h1 class="page-title" data-i18n="analytics_title">Analyse</h1></div>
-    <div id="langToggleBtn"></div>
-    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6 2.5 6.5 2.5 6.5H4s2.5-.5 2.5-6.5M9.5 19a2.8 2.8 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
-    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">J</button>
+    <a class="brand-link" href="dashboard.html" aria-label="PeptideScanner — Accueil"><span class="brand-logo" data-ps-logo></span><span class="brand-name">PeptideScanner</span></a>
+    <button class="icon-btn notification-btn" type="button" onclick="window.location='alertes.html'" aria-label="Alertes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg><span class="notification-badge" id="notifBadge" hidden></span></button>
+    <button class="avatar-btn" type="button" id="avatarButton" aria-label="Menu du compte" aria-expanded="false">·</button>
   </div>
 </header>
 <div class="menu-popover" id="avatarMenu" hidden>
   <a class="menu-item" href="profil.html" data-i18n="nav_profile">Profil</a>
+  <div class="menu-item menu-item-static"><span data-i18n="profil_lang">Langue</span><div id="langToggleBtn"></div></div>
   <button class="menu-item" type="button" id="themeToggle" data-i18n="nav_theme">Mode sombre</button>
-  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Deconnexion</button>
+  <a class="menu-item" href="cgu.html" data-i18n="nav_legal">Pages légales</a>
+  <button class="menu-item danger" type="button" onclick="psLogout()" data-i18n="profil_logout">Déconnexion</button>
 </div>
 
 <div class="period-bar">
@@ -154,30 +156,27 @@
     <option value="0" data-i18n="analytics_all">Tout</option>
   </select>
 </div>
+<div class="content" style="padding-bottom:0">
+<div class="page-intro"><h1 data-i18n="analytics_title">Analyse</h1><p data-i18n="intro_stats_sub">Comprendre votre historique</p></div>
+<div class="section-tabs">
+  <a class="section-tab" href="poids.html" data-i18n="nav_weight">Poids</a>
+  <a class="section-tab" href="analytics.html" aria-current="page" data-i18n="analytics_title">Analyse</a>
+</div>
+</div>
 <div class="content" id="mainContent">
   <div class="loading-state">⏳ Chargement…</div>
 </div>
 
 <nav class="bottom-nav" aria-label="Navigation principale"><div class="bottom-nav-inner">
-  <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
-  <a class="nav-item" href="cure.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
-  <a class="nav-item" href="poids.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18V6m0 12h16M7 14l4-4 3 2 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_weight">Poids</span></a>
-  <a class="nav-item" href="inventaire.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4H8zM7 7h10l2 4v9H5v-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="nav-label" data-i18n="nav_stock">Stock</span></a>
-  <button class="nav-item is-active" type="button" data-more-open><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg><span class="nav-label" data-i18n="nav_more">Plus</span></button>
+  <a class="nav-item" href="dashboard.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="nav-label" data-i18n="nav_home">Accueil</span></a>
+  <a class="nav-item" href="cure.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg><span class="nav-label" data-i18n="nav_cure">Cure</span></a>
+  <a class="nav-item" href="inventaire.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><span class="nav-label" data-i18n="nav_materiel">Matériel</span></a>
+  <a class="nav-item is-active" href="poids.html" aria-current="page"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg><span class="nav-label" data-i18n="nav_suivi">Suivi</span></a>
+  <a class="nav-item" href="peptide-database.html"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg><span class="nav-label" data-i18n="nav_savoir">Savoir</span></a>
 </div></nav>
-<div class="drawer-backdrop" id="moreDrawer" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
-  <div class="drawer-header"><h2 class="drawer-title" id="moreTitle" data-i18n="nav_more">Plus</h2><button class="icon-btn" type="button" data-more-close aria-label="Fermer">&times;</button></div>
-  <div class="drawer-grid">
-    <a class="drawer-link" href="peptide-database.html"><strong data-i18n="nav_biblio">Biblio</strong><span>48 peptides</span></a>
-    <a class="drawer-link" href="calculateur.html"><strong data-i18n="nav_calc">Calcul</strong><span>Dose</span></a>
-    <a class="drawer-link" href="analytics.html"><strong data-i18n="nav_analyse">Analyse</strong><span>Tendances</span></a>
-    <a class="drawer-link" href="profil.html"><strong data-i18n="nav_profile">Profil</strong><span>Compte</span></a>
-    <a class="drawer-link" href="cgu.html"><strong data-i18n="nav_legal">Pages légales</strong><span>CGU · Confidentialité</span></a>
-  </div>
-</aside></div>
 <div style="padding:0 0 8px">
   <div class="legal-disclaimer">
-    <span>⚠️</span>
+    <span style="display:flex;justify-content:center;color:var(--warning)" data-ps-i="exclamation-circle"></span>
     <div class="legal-disclaimer-text">
       <strong data-i18n="disclaimer_title">Usage éducatif uniquement</strong> — <span data-i18n="disclaimer_short">Peptides de recherche non approuvés à usage humain. Consultez un professionnel de santé.</span>
     </div>
@@ -269,7 +268,7 @@ function computeCorrelations(data) {
         badge: { text: `+${compliancePct}%`, cls:'badge-green' }
       });
     } else if (compliancePct >= 70) {
-      insights.push({ type:'warning', icon:'⚠️',
+      insights.push({ type:'warning', icon:PS_icon('exclamation-circle'),
         title: t('analytics_compliance_good') + ` — ${compliancePct}%`,
         text: `${totalExpected - done} ${t('analytics_missed_inj')}`,
         badge: { text: compliancePct+'%', cls:'badge-amber' }
@@ -291,7 +290,7 @@ function computeCorrelations(data) {
     const weekendRate = weekendDays > 0 ? weekendLogs.length / (weekendDays * freq) : 1;
     const weekdayRate = weekdayDays > 0 ? weekdayLogs.length / (weekdayDays * freq) : 1;
     if (weekendRate < weekdayRate * 0.7 && weekendDays >= 2) {
-      insights.push({ type:'warning', icon:'📅',
+      insights.push({ type:'warning', icon:PS_icon('calendar-days'),
         title: t('analytics_weekend_drop'),
         text: t('analytics_weekend_text').replace('{pct}', Math.round((1-weekendRate/weekdayRate)*100)),
         badge: { text: t('analytics_weekend')+' -'+Math.round((1-weekendRate/weekdayRate)*100)+'%', cls:'badge-amber' }
@@ -349,7 +348,7 @@ function computeCorrelations(data) {
       });
     } else {
       regularityScore = 90;
-      insights.push({ type:'positive', icon:'✅',
+      insights.push({ type:'positive', icon:PS_icon('check-circle'),
         title: t('analytics_regular_weighing'),
         text: `${t('analytics_avg_gap')} ${avgGap.toFixed(1)} ${t('days')}.`,
         badge: { text: t('analytics_regular'), cls:'badge-green' }
@@ -382,7 +381,7 @@ function render() {
 
   if (data.weights.length === 0 && !data.activeCure) {
     c.innerHTML = `<div class="empty-state">
-      <span>📊</span>
+      <span style="display:flex;justify-content:center;color:var(--accent)">${PS_icon('chart-bar')}</span>
       <p>${t('analytics_empty_text')}</p>
       <button class="empty-btn" onclick="window.location.href='cure.html'">${t('analytics_start_cure')}</button>
     </div>`;
@@ -495,7 +494,7 @@ function renderCorrelationChart(data, locale) {
     const cureIdx = weights.findIndex(w => new Date(w.date) >= cureStart);
     if (cureIdx > 0 && cureIdx < weights.length) {
       const cx = pts[cureIdx].x;
-      cureStartLine = `<line x1="${cx}" y1="${PT}" x2="${cx}" y2="${H-PB}" stroke="rgba(53,92,154,.4)" stroke-width="1.5" stroke-dasharray="3,3"/>`;
+      cureStartLine = `<line x1="${cx}" y1="${PT}" x2="${cx}" y2="${H-PB}" stroke="rgba(36,87,214,.4)" stroke-width="1.5" stroke-dasharray="3,3"/>`;
     }
   }
   const step = Math.max(1, Math.floor(weights.length/4));
@@ -519,9 +518,9 @@ function renderCorrelationChart(data, locale) {
           <line x1="${PL}" y1="${PT}" x2="${W-PR}" y2="${PT}" stroke="var(--border)" stroke-width="1"/>
           <line x1="${PL}" y1="${(H-PB+PT)/2}" x2="${W-PR}" y2="${(H-PB+PT)/2}" stroke="var(--border)" stroke-width="1"/>
           <line x1="${PL}" y1="${H-PB}" x2="${W-PR}" y2="${H-PB}" stroke="var(--border)" stroke-width="1"/>
-          <text x="${PL-3}" y="${PT+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Space Mono">${mx.toFixed(1)}</text>
-          <text x="${PL-3}" y="${(H-PB+PT)/2+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Space Mono">${((mx+mn)/2).toFixed(1)}</text>
-          <text x="${PL-3}" y="${H-PB+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Space Mono">${mn.toFixed(1)}</text>
+          <text x="${PL-3}" y="${PT+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Inter">${mx.toFixed(1)}</text>
+          <text x="${PL-3}" y="${(H-PB+PT)/2+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Inter">${((mx+mn)/2).toFixed(1)}</text>
+          <text x="${PL-3}" y="${H-PB+4}" fill="var(--muted)" font-size="8" text-anchor="end" font-family="Inter">${mn.toFixed(1)}</text>
           <path d="${area}" fill="url(#cGrad)"/>
           <line x1="${pts[0].x}" y1="${intercept}" x2="${pts[n-1].x}" y2="${slope*(n-1)+intercept}" stroke="${trendColor}" stroke-width="1.5" stroke-dasharray="4,3" opacity=".6"/>
           ${cureStartLine}
@@ -642,41 +641,8 @@ async function init() {
 init().catch(console.error);
 
 // ── OSSATURE : tiroir Plus, menu avatar, mode sombre ───────────
-const _drawer = document.getElementById('moreDrawer');
-function setDrawer(open) {
-  if (!_drawer) return;
-  _drawer.classList.toggle('is-open', open);
-  _drawer.setAttribute('aria-hidden', String(!open));
-  document.body.style.overflow = open ? 'hidden' : '';
-}
-document.querySelectorAll('[data-more-open]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
-document.querySelectorAll('[data-more-close]').forEach(b => b.addEventListener('click', () => setDrawer(false)));
-if (_drawer) _drawer.addEventListener('click', e => { if (e.target === _drawer) setDrawer(false); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
-
-const _avaBtn = document.getElementById('avatarButton'), _avaMenu = document.getElementById('avatarMenu');
-if (_avaBtn && _avaMenu) {
-  _avaBtn.addEventListener('click', () => {
-    const open = _avaMenu.hidden;
-    _avaMenu.hidden = !open;
-    _avaBtn.setAttribute('aria-expanded', String(open));
-  });
-  document.addEventListener('click', e => {
-    if (!_avaMenu.hidden && !_avaMenu.contains(e.target) && !_avaBtn.contains(e.target)) {
-      _avaMenu.hidden = true; _avaBtn.setAttribute('aria-expanded', 'false');
-    }
-  });
-}
-const _themeBtn = document.getElementById('themeToggle');
-if (_themeBtn) _themeBtn.addEventListener('click', () => {
-  const root = document.documentElement;
-  const dark = root.dataset.theme === 'dark' ||
-               (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
-  root.dataset.theme = dark ? 'light' : 'dark';
-  try { localStorage.setItem('ps_theme', root.dataset.theme); } catch(e) {}
-  if (_avaMenu) _avaMenu.hidden = true;
-});
-try { const _t = localStorage.getItem('ps_theme'); if (_t) document.documentElement.dataset.theme = _t; } catch(e) {}
+PS_initShell();
+document.querySelectorAll('[data-ps-i]').forEach(el=>{el.innerHTML=PS_icon(el.dataset.psI);});
 
 async function psLogout() {
   try { await sb.auth.signOut(); } catch(e) {}

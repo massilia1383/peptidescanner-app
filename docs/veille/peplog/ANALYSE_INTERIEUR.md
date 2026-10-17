@@ -1,6 +1,6 @@
 # PepLog — analyse de l'intérieur de l'appli (18/10/2026)
 
-54 captures de James (18/10, 01:00-01:10), PepLog 1.4.2 avec Pro actif. Index : `interieur/00_INDEX.md`.
+69 captures de James (18/10, 01:00-01:10, puis 01:38-01:47), PepLog 1.4.2 avec Pro actif. Index : `interieur/00_INDEX.md`.
 Comparaison avec PeptideScanner beta `0774f70` (lecture du code le 18/10).
 Le tunnel est traité à part (`ANALYSE.md`) et sera fait dans son propre lot.
 
@@ -24,6 +24,9 @@ Le tunnel est traité à part (`ANALYSE.md`) et sera fait dans son propre lot.
   gros bouton **Log dose**, ligne « 0 paused · 2 doses logged this month ».
 - **At a glance** : Progress photos (prendre / ouvrir la photothèque), Last weigh-in (81,6 kg, « ▲ 0 kg 2 days ago »,
   mini-courbe), Hydration (0 of 64,2 oz, « tap to log »).
+- **Hydratation** (captures 65-69) : un appui sur la tuile ouvre une feuille avec anneau, boutons +250 / +500 mL,
+  saisie libre, liste des prises effaçables ; à l'objectif atteint : **confettis et « Congrats »**. L'objectif saisi
+  en oz reste stocké en oz : affiché « 1899 mL » après bascule d'unité (bug).
 - **Your peptides** : une ligne par peptide ajouté, barre de niveau du flacon, bouton **Mix vial** (pas de flacon) ou
   **+ Log** (flacon prêt). « Add Peptide » en pointillés.
 - **Today** : les doses du jour avec heure et coche, lien History.
@@ -86,7 +89,13 @@ Le tunnel est traité à part (`ANALYSE.md`) et sera fait dans son propre lot.
 - **PepLog Pro** : « Pro is active », Restore Purchases, « Purchases are handled by the App Store on this device ».
 - **Account** : Signed in as, Sign Out, **Delete Account** (« removes your sign-in details from our servers. Entries
   on this device stay on this device »).
-- **Progress photos** : Photo day reminder. **Manage** : Peptides Logged, Your Vials.
+- **Progress photos** : Photo day reminder.
+- **Manage** (captures 55-57) : **Peptides Logged** = la liste des peptides ajoutés, chacun avec « No active vial »
+  ou le résumé de son flacon (« 1 mg · 0,5 mg/mL · 1,80 mL left »), menu « … », bouton « + » ; supprimer un
+  peptide supprime aussi ses flacons, ses doses et ses rappels (prévenu en bas). **Your Vials** = la même liste de
+  flacons que l'onglet Stack (90 %, barre, « 1,80 mL · mixed 18 Oct »). Rien de plus que les onglets : c'est un
+  raccourci de gestion. Chez nous : la liste des cures (Cure) et le matériel (Matériel) jouent ce rôle ; on
+  ajoute la même phrase d'avertissement avant de supprimer une cure (« ses injections seront aussi supprimées »).
 - **Medical disclaimer** (texte complet) et **Your data** (texte complet : entrées sur l'appareil, pas d'analytique
   sur les doses).
 - **About** : Version 1.4.2 (16), Contact Support, **Support ID** (à copier, « share it only if you contact support
@@ -100,7 +109,7 @@ Le tunnel est traité à part (`ANALYSE.md`) et sera fait dans son propre lot.
 | Bandeau semaine (7 ronds) | Non | À ajouter, **sans flamme ni compteur de série** (décision 15/10) |
 | Carte « Up next » + gros bouton | Carte « Vos injections » : liste des créneaux + « Marquer comme faite » | On a mieux (6 états) ; ajouter la ligne « flacon à N % » |
 | Dernière pesée + écart | Dernier poids seul | Ajouter l'écart et « il y a N jours » |
-| Hydratation | Non | À ajouter en option (désactivée par défaut) |
+| Hydratation (tuile + feuille +250/+500, liste) | Non | À ajouter en option (désactivée par défaut), **sans confettis ni « Congrats »** |
 | Liste des peptides avec barre de flacon | Carte « Cure en cours » (la première seulement) | À ajouter : toutes les cures actives, barre du flacon lié, bouton |
 | « Today » avec coche + History | Dans la carte principale | Déjà fait ; ajouter le lien Historique |
 | Bouton « + » (3 actions) | Non | À ajouter dans la coque commune |

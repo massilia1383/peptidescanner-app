@@ -1,8 +1,8 @@
 # PepLog — intérieur de l'appli, captures iOS dans l'ordre d'envoi
 
 Source : captures iPhone de James, 18/10/2026 entre 01:00 et 01:10 (heure de Bangkok), PepLog 1.4.2 (16), abonnement Pro actif.
-Numéros = ordre d'envoi. Images réduites à 640 px de large (JPG). Masqués : l'adresse e-mail (49, 50, 51) et
-l'identifiant de support (53, 54). `_A` / `_B_anim` : deux images d'un même écran.
+Numéros = ordre d'envoi. Images réduites à 640 px de large (JPG). Masqués : l'adresse e-mail (49, 50, 51, 55) et
+l'identifiant de support (53, 54). Les captures 55 à 69 (section Manage, fiches de badges, hydratation) ont été envoyées après coup. `_A` / `_B_anim` : deux images d'un même écran.
 Sous-dossier `photos/` : le module « photos de progression » (20 à 26).
 
 | # | Fichier | Heure | Écran |
@@ -61,5 +61,20 @@ Sous-dossier `photos/` : le module « photos de progression » (20 à 26).
 | 52 | 52_profil_disclaimer_your_data | 01:10 | Medical disclaimer complet + « Your data » (entrées stockées sur l'appareil, pas d'analytique sur les doses) |
 | 53 | 53_profil_about_version_support_id | 01:10 | About : Version 1.4.2 (16), Contact Support, Support ID (masqué) |
 | 54 | 54_profil_about_bas_B_anim | 01:10 | Même écran, bas de page |
+| 55 | 55_profil_compte_photos_manage | 01:38 | Profil : compte (e-mail masqué), Photo day reminder, section **Manage** (Peptides Logged / Your Vials), début du disclaimer |
+| 56 | 56_manage_peptides_logged | 01:38 | **Peptides Logged** : liste des peptides ajoutés, « No active vial » ou « 1 mg · 0,5 mg/mL · 1,80 mL left », menu « … », bouton « + » ; note « Deleting a peptide also removes its vials, its logged doses, and its reminders » |
+| 57 | 57_manage_your_vials | 01:38 | **Your Vials** : « 1 vial tracked », carte flacon 90 % + barre + « 1,80 mL · mixed 18 Oct », « Add Peptide » en pointillés |
+| 58 | 58_badge_fiche_five_frames_photos | 01:40 | Fiche de badge « Five frames · 0/5 photos · Add 5 progress photos to your record » |
+| 59 | 59_badge_fiche_the_long_view_90_jours | 01:41 | « The long view · 0/90 days · A progress photo three months after your first » |
+| 60 | 60_badge_fiche_every_angle_3_poses | 01:41 | « Every angle · 0/3 slots · Cover all 3 photo slots » |
+| 61 | 61_badge_fiche_scale_keeper_10_pesees | 01:41 | « Scale keeper · 2/10 weigh-ins · Log 10 weigh-ins » |
+| 62 | 62_badge_fiche_one_week_locked_streak_7 | 01:41 | « One week locked · 1/7 · A 7-day logging streak » ; « Closest badge : Broad spectrum, 1 peptides to go » |
+| 63 | 63_badge_fiche_century_club_streak_100 | 01:42 | « Century club · 1/100 · A 100-day logging streak » |
+| 64 | 64_badge_fiche_broad_spectrum_5_peptides | 01:41 | « Broad spectrum · 4/5 peptides · Track 5 distinct compounds » |
+| 65 | 65_accueil_hydratation_500_sur_1899_mL | 01:44 | Accueil : Hydration « 500 of 1899 mL · 26 % of goal » (1899 = 64,2 oz convertis : l'objectif saisi en oz est stocké tel quel) |
+| 66 | 66_profil_hydratation_unite_mL_objectif_1899 | 01:45 | Profil : Hydration unit mL, Daily goal 1899 mL, Check-in reminders |
+| 67 | 67_accueil_hydratation_1500_sur_1899_mL | 01:46 | Accueil : 1500 of 1899 mL · 79 % |
+| 68 | 68_hydratation_feuille_confettis_congrats_2000_mL | 01:46 | Feuille Hydration : **confettis + « Congrats on hitting your hydration goal! »**, 2000 of 1899 mL, +250 / +500, saisie libre, liste des prises |
+| 69 | 69_hydratation_feuille_2500_mL_boutons_liste | 01:47 | Feuille Hydration : 2500 of 1899 mL « Goal met, logged and counted », boutons +250 / +500 mL, champ Custom, 5 prises de 500 mL effaçables |
 
 Analyse : `../ANALYSE_INTERIEUR.md`.
